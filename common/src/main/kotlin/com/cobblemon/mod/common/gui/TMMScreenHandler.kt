@@ -1,0 +1,102 @@
+package com.cobblemon.mod.common.gui
+
+import com.cobblemon.mod.common.CobblemonItems
+import com.cobblemon.mod.common.block.entity.TMBlockEntity
+import net.minecraft.core.BlockPos
+import net.minecraft.world.Container
+import net.minecraft.world.SimpleContainer
+import net.minecraft.world.entity.player.Inventory
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.inventory.*
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.world.level.Level
+
+class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMenu(menuType, syncId) {
+    private var playerInventory: Inventory? = null
+    private val input = CraftingContainer(this, 3, 1)
+    private val result = ResultContainer()
+    private var tmmEntity: TMBlockEntity? = null
+    private var inventory: Container? = null
+
+    constructor(syncId: Int, playerInventory: Inventory) : this(CobblemonScreenHandlers.TMM_SCREEN, syncId, SimpleContainer(4), null) {
+        this.playerInventory = playerInventory
+    }
+
+    constructor(syncId: Int, playerInventory: Inventory, inventory: Container, blockEntity: TMBlockEntity?) : this(CobblemonScreenHandlers.TMM_SCREEN, syncId) {
+        this.playerInventory = playerInventory
+        this.inventory = inventory
+        this.tmmEntity = blockEntity
+
+        val startX = 0 - 9
+        val startY = 112
+        val slotWidth = 18
+        val slotHeight = 18
+
+        for (row in 0..2) {
+            for (col in 0..8) {
+                this.addSlot(Slot(playerInventory, 9 + (row * 9) + col, startX + (slotWidth * col), startY + (slotHeight * row)))
+            }
+        }
+        for (col in 0..8) {
+            this.addSlot(Slot(playerInventory, col, startX + (slotWidth * col), startY + 58))
+        }
+
+        this.addSlot(CraftingResultSlot(
+                playerInventory.player,
+                input,
+                result,
+                0,
+                startX + 123,
+                startY - 22
+        ))
+
+        this.addSlot(Slot(this.inventory, 0, startX + 167, startY + 9))  // Input slot 1
+        this.addSlot(Slot(this.inventory, 1, startX + 185, startY + 9))  // Input slot 2
+        this.addSlot(Slot(this.inventory, 2, startX + 203, startY + 9))  // Input slot 3
+    }
+
+    override fun quickMoveStack(player: Player, slot: Int): ItemStack {
+        return if (moveItemStackTo(getSlot(slot).item, 0, SLOT_COUNT, true)) getSlot(slot).item else ItemStack.EMPTY
+    }
+
+    override fun stillValid(player: Player?): Boolean {
+        return inventory?.stillValid(player) ?: false
+    }
+
+    override fun clicked(slotIndex: Int, button: Int, clickType: ClickType, player: Player) {
+        val adjustedType = if (clickType == ClickType.THROW) ClickType.PICKUP else clickType
+        if (slotIndex == 36) {
+            this.inventory?.setItem(3, ItemStack.EMPTY)
+        }
+        super.clicked(slotIndex, button, adjustedType, player)
+    }
+
+    override fun removed(player: Player?) {
+        super.removed(player)
+        tmmEntity?.stateManager?.playerWillCloseContainer(player, tmmEntity!!.level, tmmEntity!!.blockPos, tmmEntity!!.blockState)
+    }
+
+    override fun broadcastChanges() {
+        if (inventory is TMBlockEntity.TMBlockInventory) {
+            input.setItem(0, (inventory as TMBlockEntity.TMBlockInventory).items[0])
+            input.setItem(1, (inventory as TMBlockEntity.TMBlockInventory).items[1])
+            input.setItem(2, (inventory as TMBlockEntity.TMBlockInventory).items[2])
+
+            if ((inventory as TMBlockEntity.TMBlockInventory).items[3] != ItemStack.EMPTY) {
+                if (ItemStack.isSameItemSameTags((inventory as TMBlockEntity.TMBlockInventory).items[3], CobblemonItems.TECHNICAL_MACHINE.defaultInstance) ||
+                        ItemStack.isSameItemSameTags((inventory as TMBlockEntity.TMBlockInventory).items[3], CobblemonItems.BLANK_TM.defaultInstance)) {
+                    result.setItem(0, (inventory as TMBlockEntity.TMBlockInventory).items[3])
+                }
+            } else {
+                (inventory as TMBlockEntity.TMBlockInventory).items[3] = result.getItem(0)
+            }
+        }
+
+        super.broadcastChanges()
+    }
+
+    companion object {
+        const val SLOT_COUNT = 3
+    }
+}

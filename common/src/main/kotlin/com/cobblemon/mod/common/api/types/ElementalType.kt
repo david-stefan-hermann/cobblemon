@@ -27,7 +27,10 @@ class ElementalType(
     val displayName: MutableComponent,
     val hue: Int,
     val textureXMultiplier: Int,
-    val resourceLocation: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Cobblemon.MODID, "ui/types.png")
+    val resourceLocation: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Cobblemon.MODID, "ui/types.png"),
+    val primaryColor: Int,
+    val secondaryColor: Int,
+    val typeGem: ResourceLocation
 ) {
 
     companion object {

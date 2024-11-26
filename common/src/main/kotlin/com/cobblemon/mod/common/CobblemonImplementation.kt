@@ -21,6 +21,7 @@ import net.minecraft.server.packs.PackType
 import net.minecraft.server.packs.resources.PreparableReloadListener
 import net.minecraft.server.packs.resources.ResourceManager
 import net.minecraft.tags.TagKey
+import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.level.GameRules
 import net.minecraft.world.level.ItemLike
 import net.minecraft.world.level.biome.Biome
@@ -163,6 +164,8 @@ interface CobblemonImplementation {
      * @param dependencies
      */
     fun registerResourceReloader(identifier: ResourceLocation, reloader: PreparableReloadListener, type: PackType, dependencies: Collection<ResourceLocation>)
+
+    fun registerScreenHandlerType(identifier: ResourceLocation, menuType: MenuType<*>)
 
     /**
      * TODO
