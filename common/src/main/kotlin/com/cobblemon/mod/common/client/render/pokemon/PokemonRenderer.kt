@@ -122,12 +122,11 @@ class PokemonRenderer(
         }
         if(entity.platform != PlatformType.NONE) {
             drawPlatform(
-                    poseMatrix,
-                    entity,
-                    (entity.delegate as PokemonClientDelegate).entityScaleModifier,
-                    partialTicks,
-                    buffer,
-                    packedLight,
+                poseMatrix,
+                entity,
+                (entity.delegate as PokemonClientDelegate).entityScaleModifier,
+                buffer,
+                packedLight,
             )
             // keeps the pokemon's root on the raft
             poseMatrix.translate(0.0, 0.25 * (entity.delegate as PokemonClientDelegate).entityScaleModifier, 0.0)
@@ -135,10 +134,6 @@ class PokemonRenderer(
 
         modelNow.setLayerContext(buffer, clientDelegate, PokemonModelRepository.getLayers(entity.pokemon.species.resourceIdentifier, clientDelegate))
 
-        if (entity.ticksLived < 10) {
-            entity.yBodyRot = entity.entityData.get(SPAWN_DIRECTION)
-            entity.yBodyRotO = entity.yBodyRot
-        }
 
         super.render(entity, entityYaw, partialTicks, poseMatrix, buffer, packedLight)
 
@@ -442,11 +437,10 @@ class PokemonRenderer(
             matrixStack: PoseStack,
             entity: PokemonEntity,
             scale: Float = 1F,
-            partialTicks: Float,
             buff: MultiBufferSource,
             packedLight: Int,
             ) {
-        val (modelResource, textureResource) = PlatformType.GetModelWithTexture(entity.platform)
+        val (modelResource, textureResource) = PlatformType.getModelWithTexture(entity.platform)
         val model = MiscModelRepository.modelOf(modelResource) ?: return
         matrixStack.pushPose()
         matrixStack.mulPose(Axis.ZP.rotationDegrees(180f))

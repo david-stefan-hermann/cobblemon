@@ -612,7 +612,7 @@ open class Pokemon : ShowdownIdentifiable {
                 if (owner is LivingEntity) {
                     owner.swing(InteractionHand.MAIN_HAND, true)
                     val spawnDirection: Vec3
-                    val spawnYaw: Double
+                    var spawnYaw: Double
                     if (battleId != null) {
                         // Look for an opposing opponent to face
                         val battle = Cobblemon.battleRegistry.getBattle(battleId)
@@ -639,6 +639,14 @@ open class Pokemon : ShowdownIdentifiable {
                         // Non-battle send out, face the trainer
                         spawnDirection = position.subtract(owner.position())
                         spawnYaw = atan2(spawnDirection.z, spawnDirection.x) * 180.0 / PI + 102.5
+                    }
+
+                    // In some edge cases, I suspect we are producing NaN's here. This actually leads into a really big problem.
+                    // Why? Because on tick, LivingEntity tries to bring rotations back within one loop around 0-360 using while loops.
+                    // NaN resists arithmetic, so the while loops run forever and the server thread will hang trying to normalize
+                    // this angle. Better to catch it here and correct it. Y'know. If this is actually the problem. I believe!
+                    if (!spawnYaw.isFinite()) {
+                        spawnYaw = 0.0
                     }
                     it.entityData.set(PokemonEntity.SPAWN_DIRECTION, spawnYaw.toFloat())
                 }
@@ -1335,7 +1343,7 @@ open class Pokemon : ShowdownIdentifiable {
         if (this.isClient || ability.forced || ability.template == Abilities.DUMMY) {
             return ability
         }
-        val found = this.form.abilities.firstOrNull { potential -> potential.template == ability.template }
+        val found = this.form.abilities.firstOrNull { potential -> potential.template == ability.template && potential.priority == ability.priority }
             ?: return ability.apply { this.forced = true }
         val index = this.form.abilities.mapping[found.priority]
             ?.indexOf(found)
