@@ -4,7 +4,7 @@ import com.cobblemon.mod.common.api.net.NetworkPacket
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.readItemStack
 import com.cobblemon.mod.common.util.writeItemStack
-import net.minecraft.network.RegistryByteBuf
+import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.world.item.ItemStack
 
 /**
@@ -19,14 +19,14 @@ class CraftBlankTMPacket(
 ): NetworkPacket<CraftBlankTMPacket> {
     override val id = ID
 
-    override fun encode(buffer: RegistryByteBuf) {
+    override fun encode(buffer: RegistryFriendlyByteBuf) {
         buffer.writeItemStack(ingredient)
     }
 
     companion object {
         val ID = cobblemonResource("craft_blank_tm")
 
-        fun decode(buffer: RegistryByteBuf) = CraftBlankTMPacket(
+        fun decode(buffer: RegistryFriendlyByteBuf) = CraftBlankTMPacket(
             buffer.readItemStack()
         )
     }

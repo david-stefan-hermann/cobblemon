@@ -37,6 +37,7 @@ class PlayerDataMongoBackend(mongoClient: MongoClient, databaseName: String, col
         starterUUID =  null,
         keyItems = mutableSetOf(),
         extraData = mutableMapOf(),
+        tmSet = mutableSetOf(),
         battleTheme = CobblemonSounds.PVP_BATTLE.location
     )}
 

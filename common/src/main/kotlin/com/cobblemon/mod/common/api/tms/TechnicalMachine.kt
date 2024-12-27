@@ -81,7 +81,7 @@ class TechnicalMachine(
      * @return Whether the player was successfully granted the [TechnicalMachine]
      */
     fun unlock(player: ServerPlayer): Boolean {
-        Cobblemon.playerData.get(player).tmSet.add(id)
+        Cobblemon.playerDataManager.getGenericData(player) // .get(player, ).tmSet.add(id)// .playerData.get(player).tmSet.add(id)
         if (!obtainMethods.any { it is NoneObtainMethod }) {
             player.sendSystemMessage(lang("tms.unlock_tm", move.displayName))
         }

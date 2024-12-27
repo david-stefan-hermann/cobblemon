@@ -34,6 +34,7 @@ data class ClientGeneralPlayerData(
     var starterSelected: Boolean = false,
     var starterUUID: UUID? = null,
     var showChallengeLabel: Boolean = true,
+    var tmSet: MutableSet<ResourceLocation> = mutableSetOf(),
     val battleTheme: ResourceLocation? = null
 ) : ClientInstancedPlayerData {
 
@@ -56,6 +57,7 @@ data class ClientGeneralPlayerData(
             val showChallengeLabel = buffer.readBoolean()
             val starterUUID = buffer.readNullable { it.readString() }?.let { UUID.fromString(it) }
             val resetStarterPrompt = buffer.readNullable { it.readBoolean() }
+            val tmSet = buffer.readCollection({ mutableSetOf<ResourceLocation>() }) { it.readIdentifier() }
             val battleTheme = buffer.readNullable { it.readIdentifier() }
             val data = ClientGeneralPlayerData(
                 resetStarterPrompt,
@@ -64,6 +66,7 @@ data class ClientGeneralPlayerData(
                 starterSelected,
                 starterUUID,
                 showChallengeLabel,
+                tmSet,
                 battleTheme
             )
             //Weird to do this, but since the flag doesn't get passed to the decoded obj, do it here

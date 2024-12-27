@@ -181,6 +181,26 @@
   "item.berry.eat": {
     "sounds": [ "cobblemon:item/berry/berry_eat" ]
   },
+  "tm.use": {
+    "sounds": [ "cobblemon:tm/tm_use" ],
+    "subtitle": "cobblemon.subtitle.tm.use"
+  },
+  "tmm.craft": {
+    "sounds": [ "cobblemon:tm/tmm_craft" ],
+    "subtitle": "cobblemon.subtitle.tmm.craft"
+  },
+  "tmm.craft_blank": {
+    "sounds": [ "cobblemon:tm/tmm_craft_blank" ],
+    "subtitle": "cobblemon.subtitle.tmm.craft_blank"
+  },
+  "tmm.off": {
+    "sounds": [ "cobblemon:tm/tmm_off" ],
+    "subtitle": "cobblemon.subtitle.tmm.off"
+  },
+  "tmm.on": {
+    "sounds": [ "cobblemon:tm/tmm_on" ],
+    "subtitle": "cobblemon.subtitle.tmm.on"
+  },
   "fishing.notification": {
     "sounds": [
       "cobblemon:fishing/fishing_notification_1",

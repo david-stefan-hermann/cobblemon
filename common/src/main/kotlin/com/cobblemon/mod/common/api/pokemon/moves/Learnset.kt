@@ -8,6 +8,7 @@
 
 package com.cobblemon.mod.common.api.pokemon.moves
 
+import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.api.data.ClientDataSynchronizer
 import com.cobblemon.mod.common.api.moves.MoveTemplate
 import com.cobblemon.mod.common.api.moves.Moves
@@ -20,7 +21,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf
 
 open class Learnset : ClientDataSynchronizer<Learnset> {
     class Interpreter(
-        val loadMove: (JsonElement, Learnset) -> Boolean
+            val loadMove: (JsonElement, Learnset) -> Boolean
     ) {
         companion object {
             fun parseFromPrefixIntoList(prefix: String, list: (Learnset) -> MutableList<MoveTemplate>): Interpreter {
@@ -28,10 +29,10 @@ open class Learnset : ClientDataSynchronizer<Learnset> {
                     val str = element.takeIf { it.isJsonPrimitive }?.asString ?: return@Interpreter false
                     if (str.startsWith(prefix)) {
                         Moves.getByName(str.substringAfter(":"))
-                            ?.let {
-                                list(learnset).add(it)
-                                return@Interpreter true
-                            }
+                                ?.let {
+                                    list(learnset).add(it)
+                                    return@Interpreter true
+                                }
                     }
                     return@Interpreter false
                 }
@@ -67,11 +68,11 @@ open class Learnset : ClientDataSynchronizer<Learnset> {
         }
 
         val interpreters = mutableListOf(
-            tmInterpreter,
-            eggInterpreter,
-            tutorInterpreter,
-            levelUpInterpreter,
-            formChangeInterpreter
+                tmInterpreter,
+                eggInterpreter,
+                tutorInterpreter,
+                levelUpInterpreter,
+                formChangeInterpreter
         )
     }
 
@@ -87,11 +88,25 @@ open class Learnset : ClientDataSynchronizer<Learnset> {
     val formChangeMoves = mutableListOf<MoveTemplate>()
 
     fun getLevelUpMovesUpTo(level: Int) = levelUpMoves
-        .entries
-        .filter { it.key <= level }
-        .sortedBy { it.key }
-        .flatMap { it.value }
-        .toSet()
+            .entries
+            .filter { it.key <= level }
+            .sortedBy { it.key }
+            .flatMap { it.value }
+            .toSet()
+
+    fun tmLearnableMoves(): MutableList<MoveTemplate> {
+        val moves = mutableListOf<MoveTemplate>()
+
+        moves.addAll(tmMoves)
+        moves.addAll(tutorMoves)
+        moves.addAll(eggMoves)
+        moves.addAll(getLevelUpMovesUpTo(Cobblemon.config.maxPokemonLevel))
+        moves.addAll(evolutionMoves)
+        moves.addAll(formChangeMoves)
+
+        return moves
+    }
+
 
     // We only sync level up moves atm
     override fun shouldSynchronize(other: Learnset) = other.levelUpMoves != this.levelUpMoves

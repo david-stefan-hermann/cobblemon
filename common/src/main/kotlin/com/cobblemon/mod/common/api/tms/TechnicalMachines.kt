@@ -18,7 +18,7 @@ import com.cobblemon.mod.common.item.TechnicalMachineItem
 import com.cobblemon.mod.common.item.components.TMMoveComponent
 import com.cobblemon.mod.common.registry.ItemTagCondition
 import com.cobblemon.mod.common.util.adapters.CobblemonObtainMethodAdapter
-import com.cobblemon.mod.common.util.adapters.ResourceLocationAdapter
+import com.cobblemon.mod.common.util.adapters.IdentifierAdapter
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
@@ -29,7 +29,7 @@ import net.minecraft.server.packs.PackType
 
 object TechnicalMachines : JsonDataRegistry<TechnicalMachine> {
     override val gson = GsonBuilder()
-            .registerTypeAdapter(ResourceLocation::class.java, ResourceLocationAdapter)
+            .registerTypeAdapter(ResourceLocation::class.java, IdentifierAdapter)
             .registerTypeAdapter(ObtainMethod::class.java, CobblemonObtainMethodAdapter)
             .registerTypeAdapter(MoveTemplate::class.java, MoveTemplateAdapter)
             .create()
@@ -57,7 +57,7 @@ object TechnicalMachines : JsonDataRegistry<TechnicalMachine> {
     override fun sync(player: ServerPlayer) { }
 
     fun checkPassives(player: ServerPlayer) {
-        val playerTms = Cobblemon.playerData.get(player).tmSet
+        val playerTms = Cobblemon.playerDataManager.getGenericData(player).tmSet
         passiveTms.forEach { (id, tm) ->
             if (tm.obtainMethods.all { it.matches(player) } && !playerTms.contains(id)) tm.unlock(player)
         }
