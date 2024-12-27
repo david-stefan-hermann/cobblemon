@@ -15,9 +15,9 @@ import net.minecraft.world.level.Level
 class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMenu(menuType, syncId) {
     private var playerInventory: Inventory? = null
     private val input = CraftingContainer(this, 3, 1)
-    private val result = ResultContainer()
+    val result = ResultContainer()
     private var tmmEntity: TMBlockEntity? = null
-    private var inventory: Container? = null
+    var inventory: Container? = null
 
     constructor(syncId: Int, playerInventory: Inventory) : this(CobblemonScreenHandlers.TMM_SCREEN, syncId, SimpleContainer(4), null) {
         this.playerInventory = playerInventory

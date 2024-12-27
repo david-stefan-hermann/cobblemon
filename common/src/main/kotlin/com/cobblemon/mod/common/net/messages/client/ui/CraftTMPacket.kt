@@ -6,10 +6,8 @@ import com.cobblemon.mod.common.api.tms.TechnicalMachines
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.readItemStack
 import com.cobblemon.mod.common.util.writeItemStack
-import net.minecraft.item.ItemStack
-import net.minecraft.network.PacketByteBuf
-import java.util.UUID
-import net.minecraft.network.RegistryByteBuf
+import net.minecraft.network.RegistryFriendlyByteBuf
+import net.minecraft.world.item.ItemStack
 
 /**
  * Tells the server to attempt crafting a [TechnicalMachineItem] using the [TMBlock]
@@ -19,15 +17,15 @@ import net.minecraft.network.RegistryByteBuf
  * @author whatsy
  */
 class CraftTMPacket(
-    val tm: TechnicalMachine,
-    val disc: ItemStack,
-    val gem: ItemStack,
-    val ingredient: ItemStack
+        val tm: TechnicalMachine,
+        val disc: ItemStack,
+        val gem: ItemStack,
+        val ingredient: ItemStack
 ): NetworkPacket<CraftTMPacket> {
     override val id = ID
 
-    override fun encode(buffer: RegistryByteBuf) {
-        buffer.writeIdentifier(tm.id)
+    override fun encode(buffer: RegistryFriendlyByteBuf) {
+        buffer.writeResourceLocation(tm.id)
         buffer.writeItemStack(disc)
         buffer.writeItemStack(gem)
         buffer.writeItemStack(ingredient)
@@ -36,8 +34,8 @@ class CraftTMPacket(
     companion object {
         val ID = cobblemonResource("craft_tm")
 
-        fun decode(buffer: RegistryByteBuf) = CraftTMPacket(
-            TechnicalMachines.tmMap[buffer.readIdentifier()]!!,
+        fun decode(buffer: RegistryFriendlyByteBuf) = CraftTMPacket(
+            TechnicalMachines.tmMap[buffer.readResourceLocation()]!!,
             buffer.readItemStack(), buffer.readItemStack(), buffer.readItemStack()
         )
     }

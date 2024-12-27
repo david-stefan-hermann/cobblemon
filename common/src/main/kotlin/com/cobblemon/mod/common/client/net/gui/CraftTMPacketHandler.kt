@@ -11,36 +11,34 @@ import com.cobblemon.mod.common.item.components.TMMoveComponent
 import com.cobblemon.mod.common.net.messages.client.ui.CraftTMPacket
 import com.cobblemon.mod.common.util.itemRegistry
 import com.cobblemon.mod.common.util.playSoundServer
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.sound.SoundCategory
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.sounds.SoundSource
+import net.minecraft.world.item.ItemStack
 
 object CraftTMPacketHandler : ServerNetworkPacketHandler<CraftTMPacket> {
-    override fun handle(packet: CraftTMPacket, server: MinecraftServer, player: ServerPlayerEntity) {
-        val screen = player.currentScreenHandler as TMMScreenHandler
-        val discSlot = screen.inventory?.getStack(0)
-        val gemSlot = screen.inventory?.getStack(1)
-        val ingredientSlot = screen.inventory?.getStack(2)
-        val outputSlot = screen.result.getStack(0)
-        val typeGem = player.world.itemRegistry.get(ElementalTypes.get(packet.tm.type)?.typeGem)
+    override fun handle(packet: CraftTMPacket, server: MinecraftServer, player: ServerPlayer) {
+        val screen = player.containerMenu as TMMScreenHandler
+        val discSlot = screen.slots[0].item
+        val gemSlot = screen.slots[1].item
+        val ingredientSlot = screen.slots[2].item
+        val outputSlot = screen.resultSlots[0].item
+        val typeGem = player.serverLevel().itemRegistry.get(ElementalTypes.get(packet.tm.type)?.typeGem)
 
         if (!outputSlot.isEmpty) {
             return
         }
 
-        if (discSlot != null && !discSlot.isOf(CobblemonItems.BLANK_TM)) {
+        if (discSlot != null && discSlot.item != CobblemonItems.BLANK_TM) {
             return
         }
 
-        if (gemSlot != null && !gemSlot.isOf(typeGem)) {
+        if (gemSlot != null && gemSlot.item != typeGem) {
             return
         }
 
         if (packet.tm.recipe != null && ingredientSlot != null) {
-            if (!ingredientSlot.isOf(player.world.itemRegistry.get(packet.tm.recipe.item)) || ingredientSlot.count < packet.tm.recipe.count) {
+            if (!player.serverLevel().itemRegistry.get(packet.tm.recipe.item)?.let { ingredientSlot.`is`(it) }!! || ingredientSlot.count < packet.tm.recipe.count) {
                 return
             }
         }
@@ -49,16 +47,16 @@ object CraftTMPacketHandler : ServerNetworkPacketHandler<CraftTMPacket> {
         val moveTemplate = packet.tm.move
         TMMoveComponent.setTMMove(stack, moveTemplate)
         screen.result.setStack(0, stack)
-        screen.inventory?.removeStack(0, 1)
-        screen.inventory?.removeStack(1, 1)
+        screen.slots[0].remove(1)
+        screen.slots[1].remove(1)
         if (packet.tm.recipe != null) {
-            screen.inventory?.removeStack(2, packet.tm.recipe.count)
+            screen.slots[2].remove(packet.tm.recipe.count)
         }
 
-        screen.input.markDirty()
-        screen.result.markDirty()
-        player.currentScreenHandler.syncState()
+        screen.slots.forEach { it.container.setChanged() }
+        screen.result.setChanged()
+        player.containerMenu.broadcastChanges()
 
-        player.world.playSoundServer(player.pos, CobblemonSounds.TMM_CRAFT, SoundCategory.BLOCKS)
+        player.serverLevel().playSoundServer(player.position(), CobblemonSounds.TMM_CRAFT, SoundSource.BLOCKS)
     }
 }
