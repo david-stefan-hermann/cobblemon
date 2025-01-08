@@ -1,22 +1,22 @@
 {
   "type": "crafting_shaped",
-  "group": "adorn:post",
+  "group": "adorn:chair",
   "pattern": [
-    "/",
-    "/",
-    "#"
+    " S",
+    "SS",
+    "##"
   ],
   "key": {
-    "#": {
-      "item": "cobblemon:apricorn_planks"
+    "S": {
+      "item": "cobblemon:apricorn_slab"
     },
-    "/": {
+    "#": {
       "tag": "c:rods/wooden"
     }
   },
   "result": {
-    "item": "adorn:cobblemon/apricorn_post",
-    "count": 4
+    "id": "adorn:cobblemon/apricorn_chair",
+    "count": 2
   },
   "fabric:load_conditions": [{
     "condition": "fabric:all_mods_loaded",

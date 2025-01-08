@@ -17,7 +17,7 @@
     }
   },
   "result": {
-    "item": "adorn:cobblemon/apricorn_coffee_table",
+    "id": "adorn:cobblemon/apricorn_coffee_table",
     "count": 2
   },
   "fabric:load_conditions": [{

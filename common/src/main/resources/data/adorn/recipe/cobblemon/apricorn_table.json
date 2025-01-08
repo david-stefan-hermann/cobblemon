@@ -1,20 +1,21 @@
 {
   "type": "crafting_shaped",
-  "group": "adorn:shelf",
+  "group": "adorn:table",
   "pattern": [
-    "---",
-    "/ /"
+    "SSS",
+    "# #",
+    "# #"
   ],
   "key": {
-    "-": {
+    "S": {
       "item": "cobblemon:apricorn_slab"
     },
-    "/": {
+    "#": {
       "tag": "c:rods/wooden"
     }
   },
   "result": {
-    "item": "adorn:cobblemon/apricorn_shelf",
+    "id": "adorn:cobblemon/apricorn_table",
     "count": 3
   },
   "fabric:load_conditions": [{

@@ -1,20 +1,21 @@
 {
   "type": "crafting_shaped",
-  "group": "adorn:platform",
+  "group": "adorn:drawer",
   "pattern": [
     "S",
-    "P"
+    "C",
+    "S"
   ],
   "key": {
+    "C": {
+      "tag": "c:chests/wooden"
+    },
     "S": {
       "item": "cobblemon:apricorn_slab"
-    },
-    "P": {
-      "item": "adorn:cobblemon/apricorn_post"
     }
   },
   "result": {
-    "item": "adorn:cobblemon/apricorn_platform",
+    "id": "adorn:cobblemon/apricorn_drawer",
     "count": 2
   },
   "fabric:load_conditions": [{

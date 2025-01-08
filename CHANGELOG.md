@@ -1,9 +1,50 @@
 # Changelog
 ## [1.6.1 (Release TBD)](#1-6-1)
 
+### Additions
+- Added config setting `maxPokedexScanningDetectionRange` to control from what distance the player can scan Pokémon using the Pokédex.
+- Added the `is_standing_on_blocks(depth, blocks...)` MoLang function, which returns whether the specified entity is standing on a specific block or set of blocks. Example usage: `q.is_standing_on_blocks(2, minecraft:sand)` 
+- Added config setting `hideUnimplementedPokemonInThePokedex` which hides unimplemented Pokémon from the Pokédex when set to true. 
+- Added molang particle queries for getting distance to targeted entities
+- Added debug renderer for poseable entity locators
+- Added `baseScale` property to NPCs.
+
 ### Fixes
 - Fix Pokédex sometimes crashing when switching forms
 - Fix crash related to Tom's Simple Storage and Fossil Machine
+- Fixed not being able to retrieve a fossil from the Fossil Machine with an empty hand
+- Fix Pokémon being collidable while being captured by a Pokéball.
+- Fixed `full_party`, `own_zangoose_seviper`, `use_revive` and `use_candy` Advancement triggers
+- Fixed `healing_machine` Advancement by using the correct 1.21 trigger
+- Fixed an issue where the first Pokémon in the pastured Pokémon list clipped into the interface.
+- Fixed all Pokémon facing South on spawn
+- Fixed not being able to retrieve a fossil from the Fossil Machine with an empty hand 
+- Parametric particle motion now works
+- Event spawned particles now work
+- Particles can now have independent coordinate spaces
+- Fixed bait being consumed when not reeling in any pokémon.
+- Fix Miltank milk magically disappearing out of your bucket
+- Fix Cobblemon Nicknames migrating from 1.5.2 not being displayed properly
+- Fix capitalization in one of our config fields, but allowing typo'd version to still be valid
+- Fix Pokerod not working if lure or luck of the sea enchantments get removed by other mods
+- Fix crashes related to Pokémon when they are ready to evolve while holding an enchanted item
+- Fix crashes that sometimes occur when evolving Nincada
+- Fix plants not being compostible on NeoForge
+- Fix hide UI (F1 key) not hiding the party overlay.
+- Fixed NPC MoLang command `player_lose_command` not working.
+- Corrected misaligned tooltips with editboxes in the NPC editor screen.
+- Fixed Pokémon riding two boats when attempting to deploy a platform on water.
+- Made berry trees be shearable by dispenser blocks
+- Fix the summary screen showing there's experience to reach the next level when at level cap.
+- Fix Pokémon forgetting moves when evolving on specific cases.
+- Fixed Adorn compatibility, including improvements when using JEI/REI (Apricorn items now show up under the collapsed entries rather than standalone)
+- Fix error message appearing on battle log when using Solar Beam with Sunny Day.
+- Fix Pokémon Model offsets for larger species.
+- Fix `/pokedex grant all` command not giving male/female/shininess completion for some Pokémon.
+- Fix `/pokedex grant only` and `/pokedex remove only` not respecting the form parameter passed.
+- Fix variant forms appearing incorrectly in the Pokédex when the normal form had not been unlocked.
+- Fix Pokémon occasionally being shot into the sky during battle.
+- Fixed NPC editing GUI not updating aspects until a game restart.
 
 ## [1.6.0 - The Record Catch Update (December 25th, 2024)](#1-6-0)
 #### "Now that there's a fishing mechanic, the mod is actually good!"

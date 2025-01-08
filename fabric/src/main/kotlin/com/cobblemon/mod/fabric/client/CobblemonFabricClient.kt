@@ -137,9 +137,10 @@ class CobblemonFabricClient: ClientModInitializer, CobblemonClientImplementation
             val client = Minecraft.getInstance()
             val player = client.player
             if (player != null) {
-                if (player.isUsingPokedex()) {
+                if (player.isUsingPokedex() || pokedexUsageContext.transitionIntervals > 0) {
+                    if (!player.isUsingItem) pokedexUsageContext.resetState(false)
                     pokedexUsageContext.renderUpdate(graphics, tickDelta)
-                } else if (pokedexUsageContext.transitionIntervals > 0) {
+                } else {
                     pokedexUsageContext.resetState()
                 }
             }

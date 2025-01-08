@@ -14,7 +14,7 @@
     }
   },
   "result": {
-    "item": "adorn:cobblemon/apricorn_step",
+    "id": "adorn:cobblemon/apricorn_step",
     "count": 1
   },
   "fabric:load_conditions": [{

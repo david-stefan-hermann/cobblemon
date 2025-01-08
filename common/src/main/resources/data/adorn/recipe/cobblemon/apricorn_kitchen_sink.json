@@ -1,20 +1,17 @@
 {
   "type": "crafting_shapeless",
-  "group": "adorn:kitchen_cupboard",
+  "group": "adorn:kitchen_sink",
   "ingredients": [
     {
-      "tag": "c:chests/wooden"
-    },
-    {
       "item": "adorn:cobblemon/apricorn_kitchen_counter"
     },
     {
-      "item": "adorn:cobblemon/apricorn_kitchen_counter"
+      "tag": "c:buckets/empty"
     }
   ],
   "result": {
-    "item": "adorn:cobblemon/apricorn_kitchen_cupboard",
-    "count": 2
+    "id": "adorn:cobblemon/apricorn_kitchen_sink",
+    "count": 1
   },
   "fabric:load_conditions": [{
     "condition": "fabric:all_mods_loaded",

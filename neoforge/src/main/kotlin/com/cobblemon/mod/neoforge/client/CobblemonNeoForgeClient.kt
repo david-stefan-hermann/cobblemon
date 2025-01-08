@@ -213,9 +213,10 @@ object CobblemonNeoForgeClient : CobblemonClientImplementation {
         val client = Minecraft.getInstance()
         val player = client.player
         if (player != null) {
-            if (player.isUsingPokedex()) {
+            if (player.isUsingPokedex() || pokedexUsageContext.transitionIntervals > 0) {
+                if (!player.isUsingItem) pokedexUsageContext.resetState(false)
                 pokedexUsageContext.renderUpdate(event.guiGraphics, event.partialTick)
-            } else if (pokedexUsageContext.transitionIntervals > 0) {
+            } else {
                 pokedexUsageContext.resetState()
             }
         }

@@ -1,21 +1,18 @@
 {
   "type": "crafting_shaped",
-  "group": "adorn:kitchen_counter",
+  "group": "adorn:bench",
   "pattern": [
-    "SS",
-    "PP"
+    "SSS",
+    "S S"
   ],
   "key": {
     "S": {
-      "item": "minecraft:polished_andesite_slab"
-    },
-    "P": {
-      "item": "cobblemon:apricorn_planks"
+      "item": "cobblemon:apricorn_slab"
     }
   },
   "result": {
-    "item": "adorn:cobblemon/apricorn_kitchen_counter",
-    "count": 3
+    "id": "adorn:cobblemon/apricorn_bench",
+    "count": 2
   },
   "fabric:load_conditions": [{
     "condition": "fabric:all_mods_loaded",

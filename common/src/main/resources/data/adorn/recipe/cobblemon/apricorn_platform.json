@@ -1,22 +1,21 @@
 {
   "type": "crafting_shaped",
-  "group": "adorn:table",
+  "group": "adorn:platform",
   "pattern": [
-    "SSS",
-    "# #",
-    "# #"
+    "S",
+    "P"
   ],
   "key": {
     "S": {
       "item": "cobblemon:apricorn_slab"
     },
-    "#": {
-      "tag": "c:rods/wooden"
+    "P": {
+      "item": "adorn:cobblemon/apricorn_post"
     }
   },
   "result": {
-    "item": "adorn:cobblemon/apricorn_table",
-    "count": 3
+    "id": "adorn:cobblemon/apricorn_platform",
+    "count": 2
   },
   "fabric:load_conditions": [{
     "condition": "fabric:all_mods_loaded",
