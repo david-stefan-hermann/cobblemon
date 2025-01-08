@@ -18,12 +18,8 @@ import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.math.fromEulerXYZDegrees
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.narration.NarratableEntry
+import net.minecraft.client.gui.narration.NarrationSupplier
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner
-import net.minecraft.client.gui.screens.inventory.tooltip.TooltipComponent
-import net.minecraft.client.gui.screens.inventory.tooltip.TooltipComponent.ItemTooltip
-import net.minecraft.client.gui.screens.inventory.tooltip.TooltipComponent.TooltipEntry
-import net.minecraft.client.gui.screens.inventory.tooltip.TooltipPositioner
-import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderer
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.client.renderer.entity.ItemRenderer
@@ -37,9 +33,10 @@ class TMPartySlotWidget(
         pY: Number,
         val pokemon: Pokemon?,
         onPress: OnPress
-) : Button(pX.toInt(), pY.toInt(), WIDTH, HEIGHT, Component.literal("PartyMember"), onPress, DEFAULT_NARRATION_SUPPLIER) {
+) : Button(pX.toInt(), pY.toInt(), WIDTH, HEIGHT, Component.literal("PartyMember"), onPress, DEFAULT_NARRATION) {
 
     val state = FloatingState()
+    var isSelected: Boolean = false // is this right?
 
     companion object {
         const val WIDTH = 46
@@ -82,7 +79,6 @@ class TMPartySlotWidget(
             matrices.scale(2.5F, 2.5F, 1F)
             drawProfilePokemon(
                     species = pokemon.species.resourceIdentifier,
-                    aspects = pokemon.aspects.toSet(),
                     matrixStack = matrices,
                     rotation = Quaternionf().fromEulerXYZDegrees(Vector3f(13F, 35F, 0F)),
                     state = state,

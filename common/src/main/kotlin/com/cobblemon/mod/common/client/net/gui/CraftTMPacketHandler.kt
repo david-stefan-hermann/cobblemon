@@ -22,7 +22,7 @@ object CraftTMPacketHandler : ServerNetworkPacketHandler<CraftTMPacket> {
         val discSlot = screen.slots[0].item
         val gemSlot = screen.slots[1].item
         val ingredientSlot = screen.slots[2].item
-        val outputSlot = screen.resultSlots[0].item
+        val outputSlot = screen.slots[screen.slots.size - 1].item
         val typeGem = player.serverLevel().itemRegistry.get(ElementalTypes.get(packet.tm.type)?.typeGem)
 
         if (!outputSlot.isEmpty) {
@@ -46,7 +46,7 @@ object CraftTMPacketHandler : ServerNetworkPacketHandler<CraftTMPacket> {
         val stack = ItemStack(CobblemonItems.TECHNICAL_MACHINE)
         val moveTemplate = packet.tm.move
         TMMoveComponent.setTMMove(stack, moveTemplate)
-        screen.result.setStack(0, stack)
+        screen.result.setItem(0, stack)
         screen.slots[0].remove(1)
         screen.slots[1].remove(1)
         if (packet.tm.recipe != null) {

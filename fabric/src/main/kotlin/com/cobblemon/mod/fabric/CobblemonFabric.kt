@@ -82,6 +82,7 @@ import net.minecraft.server.packs.resources.ResourceManager
 import net.minecraft.tags.TagKey
 import net.minecraft.util.profiling.ProfilerFiller
 import net.minecraft.world.InteractionResult
+import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.level.GameRules
 import net.minecraft.world.level.ItemLike
 import net.minecraft.world.level.biome.Biome
@@ -311,6 +312,13 @@ object CobblemonFabric : CobblemonImplementation {
 
     override fun registerResourceReloader(identifier: ResourceLocation, reloader: PreparableReloadListener, type: PackType, dependencies: Collection<ResourceLocation>) {
         ResourceManagerHelper.get(type).registerReloadListener(CobblemonReloadListener(identifier, reloader, dependencies))
+    }
+
+    override fun registerScreenHandlerType(
+        identifier: ResourceLocation,
+        menuType: MenuType<*>
+    ) {
+         Registry.register(BuiltInRegistries.MENU, identifier, menuType)
     }
 
     override fun server(): MinecraftServer? = if (this.environment() == Environment.CLIENT) Minecraft.getInstance().singleplayerServer else this.server

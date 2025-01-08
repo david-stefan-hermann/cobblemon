@@ -2,28 +2,21 @@ package com.cobblemon.mod.common.gui
 
 import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.block.entity.TMBlockEntity
-import net.minecraft.core.BlockPos
 import net.minecraft.world.Container
 import net.minecraft.world.SimpleContainer
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.*
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.Items
-import net.minecraft.world.level.Level
 
 class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMenu(menuType, syncId) {
-    private var playerInventory: Inventory? = null
-    private val input = CraftingContainer(this, 3, 1)
+    var playerInventory: Inventory? = null
+    val input = TMMCraftingContainer(this, 3, 1)
     val result = ResultContainer()
     private var tmmEntity: TMBlockEntity? = null
     var inventory: Container? = null
 
-    constructor(syncId: Int, playerInventory: Inventory) : this(CobblemonScreenHandlers.TMM_SCREEN, syncId, SimpleContainer(4), null) {
-        this.playerInventory = playerInventory
-    }
-
-    constructor(syncId: Int, playerInventory: Inventory, inventory: Container, blockEntity: TMBlockEntity?) : this(CobblemonScreenHandlers.TMM_SCREEN, syncId) {
+    constructor(syncId: Int, playerInventory: Inventory, inventory: Container, blockEntity: TMBlockEntity?) : this(CobblemonMenuHandlers.TMM_SCREEN, syncId) {
         this.playerInventory = playerInventory
         this.inventory = inventory
         this.tmmEntity = blockEntity
@@ -42,18 +35,22 @@ class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMe
             this.addSlot(Slot(playerInventory, col, startX + (slotWidth * col), startY + 58))
         }
 
-        this.addSlot(CraftingResultSlot(
-                playerInventory.player,
-                input,
-                result,
-                0,
-                startX + 123,
-                startY - 22
+        this.addSlot(ResultSlot(
+            playerInventory.player,
+            input,
+            result,
+            0,
+            startX + 123,
+            startY - 22
         ))
 
         this.addSlot(Slot(this.inventory, 0, startX + 167, startY + 9))  // Input slot 1
         this.addSlot(Slot(this.inventory, 1, startX + 185, startY + 9))  // Input slot 2
         this.addSlot(Slot(this.inventory, 2, startX + 203, startY + 9))  // Input slot 3
+    }
+
+    fun getTMEntity(): TMBlockEntity? {
+        return tmmEntity
     }
 
     override fun quickMoveStack(player: Player, slot: Int): ItemStack {
@@ -72,24 +69,29 @@ class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMe
         super.clicked(slotIndex, button, adjustedType, player)
     }
 
-    override fun removed(player: Player?) {
+    /*override fun removed(player: Player?) {
         super.removed(player)
         tmmEntity?.stateManager?.playerWillCloseContainer(player, tmmEntity!!.level, tmmEntity!!.blockPos, tmmEntity!!.blockState)
+    }*/
+
+    override fun removed(player: Player) {
+        super.removed(player)
+        tmmEntity?.level?.setBlock(tmmEntity!!.blockPos, tmmEntity!!.blockState, 3)
     }
 
     override fun broadcastChanges() {
         if (inventory is TMBlockEntity.TMBlockInventory) {
-            input.setItem(0, (inventory as TMBlockEntity.TMBlockInventory).items[0])
-            input.setItem(1, (inventory as TMBlockEntity.TMBlockInventory).items[1])
-            input.setItem(2, (inventory as TMBlockEntity.TMBlockInventory).items[2])
+            input.setItem(0, (inventory as TMBlockEntity.TMBlockInventory).itemsList[0])
+            input.setItem(1, (inventory as TMBlockEntity.TMBlockInventory).itemsList[1])
+            input.setItem(2, (inventory as TMBlockEntity.TMBlockInventory).itemsList[2])
 
-            if ((inventory as TMBlockEntity.TMBlockInventory).items[3] != ItemStack.EMPTY) {
-                if (ItemStack.isSameItemSameTags((inventory as TMBlockEntity.TMBlockInventory).items[3], CobblemonItems.TECHNICAL_MACHINE.defaultInstance) ||
-                        ItemStack.isSameItemSameTags((inventory as TMBlockEntity.TMBlockInventory).items[3], CobblemonItems.BLANK_TM.defaultInstance)) {
-                    result.setItem(0, (inventory as TMBlockEntity.TMBlockInventory).items[3])
+            if ((inventory as TMBlockEntity.TMBlockInventory).itemsList[3] != ItemStack.EMPTY) {
+                if (ItemStack.isSameItemSameComponents((inventory as TMBlockEntity.TMBlockInventory).itemsList[3], CobblemonItems.TECHNICAL_MACHINE.defaultInstance) ||
+                        ItemStack.isSameItemSameComponents((inventory as TMBlockEntity.TMBlockInventory).itemsList[3], CobblemonItems.BLANK_TM.defaultInstance)) {
+                    result.setItem(0, (inventory as TMBlockEntity.TMBlockInventory).itemsList[3])
                 }
             } else {
-                (inventory as TMBlockEntity.TMBlockInventory).items[3] = result.getItem(0)
+                (inventory as TMBlockEntity.TMBlockInventory).itemsList[3] = result.getItem(0)
             }
         }
 

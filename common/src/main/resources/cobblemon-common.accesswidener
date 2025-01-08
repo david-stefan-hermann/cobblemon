@@ -97,6 +97,7 @@ transitive-accessible field net/minecraft/client/renderer/texture/TextureAtlas w
 transitive-accessible field net/minecraft/client/renderer/texture/TextureAtlas height I
 transitive-accessible class net/minecraft/screen/ScreenHandlerType$Factory
 transitive-accessible method net/minecraft/client/gui/screen/ingame/HandledScreens register (Lnet/minecraft/screen/ScreenHandlerType;Lnet/minecraft/client/gui/screen/ingame/HandledScreens$Provider;)V
+transitive-accessible class net/minecraft/client/gui/components/AbstractSelectionList$Entry
 
 transitive-accessible method net/minecraft/world/entity/schedule/Activity register (Ljava/lang/String;)Lnet/minecraft/world/entity/schedule/Activity;
 transitive-accessible field net/minecraft/client/model/geom/ModelPart$Cube polygons [Lnet/minecraft/client/model/geom/ModelPart$Polygon;

@@ -29,9 +29,14 @@ object PlayerInstancedDataStoreTypes {
     ))
 
     fun register(type: PlayerInstancedDataStoreType): PlayerInstancedDataStoreType {
+        println("Registering PlayerInstancedDataStoreType: ${type.id}")
         types[type.id] = type
         return type
     }
 
-    fun getTypeById(id: ResourceLocation) = types[id]
+    fun getTypeById(id: ResourceLocation): PlayerInstancedDataStoreType? {
+        val type = types[id]
+        if (type == null) println("Unknown PlayerInstancedDataStoreType ID: $id")
+        return type
+    }
 }

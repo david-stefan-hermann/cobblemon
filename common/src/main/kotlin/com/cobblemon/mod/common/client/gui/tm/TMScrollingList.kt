@@ -5,11 +5,12 @@ import com.cobblemon.mod.common.api.tms.TechnicalMachine
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.AbstractSelectionList
+import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.network.chat.Component
 
 class TMScrollingList(
-        val x: Int,
-        val y: Int,
+        val listX: Int,
+        val listY: Int,
         val parent: TMMHandledScreen
 ) : AbstractSelectionList<TMScrollingList.TMScrollingListEntry>(
         Minecraft.getInstance(),
@@ -32,7 +33,10 @@ class TMScrollingList(
 
     override fun getRowWidth() = SLOT_WIDTH
 
-    override fun renderBackground(graphics: GuiGraphics) {}
+    override fun renderListBackground(guiGraphics: GuiGraphics) {
+        super.renderListBackground(guiGraphics)
+    }
+
     override fun renderHeader(graphics: GuiGraphics, x: Int, y: Int) {}
 
     init {
@@ -48,42 +52,42 @@ class TMScrollingList(
         }
     }
 
-    override fun getScrollbarPosition() = x + width - 3
+    override fun getScrollbarPosition() = listX + width - 3
 
     private fun correctSize() {
-        setRenderPosition(
+        /*setRenderPosition(
                 x,
                 y,
                 x + WIDTH,
                 y + HEIGHT
-        )
+        )*/
     }
+
+    override fun setPosition(x: Int, y: Int) {
+        super.setPosition(x, y)
+    }
+
+
 
     public override fun addEntry(entry: TMScrollingListEntry) = super.addEntry(entry)
     public override fun removeEntry(entry: TMScrollingListEntry) = super.removeEntry(entry)
 
-    override fun render(graphics: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderWidget(graphics: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
         correctSize()
 
-        graphics.enableScissor(
-                x,
-                y,
-                x + width,
-                y + height
-        )
-
-        super.render(graphics, mouseX, mouseY, delta)
+        graphics.enableScissor(listX, listY, listX + width, listY + height)
+        super.renderWidget(graphics, mouseX, mouseY, delta) // Call the parent method for default rendering
         graphics.disableScissor()
     }
 
     fun isHovered(mouseX: Double, mouseY: Double): Boolean {
-        return mouseX.toFloat() in (x.toFloat()..(x.toFloat() + WIDTH)) && mouseY.toFloat() in (y.toFloat()..(y.toFloat() + HEIGHT))
+        return mouseX.toFloat() in (listX.toFloat()..(listX.toFloat() + WIDTH)) && mouseY.toFloat() in (listY.toFloat()..(listY.toFloat() + HEIGHT))
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         updateScrollingState(mouseX, mouseY)
         if (scrolling) {
-            focused = getEntryAt(mouseX, mouseY)
+            focused = getEntryAtPosition(mouseX, mouseY)
             isDragging = true
         }
         return super.mouseClicked(mouseX, mouseY, button)
@@ -91,7 +95,7 @@ class TMScrollingList(
 
     override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
         if (scrolling) {
-            if (mouseY < y) {
+            if (mouseY < listY) {
                 scrollAmount = 0.0
             } else if (mouseY > bottom) {
                 scrollAmount = maxScroll.toDouble()
@@ -102,14 +106,19 @@ class TMScrollingList(
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
     }
 
+    override fun updateWidgetNarration(narrationElementOutput: NarrationElementOutput) {
+        TODO("Not yet implemented")
+    }
+
     private fun updateScrollingState(mouseX: Double, mouseY: Double) {
         scrolling = mouseX >= scrollbarPosition.toDouble()
                 && mouseX < (scrollbarPosition + 3).toDouble()
-                && mouseY >= y
+                && mouseY >= listY
                 && mouseY < bottom
     }
 
-    class TMScrollingListEntry(val tm: TechnicalMachine, private val parent: TMMHandledScreen) : AbstractSelectionList.Entry<TMScrollingListEntry>() {
+
+    class TMScrollingListEntry(val tm: TechnicalMachine, private val parent: TMMHandledScreen) : Entry<TMScrollingListEntry>() {
 
         private val tmButton: TMListingButton = TMListingButton(
                 pX = 0,
@@ -148,10 +157,6 @@ class TMScrollingList(
                 return true
             }
             return false
-        }
-
-        override fun getNarration(): Component {
-            return Component.literal("") // Implement narration as needed
         }
     }
 }

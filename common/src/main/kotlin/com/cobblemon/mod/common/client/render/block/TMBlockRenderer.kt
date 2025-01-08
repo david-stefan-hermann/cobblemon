@@ -17,41 +17,44 @@ import net.minecraft.util.Mth
 class TMBlockRenderer(context: BlockEntityRendererProvider.Context) : BlockEntityRenderer<TMBlockEntity> {
 
     override fun render(
-            entity: TMBlockEntity,
-            tickDelta: Float,
-            poseStack: PoseStack,
-            bufferSource: MultiBufferSource,
-            packedLight: Int,
-            packedOverlay: Int
+        entity: TMBlockEntity,
+        tickDelta: Float,
+        poseStack: PoseStack,
+        bufferSource: MultiBufferSource,
+        packedLight: Int,
+        packedOverlay: Int
     ) {
         val diskModel = MiscModelRepository.modelOf(MODEL_ID) ?: return
         poseStack.pushPose()
-        val tm = entity.tmmInventory.filterTM ?: return
-        entity.partialTicks += tickDelta
-        val color = Color(tm.elementalType.hue)
+        try {
+            val tm = entity.tmmInventory.filterTM ?: return
+            entity.partialTicks += tickDelta
 
-        when (entity.blockState.getValue(TMBlock.FACING)) {
-            Direction.SOUTH -> poseStack.translate(15F / 16F, 5.5F / 16F, 1F / 16F)
-            Direction.WEST -> poseStack.translate(14F / 16F, 5.5F / 16F, 0F)
-            Direction.EAST -> poseStack.translate(1F, 5.5F / 16F, 0F)
-            else -> poseStack.translate(15F / 16F, 5.5F / 16F, -1F / 16F)
-        }
+            val color = Color(tm.elementalType.hue)
+            when (entity.blockState.getValue(TMBlock.FACING)) {
+                Direction.SOUTH -> poseStack.translate(15F / 16F, 5.5F / 16F, 1F / 16F)
+                Direction.WEST -> poseStack.translate(14F / 16F, 5.5F / 16F, 0F)
+                Direction.EAST -> poseStack.translate(1F, 5.5F / 16F, 0F)
+                else -> poseStack.translate(15F / 16F, 5.5F / 16F, -1F / 16F)
+            }
 
-        poseStack.translate(-7.0 / 16f, 0.0, 8.0 / 16f)
-        poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(entity.partialTicks / 0.5f))
-        poseStack.translate(7.0 / 16f, 0.0, -8.0 / 16f)
+            poseStack.translate(-7.0 / 16f, 0.0, 8.0 / 16f)
+            poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(entity.partialTicks / 0.5f))
+            poseStack.translate(7.0 / 16f, 0.0, -8.0 / 16f)
 
-        val colour = (255 shl 24) or (color.red shl 16) or (color.green shl 8) or color.blue
+            val colour = (255 shl 24) or (color.red shl 16) or (color.green shl 8) or color.blue
 
-        val renderLayer = RenderType.entityCutout(cobblemonResource("textures/block/tm_machine.png"))
-        diskModel.render(
+            val renderLayer = RenderType.entityCutout(cobblemonResource("textures/block/tm_machine.png"))
+            diskModel.render(
                 poseStack,
                 bufferSource.getBuffer(renderLayer),
                 packedLight,
                 packedOverlay,
                 colour
-        )
-        poseStack.popPose()
+            )
+        } finally {
+            poseStack.popPose()
+        }
     }
 
     companion object {

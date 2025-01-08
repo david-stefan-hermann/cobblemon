@@ -12,7 +12,10 @@ class TMMOutputSlot(val screen: TMMScreenHandler, index: Int, x: Int, y: Int) : 
     override fun mayPlace(stack: ItemStack?) = false
 
     override fun onTake(player: Player, stack: ItemStack) {
+        // Give or drop the item stack to the player
         player.giveOrDropItemStack(stack, false)
-        this.item = Items.AIR.defaultInstance
+        // Use the set method to clear the item in the slot
+        this.set(ItemStack.EMPTY)
     }
 }
+

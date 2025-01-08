@@ -32,13 +32,14 @@ class TechnicalMachineItem(properties: Properties) : CobblemonItem(properties) {
 
     override fun appendHoverText(
             stack: ItemStack,
-            level: Level?,
+            context: TooltipContext,
             tooltip: MutableList<Component>,
             tooltipFlag: TooltipFlag
     ) {
         val move = TMMoveComponent.getTMMove(stack)
         val text = move?.displayName ?: lang("tms.unknown_move")
         tooltip.add(text.gray())
+        super.appendHoverText(stack, context, tooltip, tooltipFlag)
     }
 
     override fun interactLivingEntity(stack: ItemStack, user: Player, target: LivingEntity, hand: InteractionHand): InteractionResult {

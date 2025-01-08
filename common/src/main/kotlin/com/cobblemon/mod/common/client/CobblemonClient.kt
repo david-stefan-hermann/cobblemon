@@ -58,7 +58,7 @@ import com.cobblemon.mod.common.client.trade.ClientTrade
 import com.cobblemon.mod.common.data.CobblemonDataProvider
 import com.cobblemon.mod.common.entity.boat.CobblemonBoatType
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
-import com.cobblemon.mod.common.gui.CobblemonScreenHandlers
+import com.cobblemon.mod.common.gui.CobblemonMenuHandlers
 import com.cobblemon.mod.common.platform.events.PlatformEvents
 import com.cobblemon.mod.common.pokedex.scanner.PokedexUsageContext
 import com.cobblemon.mod.common.util.isLookingAt
@@ -146,6 +146,7 @@ object CobblemonClient {
         //registerColors()
         registerFlywheelRenderers()
         this.registerEntityRenderers()
+        this.registerHandledScreens()
         Berries.observable.subscribe {
             BerryModelRepository.patchModels()
         }
@@ -364,7 +365,7 @@ object CobblemonClient {
 
     private fun registerHandledScreens() {
         MenuScreens.register(
-                CobblemonScreenHandlers.TMM_SCREEN,
+            CobblemonMenuHandlers.TMM_SCREEN,
                 ::TMMHandledScreen
         )
     }

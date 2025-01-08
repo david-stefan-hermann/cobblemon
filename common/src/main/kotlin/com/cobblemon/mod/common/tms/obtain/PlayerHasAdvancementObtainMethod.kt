@@ -20,9 +20,15 @@ class PlayerHasAdvancementObtainMethod : ObtainMethod {
     override fun matches(player: ServerPlayer): Boolean {
         if (advancement == null) return false
 
-        for (entry in player.advancements.advancements) {
-            if (entry.key.id == advancement && entry.value.isDone) return true
-        }
-        return false
+        // Retrieve the advancement from the server's advancement manager
+        val advancementInstance = player.server.getAdvancements().get(advancement)
+            ?: return false
+
+        // Get the advancement progress for the player
+        val advancementProgress = player.advancements.getOrStartProgress(advancementInstance)
+
+        // Check if the advancement is completed
+        return advancementProgress != null && advancementProgress.isDone
     }
 }
+

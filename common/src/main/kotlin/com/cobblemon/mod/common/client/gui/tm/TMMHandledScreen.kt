@@ -70,8 +70,8 @@ class TMMHandledScreen(
 
     init {
         scroll = TMScrollingList(
-                x = leftPos + 132,
-                y = topPos + 45,
+                listX = leftPos + 132,
+                listY = topPos + 45,
                 parent = this
         )
     }
@@ -105,6 +105,40 @@ class TMMHandledScreen(
                 height = TEXTURE_HEIGHT
         )
     }
+
+    override fun renderBg(
+        guiGraphics: GuiGraphics,
+        partialTick: Float,
+        mouseX: Int,
+        mouseY: Int
+    ) {
+        val x = (width - TEXTURE_WIDTH) / 2 // Center the GUI horizontally
+        val y = (height - TEXTURE_HEIGHT) / 2 // Center the GUI vertically
+
+        // Render the background texture for the screen
+        blitk(
+            matrixStack = guiGraphics.pose(),
+            texture = if (mode == TYPE_MENU_MODE) TYPE_SELECTION_BASE else TM_SELECTION_BASE,
+            x = x,
+            y = y,
+            width = TEXTURE_WIDTH,
+            height = TEXTURE_HEIGHT
+        )
+
+        // Render additional elements depending on the mode
+        if (mode == TM_BROWSING_MODE) {
+            // Draw the border for the TM selection area
+            blitk(
+                matrixStack = guiGraphics.pose(),
+                texture = TM_SELECTION_BORDER,
+                x = x + 31,
+                y = y + 14,
+                width = 157,
+                height = 101
+            )
+        }
+    }
+
 
     override fun render(graphics: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
         renderBackground(graphics, mouseX, mouseY, delta)
@@ -165,9 +199,8 @@ class TMMHandledScreen(
 
     override fun removed() {
         super.removed()
-        val inventory = menu.inventory
-        if (inventory is TMBlockEntity.TMBlockInventory) {
-            inventory.tmBlockEntity.blockState.setValue(TMBlock.ON, false)
-        }
+        val tmInventory = inventory as? TMBlockEntity.TMBlockInventory
+        val tmBlockEntity = tmInventory?.blockEntity
+        tmBlockEntity?.blockState?.setValue(TMBlock.ON, false)
     }
 }

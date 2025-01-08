@@ -54,11 +54,11 @@ class TMListingButton(
         )
 
         drawScaledText(
-                graphics = graphics,
-                text = tm.translatedMoveName(),
-                x = x + 25,
-                y = y + 7.5,
-                scale = 0.75f
+            context = graphics,
+            text = Component.literal(tm.translatedMoveName().getString()), // Convert to MutableComponent
+            x = x + 25,
+            y = y + 7.5,
+            scale = 0.75f
         )
     }
 

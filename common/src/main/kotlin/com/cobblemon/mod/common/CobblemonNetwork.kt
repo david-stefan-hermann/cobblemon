@@ -23,6 +23,8 @@ import com.cobblemon.mod.common.client.net.dialogue.DialogueOpenedHandler
 import com.cobblemon.mod.common.client.net.effect.RunPosableMoLangHandler
 import com.cobblemon.mod.common.client.net.effect.SpawnSnowstormEntityParticleHandler
 import com.cobblemon.mod.common.client.net.effect.SpawnSnowstormParticleHandler
+import com.cobblemon.mod.common.client.net.gui.CraftBlankTMPacketHandler
+import com.cobblemon.mod.common.client.net.gui.CraftTMPacketHandler
 import com.cobblemon.mod.common.client.net.gui.InteractPokemonUIPacketHandler
 import com.cobblemon.mod.common.client.net.gui.PokedexUIPacketHandler
 import com.cobblemon.mod.common.client.net.gui.SummaryUIPacketHandler
@@ -38,6 +40,8 @@ import com.cobblemon.mod.common.client.net.settings.ServerSettingsPacketHandler
 import com.cobblemon.mod.common.client.net.sound.UnvalidatedPlaySoundS2CPacketHandler
 import com.cobblemon.mod.common.client.net.spawn.SpawnExtraDataEntityHandler
 import com.cobblemon.mod.common.client.net.starter.StarterUIPacketHandler
+import com.cobblemon.mod.common.net.messages.client.ui.CraftBlankTMPacket
+import com.cobblemon.mod.common.net.messages.client.ui.CraftTMPacket
 import com.cobblemon.mod.common.client.net.storage.RemoveClientPokemonHandler
 import com.cobblemon.mod.common.client.net.storage.SwapClientPokemonHandler
 import com.cobblemon.mod.common.client.net.storage.party.InitializePartyHandler
@@ -353,6 +357,10 @@ object CobblemonNetwork {
         // NPCs
         list.add(PacketRegisterInfo(CloseNPCEditorPacket.ID, CloseNPCEditorPacket::decode, CloseNPCEditorHandler))
         list.add(PacketRegisterInfo(OpenNPCEditorPacket.ID, OpenNPCEditorPacket::decode, OpenNPCEditorHandler))
+
+        // TMs
+        list.add(PacketRegisterInfo(CraftBlankTMPacket.ID, CraftBlankTMPacket::decode, CraftBlankTMPacketHandler))
+        list.add(PacketRegisterInfo(CraftTMPacket.ID, CraftTMPacket::decode, CraftTMPacketHandler))
 
         // Pokédex scanning
         list.add(PacketRegisterInfo(ServerConfirmedRegisterPacket.ID, ServerConfirmedRegisterPacket::decode, ServerConfirmedRegisterHandler))

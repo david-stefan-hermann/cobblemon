@@ -24,7 +24,7 @@ object CraftBlankTMPacketHandler : ServerNetworkPacketHandler<CraftBlankTMPacket
             screen.result.setChanged()
             player.containerMenu.broadcastChanges()
 
-            player.level.playSoundServer(player.position(), CobblemonSounds.TMM_CRAFT_BLANK, SoundSource.BLOCKS)
+            player.level().playSoundServer(player.position(), CobblemonSounds.TMM_CRAFT_BLANK, SoundSource.BLOCKS)
         }
     }
 }

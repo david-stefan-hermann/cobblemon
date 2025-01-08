@@ -47,6 +47,7 @@ data class ClientGeneralPlayerData(
         buf.writeNullable(starterUUID) { pb, value -> pb.writeString(value.toString()) }
         buf.writeNullable(resetStarters) { pb, value -> pb.writeBoolean(value) }
         buf.writeNullable(battleTheme) {pb, value -> pb.writeIdentifier(value)}
+        buf.writeCollection(tmSet) { pb, value -> pb.writeIdentifier(value)}
     }
     companion object {
         fun decode(buffer: RegistryFriendlyByteBuf): SetClientPlayerDataPacket {

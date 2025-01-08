@@ -6,35 +6,36 @@ import com.cobblemon.mod.common.api.moves.MoveTemplate
 import com.cobblemon.mod.common.api.moves.Moves
 import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.mojang.serialization.Codec
-import com.mojang.serialization.codecs.PrimitiveCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import io.netty.buffer.ByteBuf
-import net.minecraft.network.protocol.game.CustomPayload
+import net.minecraft.network.FriendlyByteBuf
+import net.minecraft.network.RegistryFriendlyByteBuf
+import net.minecraft.network.codec.ByteBufCodecs
+import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.item.ItemStack
 
 data class TMMoveComponent(val move: MoveTemplate) {
     companion object {
-        val CODEC: Codec<TMMoveComponent> = RecordCodecBuilder.create { builder ->
-            builder.group(
-                    PrimitiveCodec.STRING.fieldOf("move").forGetter { it.move.name }
-            ).apply(builder) { moveName -> TMMoveComponent(Moves.getByNameOrDummy(moveName)) }
+        // Codec to serialize/deserialize TMMoveComponent
+        val CODEC: Codec<TMMoveComponent> = RecordCodecBuilder.create { instance ->
+            instance.group(
+                Codec.STRING.fieldOf("move").forGetter { it.move.name } // Serialize the move's name
+            ).apply(instance) { moveName -> TMMoveComponent(Moves.getByNameOrDummy(moveName)) }
         }
 
-        val PACKET_CODEC: CustomPayload<ByteBuf, TMMoveComponent> = CustomPayload.codec(CODEC)
+        val PACKET_CODEC: StreamCodec<ByteBuf, TMMoveComponent> = ByteBufCodecs.fromCodec(CODEC)
 
         fun getTMMove(stack: ItemStack): MoveTemplate? {
-            return stack.getTagElement(CobblemonItemComponents.TM_MOVE)?.let {
-                Moves.getByName(it.asString())
-            }
+            return stack.get(CobblemonItemComponents.TM_MOVE)?.move
         }
 
         fun setTMMove(stack: ItemStack, move: MoveTemplate): ItemStack {
-            stack.addTagElement(CobblemonItemComponents.TM_MOVE, move.name.toTag())
+            stack.set(CobblemonItemComponents.TM_MOVE, TMMoveComponent(move))
             return stack
         }
 
         fun removeTMMove(stack: ItemStack): ItemStack {
-            stack.removeTagKey(CobblemonItemComponents.TM_MOVE)
+            stack.remove(CobblemonItemComponents.TM_MOVE)
             return stack
         }
 

@@ -4,14 +4,13 @@ import com.cobblemon.mod.common.CobblemonBlockEntities
 import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.api.moves.MoveTemplate
 import com.cobblemon.mod.common.api.moves.Moves
-import com.cobblemon.mod.common.api.tms.TechnicalMachine
 import com.cobblemon.mod.common.api.tms.TechnicalMachines
 import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.block.TMBlock
 import com.cobblemon.mod.common.gui.TMMScreenHandler
 import net.minecraft.core.BlockPos
-import net.minecraft.core.Direction
-import net.minecraft.core.RegistryAccess
+import net.minecraft.core.HolderLookup
+import net.minecraft.core.NonNullList
 import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.ClientGamePacketListener
@@ -21,60 +20,66 @@ import net.minecraft.world.SimpleContainer
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.AbstractContainerMenu
-import net.minecraft.world.inventory.ContainerData
-import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.level.block.Block
-import net.minecraft.world.level.block.RenderShape
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity
-import net.minecraft.world.level.block.entity.BlockEntityType
 import net.minecraft.world.level.block.state.BlockState
-import net.minecraft.world.level.material.FluidState
-import net.minecraft.world.phys.shapes.Shapes
-import net.minecraft.world.phys.shapes.VoxelShape
 import net.minecraft.nbt.CompoundTag
 
 class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity(CobblemonBlockEntities.TM_BLOCK, pos, state) {
 
     var tmmInventory = TMBlockInventory(this)
     var automationDelay: Int = AUTOMATION_DELAY
+    var partialTicks: Float = 0f
 
     companion object {
         const val AUTOMATION_DELAY = 4
         const val FILTER_TM_NBT = "FilterTM"
     }
 
-    override fun createMenu(containerId: Int, inventory: Inventory, player: Player): AbstractContainerMenu {
+    override fun createMenu(containerId: Int, inventory: Inventory): AbstractContainerMenu {
         return TMMScreenHandler(containerId, inventory, this.tmmInventory, this)
     }
 
-    override fun saveAdditional(compound: CompoundTag) {
-        super.saveAdditional(compound)
-        ContainerHelper.saveAllItems(compound, tmmInventory.items)
+    override fun saveAdditional(compound: CompoundTag, registries: HolderLookup.Provider) {
+        super.saveAdditional(compound, registries)
+        ContainerHelper.saveAllItems(compound, tmmInventory.itemsList, registries)
         tmmInventory.filterTM?.let { compound.putString(FILTER_TM_NBT, it.name) }
     }
 
-    override fun load(compound: CompoundTag) {
-        super.load(compound)
-        ContainerHelper.loadAllItems(compound, tmmInventory.items)
+    override fun loadAdditional(compound: CompoundTag, registries: HolderLookup.Provider) {
+        super.loadAdditional(compound, registries)
+        ContainerHelper.loadAllItems(compound, tmmInventory.itemsList, registries)
         tmmInventory.filterTM = compound.getString(FILTER_TM_NBT)?.let { Moves.getByName(it) }
     }
 
     override fun getDisplayName(): Component {
-        return Component.translatable("container.brewing")
+        return Component.translatable("block.cobblemon.tm_block")
     }
 
-    override fun toClientTag(tag: CompoundTag): CompoundTag {
-        saveAdditional(tag)
-        return tag
+    override fun getDefaultName(): Component {
+        return Component.translatable("container.tm_block")
+    }
+
+    override fun getItems(): NonNullList<ItemStack> {
+        return tmmInventory.itemsList
+    }
+
+    override fun setItems(items: NonNullList<ItemStack>) {
+        for (i in items.indices) {
+            tmmInventory.setItem(i, items[i])
+        }
     }
 
     override fun getUpdatePacket(): Packet<ClientGamePacketListener> {
         return ClientboundBlockEntityDataPacket.create(this)
     }
 
+    override fun getUpdateTag(registryLookup: HolderLookup.Provider): CompoundTag {
+        return saveWithoutMetadata(registryLookup)
+    }
+
     override fun getContainerSize(): Int {
-        return tmmInventory.size
+        return tmmInventory.containerSize
     }
 
     override fun isEmpty(): Boolean {
@@ -97,13 +102,27 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
         tmmInventory.setItem(slot, stack)
     }
 
+    override fun setChanged() {
+        // Notify the block entity's level that this block entity has changed
+        level?.blockEntityChanged(worldPosition)
+
+        // Mark the chunk containing this block entity as dirty, ensuring it is saved
+        level?.getChunkAt(worldPosition)?.setUnsaved(true)
+    }
+
+
     override fun stillValid(player: Player): Boolean {
         return tmmInventory.stillValid(player)
     }
 
-    class TMBlockInventory(private val blockEntity: TMBlockEntity) : SimpleContainer(4) {
+    class TMBlockInventory(val blockEntity: TMBlockEntity) : SimpleContainer(4) {
+        val itemsList: NonNullList<ItemStack> = NonNullList.withSize(4, ItemStack.EMPTY)
 
         var filterTM: MoveTemplate? = null
+
+        fun getInventoryItems(): NonNullList<ItemStack> {
+            return itemsList
+        }
 
         override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean {
             val blockState = blockEntity.blockState
@@ -123,4 +142,5 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
             }
         }
     }
+
 }
