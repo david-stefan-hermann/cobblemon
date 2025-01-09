@@ -1,0 +1,9 @@
+{
+  "moveName": "megadrain",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "grass"
+}

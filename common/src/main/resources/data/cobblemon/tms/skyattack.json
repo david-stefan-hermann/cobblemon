@@ -1,0 +1,11 @@
+{
+  "moveName": "skyattack",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:y_level",
+      "yLevel": 100,
+      "operator": "greater"
+    }
+  ],
+  "type": "flying"
+}

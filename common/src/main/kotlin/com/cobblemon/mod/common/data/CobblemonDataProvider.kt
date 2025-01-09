@@ -41,6 +41,7 @@ import com.cobblemon.mod.common.api.scripting.CobblemonScripts
 import com.cobblemon.mod.common.api.spawning.CobblemonSpawnPools
 import com.cobblemon.mod.common.api.spawning.CobblemonSpawnRules
 import com.cobblemon.mod.common.api.spawning.SpawnDetailPresets
+import com.cobblemon.mod.common.api.tms.TechnicalMachines
 import com.cobblemon.mod.common.battles.BagItems
 import com.cobblemon.mod.common.net.messages.client.data.UnlockReloadPacket
 import com.cobblemon.mod.common.platform.events.PlatformEvents
@@ -98,6 +99,7 @@ object CobblemonDataProvider : DataProvider {
         this.register(PokeRods)
         this.register(Berries)
         this.register(FishingBaits)
+        this.register(TechnicalMachines)
         FishingBait.Effects.setupEffects()
 
         PlatformEvents.SERVER_PLAYER_LOGOUT.subscribe {

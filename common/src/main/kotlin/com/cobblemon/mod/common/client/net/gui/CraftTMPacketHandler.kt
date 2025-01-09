@@ -44,7 +44,7 @@ object CraftTMPacketHandler : ServerNetworkPacketHandler<CraftTMPacket> {
         }
 
         val stack = ItemStack(CobblemonItems.TECHNICAL_MACHINE)
-        val moveTemplate = packet.tm.move
+        val moveTemplate = packet.tm.moveName
         TMMoveComponent.setTMMove(stack, moveTemplate)
         screen.result.setItem(0, stack)
         screen.slots[0].remove(1)

@@ -18,6 +18,7 @@ import com.cobblemon.mod.common.api.net.serializers.PoseTypeDataSerializer
 import com.cobblemon.mod.common.api.net.serializers.StringSetDataSerializer
 import com.cobblemon.mod.common.api.net.serializers.UUIDSetDataSerializer
 import com.cobblemon.mod.common.api.net.serializers.Vec3DataSerializer
+import com.cobblemon.mod.common.gui.CobblemonMenuHandlers
 import com.cobblemon.mod.common.item.group.CobblemonItemGroups
 import com.cobblemon.mod.common.loot.LootInjector
 import com.cobblemon.mod.common.particle.CobblemonParticles
@@ -106,6 +107,9 @@ object CobblemonFabric : CobblemonImplementation {
 
         //This has to be registered elsewhere on forge so we cant do it in common
         CobblemonSherds.registerSherds()
+
+        // register our Menu handlers
+        CobblemonMenuHandlers.register()
 
         CobblemonBlockPredicates.touch()
         CobblemonPlacementModifierTypes.touch()

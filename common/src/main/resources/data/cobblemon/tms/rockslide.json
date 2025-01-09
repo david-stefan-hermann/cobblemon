@@ -1,0 +1,9 @@
+{
+  "moveName": "rockslide",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "rock"
+}

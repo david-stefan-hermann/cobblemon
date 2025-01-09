@@ -1,0 +1,9 @@
+{
+	"moveName": "takedown",
+	"obtainMethods": [
+		{
+			"variant": "cobblemon:impossible"
+		}
+	],
+	"type": "normal"
+}

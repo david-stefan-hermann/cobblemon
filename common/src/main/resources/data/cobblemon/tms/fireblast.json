@@ -1,0 +1,9 @@
+{
+  "moveName": "fireblast",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "fire"
+}

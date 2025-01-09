@@ -1,0 +1,9 @@
+{
+  "moveName": "shadowball",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "ghost"
+}

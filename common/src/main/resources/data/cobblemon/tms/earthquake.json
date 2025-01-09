@@ -1,0 +1,9 @@
+{
+  "moveName": "earthquake",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "ground"
+}

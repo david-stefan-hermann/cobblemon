@@ -13,6 +13,7 @@ import com.cobblemon.mod.common.api.tms.ObtainMethod
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.party
 import com.google.gson.annotations.SerializedName
+import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.server.level.ServerPlayer
 
 /**
@@ -20,23 +21,29 @@ import net.minecraft.server.level.ServerPlayer
  *
  * @author whatsy
  */
-class PokemonHasMoveObtainMethod : ObtainMethod {
+class PokemonHasMoveObtainMethod(val moveId: String = "splash") : ObtainMethod {
+    override val passive = true
 
     companion object {
         val ID = cobblemonResource("pokemon_knows")
+
+        fun readFromBuffer(buffer: RegistryFriendlyByteBuf): PokemonHasMoveObtainMethod {
+            val moveId = buffer.readUtf()
+            return PokemonHasMoveObtainMethod(moveId)
+        }
     }
 
-    @SerializedName("move")
-    val moveId: String = "splash"
-    override val passive = true
-
     override fun matches(player: ServerPlayer): Boolean {
-        player.party().forEach {
-            it.allAccessibleMoves.forEach {
-                if (it.equals(Moves.getByName(moveId))) return true
+        player.party().forEach { pokemon ->
+            pokemon.allAccessibleMoves.forEach { move ->
+                if (move == Moves.getByName(moveId)) return true
             }
         }
-
         return false
+    }
+
+    override fun writeToBuffer(buffer: RegistryFriendlyByteBuf) {
+        buffer.writeUtf("cobblemon:pokemon_knows")
+        buffer.writeUtf(moveId)
     }
 }

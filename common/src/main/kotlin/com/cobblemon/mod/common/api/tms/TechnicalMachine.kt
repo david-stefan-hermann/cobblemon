@@ -10,6 +10,7 @@ package com.cobblemon.mod.common.api.tms
 
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.api.moves.MoveTemplate
+import com.cobblemon.mod.common.api.moves.Moves
 import com.cobblemon.mod.common.api.types.ElementalType
 import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.pokemon.Pokemon
@@ -21,12 +22,18 @@ import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Component
 
 class TechnicalMachine(
-        val move: MoveTemplate,
+        val moveName: MoveTemplate,
         val recipe: TechnicalMachineRecipe?,
         val obtainMethods: List<ObtainMethod> = emptyList(),
         val type: String
 ) {
     lateinit var id: ResourceLocation
+/*
+    val move: MoveTemplate? = Moves.getByName(moveName.displayName.toString()).also {
+        if (it == null) {
+            Cobblemon.LOGGER.error("MoveTemplate not found for moveName: $moveName")
+        }
+    }*/
 
     companion object {
         /**
@@ -54,7 +61,7 @@ class TechnicalMachine(
                 val iterator = tms.iterator()
                 while (iterator.hasNext()) {
                     val tm = iterator.next()
-                    if (!pokemon.species.moves.tmLearnableMoves().contains(tm.move)) {
+                    if (!pokemon.species.moves.tmLearnableMoves().contains(tm.moveName)) {
                         iterator.remove()
                     }
                 }
@@ -83,7 +90,7 @@ class TechnicalMachine(
     fun unlock(player: ServerPlayer): Boolean {
         Cobblemon.playerDataManager.getGenericData(player) // .get(player, ).tmSet.add(id)// .playerData.get(player).tmSet.add(id)
         if (!obtainMethods.any { it is NoneObtainMethod }) {
-            player.sendSystemMessage(lang("tms.unlock_tm", move.displayName))
+            player.sendSystemMessage(lang("tms.unlock_tm", moveName.displayName))
         }
         return true
     }
@@ -93,5 +100,5 @@ class TechnicalMachine(
      *
      * @return This [TechnicalMachine]'s move name, translated
      */
-    fun translatedMoveName(): MutableComponent = move.displayName
+    fun translatedMoveName(): MutableComponent = moveName.displayName
 }

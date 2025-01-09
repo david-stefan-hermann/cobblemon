@@ -9,6 +9,7 @@
 package com.cobblemon.mod.common.item.group
 
 import com.cobblemon.mod.common.Cobblemon
+import com.cobblemon.mod.common.CobblemonBlocks
 import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.util.cobblemonResource
 import net.minecraft.core.registries.BuiltInRegistries
@@ -237,6 +238,7 @@ object CobblemonItemGroups {
         entries.accept(CobblemonItems.PC)
         entries.accept(CobblemonItems.HEALING_MACHINE)
         entries.accept(CobblemonItems.PASTURE)
+        entries.accept(CobblemonItems.TM_MACHINE)
 
         entries.accept(CobblemonItems.GILDED_CHEST)
         entries.accept(CobblemonItems.YELLOW_GILDED_CHEST)
@@ -437,6 +439,8 @@ object CobblemonItemGroups {
 
         entries.accept(CobblemonItems.ABILITY_CAPSULE)
         entries.accept(CobblemonItems.ABILITY_PATCH)
+
+        entries.accept(CobblemonItems.BLANK_TM)
     }
 
     private fun evolutionItemEntries(displayContext: ItemDisplayParameters, entries: Output) {

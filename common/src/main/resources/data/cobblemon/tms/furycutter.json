@@ -1,0 +1,9 @@
+{
+  "moveName": "furycutter",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "bug"
+}

@@ -2,6 +2,7 @@ package com.cobblemon.mod.common.tms.obtain
 
 import com.cobblemon.mod.common.api.tms.ObtainMethod
 import com.cobblemon.mod.common.util.cobblemonResource
+import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.server.level.ServerPlayer
 
 /**
@@ -12,19 +13,28 @@ import net.minecraft.server.level.ServerPlayer
  * @author whatsy
  */
 class PlayerYObtainMethod(val yLevel: Int, val operator: String) : ObtainMethod {
-
     override val passive = true
-    override fun matches(player: ServerPlayer): Boolean {
-        when (operator) {
-            "equals" -> return (player.y.toInt() == yLevel)
-            "less" -> return (yLevel < player.y)
-            "greater" -> return (yLevel > player.y)
-        }
-        return false
-    }
 
     companion object {
         val ID = cobblemonResource("y_level")
+
+        fun readFromBuffer(buffer: RegistryFriendlyByteBuf): PlayerYObtainMethod {
+            val yLevel = buffer.readVarInt()
+            val operator = buffer.readUtf()
+            return PlayerYObtainMethod(yLevel, operator)
+        }
     }
 
+    override fun matches(player: ServerPlayer) = when (operator) {
+        "equals" -> player.y.toInt() == yLevel
+        "less" -> player.y.toInt() < yLevel
+        "greater" -> player.y.toInt() > yLevel
+        else -> false
+    }
+
+    override fun writeToBuffer(buffer: RegistryFriendlyByteBuf) {
+        buffer.writeUtf("cobblemon:y_level")
+        buffer.writeVarInt(yLevel)
+        buffer.writeUtf(operator)
+    }
 }

@@ -1,0 +1,9 @@
+{
+  "moveName": "icebeam",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "ice"
+}

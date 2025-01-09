@@ -47,10 +47,19 @@ object TechnicalMachines : JsonDataRegistry<TechnicalMachine> {
 
     override fun reload(data: Map<ResourceLocation, TechnicalMachine>) {
         data.forEach { (id, tm) ->
+            Cobblemon.LOGGER.info("Processing TM: $id with moveName: ${tm.moveName}")
+            if (tm.moveName == null) {
+                Cobblemon.LOGGER.error("Failed to resolve move for TM: $id with moveName: ${tm.moveName}")
+            } else {
+                Cobblemon.LOGGER.info("Resolved Move for TM: $id -> ${tm.moveName.name}")
+            }
             tmMap[id] = tm
             tm.id = id
-            moveToTMs.getOrPut(tm.move, ::ArrayList).add(tm)
-            if (tm.obtainMethods.any { it.passive }) passiveTms[id] = tm
+
+            //moveToTMs.getOrPut(tm.move!!, ::ArrayList).add(tm)
+
+            // Check for passive ObtainMethods
+            //if (tm.obtainMethods.any { it.passive }) passiveTms[id] = tm
         }
     }
 

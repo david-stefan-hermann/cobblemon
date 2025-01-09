@@ -1,0 +1,9 @@
+{
+  "moveName": "submission",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "fighting"
+}

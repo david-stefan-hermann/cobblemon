@@ -1,5 +1,6 @@
 package com.cobblemon.mod.common.item.components
 
+import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonItemComponents
 import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.api.moves.MoveTemplate
@@ -44,9 +45,14 @@ data class TMMoveComponent(val move: MoveTemplate) {
             return if (tint == 0) moveType.primaryColor else moveType.secondaryColor
         }
 
-        fun createStack(move: MoveTemplate): ItemStack {
+        fun createStack(move: MoveTemplate?): ItemStack {
+            if (move == null) {
+                Cobblemon.LOGGER.error("Attempted to create TM stack with null move!")
+                throw IllegalArgumentException("MoveTemplate cannot be null in createStack.")
+            }
             val stack = ItemStack(CobblemonItems.TECHNICAL_MACHINE)
             return setTMMove(stack, move)
         }
+
     }
 }

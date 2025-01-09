@@ -33,11 +33,16 @@ class TMScrollingList(
 
     override fun getRowWidth() = SLOT_WIDTH
 
-    override fun renderListBackground(guiGraphics: GuiGraphics) {
+    /*override fun renderListBackground(guiGraphics: GuiGraphics) {
         super.renderListBackground(guiGraphics)
     }
 
-    override fun renderHeader(graphics: GuiGraphics, x: Int, y: Int) {}
+    override fun renderHeader(graphics: GuiGraphics, x: Int, y: Int) {}*/
+
+    override fun renderListBackground(context: GuiGraphics) {}
+    override fun renderListSeparators(guiGraphics: GuiGraphics) {}
+    override fun renderSelection(context: GuiGraphics, y: Int, entryWidth: Int, entryHeight: Int, borderColor: Int, fillColor: Int) {}
+
 
     init {
         correctSize()
@@ -55,18 +60,17 @@ class TMScrollingList(
     override fun getScrollbarPosition() = listX + width - 3
 
     private fun correctSize() {
-        /*setRenderPosition(
-                x,
-                y,
-                x + WIDTH,
-                y + HEIGHT
-        )*/
+        setSize(WIDTH, HEIGHT)
+        setPosition(listX - 2, listY - 2)
     }
 
     override fun setPosition(x: Int, y: Int) {
         super.setPosition(x, y)
     }
 
+    override fun setSize(width: Int, height: Int) {
+        super.setSize(width, height)
+    }
 
 
     public override fun addEntry(entry: TMScrollingListEntry) = super.addEntry(entry)
@@ -75,7 +79,7 @@ class TMScrollingList(
     override fun renderWidget(graphics: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
         correctSize()
 
-        graphics.enableScissor(listX, listY, listX + width, listY + height)
+        graphics.enableScissor(listX + 3, listY + 3, listX + width, listY - 1 + height)
         super.renderWidget(graphics, mouseX, mouseY, delta) // Call the parent method for default rendering
         graphics.disableScissor()
     }

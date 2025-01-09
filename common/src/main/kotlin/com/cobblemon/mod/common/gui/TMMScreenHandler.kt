@@ -79,6 +79,31 @@ class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMe
         tmmEntity?.level?.setBlock(tmmEntity!!.blockPos, tmmEntity!!.blockState, 3)
     }
 
+    fun syncState() {
+        // Synchronize the input container slots
+        if (inventory is TMBlockEntity.TMBlockInventory) {
+            val tmInventory = inventory as TMBlockEntity.TMBlockInventory
+            for (i in 0 until input.containerSize) {
+                input.setItem(i, tmInventory.getItem(i))
+            }
+
+            // Synchronize the result slot if there's a valid TM or blank TM
+            if (!tmInventory.itemsList[3].isEmpty) {
+                if (ItemStack.isSameItemSameComponents(tmInventory.itemsList[3], CobblemonItems.TECHNICAL_MACHINE.defaultInstance) ||
+                    ItemStack.isSameItemSameComponents(tmInventory.itemsList[3], CobblemonItems.BLANK_TM.defaultInstance)
+                ) {
+                    result.setItem(0, tmInventory.itemsList[3])
+                }
+            } else {
+                tmInventory.itemsList[3] = result.getItem(0)
+            }
+        }
+
+        // Notify the client and server of changes
+        broadcastChanges()
+    }
+
+
     override fun broadcastChanges() {
         if (inventory is TMBlockEntity.TMBlockInventory) {
             input.setItem(0, (inventory as TMBlockEntity.TMBlockInventory).itemsList[0])

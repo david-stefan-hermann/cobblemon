@@ -7,6 +7,7 @@ import com.cobblemon.mod.common.api.moves.Moves
 import com.cobblemon.mod.common.api.tms.TechnicalMachines
 import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.block.TMBlock
+import com.cobblemon.mod.common.gui.CobblemonMenuHandlers
 import com.cobblemon.mod.common.gui.TMMScreenHandler
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
@@ -37,7 +38,7 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
     }
 
     override fun createMenu(containerId: Int, inventory: Inventory): AbstractContainerMenu {
-        return TMMScreenHandler(containerId, inventory, this.tmmInventory, this)
+        return CobblemonMenuHandlers.TMM_SCREEN.create(containerId, inventory)
     }
 
     override fun saveAdditional(compound: CompoundTag, registries: HolderLookup.Provider) {

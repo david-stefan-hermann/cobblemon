@@ -19,6 +19,7 @@ import com.cobblemon.mod.common.util.itemRegistry
 import com.cobblemon.mod.common.util.playSoundServer
 import com.cobblemon.mod.common.util.toVec3d
 import com.mojang.serialization.MapCodec
+import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.world.InteractionHand
@@ -79,6 +80,12 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
                 Shapes.box(0.0625, 0.3125, 0.0, 0.25, 0.9375, 1.0),
                 Shapes.box(0.0625, 0.3125, 0.0625, 0.9375, 0.875, 0.9375)
         )
+
+        val CODEC: MapCodec<TMBlock> = RecordCodecBuilder.mapCodec { instance ->
+            instance.group(
+                BlockBehaviour.Properties.CODEC.fieldOf("properties").forGetter { it.properties }
+            ).apply(instance, ::TMBlock)
+        }
     }
 
     init {
@@ -99,22 +106,21 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
                 .setValue(WATERLOGGED, context.level.getFluidState(context.clickedPos).type == Fluids.WATER)
                 .setValue(ON, false)
     }
+
     override fun useWithoutItem(
-            state: BlockState,
-            level: Level,
-            pos: BlockPos,
-            player: Player,
-            hit: BlockHitResult
+        state: BlockState,
+        level: Level,
+        pos: BlockPos,
+        player: Player,
+        hit: BlockHitResult
     ): InteractionResult {
-        if (level.isClientSide) {
-            val tmBlockEntity = level.getBlockEntity(pos)
-            if (tmBlockEntity is TMBlockEntity) {
-                val inventory = tmBlockEntity.tmmInventory
-                inventory.filterTM = null
+        if (!level.isClientSide) {
+            val blockEntity = level.getBlockEntity(pos)
+            if (blockEntity is TMBlockEntity) {
+                player.openMenu(blockEntity)
             }
-            return InteractionResult.SUCCESS
         }
-        return InteractionResult.CONSUME
+        return InteractionResult.sidedSuccess(level.isClientSide)
     }
 
     override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
@@ -122,8 +128,8 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
     }
 
 
-    override fun codec(): MapCodec<out BaseEntityBlock> {
-        TODO("Not yet implemented")
+    override fun codec(): MapCodec<TMBlock> {
+        return CODEC
     }
 
     override fun getRenderShape(state: BlockState): RenderShape {

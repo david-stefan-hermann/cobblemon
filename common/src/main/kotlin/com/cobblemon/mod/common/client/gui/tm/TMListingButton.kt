@@ -33,7 +33,7 @@ class TMListingButton(
         val TM_LISTING_BUTTON = cobblemonResource("textures/gui/tm/tm_selection_listing.png")
     }
 
-    val stack = TMMoveComponent.createStack(tm.move)
+    val stack = TMMoveComponent.createStack(tm.moveName)
 
     override fun renderWidget(graphics: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {
         blitk(
