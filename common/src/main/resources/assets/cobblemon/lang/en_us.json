@@ -1017,6 +1017,8 @@
   "cobblemon.ui.party": "Party",
   "cobblemon.ui.power": "Power",
   "cobblemon.ui.accuracy": "Accuracy",
+  "cobblemon.ui.accuracy_short": "Acc.",
+  "cobblemon.ui.pp": "PP",
   "cobblemon.ui.effect": "Effect",
   "cobblemon.ui.pokemon": "Pokémon",
   "cobblemon.ui.exit": "Exit",
