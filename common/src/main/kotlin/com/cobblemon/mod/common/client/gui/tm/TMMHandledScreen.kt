@@ -74,11 +74,13 @@ class TMMHandledScreen(
     var selectedPokemon: Pokemon? = null
     var scroll: TMScrollingList? = null
 
-    init {
+    override fun init() {
+        super.init()
+
         scroll = TMScrollingList(
-                listX = leftPos + 132,
-                listY = topPos + 45,
-                parent = this
+            listX = leftPos + 5,
+            listY = topPos + 8,
+            parent = this
         )
     }
 
@@ -122,7 +124,7 @@ class TMMHandledScreen(
             itemStack = Items.AMETHYST_SHARD.defaultInstance,
             x = (x + 197 + 36).toDouble(),
             y = (y + 127).toDouble(),
-            zTranslation = 1f
+            matrixStack = context.pose(),
         )
 
         drawScaledText(
@@ -234,6 +236,7 @@ class TMMHandledScreen(
             itemStack = CobblemonItems.BLANK_TM.defaultInstance,
             x = (x + 197).toDouble(),
             y = (y + 127).toDouble(),
+            matrixStack = context.pose(),
         )
 
         val typeGem = BuiltInRegistries.ITEM.get(ElementalTypes.get(currentTm.type)?.typeGem).defaultInstance
@@ -242,6 +245,7 @@ class TMMHandledScreen(
             itemStack = typeGem ?: ItemStack.EMPTY,
             x = (x + 197 + 18).toDouble(),
             y = (y + 127).toDouble(),
+            matrixStack = context.pose(),
         )
 
         val recipe = currentTm.recipe ?: TechnicalMachineRecipe(ResourceLocation.tryParse("minecraft:air")!!, 1)
@@ -250,7 +254,8 @@ class TMMHandledScreen(
             itemStack = BuiltInRegistries.ITEM.get(recipe.item).defaultInstance,
             x = (x + 197 + 36).toDouble(),
             y = (y + 127).toDouble(),
-            zTranslation = 1f
+            zTranslation = 1f,
+            matrixStack = context.pose(),
         )
 
         context.pose().pushPose()
@@ -595,4 +600,7 @@ class TMMHandledScreen(
         val tmBlockEntity = tmInventory?.blockEntity
         tmBlockEntity?.blockState?.setValue(TMBlock.ON, false)
     }
+
+    override fun renderBlurredBackground(partialTick: Float) {}
+    override fun renderLabels(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int) {}
 }

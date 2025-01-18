@@ -39,6 +39,7 @@ class TMScrollingList(
 
     override fun renderHeader(graphics: GuiGraphics, x: Int, y: Int) {}*/
 
+
     override fun renderListBackground(context: GuiGraphics) {}
     override fun renderListSeparators(guiGraphics: GuiGraphics) {}
     override fun renderSelection(context: GuiGraphics, y: Int, entryWidth: Int, entryHeight: Int, borderColor: Int, fillColor: Int) {}
@@ -55,6 +56,8 @@ class TMScrollingList(
             removedTMs.forEach(this::removeEntry)
             newTMs.forEach { tm -> addEntry(TMScrollingListEntry(tm, parent)) }
         }
+
+        setRenderHeader(false, 0)
     }
 
     override fun getScrollbarPosition() = listX + width - 3

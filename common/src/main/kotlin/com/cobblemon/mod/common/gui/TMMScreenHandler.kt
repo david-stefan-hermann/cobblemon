@@ -35,6 +35,10 @@ class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMe
             this.addSlot(Slot(playerInventory, col, startX + (slotWidth * col), startY + 58))
         }
 
+        this.addSlot(Slot(input, 0, startX + 167, startY + 9))  // Input slot 1
+        this.addSlot(Slot(input, 1, startX + 185, startY + 9))  // Input slot 2
+        this.addSlot(Slot(input, 2, startX + 203, startY + 9))  // Input slot 3
+
         this.addSlot(ResultSlot(
             playerInventory.player,
             input,
@@ -43,10 +47,6 @@ class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMe
             startX + 123,
             startY - 22
         ))
-
-        this.addSlot(Slot(this.inventory, 0, startX + 167, startY + 9))  // Input slot 1
-        this.addSlot(Slot(this.inventory, 1, startX + 185, startY + 9))  // Input slot 2
-        this.addSlot(Slot(this.inventory, 2, startX + 203, startY + 9))  // Input slot 3
     }
 
     fun getTMEntity(): TMBlockEntity? {
@@ -81,23 +81,22 @@ class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMe
 
     fun syncState() {
         // Synchronize the input container slots
-        if (inventory is TMBlockEntity.TMBlockInventory) {
-            val tmInventory = inventory as TMBlockEntity.TMBlockInventory
-            for (i in 0 until input.containerSize) {
-                input.setItem(i, tmInventory.getItem(i))
-            }
-
-            // Synchronize the result slot if there's a valid TM or blank TM
-            if (!tmInventory.itemsList[3].isEmpty) {
-                if (ItemStack.isSameItemSameComponents(tmInventory.itemsList[3], CobblemonItems.TECHNICAL_MACHINE.defaultInstance) ||
-                    ItemStack.isSameItemSameComponents(tmInventory.itemsList[3], CobblemonItems.BLANK_TM.defaultInstance)
-                ) {
-                    result.setItem(0, tmInventory.itemsList[3])
-                }
-            } else {
-                tmInventory.itemsList[3] = result.getItem(0)
-            }
+        val tmInventory = inventory ?: return
+        for (i in 0 until input.containerSize) {
+            input.setItem(i, tmInventory.getItem(i))
         }
+
+        // Synchronize the result slot if there's a valid TM or blank TM
+        if (!tmInventory.getItem(3).isEmpty) {
+            if (ItemStack.isSameItemSameComponents(tmInventory.getItem(3), CobblemonItems.TECHNICAL_MACHINE.defaultInstance) ||
+                ItemStack.isSameItemSameComponents(tmInventory.getItem(3), CobblemonItems.BLANK_TM.defaultInstance)
+            ) {
+                result.setItem(0, tmInventory.getItem(3))
+            }
+        } else {
+            tmInventory.setItem(3, result.getItem(0))
+        }
+
 
         // Notify the client and server of changes
         broadcastChanges()

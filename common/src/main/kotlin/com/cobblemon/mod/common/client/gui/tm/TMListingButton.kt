@@ -48,9 +48,10 @@ class TMListingButton(
         )
 
         renderScaledGuiItemIcon(
-                itemStack = stack,
-                x = x.toDouble() + 2,
-                y = y.toDouble() + 2
+            itemStack = stack,
+            x = x.toDouble() + 2,
+            y = y.toDouble() + 2,
+            matrixStack = graphics.pose(),
         )
 
         drawScaledText(

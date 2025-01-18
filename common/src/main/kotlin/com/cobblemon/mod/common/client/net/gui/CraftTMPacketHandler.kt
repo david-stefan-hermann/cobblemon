@@ -19,10 +19,10 @@ import net.minecraft.world.item.ItemStack
 object CraftTMPacketHandler : ServerNetworkPacketHandler<CraftTMPacket> {
     override fun handle(packet: CraftTMPacket, server: MinecraftServer, player: ServerPlayer) {
         val screen = player.containerMenu as TMMScreenHandler
-        val discSlot = screen.slots[0].item
-        val gemSlot = screen.slots[1].item
-        val ingredientSlot = screen.slots[2].item
-        val outputSlot = screen.slots[screen.slots.size - 1].item
+        val discSlot = screen.input.getItem(0)
+        val gemSlot = screen.input.getItem(1)
+        val ingredientSlot = screen.input.getItem(2)
+        val outputSlot = screen.result.getItem(0)
         val typeGem = player.serverLevel().itemRegistry.get(ElementalTypes.get(packet.tm.type)?.typeGem)
 
         if (!outputSlot.isEmpty) {
@@ -47,13 +47,13 @@ object CraftTMPacketHandler : ServerNetworkPacketHandler<CraftTMPacket> {
         val moveTemplate = packet.tm.moveName
         TMMoveComponent.setTMMove(stack, moveTemplate)
         screen.result.setItem(0, stack)
-        screen.slots[0].remove(1)
-        screen.slots[1].remove(1)
+        screen.input.getItem(0).shrink(1)
+        screen.input.getItem(1).shrink(1)
         if (packet.tm.recipe != null) {
-            screen.slots[2].remove(packet.tm.recipe.count)
+            screen.input.getItem(2).shrink(packet.tm.recipe.count)
         }
 
-        screen.slots.forEach { it.container.setChanged() }
+        screen.input.setChanged()
         screen.result.setChanged()
         player.containerMenu.broadcastChanges()
 

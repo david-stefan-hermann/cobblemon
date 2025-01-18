@@ -37,10 +37,10 @@ object CobblemonItemComponents : PlatformRegistry<Registry<DataComponentType<*>>
         .networkSynchronized(RodBaitComponent.PACKET_CODEC)
         .build())
 
-    val TM_MOVE: DataComponentType<TMMoveComponent> = DataComponentType.builder<TMMoveComponent>()
-            .persistent(TMMoveComponent.CODEC)
-            .networkSynchronized(TMMoveComponent.PACKET_CODEC)
-            .build()
+    val TM_MOVE: DataComponentType<TMMoveComponent> = create("tm_move", DataComponentType.builder<TMMoveComponent>()
+        .persistent(TMMoveComponent.CODEC)
+        .networkSynchronized(TMMoveComponent.PACKET_CODEC)
+        .build())
 
 
     fun register() {

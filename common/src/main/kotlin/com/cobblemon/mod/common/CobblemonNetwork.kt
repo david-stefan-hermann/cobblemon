@@ -358,10 +358,6 @@ object CobblemonNetwork {
         list.add(PacketRegisterInfo(CloseNPCEditorPacket.ID, CloseNPCEditorPacket::decode, CloseNPCEditorHandler))
         list.add(PacketRegisterInfo(OpenNPCEditorPacket.ID, OpenNPCEditorPacket::decode, OpenNPCEditorHandler))
 
-        // TMs
-        list.add(PacketRegisterInfo(CraftBlankTMPacket.ID, CraftBlankTMPacket::decode, CraftBlankTMPacketHandler))
-        list.add(PacketRegisterInfo(CraftTMPacket.ID, CraftTMPacket::decode, CraftTMPacketHandler))
-
         // Pokédex scanning
         list.add(PacketRegisterInfo(ServerConfirmedRegisterPacket.ID, ServerConfirmedRegisterPacket::decode, ServerConfirmedRegisterHandler))
         return list
@@ -450,6 +446,10 @@ object CobblemonNetwork {
 
         // NPC packets
         list.add(PacketRegisterInfo(SaveNPCPacket.ID, SaveNPCPacket::decode, SaveNPCHandler))
+
+        // TMs
+        list.add(PacketRegisterInfo(CraftBlankTMPacket.ID, CraftBlankTMPacket::decode, CraftBlankTMPacketHandler))
+        list.add(PacketRegisterInfo(CraftTMPacket.ID, CraftTMPacket::decode, CraftTMPacketHandler))
 
         return list
     }
