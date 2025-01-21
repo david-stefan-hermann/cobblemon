@@ -40,11 +40,6 @@ data class TMMoveComponent(val move: MoveTemplate) {
             return stack
         }
 
-        fun getItemColor(stack: ItemStack, tint: Int): Int {
-            val moveType = getTMMove(stack)?.elementalType ?: ElementalTypes.NORMAL
-            return if (tint == 0) moveType.primaryColor else moveType.secondaryColor
-        }
-
         fun createStack(move: MoveTemplate?): ItemStack {
             if (move == null) {
                 Cobblemon.LOGGER.error("Attempted to create TM stack with null move!")

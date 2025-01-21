@@ -29,6 +29,7 @@ import com.cobblemon.mod.common.client.render.ClientPlayerIcon
 import com.cobblemon.mod.common.client.render.DeferredRenderer
 import com.cobblemon.mod.common.client.render.block.*
 import com.cobblemon.mod.common.client.render.boat.CobblemonBoatRenderer
+import com.cobblemon.mod.common.client.render.color.TechnicalMachineItemColorProvider
 import com.cobblemon.mod.common.client.render.entity.PokeBobberEntityRenderer
 import com.cobblemon.mod.common.client.render.generic.GenericBedrockRenderer
 import com.cobblemon.mod.common.client.render.item.CobblemonBuiltinItemRendererRegistry
@@ -146,6 +147,7 @@ object CobblemonClient {
         //registerColors()
         registerFlywheelRenderers()
         this.registerEntityRenderers()
+        this.registerItemColors()
         this.registerHandledScreens()
         Berries.observable.subscribe {
             BerryModelRepository.patchModels()
@@ -202,17 +204,6 @@ object CobblemonClient {
 //            .factory(::BerryEntityInstance)
 //            .apply()
     }
-
-    /*
-    fun registerColors() {
-        this.implementation.registerBlockColors(BlockColorProvider { _, _, _, _ ->
-            return@BlockColorProvider 0xE0A33A
-        }, CobblemonBlocks.APRICORN_LEAVES)
-        this.implementation.registerItemColors(ItemColorProvider { _, _ ->
-            return@ItemColorProvider 0xE0A33A
-        }, CobblemonItems.APRICORN_LEAVES)
-    }
-    */
 
     private fun registerBlockRenderTypes() {
 
@@ -332,6 +323,10 @@ object CobblemonClient {
         this.implementation.registerEntityRenderer(CobblemonEntities.POKE_BOBBER) { ctx -> PokeBobberEntityRenderer(ctx) }
         LOGGER.info("Registering NPC renderer")
         this.implementation.registerEntityRenderer(CobblemonEntities.NPC, ::NPCRenderer)
+    }
+
+    private fun registerItemColors() {
+        implementation.registerItemColors(TechnicalMachineItemColorProvider, CobblemonItems.TECHNICAL_MACHINE)
     }
 
     fun reloadCodedAssets(resourceManager: ResourceManager) {
