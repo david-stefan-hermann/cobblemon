@@ -965,6 +965,19 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     val BLACK_TUMBLESTONE_BLOCK = blockItem("black_tumblestone_block", CobblemonBlocks.BLACK_TUMBLESTONE_BLOCK)
 
     @JvmField
+    val TYPE_GEM_CORE = blockItem("type_gem_core", CobblemonBlocks.TYPE_GEM_CORE)
+    @JvmField
+    val TYPE_GEM_BLOCK = blockItem("type_gem_block", CobblemonBlocks.TYPE_GEM_BLOCK)
+    @JvmField
+    val TYPE_GEM_CLUSTER = blockItem("type_gem_cluster", CobblemonBlocks.TYPE_GEM_CLUSTER)
+    @JvmField
+    val LARGE_TYPE_GEM = blockItem("large_type_gem", CobblemonBlocks.LARGE_TYPE_GEM)
+    @JvmField
+    val MEDIUM_TYPE_GEM = blockItem("medium_type_gem", CobblemonBlocks.MEDIUM_TYPE_GEM)
+    @JvmField
+    val SMALL_TYPE_GEM = blockItem("small_type_gem", CobblemonBlocks.SMALL_TYPE_GEM)
+
+    @JvmField
     val POKEROD_SMITHING_TEMPLATE = create("pokerod_smithing_template", SmithingTemplateItem(
         Component.translatable("item.minecraft.fishing_rod").blue(),
         Component.translatable("item.cobblemon.smithing_template.pokerod.ingredients").blue(),

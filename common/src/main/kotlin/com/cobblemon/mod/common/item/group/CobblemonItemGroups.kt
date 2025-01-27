@@ -273,6 +273,13 @@ object CobblemonItemGroups {
         entries.accept(CobblemonItems.BLACK_TUMBLESTONE_BLOCK)
         entries.accept(CobblemonItems.SKY_TUMBLESTONE_BLOCK)
 
+        entries.accept(CobblemonItems.TYPE_GEM_CORE)
+        entries.accept(CobblemonItems.TYPE_GEM_BLOCK)
+        entries.accept(CobblemonItems.TYPE_GEM_CLUSTER)
+        entries.accept(CobblemonItems.LARGE_TYPE_GEM)
+        entries.accept(CobblemonItems.MEDIUM_TYPE_GEM)
+        entries.accept(CobblemonItems.SMALL_TYPE_GEM)
+
         entries.accept(CobblemonItems.POLISHED_TUMBLESTONE)
         entries.accept(CobblemonItems.POLISHED_TUMBLESTONE_STAIRS)
         entries.accept(CobblemonItems.POLISHED_TUMBLESTONE_SLAB)

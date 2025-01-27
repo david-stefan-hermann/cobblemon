@@ -17,6 +17,7 @@ import com.cobblemon.mod.common.block.sign.CobblemonHangingSignBlock
 import com.cobblemon.mod.common.block.sign.CobblemonSignBlock
 import com.cobblemon.mod.common.block.sign.CobblemonWallHangingSignBlock
 import com.cobblemon.mod.common.block.sign.CobblemonWallSignBlock
+import com.cobblemon.mod.common.block.TypeGemBlock
 import com.cobblemon.mod.common.mixin.invoker.*
 import com.cobblemon.mod.common.platform.PlatformRegistry
 import com.cobblemon.mod.common.util.cobblemonResource
@@ -201,6 +202,19 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     val SKY_TUMBLESTONE_BLOCK = this.create("sky_tumblestone_block", Block(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_BLUE).strength(1.0F).sound(CobblemonSounds.TUMBLESTONE_BLOCK_SOUNDS).requiresCorrectToolForDrops().instrument(NoteBlockInstrument.BASEDRUM)))
     @JvmField
     val BLACK_TUMBLESTONE_BLOCK = this.create("black_tumblestone_block", Block(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BLACK).strength(1.0F).sound(CobblemonSounds.TUMBLESTONE_BLOCK_SOUNDS).requiresCorrectToolForDrops().instrument(NoteBlockInstrument.BASEDRUM)))
+
+    @JvmField
+    val TYPE_GEM_CORE = this.create("type_gem_core", TypeGemCoreBlock(BlockBehaviour.Properties.of()))
+    @JvmField
+    val TYPE_GEM_BLOCK = this.create("type_gem_block", Block(BlockBehaviour.Properties.of()))
+    @JvmField
+    val TYPE_GEM_CLUSTER = this.create("type_gem_cluster", TypeGemBlock(BlockBehaviour.Properties.of().noOcclusion(), GrowableStoneBlock.STAGE_3, 7, 3, null))
+    @JvmField
+    val LARGE_TYPE_GEM = this.create("large_type_gem", TypeGemBlock(BlockBehaviour.Properties.of().noOcclusion(), GrowableStoneBlock.STAGE_2, 5, 3, TYPE_GEM_CLUSTER))
+    @JvmField
+    val MEDIUM_TYPE_GEM = this.create("medium_type_gem", TypeGemBlock(BlockBehaviour.Properties.of().noOcclusion(), GrowableStoneBlock.STAGE_1, 4, 3, LARGE_TYPE_GEM))
+    @JvmField
+    val SMALL_TYPE_GEM = this.create("small_type_gem", TypeGemBlock(BlockBehaviour.Properties.of().noOcclusion(), GrowableStoneBlock.STAGE_0, 3, 4, MEDIUM_TYPE_GEM))
 
     @JvmField
     val POLISHED_TUMBLESTONE = this.create("polished_tumblestone", Block(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_ORANGE).strength(1.0F).sound(CobblemonSounds.TUMBLESTONE_BLOCK_SOUNDS).requiresCorrectToolForDrops().instrument(NoteBlockInstrument.BASEDRUM)))
