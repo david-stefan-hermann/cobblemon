@@ -36,6 +36,8 @@ class TypeGemBlock(
         const val MIN_STAGE = STAGE_0
     }
 
+    override val growthChance = 1
+
     override fun canGrow(pos: BlockPos, world: BlockGetter): Boolean = stage != MAX_STAGE
     override fun isRandomlyTicking(state: BlockState): Boolean = stage < MAX_STAGE
     override fun codec(): MapCodec<out DirectionalBlock?>? = CODEC

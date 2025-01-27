@@ -42,6 +42,8 @@ abstract class GrowableStoneBlock(
     val nextStage: Block?
 ) : DirectionalBlock(settings) {
 
+    abstract val growthChance: Int
+
     private val upShape: VoxelShape = Block.box(
         xzOffset.toDouble(),
         0.0,
@@ -102,7 +104,7 @@ abstract class GrowableStoneBlock(
     }
 
     override fun randomTick(state: BlockState, world: ServerLevel, pos: BlockPos, random: RandomSource) {
-        if (world.random.nextInt(5) == 0 && canGrow(pos, world)) {
+        if (world.random.nextInt(growthChance) == 0 && canGrow(pos, world)) {
             val block = nextStage
 
             if (block != null) {

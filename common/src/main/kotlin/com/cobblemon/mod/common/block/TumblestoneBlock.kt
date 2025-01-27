@@ -54,6 +54,8 @@ class TumblestoneBlock(
         const val MIN_STAGE = STAGE_0
     }
 
+    override val growthChance = 5
+
     init {
         registerDefaultState(stateDefinition.any()
             .setValue(FACING, Direction.DOWN)
