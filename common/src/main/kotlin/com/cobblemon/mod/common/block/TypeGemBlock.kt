@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos
 import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.DirectionalBlock
+import net.minecraft.world.level.block.state.BlockState
 
 class TypeGemBlock(
     settings: Properties,
@@ -24,8 +25,18 @@ class TypeGemBlock(
             PrimitiveCodec.INT.fieldOf("xzOffset").forGetter { it.xzOffset },
             Block.CODEC.fieldOf("nextStage").forGetter { it.nextStage }
         ).apply(it, ::TypeGemBlock) }
+
+        const val STAGE_0 = 0
+        const val STAGE_1 = 1
+        const val STAGE_2 = 2
+        const val STAGE_3 = 3
+        const val STAGE_4 = 4
+
+        const val MAX_STAGE = STAGE_4
+        const val MIN_STAGE = STAGE_0
     }
 
     override fun canGrow(pos: BlockPos, world: BlockGetter): Boolean = stage != MAX_STAGE
+    override fun isRandomlyTicking(state: BlockState): Boolean = stage < MAX_STAGE
     override fun codec(): MapCodec<out DirectionalBlock?>? = CODEC
 }

@@ -44,6 +44,14 @@ class TumblestoneBlock(
             PrimitiveCodec.INT.fieldOf("xzOffset").forGetter { it.xzOffset },
             Block.CODEC.fieldOf("nextStage").forGetter { it.nextStage }
         ).apply(it, ::TumblestoneBlock) }
+
+        const val STAGE_0 = 0
+        const val STAGE_1 = 1
+        const val STAGE_2 = 2
+        const val STAGE_3 = 3
+
+        const val MAX_STAGE = STAGE_3
+        const val MIN_STAGE = STAGE_0
     }
 
     init {
@@ -65,6 +73,8 @@ class TumblestoneBlock(
 
         return true
     }
+
+    override fun isRandomlyTicking(state: BlockState): Boolean = stage < MAX_STAGE
 
     override fun codec(): MapCodec<out DirectionalBlock> {
         return CODEC

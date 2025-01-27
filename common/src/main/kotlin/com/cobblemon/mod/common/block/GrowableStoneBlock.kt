@@ -101,14 +101,16 @@ abstract class GrowableStoneBlock(
         builder.add(FACING)
     }
 
-    override fun isRandomlyTicking(state: BlockState): Boolean = stage < MAX_STAGE
-
     override fun randomTick(state: BlockState, world: ServerLevel, pos: BlockPos, random: RandomSource) {
         if (world.random.nextInt(5) == 0 && canGrow(pos, world)) {
             val block = nextStage
 
             if (block != null) {
-                val newState = block.defaultBlockState().setValue(FACING, state.getValue(FACING)) as BlockState
+                var newState = block.defaultBlockState()
+                if (newState.hasProperty(FACING)) {
+                    newState = newState.setValue(FACING, state.getValue(FACING))
+                }
+
                 world.setBlockAndUpdate(pos, newState)
             }
         }
@@ -154,15 +156,5 @@ abstract class GrowableStoneBlock(
             Direction.UP -> upShape
             else -> upShape
         }
-    }
-
-    companion object {
-        const val STAGE_0 = 0
-        const val STAGE_1 = 1
-        const val STAGE_2 = 2
-        const val STAGE_3 = 3
-
-        const val MAX_STAGE = STAGE_3
-        const val MIN_STAGE = STAGE_0
     }
 }
