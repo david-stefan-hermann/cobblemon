@@ -9,6 +9,7 @@
 package com.cobblemon.mod.common.block
 
 import com.cobblemon.mod.common.CobblemonBlocks
+import com.cobblemon.mod.common.block.TypeGemBlock.Companion.SHOULD_GROW
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.server.level.ServerLevel
@@ -16,13 +17,13 @@ import net.minecraft.util.RandomSource
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.DirectionalBlock.FACING
 import net.minecraft.world.level.block.state.BlockState
-import java.util.LinkedList
-import java.util.Queue
+import java.util.*
 
 class TypeGemCoreBlock(properties: Properties) : Block(properties) {
 
     companion object {
         const val MAX_CONNECTED_GEMS = 30
+        const val NUMBER_OF_UNGROWABLE_GEMS = 5
     }
 
     override fun randomTick(state: BlockState, level: ServerLevel, pos: BlockPos, random: RandomSource) {
@@ -61,7 +62,12 @@ class TypeGemCoreBlock(properties: Properties) : Block(properties) {
             return
         }
 
-        val newBlockState = CobblemonBlocks.SMALL_TYPE_GEM.defaultBlockState().setValue(FACING, directionToGrow!!)
+        val shouldGrow = connectedGems.size < MAX_CONNECTED_GEMS - NUMBER_OF_UNGROWABLE_GEMS
+
+        val newBlockState = CobblemonBlocks.SMALL_TYPE_GEM.defaultBlockState()
+            .setValue(FACING, directionToGrow!!)
+            .setValue(SHOULD_GROW, shouldGrow)
+
         level.setBlockAndUpdate(posToGrow, newBlockState)
     }
 
@@ -100,7 +106,9 @@ class TypeGemCoreBlock(properties: Properties) : Block(properties) {
         block.`is`(CobblemonBlocks.TYPE_GEM_BLOCK) ||
         block.`is`(CobblemonBlocks.SMALL_TYPE_GEM) ||
         block.`is`(CobblemonBlocks.MEDIUM_TYPE_GEM) ||
-        block.`is`(CobblemonBlocks.LARGE_TYPE_GEM)
+        block.`is`(CobblemonBlocks.LARGE_TYPE_GEM) ||
+        block.`is`(CobblemonBlocks.TYPE_GEM_CLUSTER)
+
 
     private fun isGemBlock(block: BlockState): Boolean =
         block.`is`(CobblemonBlocks.TYPE_GEM_CORE) ||

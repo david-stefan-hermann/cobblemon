@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.DirectionalBlock
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.StateDefinition
+import net.minecraft.world.level.block.state.properties.Property
 import net.minecraft.world.phys.shapes.CollisionContext
 import net.minecraft.world.phys.shapes.VoxelShape
 
@@ -97,20 +98,24 @@ abstract class GrowableStoneBlock(
             .setValue(FACING, Direction.DOWN))
     }
 
-    abstract fun canGrow(pos: BlockPos, world: BlockGetter): Boolean
+    abstract fun canGrow(state: BlockState, pos: BlockPos, world: BlockGetter): Boolean
 
     override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
         builder.add(FACING)
     }
 
     override fun randomTick(state: BlockState, world: ServerLevel, pos: BlockPos, random: RandomSource) {
-        if (world.random.nextInt(growthChance) == 0 && canGrow(pos, world)) {
+        if (world.random.nextInt(growthChance) == 0 && canGrow(state, pos, world)) {
             val block = nextStage
 
             if (block != null) {
                 var newState = block.defaultBlockState()
-                if (newState.hasProperty(FACING)) {
-                    newState = newState.setValue(FACING, state.getValue(FACING))
+
+                @Suppress("UNCHECKED_CAST")
+                for (property in state.properties) {
+                    if (newState.hasProperty(property)) {
+                        newState = newState.setValue(property as Property<Comparable<Any>>, state.getValue(property) as Comparable<Any>)
+                    }
                 }
 
                 world.setBlockAndUpdate(pos, newState)

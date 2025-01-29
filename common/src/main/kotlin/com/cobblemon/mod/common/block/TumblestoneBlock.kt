@@ -62,7 +62,7 @@ class TumblestoneBlock(
             .setValue(WATERLOGGED, false))
     }
 
-    override fun canGrow(pos: BlockPos, world: BlockGetter): Boolean {
+    override fun canGrow(state: BlockState, pos: BlockPos, world: BlockGetter): Boolean {
         if (stage == MAX_STAGE) return false
         val iterator: Iterator<BlockPos> =
             BlockPos.betweenClosed(pos.offset(-1, -1, -1), pos.offset(1, 1, 1))
