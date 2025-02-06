@@ -314,7 +314,6 @@ open class Pokemon : ShowdownIdentifiable {
      */
     var friendship = this.form.baseFriendship
         private set(value) {
-            // Don't check on client, that way we don't need to actually sync the config value it doesn't affect anything
             if (!this.isPossibleFriendship(value)) {
                 return
             }
@@ -1215,7 +1214,12 @@ open class Pokemon : ShowdownIdentifiable {
          * aspect providers, and we want the server side to entirely manage them anyway.
          */
         if (!isClient) {
+            val oldAspects = aspects
             aspects = AspectProvider.providers.flatMap { it.provide(this) }.toSet() + forcedAspects
+
+            if (oldAspects != aspects && !isWild()) {
+                CobblemonEvents.POKEMON_ASPECTS_CHANGED.post(PokemonAspectsChangedEvent(getOwnerUUID(), this))
+            }
         } else {
             aspects = forcedAspects
         }

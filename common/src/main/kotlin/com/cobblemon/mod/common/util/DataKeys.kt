@@ -68,6 +68,7 @@ object DataKeys {
     const val POKEMON_PLATFORM_TYPE = "PlatformType"
 
     const val POKEMON_ORIGINAL_TRAINER = "PokemonOriginalTrainer"
+    const val POKEMON_ORIGINAL_TRAINER_NAME = "PokemonOriginalTrainerName"
     const val POKEMON_ORIGINAL_TRAINER_TYPE = "PokemonOriginalTrainerType"
 
     const val POKEMON_PROPERTIES_MOVES = "Moves"
@@ -224,6 +225,7 @@ object DataKeys {
     const val NPC_HITBOX_WIDTH = "Width"
     const val NPC_HITBOX_HEIGHT = "Height"
     const val NPC_HITBOX_FIXED = "Fixed"
+    const val NPC_HIDE_NAME_TAG = "HideNPCNameTag"
 
     // PokemonProperties
     const val ELEMENTAL_TYPE = "ElementalType"
