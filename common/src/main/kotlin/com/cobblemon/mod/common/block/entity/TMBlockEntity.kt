@@ -17,6 +17,7 @@ import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.block.TMBlock
 import com.cobblemon.mod.common.gui.CobblemonMenuHandlers
 import com.cobblemon.mod.common.gui.TMMScreenHandler
+import com.cobblemon.mod.common.util.itemRegistry
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.NonNullList
@@ -33,6 +34,9 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.Container
+import net.minecraft.world.item.Item
 
 class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity(CobblemonBlockEntities.TM_BLOCK, pos, state) {
 
@@ -124,6 +128,12 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
         return tmmInventory.stillValid(player)
     }
 
+    override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean {
+        return tmmInventory.canPlaceItem(slot, stack)
+    }
+
+    override fun canTakeItem(target: Container, slot: Int, stack: ItemStack): Boolean { return false }
+
     class TMBlockInventory(val blockEntity: TMBlockEntity) : SimpleContainer(4) {
         var filterTM: MoveTemplate? = null
 
@@ -134,12 +144,12 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
             val filterTM = this.filterTM
             val tms = filterTM?.let { TechnicalMachines.moveToTMs[it] } ?: return false
 
-            return tms.any { tm ->
+            return tms.any {
                 val item = stack.item
                 when (slot) {
                     0 -> item == CobblemonItems.BLANK_TM
-                    1 -> item == ElementalTypes.get(tm.type)?.typeGem
-                    2 -> item == tm.recipe?.item
+                    1 -> item == blockEntity.level?.itemRegistry?.get(filterTM.elementalType.typeGem)
+                    2 -> item == blockEntity.level?.itemRegistry?.get(it.recipe?.item)
                     else -> false
                 }
             }

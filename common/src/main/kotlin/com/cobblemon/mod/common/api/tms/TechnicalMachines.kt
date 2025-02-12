@@ -56,7 +56,7 @@ object TechnicalMachines : JsonDataRegistry<TechnicalMachine> {
             tmMap[id] = tm
             tm.id = id
 
-            //moveToTMs.getOrPut(tm.move!!, ::ArrayList).add(tm)
+            moveToTMs.getOrPut(tm.moveName, ::ArrayList).add(tm)
 
             // Check for passive ObtainMethods
             //if (tm.obtainMethods.any { it.passive }) passiveTms[id] = tm
