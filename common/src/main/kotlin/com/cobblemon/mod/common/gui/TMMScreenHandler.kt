@@ -10,6 +10,7 @@ package com.cobblemon.mod.common.gui
 
 import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.block.entity.TMBlockEntity
+import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.Container
 import net.minecraft.world.SimpleContainer
 import net.minecraft.world.entity.player.Inventory
@@ -19,7 +20,6 @@ import net.minecraft.world.item.ItemStack
 
 class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMenu(menuType, syncId) {
     var playerInventory: Inventory? = null
-    val input = TMMCraftingContainer(this, 3, 1)
     val result = ResultContainer()
     private var tmmEntity: TMBlockEntity? = null
     var inventory: Container? = null
@@ -43,18 +43,19 @@ class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMe
             this.addSlot(Slot(playerInventory, col, startX + (slotWidth * col), startY + 58))
         }
 
-        this.addSlot(Slot(input, 0, startX + 167, startY + 9))  // Input slot 1
-        this.addSlot(Slot(input, 1, startX + 185, startY + 9))  // Input slot 2
-        this.addSlot(Slot(input, 2, startX + 203, startY + 9))  // Input slot 3
+        this.addSlot(Slot(inventory, 0, startX + 167, startY + 9))  // Input slot 1
+        this.addSlot(Slot(inventory, 1, startX + 185, startY + 9))  // Input slot 2
+        this.addSlot(Slot(inventory, 2, startX + 203, startY + 9))  // Input slot 3
 
-        this.addSlot(ResultSlot(
-            playerInventory.player,
-            input,
-            result,
-            0,
-            startX + 123,
-            startY - 22
-        ))
+        this.addSlot(TMResultSlot(result, 0, startX + 123, startY - 22))
+        //this.addSlot(ResultSlot(
+        //    playerInventory.player,
+        //    input,
+        //    result,
+        //    0,
+        //    startX + 123,
+        //    startY - 22
+        //))
     }
 
     fun getTMEntity(): TMBlockEntity? {
@@ -83,54 +84,29 @@ class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMe
     }*/
 
     override fun removed(player: Player) {
+        val resultItem = result.getItem(0)
+        if (!resultItem.isEmpty) { //Ensure player result item is given to player or dropped on
+            if (player.isAlive && (player as? ServerPlayer)?.hasDisconnected() != true) {
+                player.inventory.placeItemBackInInventory(resultItem)
+            }
+            else {
+                player.drop(resultItem, false)
+            }
+        }
+
         super.removed(player)
         tmmEntity?.level?.setBlock(tmmEntity!!.blockPos, tmmEntity!!.blockState, 3)
     }
 
     fun syncState() {
-        // Synchronize the input container slots
-        val tmInventory = inventory ?: return
-        for (i in 0 until input.containerSize) {
-            input.setItem(i, tmInventory.getItem(i))
-        }
-
-        // Synchronize the result slot if there's a valid TM or blank TM
-        if (!tmInventory.getItem(3).isEmpty) {
-            if (ItemStack.isSameItemSameComponents(tmInventory.getItem(3), CobblemonItems.TECHNICAL_MACHINE.defaultInstance) ||
-                ItemStack.isSameItemSameComponents(tmInventory.getItem(3), CobblemonItems.BLANK_TM.defaultInstance)
-            ) {
-                result.setItem(0, tmInventory.getItem(3))
-            }
-        } else {
-            tmInventory.setItem(3, result.getItem(0))
-        }
-
-
-        // Notify the client and server of changes
         broadcastChanges()
-    }
-
-
-    override fun broadcastChanges() {
-        if (inventory is TMBlockEntity.TMBlockInventory) {
-            input.setItem(0, (inventory as TMBlockEntity.TMBlockInventory).itemsList[0])
-            input.setItem(1, (inventory as TMBlockEntity.TMBlockInventory).itemsList[1])
-            input.setItem(2, (inventory as TMBlockEntity.TMBlockInventory).itemsList[2])
-
-            if ((inventory as TMBlockEntity.TMBlockInventory).itemsList[3] != ItemStack.EMPTY) {
-                if (ItemStack.isSameItemSameComponents((inventory as TMBlockEntity.TMBlockInventory).itemsList[3], CobblemonItems.TECHNICAL_MACHINE.defaultInstance) ||
-                        ItemStack.isSameItemSameComponents((inventory as TMBlockEntity.TMBlockInventory).itemsList[3], CobblemonItems.BLANK_TM.defaultInstance)) {
-                    result.setItem(0, (inventory as TMBlockEntity.TMBlockInventory).itemsList[3])
-                }
-            } else {
-                (inventory as TMBlockEntity.TMBlockInventory).itemsList[3] = result.getItem(0)
-            }
-        }
-
-        super.broadcastChanges()
     }
 
     companion object {
         const val SLOT_COUNT = 3
+    }
+
+    class TMResultSlot(container: Container, slot: Int, x: Int, y: Int) : Slot(container, slot, x, y) {
+        override fun mayPlace(stack: ItemStack): Boolean { return false }
     }
 }

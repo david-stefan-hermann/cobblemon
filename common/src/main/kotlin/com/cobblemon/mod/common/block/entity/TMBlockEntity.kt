@@ -46,18 +46,18 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
     }
 
     override fun createMenu(containerId: Int, inventory: Inventory): AbstractContainerMenu {
-        return CobblemonMenuHandlers.TMM_SCREEN.create(containerId, inventory)
+        return TMMScreenHandler(containerId, inventory, this.tmmInventory, this)
     }
 
     override fun saveAdditional(compound: CompoundTag, registries: HolderLookup.Provider) {
         super.saveAdditional(compound, registries)
-        ContainerHelper.saveAllItems(compound, tmmInventory.itemsList, registries)
+        ContainerHelper.saveAllItems(compound, tmmInventory.items, registries)
         tmmInventory.filterTM?.let { compound.putString(FILTER_TM_NBT, it.name) }
     }
 
     override fun loadAdditional(compound: CompoundTag, registries: HolderLookup.Provider) {
         super.loadAdditional(compound, registries)
-        ContainerHelper.loadAllItems(compound, tmmInventory.itemsList, registries)
+        ContainerHelper.loadAllItems(compound, tmmInventory.items, registries)
         tmmInventory.filterTM = compound.getString(FILTER_TM_NBT)?.let { Moves.getByName(it) }
     }
 
@@ -70,7 +70,7 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
     }
 
     override fun getItems(): NonNullList<ItemStack> {
-        return tmmInventory.itemsList
+        return tmmInventory.items
     }
 
     override fun setItems(items: NonNullList<ItemStack>) {
@@ -125,13 +125,7 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
     }
 
     class TMBlockInventory(val blockEntity: TMBlockEntity) : SimpleContainer(4) {
-        val itemsList: NonNullList<ItemStack> = NonNullList.withSize(4, ItemStack.EMPTY)
-
         var filterTM: MoveTemplate? = null
-
-        fun getInventoryItems(): NonNullList<ItemStack> {
-            return itemsList
-        }
 
         override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean {
             val blockState = blockEntity.blockState

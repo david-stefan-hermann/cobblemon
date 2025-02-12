@@ -22,13 +22,14 @@ import net.minecraft.world.item.Items
 object CraftBlankTMPacketHandler : ServerNetworkPacketHandler<CraftBlankTMPacket> {
     override fun handle(packet: CraftBlankTMPacket, server: MinecraftServer, player: ServerPlayer) {
         val screen = player.containerMenu as TMMScreenHandler
-        val ingredientSlot = screen.input.getItem(2)
+        if (screen.inventory == null) return
+        val ingredientSlot = screen.inventory!!.getItem(2)
 
         if (ingredientSlot.`is`(Items.AMETHYST_SHARD) && ingredientSlot.count >= 1) {
-            screen.input.removeItem(2, 1)
+            screen.inventory!!.removeItem(2, 1)
             screen.result.setItem(0, CobblemonItems.BLANK_TM.defaultInstance)
 
-            screen.input.setChanged()
+            screen.inventory!!.setChanged()
             screen.result.setChanged()
             player.containerMenu.broadcastChanges()
 

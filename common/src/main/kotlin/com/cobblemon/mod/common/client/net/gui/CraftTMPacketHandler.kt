@@ -27,9 +27,10 @@ import net.minecraft.world.item.ItemStack
 object CraftTMPacketHandler : ServerNetworkPacketHandler<CraftTMPacket> {
     override fun handle(packet: CraftTMPacket, server: MinecraftServer, player: ServerPlayer) {
         val screen = player.containerMenu as TMMScreenHandler
-        val discSlot = screen.input.getItem(0)
-        val gemSlot = screen.input.getItem(1)
-        val ingredientSlot = screen.input.getItem(2)
+        if (screen.inventory == null) return
+        val discSlot = screen.inventory!!.getItem(0)
+        val gemSlot = screen.inventory!!.getItem(1)
+        val ingredientSlot = screen.inventory!!.getItem(2)
         val outputSlot = screen.result.getItem(0)
         val typeGem = player.serverLevel().itemRegistry.get(ElementalTypes.get(packet.tm.type)?.typeGem)
 
@@ -37,15 +38,15 @@ object CraftTMPacketHandler : ServerNetworkPacketHandler<CraftTMPacket> {
             return
         }
 
-        if (discSlot != null && discSlot.item != CobblemonItems.BLANK_TM) {
+        if (discSlot.item != CobblemonItems.BLANK_TM) {
             return
         }
 
-        if (gemSlot != null && gemSlot.item != typeGem) {
+        if (gemSlot.item != typeGem) {
             return
         }
 
-        if (packet.tm.recipe != null && ingredientSlot != null) {
+        if (packet.tm.recipe != null) {
             if (!player.serverLevel().itemRegistry.get(packet.tm.recipe.item)?.let { ingredientSlot.`is`(it) }!! || ingredientSlot.count < packet.tm.recipe.count) {
                 return
             }
@@ -55,13 +56,13 @@ object CraftTMPacketHandler : ServerNetworkPacketHandler<CraftTMPacket> {
         val moveTemplate = packet.tm.moveName
         TMMoveComponent.setTMMove(stack, moveTemplate)
         screen.result.setItem(0, stack)
-        screen.input.getItem(0).shrink(1)
-        screen.input.getItem(1).shrink(1)
+        screen.inventory!!.getItem(0).shrink(1)
+        screen.inventory!!.getItem(1).shrink(1)
         if (packet.tm.recipe != null) {
-            screen.input.getItem(2).shrink(packet.tm.recipe.count)
+            screen.inventory!!.getItem(2).shrink(packet.tm.recipe.count)
         }
 
-        screen.input.setChanged()
+        screen.inventory!!.setChanged()
         screen.result.setChanged()
         player.containerMenu.broadcastChanges()
 

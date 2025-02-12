@@ -547,14 +547,14 @@ class TMMHandledScreen(
                 small = false,
                 onPress = {
                     inventory.player.playSound(CobblemonSounds.GUI_CLICK, 1f, 1f)
-                    val currentTm = selectedTM ?: return@EjectButton CobblemonNetwork.sendToServer(CraftBlankTMPacket(handler.input.getItem(2)))
+                    val currentTm = selectedTM ?: return@EjectButton CobblemonNetwork.sendToServer(CraftBlankTMPacket(handler.inventory!!.getItem(2)))
 
                     CobblemonNetwork.sendToServer(
                         CraftTMPacket(
                             currentTm,
-                            handler.input.getItem(0),
-                            handler.input.getItem(1),
-                            handler.input.getItem(2)
+                            handler.inventory!!.getItem(0),
+                            handler.inventory!!.getItem(1),
+                            handler.inventory!!.getItem(2)
                         )
                     )
 
