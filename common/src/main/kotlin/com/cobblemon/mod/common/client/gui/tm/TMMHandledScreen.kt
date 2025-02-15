@@ -606,7 +606,6 @@ class TMMHandledScreen(
         super.removed()
         val tmInventory = inventory as? TMBlockEntity.TMBlockInventory
         val tmBlockEntity = tmInventory?.blockEntity
-        tmBlockEntity?.blockState?.setValue(TMBlock.ON, false)
     }
 
     override fun renderBlurredBackground(partialTick: Float) {}

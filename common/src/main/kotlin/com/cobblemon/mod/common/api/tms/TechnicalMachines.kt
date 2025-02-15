@@ -41,7 +41,7 @@ object TechnicalMachines : JsonDataRegistry<TechnicalMachine> {
     override val observable = SimpleObservable<TechnicalMachines>()
 
     val tmMap = mutableMapOf<ResourceLocation, TechnicalMachine>()
-    val moveToTMs = mutableMapOf<MoveTemplate, MutableList<TechnicalMachine>>()
+    val moveToTM = mutableMapOf<MoveTemplate, TechnicalMachine>()
     val tagMap = mutableMapOf<ItemTagCondition, TechnicalMachine>()
     val passiveTms = mutableMapOf<ResourceLocation, TechnicalMachine>()
 
@@ -56,7 +56,7 @@ object TechnicalMachines : JsonDataRegistry<TechnicalMachine> {
             tmMap[id] = tm
             tm.id = id
 
-            moveToTMs.getOrPut(tm.moveName, ::ArrayList).add(tm)
+            moveToTM[tm.moveName] = tm
 
             // Check for passive ObtainMethods
             //if (tm.obtainMethods.any { it.passive }) passiveTms[id] = tm

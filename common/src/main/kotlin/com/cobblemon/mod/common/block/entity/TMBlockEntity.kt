@@ -17,10 +17,13 @@ import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.block.TMBlock
 import com.cobblemon.mod.common.gui.CobblemonMenuHandlers
 import com.cobblemon.mod.common.gui.TMMScreenHandler
+import com.cobblemon.mod.common.item.components.TMMoveComponent
 import com.cobblemon.mod.common.util.itemRegistry
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.NonNullList
+import net.minecraft.core.Position
 import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.ClientGamePacketListener
@@ -36,7 +39,9 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.Container
+import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.item.Item
+import net.minecraft.world.level.Level
 
 class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity(CobblemonBlockEntities.TM_BLOCK, pos, state) {
 
@@ -134,6 +139,43 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
 
     override fun canTakeItem(target: Container, slot: Int, stack: ItemStack): Boolean { return false }
 
+
+
+    fun autocraftTM() {
+        if (this.tmmInventory.filterTM != null) {
+            if (this.tmmInventory.getItem(0).item != CobblemonItems.BLANK_TM) return
+
+            if (this.tmmInventory.getItem(1).item != this.level?.itemRegistry?.get(this.tmmInventory.filterTM!!.elementalType.typeGem)) return
+
+            val recipe = TechnicalMachines.moveToTM[this.tmmInventory.filterTM]?.recipe
+            if (recipe != null) {
+                if (this.tmmInventory.getItem(2).item != this.level?.itemRegistry?.get(recipe.item) || this.tmmInventory.getItem(2).count < recipe.count) return
+            }
+
+            val stack = ItemStack(CobblemonItems.TECHNICAL_MACHINE)
+            TMMoveComponent.setTMMove(stack, this.tmmInventory.filterTM!!)
+
+            this.tmmInventory.getItem(0).shrink(1)
+            this.tmmInventory.getItem(1).shrink(1)
+            if (recipe != null) {
+                this.tmmInventory.getItem(2).shrink(recipe.count)
+            }
+
+            val direction = this.blockState.getValue(TMBlock.FACING)
+            val position = this.blockPos.center.add(direction.stepX * 0.7, 0.1, direction.stepZ * 0.7)
+
+            //TODO Add sound to be played then TM Machine autocrafts
+            this.ejectItem(stack, direction, position)
+            tmmInventory.setChanged()
+        }
+    }
+
+    fun ejectItem(stack: ItemStack, direction: Direction, position: Position) {
+        val itemEntity = ItemEntity(this.level!!, position.x(), position.y() - 0.5, position.z(), stack)
+        itemEntity.setDeltaMovement(direction.stepX * 0.05, 0.0, direction.stepZ * 0.05)
+        this.level!!.addFreshEntity(itemEntity)
+    }
+
     class TMBlockInventory(val blockEntity: TMBlockEntity) : SimpleContainer(4) {
         var filterTM: MoveTemplate? = null
 
@@ -141,17 +183,15 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
             val blockState = blockEntity.blockState
             if (blockState.getValue(TMBlock.ON)) return false
 
-            val filterTM = this.filterTM
-            val tms = filterTM?.let { TechnicalMachines.moveToTMs[it] } ?: return false
+            val filterTM = this.filterTM ?: return false
+            val tm = TechnicalMachines.moveToTM[filterTM] ?: return false
 
-            return tms.any {
-                val item = stack.item
-                when (slot) {
-                    0 -> item == CobblemonItems.BLANK_TM
-                    1 -> item == blockEntity.level?.itemRegistry?.get(filterTM.elementalType.typeGem)
-                    2 -> item == blockEntity.level?.itemRegistry?.get(it.recipe?.item)
-                    else -> false
-                }
+            val item = stack.item
+            return when (slot) {
+                0 -> item == CobblemonItems.BLANK_TM
+                1 -> item == blockEntity.level?.itemRegistry?.get(filterTM.elementalType.typeGem)
+                2 -> item == blockEntity.level?.itemRegistry?.get(tm.recipe?.item)
+                else -> false
             }
         }
     }

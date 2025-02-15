@@ -57,6 +57,7 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
         val FACING = BlockStateProperties.HORIZONTAL_FACING
         val TRIGGERED = BlockStateProperties.TRIGGERED
         val WATERLOGGED = BlockStateProperties.WATERLOGGED
+        val POWERED: BooleanProperty = BooleanProperty.create("powered")
 
         private val NORTH_OUTLINE: VoxelShape = Shapes.or(
                 Shapes.box(0.0, 0.0, 0.0, 1.0, 0.3125, 0.9375),
@@ -94,6 +95,7 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
                 .setValue(FACING, Direction.NORTH)
                 .setValue(WATERLOGGED, false)
                 .setValue(ON, false)
+                .setValue(POWERED, false)
                 .setValue(TRIGGERED, false))
     }
 
@@ -125,7 +127,7 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
     }
 
     override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
-        builder.add(FACING, WATERLOGGED, ON, TRIGGERED)
+        builder.add(FACING, WATERLOGGED, ON, TRIGGERED, POWERED)
     }
 
 
@@ -165,5 +167,28 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
     ) {
         Containers.dropContentsOnDestroy(state, newState, level, pos)
         super.onRemove(state, level, pos, newState, movedByPiston)
+    }
+
+    override fun neighborChanged(
+        state: BlockState,
+        level: Level,
+        pos: BlockPos,
+        neighborBlock: Block,
+        neighborPos: BlockPos,
+        movedByPiston: Boolean
+    ) {
+        super.neighborChanged(state, level, pos, neighborBlock, neighborPos, movedByPiston)
+        checkPoweredState(level, pos, state)
+    }
+
+    private fun checkPoweredState(level: Level, pos: BlockPos, state: BlockState) {
+        val nearbyPower = level.hasNeighborSignal(pos)
+        if (nearbyPower != state.getValue(POWERED)) {
+            level.setBlock(pos, state.setValue(POWERED, nearbyPower), 2)
+            if (nearbyPower) {
+                val tmBlockEntity = level.getBlockEntity(pos) as? TMBlockEntity
+                tmBlockEntity?.autocraftTM()
+            }
+        }
     }
 }
