@@ -161,7 +161,8 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
                 this.tmmInventory.getItem(2).shrink(recipe.count)
             }
 
-            val direction = this.blockState.getValue(TMBlock.FACING)
+            //TODO The machine is rendered backwards, could not figure how to fix that, this is temporary so it spits the item 'correct' direction
+            val direction = this.blockState.getValue(TMBlock.FACING).opposite
             val position = this.blockPos.center.add(direction.stepX * 0.7, 0.1, direction.stepZ * 0.7)
 
             //TODO Add sound to be played then TM Machine autocrafts
