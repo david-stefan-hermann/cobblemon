@@ -600,6 +600,7 @@ class TMMHandledScreen(
         }
         drawMoveInfo(graphics, delta, mouseX, mouseY)
         super.render(graphics, mouseX, mouseY, delta)
+        this.renderTooltip(graphics, mouseX, mouseY)
     }
 
     override fun removed() {
