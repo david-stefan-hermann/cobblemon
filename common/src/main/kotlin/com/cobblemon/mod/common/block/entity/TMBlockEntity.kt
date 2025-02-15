@@ -126,6 +126,9 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
 
         // Mark the chunk containing this block entity as dirty, ensuring it is saved
         level?.getChunkAt(worldPosition)?.setUnsaved(true)
+
+        //Update Neighbours
+        level?.updateNeighborsAt(blockPos, blockState.block)
     }
 
 
@@ -160,6 +163,7 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
             if (recipe != null) {
                 this.tmmInventory.getItem(2).shrink(recipe.count)
             }
+            this.tmmInventory.setChanged()
 
             //TODO The machine is rendered backwards, could not figure how to fix that, this is temporary so it spits the item 'correct' direction
             val direction = this.blockState.getValue(TMBlock.FACING).opposite
@@ -175,6 +179,21 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
         val itemEntity = ItemEntity(this.level!!, position.x(), position.y() - 0.5, position.z(), stack)
         itemEntity.setDeltaMovement(direction.stepX * 0.05, 0.0, direction.stepZ * 0.05)
         this.level!!.addFreshEntity(itemEntity)
+    }
+
+    fun getAnalogOutputSignal() : Int {
+        val filterTM = this.tmmInventory.filterTM ?: return 0
+
+        if (this.tmmInventory.getItem(0).item != CobblemonItems.BLANK_TM) return 0
+
+        if (this.tmmInventory.getItem(1).item != this.level?.itemRegistry?.get(filterTM.elementalType.typeGem)) return 0
+
+        val recipe = TechnicalMachines.moveToTM[filterTM]?.recipe
+        if (recipe != null) {
+            if (this.tmmInventory.getItem(2).item != this.level?.itemRegistry?.get(recipe.item) || this.tmmInventory.getItem(2).count < recipe.count) return 0
+        }
+
+        return 15
     }
 
     class TMBlockInventory(val blockEntity: TMBlockEntity) : SimpleContainer(4) {
@@ -194,6 +213,11 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
                 2 -> item == blockEntity.level?.itemRegistry?.get(tm.recipe?.item)
                 else -> false
             }
+        }
+
+        override fun setChanged() {
+            blockEntity.level?.updateNeighborsAt(blockEntity.blockPos, blockEntity.blockState.block)
+            super.setChanged()
         }
     }
 

@@ -181,6 +181,14 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
         checkPoweredState(level, pos, state)
     }
 
+    override fun hasAnalogOutputSignal(state: BlockState): Boolean { return true }
+
+    override fun getAnalogOutputSignal(state: BlockState, level: Level, pos: BlockPos): Int {
+        val blockEntity = level.getBlockEntity(pos)
+        if (blockEntity !is TMBlockEntity) return 0
+        return blockEntity.getAnalogOutputSignal()
+    }
+
     private fun checkPoweredState(level: Level, pos: BlockPos, state: BlockState) {
         val nearbyPower = level.hasNeighborSignal(pos)
         if (nearbyPower != state.getValue(POWERED)) {
