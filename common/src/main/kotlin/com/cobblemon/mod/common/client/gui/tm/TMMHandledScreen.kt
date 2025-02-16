@@ -605,8 +605,7 @@ class TMMHandledScreen(
 
     override fun removed() {
         super.removed()
-        val tmInventory = inventory as? TMBlockEntity.TMBlockInventory
-        val tmBlockEntity = tmInventory?.blockEntity
+
     }
 
     override fun renderBlurredBackground(partialTick: Float) {}

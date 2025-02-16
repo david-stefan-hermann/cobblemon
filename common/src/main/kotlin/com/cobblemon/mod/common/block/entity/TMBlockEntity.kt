@@ -10,12 +10,11 @@ package com.cobblemon.mod.common.block.entity
 
 import com.cobblemon.mod.common.CobblemonBlockEntities
 import com.cobblemon.mod.common.CobblemonItems
+import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.api.moves.MoveTemplate
 import com.cobblemon.mod.common.api.moves.Moves
 import com.cobblemon.mod.common.api.tms.TechnicalMachines
-import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.block.TMBlock
-import com.cobblemon.mod.common.gui.CobblemonMenuHandlers
 import com.cobblemon.mod.common.gui.TMMScreenHandler
 import com.cobblemon.mod.common.item.components.TMMoveComponent
 import com.cobblemon.mod.common.util.itemRegistry
@@ -38,16 +37,63 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.sounds.SoundSource
 import net.minecraft.world.Container
 import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.entity.ContainerOpenersCounter
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
 
 class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity(CobblemonBlockEntities.TM_BLOCK, pos, state) {
 
     var tmmInventory = TMBlockInventory(this)
     var automationDelay: Int = AUTOMATION_DELAY
     var partialTicks: Float = 0f
+
+    private val stateManager: ContainerOpenersCounter = object : ContainerOpenersCounter() {
+        override fun onOpen(level: Level, pos: BlockPos, state: BlockState) {
+            level.setBlockAndUpdate(pos, state.setValue(TMBlock.ON, true))
+            playSound(level, pos, state, CobblemonSounds.TMM_ON)
+        }
+
+        override fun onClose(level: Level, pos: BlockPos, state: BlockState) {
+            level.setBlockAndUpdate(pos, state.setValue(TMBlock.ON, false))
+            playSound(level, pos, state, CobblemonSounds.TMM_OFF)
+        }
+
+        override fun openerCountChanged(level: Level, pos: BlockPos, state: BlockState, count: Int, openCount: Int) {
+
+        }
+
+        override fun isOwnContainer(player: Player): Boolean {
+            if (player.containerMenu is TMMScreenHandler) {
+                val inventory = (player.containerMenu as TMMScreenHandler).inventory
+                return inventory === this@TMBlockEntity
+            }
+            return false
+        }
+
+        fun playSound(world: Level, pos: BlockPos, state: BlockState, sound: SoundEvent) {
+            var d = pos.x.toDouble() + 0.5
+            val e = pos.y.toDouble() + 0.5
+            var f = pos.z.toDouble() + 0.5
+            val direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING)
+            d += direction.stepX.toDouble() * 0.5
+            f += direction.stepZ.toDouble() * 0.5
+            world.playSound(
+                null,
+                d,
+                e,
+                f,
+                sound,
+                SoundSource.BLOCKS,
+                0.5f,
+                world.random.nextFloat() * 0.1f + 0.9f
+            )
+        }
+    }
 
     companion object {
         const val AUTOMATION_DELAY = 4
@@ -142,7 +188,17 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
 
     override fun canTakeItem(target: Container, slot: Int, stack: ItemStack): Boolean { return false }
 
+    override fun startOpen(player: Player) {
+        if (!this.remove && !player.isSpectator) {
+            stateManager.incrementOpeners(player, level!!, blockPos, blockState)
+        }
+    }
 
+    override fun stopOpen(player: Player) {
+        if (!this.remove && !player.isSpectator) {
+            stateManager.decrementOpeners(player, level!!, blockPos, blockState)
+        }
+    }
 
     fun autocraftTM() {
         if (this.tmmInventory.filterTM != null) {
@@ -169,7 +225,7 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
             val direction = this.blockState.getValue(TMBlock.FACING).opposite
             val position = this.blockPos.center.add(direction.stepX * 0.7, 0.1, direction.stepZ * 0.7)
 
-            //TODO Add sound to be played then TM Machine autocrafts
+            //TODO Add sound to be played then TM Machine autocrafts - I don't think playing the once that exist already is a good idea for autocraft
             this.ejectItem(stack, direction, position)
             tmmInventory.setChanged()
         }
@@ -218,6 +274,14 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
         override fun setChanged() {
             blockEntity.level?.updateNeighborsAt(blockEntity.blockPos, blockEntity.blockState.block)
             super.setChanged()
+        }
+
+        override fun startOpen(player: Player) {
+            blockEntity.startOpen(player)
+        }
+
+        override fun stopOpen(player: Player) {
+            blockEntity.stopOpen(player)
         }
     }
 

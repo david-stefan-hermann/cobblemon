@@ -29,6 +29,8 @@ class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMe
         this.inventory = inventory
         this.tmmEntity = blockEntity
 
+        inventory.startOpen(playerInventory.player)
+
         val startX = 0 - 9
         val startY = 112
         val slotWidth = 18
@@ -96,6 +98,7 @@ class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMe
 
         super.removed(player)
         tmmEntity?.level?.setBlock(tmmEntity!!.blockPos, tmmEntity!!.blockState, 3)
+        inventory?.stopOpen(player)
     }
 
     fun syncState() {
