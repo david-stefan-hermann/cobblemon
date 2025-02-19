@@ -9,14 +9,16 @@
 package com.cobblemon.mod.common.gui
 
 import com.cobblemon.mod.common.CobblemonItems
+import com.cobblemon.mod.common.api.tms.TechnicalMachine
 import com.cobblemon.mod.common.block.entity.TMBlockEntity
+import com.cobblemon.mod.common.util.itemRegistry
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.Container
-import net.minecraft.world.SimpleContainer
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.*
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 
 class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMenu(menuType, syncId) {
     var playerInventory: Inventory? = null
@@ -24,10 +26,10 @@ class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMe
     private var tmmEntity: TMBlockEntity? = null
     var inventory: Container? = null
 
-    constructor(syncId: Int, playerInventory: Inventory, inventory: Container, blockEntity: TMBlockEntity?) : this(CobblemonMenuHandlers.TMM_SCREEN, syncId) {
+    constructor(syncId: Int, playerInventory: Inventory, inventory: Container) : this(CobblemonMenuHandlers.TMM_SCREEN, syncId) {
         this.playerInventory = playerInventory
         this.inventory = inventory
-        this.tmmEntity = blockEntity
+        this.tmmEntity = (inventory as? TMBlockEntity.TMBlockInventory)?.blockEntity
 
         inventory.startOpen(playerInventory.player)
 
@@ -64,20 +66,35 @@ class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMe
         return tmmEntity
     }
 
-    override fun quickMoveStack(player: Player, slot: Int): ItemStack {
-        return if (moveItemStackTo(getSlot(slot).item, 0, SLOT_COUNT, true)) getSlot(slot).item else ItemStack.EMPTY
+    override fun quickMoveStack(player: Player, index: Int): ItemStack {
+        var itemStack = ItemStack.EMPTY
+        val slot = this.slots[index]
+
+        if (slot.hasItem()) {
+            var itemStack2 = slot.item
+            itemStack = itemStack2.copy()
+            if (index == 39) {
+                if (!this.moveItemStackTo(itemStack2, 0, 36, false)) return ItemStack.EMPTY
+            }
+            else if (index in 36..38) {
+                if (!this.moveItemStackTo(itemStack2, 0, 36, false)) return ItemStack.EMPTY
+            }
+            else {
+                if (!this.moveItemStackTo(itemStack2, 36, 39, false)) return ItemStack.EMPTY
+            }
+
+            if (itemStack2.isEmpty) {
+                slot.setByPlayer(ItemStack.EMPTY)
+            } else {
+                slot.setChanged()
+            }
+        }
+
+        return itemStack
     }
 
     override fun stillValid(player: Player?): Boolean {
         return inventory?.stillValid(player) ?: false
-    }
-
-    override fun clicked(slotIndex: Int, button: Int, clickType: ClickType, player: Player) {
-        val adjustedType = if (clickType == ClickType.THROW) ClickType.PICKUP else clickType
-        if (slotIndex == 36) {
-            this.inventory?.setItem(3, ItemStack.EMPTY)
-        }
-        super.clicked(slotIndex, button, adjustedType, player)
     }
 
     /*override fun removed(player: Player?) {

@@ -101,7 +101,7 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
     }
 
     override fun createMenu(containerId: Int, inventory: Inventory): AbstractContainerMenu {
-        return TMMScreenHandler(containerId, inventory, this.tmmInventory, this)
+        return TMMScreenHandler(containerId, inventory, this.tmmInventory)
     }
 
     override fun saveAdditional(compound: CompoundTag, registries: HolderLookup.Provider) {

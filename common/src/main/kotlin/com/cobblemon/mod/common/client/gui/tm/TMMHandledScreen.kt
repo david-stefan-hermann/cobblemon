@@ -12,7 +12,6 @@ import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.CobblemonNetwork
 import com.cobblemon.mod.common.CobblemonSounds
-import net.minecraft.resources.ResourceLocation
 import com.cobblemon.mod.common.api.gui.ColourLibrary
 import com.cobblemon.mod.common.api.gui.MultiLineLabelK
 import com.cobblemon.mod.common.api.gui.blitk
@@ -23,8 +22,6 @@ import com.cobblemon.mod.common.api.tms.TechnicalMachine
 import com.cobblemon.mod.common.api.tms.TechnicalMachineRecipe
 import com.cobblemon.mod.common.api.types.ElementalType
 import com.cobblemon.mod.common.api.types.ElementalTypes
-import com.cobblemon.mod.common.block.TMBlock
-import com.cobblemon.mod.common.block.entity.TMBlockEntity
 import com.cobblemon.mod.common.client.CobblemonClient
 import com.cobblemon.mod.common.client.gui.ExitButton
 import com.cobblemon.mod.common.client.gui.MoveCategoryIcon
@@ -36,17 +33,13 @@ import com.cobblemon.mod.common.net.messages.client.ui.CraftTMPacket
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
-import com.sun.jna.platform.unix.X11.Drawable
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.AbstractWidget
-import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
-import net.minecraft.client.sounds.SoundManager
 import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.core.registries.Registries
 import net.minecraft.network.chat.Component
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.player.Inventory
-import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 
@@ -603,9 +596,16 @@ class TMMHandledScreen(
         this.renderTooltip(graphics, mouseX, mouseY)
     }
 
-    override fun removed() {
-        super.removed()
-
+    override fun hasClickedOutside(
+        mouseX: Double,
+        mouseY: Double,
+        guiLeft: Int,
+        guiTop: Int,
+        mouseButton: Int
+    ): Boolean {
+        val adjustedGuiLeft = guiLeft.toDouble() - 40
+        val adjustedGuiTop = guiTop.toDouble() - 28
+        return mouseX < adjustedGuiLeft || mouseY < adjustedGuiTop || mouseX >= adjustedGuiLeft + TEXTURE_WIDTH || mouseY >= adjustedGuiTop + TEXTURE_HEIGHT
     }
 
     override fun renderBlurredBackground(partialTick: Float) {}
