@@ -247,18 +247,27 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
     }
 
     fun getAnalogOutputSignal() : Int {
-        val filterTM = this.tmmInventory.filterTM ?: return 0
+        val filterTM = this.tmmInventory.filterTM
+        if (filterTM != null) {
+            if (this.tmmInventory.getItem(0).item != CobblemonItems.BLANK_TM) return 0
 
-        if (this.tmmInventory.getItem(0).item != CobblemonItems.BLANK_TM) return 0
+            if (this.tmmInventory.getItem(1).item != this.level?.itemRegistry?.get(filterTM.elementalType.typeGem)) return 0
 
-        if (this.tmmInventory.getItem(1).item != this.level?.itemRegistry?.get(filterTM.elementalType.typeGem)) return 0
+            val recipe = TechnicalMachines.moveToTM[filterTM]?.recipe
+            if (recipe != null) {
+                if (this.tmmInventory.getItem(2).item != this.level?.itemRegistry?.get(recipe.item) || this.tmmInventory.getItem(
+                        2
+                    ).count < recipe.count
+                ) return 0
+            }
 
-        val recipe = TechnicalMachines.moveToTM[filterTM]?.recipe
-        if (recipe != null) {
-            if (this.tmmInventory.getItem(2).item != this.level?.itemRegistry?.get(recipe.item) || this.tmmInventory.getItem(2).count < recipe.count) return 0
+            return 15
         }
+        else {
+            if (this.tmmInventory.getItem(2).item != Items.AMETHYST_SHARD) return 0
 
-        return 15
+            return 15
+        }
     }
 
     class TMBlockInventory(val blockEntity: TMBlockEntity) : SimpleContainer(4) {

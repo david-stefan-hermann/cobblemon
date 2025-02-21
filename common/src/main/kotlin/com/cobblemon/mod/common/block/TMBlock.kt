@@ -181,6 +181,14 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
         movedByPiston: Boolean
     ) {
         Containers.dropContentsOnDestroy(state, newState, level, pos)
+        val blockEntity = level.getBlockEntity(pos)
+        if (!state.`is`(newState.block)) {
+            if (blockEntity is TMBlockEntity && blockEntity.tmmInventory.filterTM != null) {
+                val stack = ItemStack(CobblemonItems.TECHNICAL_MACHINE)
+                TMMoveComponent.setTMMove(stack, blockEntity.tmmInventory.filterTM!!)
+                Containers.dropItemStack(level, pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble(), stack)
+            }
+        }
         super.onRemove(state, level, pos, newState, movedByPiston)
     }
 
