@@ -33,8 +33,10 @@ import com.cobblemon.mod.common.net.messages.client.ui.CraftTMPacket
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
+import com.google.common.collect.Lists
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.gui.components.events.GuiEventListener
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
@@ -86,7 +88,12 @@ class TMMHandledScreen(
     }
 
     private fun <T : AbstractWidget> addChild(widget: T, identifier: String) {
-        if (children.contains(identifier)) return
+        if (children.contains(identifier)) {
+            val existingWidget = children[identifier]!!
+            existingWidget.x = widget.x
+            existingWidget.y = widget.y
+            return
+        }
         addRenderableWidget(widget)
         children[identifier] = widget
     }
@@ -594,6 +601,9 @@ class TMMHandledScreen(
         drawMoveInfo(graphics, delta, mouseX, mouseY)
         super.render(graphics, mouseX, mouseY, delta)
         this.renderTooltip(graphics, mouseX, mouseY)
+        for (widget in children) {
+            widget.value.render(graphics, mouseX, mouseY, delta)
+        }
     }
 
     override fun hasClickedOutside(
@@ -606,6 +616,14 @@ class TMMHandledScreen(
         val adjustedGuiLeft = guiLeft.toDouble() - 40
         val adjustedGuiTop = guiTop.toDouble() - 28
         return mouseX < adjustedGuiLeft || mouseY < adjustedGuiTop || mouseX >= adjustedGuiLeft + TEXTURE_WIDTH || mouseY >= adjustedGuiTop + TEXTURE_HEIGHT
+    }
+
+    override fun children(): MutableList<GuiEventListener> {
+        val list : MutableList<GuiEventListener> = Lists.newArrayList()
+        for (child in children) {
+            list.add(child.value)
+        }
+        return list
     }
 
     override fun renderBlurredBackground(partialTick: Float) {}
