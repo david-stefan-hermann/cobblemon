@@ -15,6 +15,7 @@ import com.cobblemon.mod.common.api.tms.TechnicalMachines
 import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.block.entity.TMBlockEntity
 import com.cobblemon.mod.common.item.components.TMMoveComponent
+import com.cobblemon.mod.common.util.giveOrDropItemStack
 import com.cobblemon.mod.common.util.itemRegistry
 import com.cobblemon.mod.common.util.playSoundServer
 import com.cobblemon.mod.common.util.toVec3d
@@ -120,7 +121,21 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
         if (!level.isClientSide) {
             val blockEntity = level.getBlockEntity(pos)
             if (blockEntity is TMBlockEntity) {
-                player.openMenu(blockEntity)
+                if (player.isCrouching) {
+                    if (blockEntity.tmmInventory.filterTM != null) {
+                        if (!player.isCreative) {
+                            val stack = ItemStack(CobblemonItems.TECHNICAL_MACHINE)
+                            TMMoveComponent.setTMMove(stack, blockEntity.tmmInventory.filterTM!!)
+                            player.giveOrDropItemStack(stack)
+                        }
+                        blockEntity.tmmInventory.filterTM = null
+                        blockEntity.setChanged()
+                        level.sendBlockUpdated(pos, state, state, Block.UPDATE_ALL)
+                    }
+                }
+                else {
+                    player.openMenu(blockEntity)
+                }
             }
         }
         return InteractionResult.sidedSuccess(level.isClientSide)

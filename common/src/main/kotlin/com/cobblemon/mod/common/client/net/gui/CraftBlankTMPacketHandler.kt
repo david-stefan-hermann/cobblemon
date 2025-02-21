@@ -25,6 +25,8 @@ object CraftBlankTMPacketHandler : ServerNetworkPacketHandler<CraftBlankTMPacket
         if (screen.inventory == null) return
         val ingredientSlot = screen.inventory!!.getItem(2)
 
+        if (!screen.result.isEmpty) return
+
         if (ingredientSlot.`is`(Items.AMETHYST_SHARD) && ingredientSlot.count >= 1) {
             screen.inventory!!.removeItem(2, 1)
             screen.result.setItem(0, CobblemonItems.BLANK_TM.defaultInstance)

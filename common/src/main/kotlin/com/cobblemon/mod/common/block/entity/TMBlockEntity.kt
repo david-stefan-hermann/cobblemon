@@ -42,6 +42,7 @@ import net.minecraft.sounds.SoundSource
 import net.minecraft.world.Container
 import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.item.Item
+import net.minecraft.world.item.Items
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter
 import net.minecraft.world.level.block.state.properties.BlockStateProperties
@@ -201,6 +202,7 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
     }
 
     fun autocraftTM() {
+        var stack: ItemStack
         if (this.tmmInventory.filterTM != null) {
             if (this.tmmInventory.getItem(0).item != CobblemonItems.BLANK_TM) return
 
@@ -211,7 +213,7 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
                 if (this.tmmInventory.getItem(2).item != this.level?.itemRegistry?.get(recipe.item) || this.tmmInventory.getItem(2).count < recipe.count) return
             }
 
-            val stack = ItemStack(CobblemonItems.TECHNICAL_MACHINE)
+            stack = ItemStack(CobblemonItems.TECHNICAL_MACHINE)
             TMMoveComponent.setTMMove(stack, this.tmmInventory.filterTM!!)
 
             this.tmmInventory.getItem(0).shrink(1)
@@ -220,15 +222,22 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
                 this.tmmInventory.getItem(2).shrink(recipe.count)
             }
             this.tmmInventory.setChanged()
-
-            //TODO The machine is rendered backwards, could not figure how to fix that, this is temporary so it spits the item 'correct' direction
-            val direction = this.blockState.getValue(TMBlock.FACING).opposite
-            val position = this.blockPos.center.add(direction.stepX * 0.7, 0.1, direction.stepZ * 0.7)
-
-            //TODO Add sound to be played then TM Machine autocrafts - I don't think playing the once that exist already is a good idea for autocraft
-            this.ejectItem(stack, direction, position)
-            tmmInventory.setChanged()
         }
+        else {
+            if (this.tmmInventory.getItem(2).item != Items.AMETHYST_SHARD) return
+
+            stack = ItemStack(CobblemonItems.BLANK_TM)
+
+            this.tmmInventory.getItem(2).shrink(1)
+            this.tmmInventory.setChanged()
+        }
+
+        //TODO The machine is rendered backwards, could not figure how to fix that, this is temporary so it spits the item 'correct' direction
+        val direction = this.blockState.getValue(TMBlock.FACING).opposite
+        val position = this.blockPos.center.add(direction.stepX * 0.7, 0.1, direction.stepZ * 0.7)
+
+        //TODO Add sound to be played then TM Machine autocrafts - I don't think playing the once that exist already is a good idea for autocraft
+        this.ejectItem(stack, direction, position)
     }
 
     fun ejectItem(stack: ItemStack, direction: Direction, position: Position) {
@@ -259,15 +268,24 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
             val blockState = blockEntity.blockState
             if (blockState.getValue(TMBlock.ON)) return false
 
-            val filterTM = this.filterTM ?: return false
-            val tm = TechnicalMachines.moveToTM[filterTM] ?: return false
-
             val item = stack.item
-            return when (slot) {
-                0 -> item == CobblemonItems.BLANK_TM
-                1 -> item == blockEntity.level?.itemRegistry?.get(filterTM.elementalType.typeGem)
-                2 -> item == blockEntity.level?.itemRegistry?.get(tm.recipe?.item)
-                else -> false
+
+            val filterTM = this.filterTM
+            if (filterTM != null) {
+                val tm = TechnicalMachines.moveToTM[filterTM] ?: return false
+
+                return when (slot) {
+                    0 -> item == CobblemonItems.BLANK_TM
+                    1 -> item == blockEntity.level?.itemRegistry?.get(filterTM.elementalType.typeGem)
+                    2 -> item == blockEntity.level?.itemRegistry?.get(tm.recipe?.item)
+                    else -> false
+                }
+            }
+            else {
+                return when (slot) {
+                    2 -> item == Items.AMETHYST_SHARD
+                    else -> false
+                }
             }
         }
 
