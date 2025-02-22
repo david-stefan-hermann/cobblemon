@@ -61,27 +61,27 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
         val POWERED: BooleanProperty = BooleanProperty.create("powered")
 
         private val NORTH_OUTLINE: VoxelShape = Shapes.or(
-                Shapes.box(0.0, 0.0, 0.0, 1.0, 0.3125, 0.9375),
-                Shapes.box(0.0, 0.3125, 0.75, 1.0, 0.9375, 0.9375),
-                Shapes.box(0.0625, 0.3125, 0.0625, 0.9375, 0.875, 0.9375)
+            Shapes.box(0.0, 0.0, 0.0625, 1.0, 0.3125, 1.0),
+            Shapes.box(0.0, 0.3125, 0.0625, 1.0, 0.9375, 0.25),
+            Shapes.box(0.0625, 0.3125, 0.0625, 0.9375, 0.875, 0.9375)
         )
 
         private val SOUTH_OUTLINE: VoxelShape = Shapes.or(
-                Shapes.box(0.0, 0.0, 0.0625, 1.0, 0.3125, 1.0),
-                Shapes.box(0.0, 0.3125, 0.0625, 1.0, 0.9375, 0.25),
-                Shapes.box(0.0625, 0.3125, 0.0625, 0.9375, 0.875, 0.9375)
+            Shapes.box(0.0, 0.0, 0.0, 1.0, 0.3125, 0.9375),
+            Shapes.box(0.0, 0.3125, 0.75, 1.0, 0.9375, 0.9375),
+            Shapes.box(0.0625, 0.3125, 0.0625, 0.9375, 0.875, 0.9375)
         )
 
         private val WEST_OUTLINE: VoxelShape = Shapes.or(
-                Shapes.box(0.0, 0.0, 0.0, 0.9375, 0.3125, 1.0),
-                Shapes.box(0.75, 0.3125, 0.0, 0.9375, 0.9375, 1.0),
-                Shapes.box(0.0625, 0.3125, 0.0625, 0.9375, 0.875, 0.9375)
+            Shapes.box(0.0625, 0.0, 0.0, 1.0, 0.3125, 1.0),
+            Shapes.box(0.0625, 0.3125, 0.0, 0.25, 0.9375, 1.0),
+            Shapes.box(0.0625, 0.3125, 0.0625, 0.9375, 0.875, 0.9375)
         )
 
         private val EAST_OUTLINE: VoxelShape = Shapes.or(
-                Shapes.box(0.0625, 0.0, 0.0, 1.0, 0.3125, 1.0),
-                Shapes.box(0.0625, 0.3125, 0.0, 0.25, 0.9375, 1.0),
-                Shapes.box(0.0625, 0.3125, 0.0625, 0.9375, 0.875, 0.9375)
+            Shapes.box(0.0, 0.0, 0.0, 0.9375, 0.3125, 1.0),
+            Shapes.box(0.75, 0.3125, 0.0, 0.9375, 0.9375, 1.0),
+            Shapes.box(0.0625, 0.3125, 0.0625, 0.9375, 0.875, 0.9375)
         )
 
         val CODEC: MapCodec<TMBlock> = RecordCodecBuilder.mapCodec { instance ->
