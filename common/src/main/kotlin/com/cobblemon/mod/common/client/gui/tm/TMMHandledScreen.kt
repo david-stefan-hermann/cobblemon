@@ -78,6 +78,8 @@ class TMMHandledScreen(
     var scroll: TMScrollingList? = null
 
     override fun init() {
+        imageWidth = TEXTURE_WIDTH
+        imageHeight = TEXTURE_HEIGHT
         super.init()
 
         scroll = TMScrollingList(
@@ -604,18 +606,6 @@ class TMMHandledScreen(
         for (widget in children) {
             widget.value.render(graphics, mouseX, mouseY, delta)
         }
-    }
-
-    override fun hasClickedOutside(
-        mouseX: Double,
-        mouseY: Double,
-        guiLeft: Int,
-        guiTop: Int,
-        mouseButton: Int
-    ): Boolean {
-        val adjustedGuiLeft = guiLeft.toDouble() - 40
-        val adjustedGuiTop = guiTop.toDouble() - 28
-        return mouseX < adjustedGuiLeft || mouseY < adjustedGuiTop || mouseX >= adjustedGuiLeft + TEXTURE_WIDTH || mouseY >= adjustedGuiTop + TEXTURE_HEIGHT
     }
 
     override fun children(): MutableList<GuiEventListener> {
