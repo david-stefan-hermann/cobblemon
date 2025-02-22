@@ -33,8 +33,8 @@ class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMe
 
         inventory.startOpen(playerInventory.player)
 
-        val startX = 0 - 9
-        val startY = 112
+        val startX = 30
+        val startY = 140
         val slotWidth = 18
         val slotHeight = 18
 

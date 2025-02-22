@@ -83,8 +83,8 @@ class TMMHandledScreen(
         super.init()
 
         scroll = TMScrollingList(
-            listX = leftPos + 5,
-            listY = topPos + 8,
+            listX = leftPos + 45,
+            listY = topPos + 37,
             parent = this
         )
     }
