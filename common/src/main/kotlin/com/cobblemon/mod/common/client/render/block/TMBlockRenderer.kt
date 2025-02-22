@@ -40,10 +40,10 @@ class TMBlockRenderer(context: BlockEntityRendererProvider.Context) : BlockEntit
 
             val color = Color(tm.elementalType.hue)
             when (entity.blockState.getValue(TMBlock.FACING)) {
-                Direction.SOUTH -> poseStack.translate(15F / 16F, 5.5F / 16F, 1F / 16F)
-                Direction.WEST -> poseStack.translate(14F / 16F, 5.5F / 16F, 0F)
-                Direction.EAST -> poseStack.translate(1F, 5.5F / 16F, 0F)
-                else -> poseStack.translate(15F / 16F, 5.5F / 16F, -1F / 16F)
+                Direction.SOUTH -> poseStack.translate(15F / 16F, 5.5F / 16F, -1F / 16F)
+                Direction.WEST -> poseStack.translate(1F, 5.5F / 16F, 0F)
+                Direction.EAST -> poseStack.translate(14F / 16F, 5.5F / 16F, 0F)
+                else -> poseStack.translate(15F / 16F, 5.5F / 16F, 1F / 16F)
             }
 
             poseStack.translate(-7.0 / 16f, 0.0, 8.0 / 16f)
