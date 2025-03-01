@@ -609,7 +609,7 @@ class TMMHandledScreen(
     }
 
     override fun children(): MutableList<GuiEventListener> {
-        val list : MutableList<GuiEventListener> = Lists.newArrayList()
+        val list : MutableList<GuiEventListener> = mutableListOf()
         for (child in children) {
             list.add(child.value)
         }

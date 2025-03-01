@@ -23,9 +23,8 @@ object CraftBlankTMPacketHandler : ServerNetworkPacketHandler<CraftBlankTMPacket
     override fun handle(packet: CraftBlankTMPacket, server: MinecraftServer, player: ServerPlayer) {
         val screen = player.containerMenu as TMMScreenHandler
         if (screen.inventory == null) return
-        val ingredientSlot = screen.inventory!!.getItem(2)
-
         if (!screen.result.isEmpty) return
+        val ingredientSlot = screen.inventory!!.getItem(2)
 
         if (ingredientSlot.`is`(Items.AMETHYST_SHARD) && ingredientSlot.count >= 1) {
             screen.inventory!!.removeItem(2, 1)

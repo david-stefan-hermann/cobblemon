@@ -18,6 +18,8 @@ import com.cobblemon.mod.common.block.TMBlock
 import com.cobblemon.mod.common.gui.TMMScreenHandler
 import com.cobblemon.mod.common.item.components.TMMoveComponent
 import com.cobblemon.mod.common.util.itemRegistry
+import com.cobblemon.mod.common.util.playSoundServer
+import com.cobblemon.mod.common.util.toVec3d
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.core.HolderLookup
@@ -77,21 +79,11 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
         }
 
         fun playSound(world: Level, pos: BlockPos, state: BlockState, sound: SoundEvent) {
-            var d = pos.x.toDouble() + 0.5
-            val e = pos.y.toDouble() + 0.5
-            var f = pos.z.toDouble() + 0.5
-            val direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING)
-            d += direction.stepX.toDouble() * 0.5
-            f += direction.stepZ.toDouble() * 0.5
-            world.playSound(
-                null,
-                d,
-                e,
-                f,
-                sound,
-                SoundSource.BLOCKS,
-                0.5f,
-                world.random.nextFloat() * 0.1f + 0.9f
+            world.playSoundServer(
+                position = pos.toVec3d(),
+                sound = sound,
+                volume = 0.5F,
+                pitch = 1F
             )
         }
     }
@@ -254,10 +246,7 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
 
             val recipe = TechnicalMachines.moveToTM[filterTM]?.recipe
             if (recipe != null) {
-                if (this.tmmInventory.getItem(2).item != this.level?.itemRegistry?.get(recipe.item) || this.tmmInventory.getItem(
-                        2
-                    ).count < recipe.count
-                ) return 0
+                if (this.tmmInventory.getItem(2).item != this.level?.itemRegistry?.get(recipe.item) || this.tmmInventory.getItem(2).count < recipe.count) return 0
             }
 
             return 15
