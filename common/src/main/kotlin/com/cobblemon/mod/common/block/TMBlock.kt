@@ -15,6 +15,7 @@ import com.cobblemon.mod.common.api.tms.TechnicalMachines
 import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.block.entity.TMBlockEntity
 import com.cobblemon.mod.common.item.components.TMMoveComponent
+import com.cobblemon.mod.common.util.giveOrDropItemStack
 import com.cobblemon.mod.common.util.itemRegistry
 import com.cobblemon.mod.common.util.playSoundServer
 import com.cobblemon.mod.common.util.toVec3d
@@ -46,6 +47,7 @@ import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.sounds.SoundSource
+import net.minecraft.world.Containers
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.context.BlockPlaceContext
 
@@ -56,29 +58,30 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
         val FACING = BlockStateProperties.HORIZONTAL_FACING
         val TRIGGERED = BlockStateProperties.TRIGGERED
         val WATERLOGGED = BlockStateProperties.WATERLOGGED
+        val POWERED: BooleanProperty = BooleanProperty.create("powered")
 
         private val NORTH_OUTLINE: VoxelShape = Shapes.or(
-                Shapes.box(0.0, 0.0, 0.0, 1.0, 0.3125, 0.9375),
-                Shapes.box(0.0, 0.3125, 0.75, 1.0, 0.9375, 0.9375),
-                Shapes.box(0.0625, 0.3125, 0.0625, 0.9375, 0.875, 0.9375)
+            Shapes.box(0.0, 0.0, 0.0625, 1.0, 0.3125, 1.0),
+            Shapes.box(0.0, 0.3125, 0.0625, 1.0, 0.9375, 0.25),
+            Shapes.box(0.0625, 0.3125, 0.0625, 0.9375, 0.875, 0.9375)
         )
 
         private val SOUTH_OUTLINE: VoxelShape = Shapes.or(
-                Shapes.box(0.0, 0.0, 0.0625, 1.0, 0.3125, 1.0),
-                Shapes.box(0.0, 0.3125, 0.0625, 1.0, 0.9375, 0.25),
-                Shapes.box(0.0625, 0.3125, 0.0625, 0.9375, 0.875, 0.9375)
+            Shapes.box(0.0, 0.0, 0.0, 1.0, 0.3125, 0.9375),
+            Shapes.box(0.0, 0.3125, 0.75, 1.0, 0.9375, 0.9375),
+            Shapes.box(0.0625, 0.3125, 0.0625, 0.9375, 0.875, 0.9375)
         )
 
         private val WEST_OUTLINE: VoxelShape = Shapes.or(
-                Shapes.box(0.0, 0.0, 0.0, 0.9375, 0.3125, 1.0),
-                Shapes.box(0.75, 0.3125, 0.0, 0.9375, 0.9375, 1.0),
-                Shapes.box(0.0625, 0.3125, 0.0625, 0.9375, 0.875, 0.9375)
+            Shapes.box(0.0625, 0.0, 0.0, 1.0, 0.3125, 1.0),
+            Shapes.box(0.0625, 0.3125, 0.0, 0.25, 0.9375, 1.0),
+            Shapes.box(0.0625, 0.3125, 0.0625, 0.9375, 0.875, 0.9375)
         )
 
         private val EAST_OUTLINE: VoxelShape = Shapes.or(
-                Shapes.box(0.0625, 0.0, 0.0, 1.0, 0.3125, 1.0),
-                Shapes.box(0.0625, 0.3125, 0.0, 0.25, 0.9375, 1.0),
-                Shapes.box(0.0625, 0.3125, 0.0625, 0.9375, 0.875, 0.9375)
+            Shapes.box(0.0, 0.0, 0.0, 0.9375, 0.3125, 1.0),
+            Shapes.box(0.75, 0.3125, 0.0, 0.9375, 0.9375, 1.0),
+            Shapes.box(0.0625, 0.3125, 0.0625, 0.9375, 0.875, 0.9375)
         )
 
         val CODEC: MapCodec<TMBlock> = RecordCodecBuilder.mapCodec { instance ->
@@ -93,6 +96,7 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
                 .setValue(FACING, Direction.NORTH)
                 .setValue(WATERLOGGED, false)
                 .setValue(ON, false)
+                .setValue(POWERED, false)
                 .setValue(TRIGGERED, false))
     }
 
@@ -117,14 +121,28 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
         if (!level.isClientSide) {
             val blockEntity = level.getBlockEntity(pos)
             if (blockEntity is TMBlockEntity) {
-                player.openMenu(blockEntity)
+                if (player.isCrouching) {
+                    if (blockEntity.tmmInventory.filterTM != null) {
+                        if (!player.isCreative) {
+                            val stack = ItemStack(CobblemonItems.TECHNICAL_MACHINE)
+                            TMMoveComponent.setTMMove(stack, blockEntity.tmmInventory.filterTM!!)
+                            player.giveOrDropItemStack(stack)
+                        }
+                        blockEntity.tmmInventory.filterTM = null
+                        blockEntity.setChanged()
+                        level.sendBlockUpdated(pos, state, state, Block.UPDATE_ALL)
+                    }
+                }
+                else {
+                    player.openMenu(blockEntity)
+                }
             }
         }
         return InteractionResult.sidedSuccess(level.isClientSide)
     }
 
     override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
-        builder.add(FACING, WATERLOGGED, ON, TRIGGERED)
+        builder.add(FACING, WATERLOGGED, ON, TRIGGERED, POWERED)
     }
 
 
@@ -152,6 +170,56 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
             Direction.WEST -> WEST_OUTLINE
             Direction.EAST -> EAST_OUTLINE
             else -> Shapes.empty()
+        }
+    }
+
+    override fun onRemove(
+        state: BlockState,
+        level: Level,
+        pos: BlockPos,
+        newState: BlockState,
+        movedByPiston: Boolean
+    ) {
+        Containers.dropContentsOnDestroy(state, newState, level, pos)
+        val blockEntity = level.getBlockEntity(pos)
+        if (!state.`is`(newState.block)) {
+            if (blockEntity is TMBlockEntity && blockEntity.tmmInventory.filterTM != null) {
+                val stack = ItemStack(CobblemonItems.TECHNICAL_MACHINE)
+                TMMoveComponent.setTMMove(stack, blockEntity.tmmInventory.filterTM!!)
+                Containers.dropItemStack(level, pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble(), stack)
+            }
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston)
+    }
+
+    override fun neighborChanged(
+        state: BlockState,
+        level: Level,
+        pos: BlockPos,
+        neighborBlock: Block,
+        neighborPos: BlockPos,
+        movedByPiston: Boolean
+    ) {
+        super.neighborChanged(state, level, pos, neighborBlock, neighborPos, movedByPiston)
+        checkPoweredState(level, pos, state)
+    }
+
+    override fun hasAnalogOutputSignal(state: BlockState): Boolean { return true }
+
+    override fun getAnalogOutputSignal(state: BlockState, level: Level, pos: BlockPos): Int {
+        val blockEntity = level.getBlockEntity(pos)
+        if (blockEntity !is TMBlockEntity) return 0
+        return blockEntity.getAnalogOutputSignal()
+    }
+
+    private fun checkPoweredState(level: Level, pos: BlockPos, state: BlockState) {
+        val nearbyPower = level.hasNeighborSignal(pos)
+        if (nearbyPower != state.getValue(POWERED)) {
+            level.setBlock(pos, state.setValue(POWERED, nearbyPower), 2)
+            if (nearbyPower) {
+                val tmBlockEntity = level.getBlockEntity(pos) as? TMBlockEntity
+                tmBlockEntity?.autocraftTM()
+            }
         }
     }
 }

@@ -10,16 +10,21 @@ package com.cobblemon.mod.common.block.entity
 
 import com.cobblemon.mod.common.CobblemonBlockEntities
 import com.cobblemon.mod.common.CobblemonItems
+import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.api.moves.MoveTemplate
 import com.cobblemon.mod.common.api.moves.Moves
 import com.cobblemon.mod.common.api.tms.TechnicalMachines
-import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.block.TMBlock
-import com.cobblemon.mod.common.gui.CobblemonMenuHandlers
 import com.cobblemon.mod.common.gui.TMMScreenHandler
+import com.cobblemon.mod.common.item.components.TMMoveComponent
+import com.cobblemon.mod.common.util.itemRegistry
+import com.cobblemon.mod.common.util.playSoundServer
+import com.cobblemon.mod.common.util.toVec3d
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.NonNullList
+import net.minecraft.core.Position
 import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.ClientGamePacketListener
@@ -33,6 +38,16 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.sounds.SoundSource
+import net.minecraft.world.Container
+import net.minecraft.world.entity.item.ItemEntity
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.Items
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.entity.ContainerOpenersCounter
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
 
 class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity(CobblemonBlockEntities.TM_BLOCK, pos, state) {
 
@@ -40,24 +55,57 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
     var automationDelay: Int = AUTOMATION_DELAY
     var partialTicks: Float = 0f
 
+    private val stateManager: ContainerOpenersCounter = object : ContainerOpenersCounter() {
+        override fun onOpen(level: Level, pos: BlockPos, state: BlockState) {
+            level.setBlockAndUpdate(pos, state.setValue(TMBlock.ON, true))
+            playSound(level, pos, state, CobblemonSounds.TMM_ON)
+        }
+
+        override fun onClose(level: Level, pos: BlockPos, state: BlockState) {
+            level.setBlockAndUpdate(pos, state.setValue(TMBlock.ON, false))
+            playSound(level, pos, state, CobblemonSounds.TMM_OFF)
+        }
+
+        override fun openerCountChanged(level: Level, pos: BlockPos, state: BlockState, count: Int, openCount: Int) {
+
+        }
+
+        override fun isOwnContainer(player: Player): Boolean {
+            if (player.containerMenu is TMMScreenHandler) {
+                val inventory = (player.containerMenu as TMMScreenHandler).inventory
+                return inventory === this@TMBlockEntity
+            }
+            return false
+        }
+
+        fun playSound(world: Level, pos: BlockPos, state: BlockState, sound: SoundEvent) {
+            world.playSoundServer(
+                position = pos.toVec3d(),
+                sound = sound,
+                volume = 0.5F,
+                pitch = 1F
+            )
+        }
+    }
+
     companion object {
         const val AUTOMATION_DELAY = 4
         const val FILTER_TM_NBT = "FilterTM"
     }
 
     override fun createMenu(containerId: Int, inventory: Inventory): AbstractContainerMenu {
-        return CobblemonMenuHandlers.TMM_SCREEN.create(containerId, inventory)
+        return TMMScreenHandler(containerId, inventory, this.tmmInventory)
     }
 
     override fun saveAdditional(compound: CompoundTag, registries: HolderLookup.Provider) {
         super.saveAdditional(compound, registries)
-        ContainerHelper.saveAllItems(compound, tmmInventory.itemsList, registries)
+        ContainerHelper.saveAllItems(compound, tmmInventory.items, registries)
         tmmInventory.filterTM?.let { compound.putString(FILTER_TM_NBT, it.name) }
     }
 
     override fun loadAdditional(compound: CompoundTag, registries: HolderLookup.Provider) {
         super.loadAdditional(compound, registries)
-        ContainerHelper.loadAllItems(compound, tmmInventory.itemsList, registries)
+        ContainerHelper.loadAllItems(compound, tmmInventory.items, registries)
         tmmInventory.filterTM = compound.getString(FILTER_TM_NBT)?.let { Moves.getByName(it) }
     }
 
@@ -70,7 +118,7 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
     }
 
     override fun getItems(): NonNullList<ItemStack> {
-        return tmmInventory.itemsList
+        return tmmInventory.items
     }
 
     override fun setItems(items: NonNullList<ItemStack>) {
@@ -117,6 +165,9 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
 
         // Mark the chunk containing this block entity as dirty, ensuring it is saved
         level?.getChunkAt(worldPosition)?.setUnsaved(true)
+
+        //Update Neighbours
+        level?.updateNeighborsAt(blockPos, blockState.block)
     }
 
 
@@ -124,31 +175,128 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
         return tmmInventory.stillValid(player)
     }
 
-    class TMBlockInventory(val blockEntity: TMBlockEntity) : SimpleContainer(4) {
-        val itemsList: NonNullList<ItemStack> = NonNullList.withSize(4, ItemStack.EMPTY)
+    override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean {
+        return tmmInventory.canPlaceItem(slot, stack)
+    }
 
-        var filterTM: MoveTemplate? = null
+    override fun canTakeItem(target: Container, slot: Int, stack: ItemStack): Boolean { return false }
 
-        fun getInventoryItems(): NonNullList<ItemStack> {
-            return itemsList
+    override fun startOpen(player: Player) {
+        if (!this.remove && !player.isSpectator) {
+            stateManager.incrementOpeners(player, level!!, blockPos, blockState)
         }
+    }
+
+    override fun stopOpen(player: Player) {
+        if (!this.remove && !player.isSpectator) {
+            stateManager.decrementOpeners(player, level!!, blockPos, blockState)
+        }
+    }
+
+    fun autocraftTM() {
+        var stack: ItemStack
+        if (this.tmmInventory.filterTM != null) {
+            if (this.tmmInventory.getItem(0).item != CobblemonItems.BLANK_TM) return
+
+            if (this.tmmInventory.getItem(1).item != this.level?.itemRegistry?.get(this.tmmInventory.filterTM!!.elementalType.typeGem)) return
+
+            val recipe = TechnicalMachines.moveToTM[this.tmmInventory.filterTM]?.recipe
+            if (recipe != null) {
+                if (this.tmmInventory.getItem(2).item != this.level?.itemRegistry?.get(recipe.item) || this.tmmInventory.getItem(2).count < recipe.count) return
+            }
+
+            stack = ItemStack(CobblemonItems.TECHNICAL_MACHINE)
+            TMMoveComponent.setTMMove(stack, this.tmmInventory.filterTM!!)
+
+            this.tmmInventory.getItem(0).shrink(1)
+            this.tmmInventory.getItem(1).shrink(1)
+            if (recipe != null) {
+                this.tmmInventory.getItem(2).shrink(recipe.count)
+            }
+            this.tmmInventory.setChanged()
+        }
+        else {
+            if (this.tmmInventory.getItem(2).item != Items.AMETHYST_SHARD) return
+
+            stack = ItemStack(CobblemonItems.BLANK_TM)
+
+            this.tmmInventory.getItem(2).shrink(1)
+            this.tmmInventory.setChanged()
+        }
+
+        val direction = this.blockState.getValue(TMBlock.FACING)
+        val position = this.blockPos.center.add(direction.stepX * 0.7, 0.1, direction.stepZ * 0.7)
+
+        //TODO Add sound to be played then TM Machine autocrafts - I don't think playing the once that exist already is a good idea for autocraft
+        this.ejectItem(stack, direction, position)
+    }
+
+    fun ejectItem(stack: ItemStack, direction: Direction, position: Position) {
+        val itemEntity = ItemEntity(this.level!!, position.x(), position.y() - 0.5, position.z(), stack)
+        itemEntity.setDeltaMovement(direction.stepX * 0.05, 0.0, direction.stepZ * 0.05)
+        this.level!!.addFreshEntity(itemEntity)
+    }
+
+    fun getAnalogOutputSignal() : Int {
+        val filterTM = this.tmmInventory.filterTM
+        if (filterTM != null) {
+            if (this.tmmInventory.getItem(0).item != CobblemonItems.BLANK_TM) return 0
+
+            if (this.tmmInventory.getItem(1).item != this.level?.itemRegistry?.get(filterTM.elementalType.typeGem)) return 0
+
+            val recipe = TechnicalMachines.moveToTM[filterTM]?.recipe
+            if (recipe != null) {
+                if (this.tmmInventory.getItem(2).item != this.level?.itemRegistry?.get(recipe.item) || this.tmmInventory.getItem(2).count < recipe.count) return 0
+            }
+
+            return 15
+        }
+        else {
+            if (this.tmmInventory.getItem(2).item != Items.AMETHYST_SHARD) return 0
+
+            return 15
+        }
+    }
+
+    class TMBlockInventory(val blockEntity: TMBlockEntity) : SimpleContainer(4) {
+        var filterTM: MoveTemplate? = null
 
         override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean {
             val blockState = blockEntity.blockState
             if (blockState.getValue(TMBlock.ON)) return false
 
-            val filterTM = this.filterTM
-            val tms = filterTM?.let { TechnicalMachines.moveToTMs[it] } ?: return false
+            val item = stack.item
 
-            return tms.any { tm ->
-                val item = stack.item
-                when (slot) {
+            val filterTM = this.filterTM
+            if (filterTM != null) {
+                val tm = TechnicalMachines.moveToTM[filterTM] ?: return false
+
+                return when (slot) {
                     0 -> item == CobblemonItems.BLANK_TM
-                    1 -> item == ElementalTypes.get(tm.type)?.typeGem
-                    2 -> item == tm.recipe?.item
+                    1 -> item == blockEntity.level?.itemRegistry?.get(filterTM.elementalType.typeGem)
+                    2 -> item == blockEntity.level?.itemRegistry?.get(tm.recipe?.item)
                     else -> false
                 }
             }
+            else {
+                return when (slot) {
+                    2 -> item == Items.AMETHYST_SHARD
+                    else -> false
+                }
+            }
+        }
+
+        override fun setChanged() {
+            blockEntity.level?.updateNeighborsAt(blockEntity.blockPos, blockEntity.blockState.block)
+            super.setChanged()
+        }
+
+        override fun startOpen(player: Player) {
+            blockEntity.startOpen(player)
+        }
+
+        override fun stopOpen(player: Player) {
+            blockEntity.stopOpen(player)
         }
     }
 

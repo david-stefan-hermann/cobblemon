@@ -375,6 +375,7 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
                             .mapColor(MapColor.COLOR_GREEN)
                             .sound(SoundType.METAL)
                             .pushReaction(PushReaction.BLOCK)
+                            .strength(2F)
                             .noOcclusion()
                             .lightLevel { if (it.getValue(TMBlock.ON) as Boolean) 10 else 0 }
             )

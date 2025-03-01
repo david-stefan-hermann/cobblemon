@@ -25,7 +25,7 @@ object CobblemonMenuHandlers : PlatformRegistry<Registry<MenuType<*>>, ResourceK
 
     val TMM_SCREEN: MenuType<TMMScreenHandler> = create(
         "tmm_screen",
-        MenuType({ syncId, inventory -> TMMScreenHandler(syncId, inventory, SimpleContainer(4), null) }, FeatureFlags.VANILLA_SET)
+        MenuType({ syncId, inventory -> TMMScreenHandler(syncId, inventory, SimpleContainer(4)) }, FeatureFlags.VANILLA_SET)
     )
 
     fun register() {

@@ -1,32 +1,32 @@
 {
   "variants": {
-    "facing=south,on=false": {
-      "model": "cobblemon:block/tm_machine"
-    },
-    "facing=west,on=false": {
-      "model": "cobblemon:block/tm_machine",
-      "y": 90
-    },
     "facing=north,on=false": {
-      "model": "cobblemon:block/tm_machine",
-      "y": 180
+      "model": "cobblemon:block/tm_machine"
     },
     "facing=east,on=false": {
       "model": "cobblemon:block/tm_machine",
+      "y": 90
+    },
+    "facing=south,on=false": {
+      "model": "cobblemon:block/tm_machine",
+      "y": 180
+    },
+    "facing=west,on=false": {
+      "model": "cobblemon:block/tm_machine",
       "y": 270
     },
-    "facing=south,on=true": {
+    "facing=north,on=true": {
       "model": "cobblemon:block/tm_machine_on"
     },
-    "facing=west,on=true": {
+    "facing=east,on=true": {
       "model": "cobblemon:block/tm_machine_on",
       "y": 90
     },
-    "facing=north,on=true": {
+    "facing=south,on=true": {
       "model": "cobblemon:block/tm_machine_on",
       "y": 180
     },
-    "facing=east,on=true": {
+    "facing=west,on=true": {
       "model": "cobblemon:block/tm_machine_on",
       "y": 270
     }

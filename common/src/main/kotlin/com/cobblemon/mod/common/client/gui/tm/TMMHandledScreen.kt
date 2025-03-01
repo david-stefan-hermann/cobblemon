@@ -12,7 +12,6 @@ import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.CobblemonNetwork
 import com.cobblemon.mod.common.CobblemonSounds
-import net.minecraft.resources.ResourceLocation
 import com.cobblemon.mod.common.api.gui.ColourLibrary
 import com.cobblemon.mod.common.api.gui.MultiLineLabelK
 import com.cobblemon.mod.common.api.gui.blitk
@@ -23,8 +22,6 @@ import com.cobblemon.mod.common.api.tms.TechnicalMachine
 import com.cobblemon.mod.common.api.tms.TechnicalMachineRecipe
 import com.cobblemon.mod.common.api.types.ElementalType
 import com.cobblemon.mod.common.api.types.ElementalTypes
-import com.cobblemon.mod.common.block.TMBlock
-import com.cobblemon.mod.common.block.entity.TMBlockEntity
 import com.cobblemon.mod.common.client.CobblemonClient
 import com.cobblemon.mod.common.client.gui.ExitButton
 import com.cobblemon.mod.common.client.gui.MoveCategoryIcon
@@ -36,17 +33,15 @@ import com.cobblemon.mod.common.net.messages.client.ui.CraftTMPacket
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
-import com.sun.jna.platform.unix.X11.Drawable
+import com.google.common.collect.Lists
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.AbstractWidget
-import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.components.events.GuiEventListener
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
-import net.minecraft.client.sounds.SoundManager
 import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.core.registries.Registries
 import net.minecraft.network.chat.Component
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.player.Inventory
-import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 
@@ -83,17 +78,24 @@ class TMMHandledScreen(
     var scroll: TMScrollingList? = null
 
     override fun init() {
+        imageWidth = TEXTURE_WIDTH
+        imageHeight = TEXTURE_HEIGHT
         super.init()
 
         scroll = TMScrollingList(
-            listX = leftPos + 5,
-            listY = topPos + 8,
+            listX = leftPos + 45,
+            listY = topPos + 37,
             parent = this
         )
     }
 
     private fun <T : AbstractWidget> addChild(widget: T, identifier: String) {
-        if (children.contains(identifier)) return
+        if (children.contains(identifier)) {
+            val existingWidget = children[identifier]!!
+            existingWidget.x = widget.x
+            existingWidget.y = widget.y
+            return
+        }
         addRenderableWidget(widget)
         children[identifier] = widget
     }
@@ -547,14 +549,14 @@ class TMMHandledScreen(
                 small = false,
                 onPress = {
                     inventory.player.playSound(CobblemonSounds.GUI_CLICK, 1f, 1f)
-                    val currentTm = selectedTM ?: return@EjectButton CobblemonNetwork.sendToServer(CraftBlankTMPacket(handler.input.getItem(2)))
+                    val currentTm = selectedTM ?: return@EjectButton CobblemonNetwork.sendToServer(CraftBlankTMPacket(handler.inventory!!.getItem(2)))
 
                     CobblemonNetwork.sendToServer(
                         CraftTMPacket(
                             currentTm,
-                            handler.input.getItem(0),
-                            handler.input.getItem(1),
-                            handler.input.getItem(2)
+                            handler.inventory!!.getItem(0),
+                            handler.inventory!!.getItem(1),
+                            handler.inventory!!.getItem(2)
                         )
                     )
 
@@ -600,13 +602,18 @@ class TMMHandledScreen(
         }
         drawMoveInfo(graphics, delta, mouseX, mouseY)
         super.render(graphics, mouseX, mouseY, delta)
+        this.renderTooltip(graphics, mouseX, mouseY)
+        for (widget in children) {
+            widget.value.render(graphics, mouseX, mouseY, delta)
+        }
     }
 
-    override fun removed() {
-        super.removed()
-        val tmInventory = inventory as? TMBlockEntity.TMBlockInventory
-        val tmBlockEntity = tmInventory?.blockEntity
-        tmBlockEntity?.blockState?.setValue(TMBlock.ON, false)
+    override fun children(): MutableList<GuiEventListener> {
+        val list : MutableList<GuiEventListener> = mutableListOf()
+        for (child in children) {
+            list.add(child.value)
+        }
+        return list
     }
 
     override fun renderBlurredBackground(partialTick: Float) {}
