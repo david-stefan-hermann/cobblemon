@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "cobblemon:block/type_gem_cluster_ghost",
+      "x": 180
+    },
+    "facing=east": {
+      "model": "cobblemon:block/type_gem_cluster_ghost",
+      "x": 90,
+      "y": 90
+    },
+    "facing=north": {
+      "model": "cobblemon:block/type_gem_cluster_ghost",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "cobblemon:block/type_gem_cluster_ghost",
+      "x": 90,
+      "y": 180
+    },
+    "facing=up": {
+      "model": "cobblemon:block/type_gem_cluster_ghost"
+    },
+    "facing=west": {
+      "model": "cobblemon:block/type_gem_cluster_ghost",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

@@ -205,6 +205,7 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
 
     @JvmField
     val TYPE_GEM_CORE = this.create("type_gem_core", TypeGemCoreBlock(BlockBehaviour.Properties.of()))
+/*
     @JvmField
     val TYPE_GEM_BLOCK = this.create("type_gem_block", Block(BlockBehaviour.Properties.of()))
     @JvmField
@@ -215,6 +216,45 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     val MEDIUM_TYPE_GEM = this.create("medium_type_gem", TypeGemBlock(BlockBehaviour.Properties.of().noOcclusion(), TypeGemBlock.STAGE_1, 4, 3, LARGE_TYPE_GEM))
     @JvmField
     val SMALL_TYPE_GEM = this.create("small_type_gem", TypeGemBlock(BlockBehaviour.Properties.of().noOcclusion(), TypeGemBlock.STAGE_0, 3, 4, MEDIUM_TYPE_GEM))
+*/
+
+    @JvmField val TYPE_GEM_BLOCK_NORMAL = this.create("type_gem_block_normal", Block(BlockBehaviour.Properties.of()))
+    @JvmField val TYPE_GEM_BLOCK_FIRE = this.create("type_gem_block_fire", Block(BlockBehaviour.Properties.of()))
+    @JvmField val TYPE_GEM_BLOCK_WATER = this.create("type_gem_block_water", Block(BlockBehaviour.Properties.of()))
+    @JvmField val TYPE_GEM_BLOCK_ELECTRIC = this.create("type_gem_block_electric", Block(BlockBehaviour.Properties.of()))
+    @JvmField val TYPE_GEM_BLOCK_GRASS = this.create("type_gem_block_grass", Block(BlockBehaviour.Properties.of()))
+    @JvmField val TYPE_GEM_BLOCK_ICE = this.create("type_gem_block_ice", Block(BlockBehaviour.Properties.of()))
+    @JvmField val TYPE_GEM_BLOCK_FIGHTING = this.create("type_gem_block_fighting", Block(BlockBehaviour.Properties.of()))
+    @JvmField val TYPE_GEM_BLOCK_POISON = this.create("type_gem_block_poison", Block(BlockBehaviour.Properties.of()))
+    @JvmField val TYPE_GEM_BLOCK_GROUND = this.create("type_gem_block_ground", Block(BlockBehaviour.Properties.of()))
+    @JvmField val TYPE_GEM_BLOCK_FLYING = this.create("type_gem_block_flying", Block(BlockBehaviour.Properties.of()))
+    @JvmField val TYPE_GEM_BLOCK_PSYCHIC = this.create("type_gem_block_psychic", Block(BlockBehaviour.Properties.of()))
+    @JvmField val TYPE_GEM_BLOCK_BUG = this.create("type_gem_block_bug", Block(BlockBehaviour.Properties.of()))
+    @JvmField val TYPE_GEM_BLOCK_ROCK = this.create("type_gem_block_rock", Block(BlockBehaviour.Properties.of()))
+    @JvmField val TYPE_GEM_BLOCK_GHOST = this.create("type_gem_block_ghost", Block(BlockBehaviour.Properties.of()))
+    @JvmField val TYPE_GEM_BLOCK_DRAGON = this.create("type_gem_block_dragon", Block(BlockBehaviour.Properties.of()))
+    @JvmField val TYPE_GEM_BLOCK_DARK = this.create("type_gem_block_dark", Block(BlockBehaviour.Properties.of()))
+    @JvmField val TYPE_GEM_BLOCK_STEEL = this.create("type_gem_block_steel", Block(BlockBehaviour.Properties.of()))
+    @JvmField val TYPE_GEM_BLOCK_FAIRY = this.create("type_gem_block_fairy", Block(BlockBehaviour.Properties.of()))
+
+    @JvmField val TYPE_GEM_CLUSTER_NORMAL = this.create("type_gem_cluster_normal", TypeGemClusterBlock(BlockBehaviour.Properties.of(), TYPE_GEM_BLOCK_NORMAL))
+    @JvmField val TYPE_GEM_CLUSTER_FIRE = this.create("type_gem_cluster_fire", TypeGemClusterBlock(BlockBehaviour.Properties.of(), TYPE_GEM_BLOCK_FIRE))
+    @JvmField val TYPE_GEM_CLUSTER_WATER = this.create("type_gem_cluster_water", TypeGemClusterBlock(BlockBehaviour.Properties.of(), TYPE_GEM_BLOCK_WATER))
+    @JvmField val TYPE_GEM_CLUSTER_ELECTRIC = this.create("type_gem_cluster_electric", TypeGemClusterBlock(BlockBehaviour.Properties.of(), TYPE_GEM_BLOCK_ELECTRIC))
+    @JvmField val TYPE_GEM_CLUSTER_GRASS = this.create("type_gem_cluster_grass", TypeGemClusterBlock(BlockBehaviour.Properties.of(), TYPE_GEM_BLOCK_GRASS))
+    @JvmField val TYPE_GEM_CLUSTER_ICE = this.create("type_gem_cluster_ice", TypeGemClusterBlock(BlockBehaviour.Properties.of(), TYPE_GEM_BLOCK_ICE))
+    @JvmField val TYPE_GEM_CLUSTER_FIGHTING = this.create("type_gem_cluster_fighting", TypeGemClusterBlock(BlockBehaviour.Properties.of(), TYPE_GEM_BLOCK_FIGHTING))
+    @JvmField val TYPE_GEM_CLUSTER_POISON = this.create("type_gem_cluster_poison", TypeGemClusterBlock(BlockBehaviour.Properties.of(), TYPE_GEM_BLOCK_POISON))
+    @JvmField val TYPE_GEM_CLUSTER_GROUND = this.create("type_gem_cluster_ground", TypeGemClusterBlock(BlockBehaviour.Properties.of(), TYPE_GEM_BLOCK_GROUND))
+    @JvmField val TYPE_GEM_CLUSTER_FLYING = this.create("type_gem_cluster_flying", TypeGemClusterBlock(BlockBehaviour.Properties.of(), TYPE_GEM_BLOCK_FLYING))
+    @JvmField val TYPE_GEM_CLUSTER_PSYCHIC = this.create("type_gem_cluster_psychic", TypeGemClusterBlock(BlockBehaviour.Properties.of(), TYPE_GEM_BLOCK_PSYCHIC))
+    @JvmField val TYPE_GEM_CLUSTER_BUG = this.create("type_gem_cluster_bug", TypeGemClusterBlock(BlockBehaviour.Properties.of(), TYPE_GEM_BLOCK_BUG))
+    @JvmField val TYPE_GEM_CLUSTER_ROCK = this.create("type_gem_cluster_rock", TypeGemClusterBlock(BlockBehaviour.Properties.of(), TYPE_GEM_BLOCK_ROCK))
+    @JvmField val TYPE_GEM_CLUSTER_GHOST = this.create("type_gem_cluster_ghost", TypeGemClusterBlock(BlockBehaviour.Properties.of(), TYPE_GEM_BLOCK_GHOST))
+    @JvmField val TYPE_GEM_CLUSTER_DRAGON = this.create("type_gem_cluster_dragon", TypeGemClusterBlock(BlockBehaviour.Properties.of(), TYPE_GEM_BLOCK_DRAGON))
+    @JvmField val TYPE_GEM_CLUSTER_DARK = this.create("type_gem_cluster_dark", TypeGemClusterBlock(BlockBehaviour.Properties.of(), TYPE_GEM_BLOCK_DARK))
+    @JvmField val TYPE_GEM_CLUSTER_STEEL = this.create("type_gem_cluster_steel", TypeGemClusterBlock(BlockBehaviour.Properties.of(), TYPE_GEM_BLOCK_STEEL))
+    @JvmField val TYPE_GEM_CLUSTER_FAIRY = this.create("type_gem_cluster_fairy", TypeGemClusterBlock(BlockBehaviour.Properties.of(), TYPE_GEM_BLOCK_FAIRY))
 
     @JvmField
     val POLISHED_TUMBLESTONE = this.create("polished_tumblestone", Block(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_ORANGE).strength(1.0F).sound(CobblemonSounds.TUMBLESTONE_BLOCK_SOUNDS).requiresCorrectToolForDrops().instrument(NoteBlockInstrument.BASEDRUM)))
