@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "cobblemon:block/type_gem_block_fire"
+      "model": "cobblemon:block/type_gems/type_gem_block_fire"
     }
   }
 }

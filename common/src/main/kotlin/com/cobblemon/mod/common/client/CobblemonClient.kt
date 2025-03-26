@@ -239,11 +239,7 @@ object CobblemonClient {
             CobblemonBlocks.SMALL_BUDDING_BLACK_TUMBLESTONE,
             CobblemonBlocks.MEDIUM_BUDDING_BLACK_TUMBLESTONE,
             CobblemonBlocks.LARGE_BUDDING_BLACK_TUMBLESTONE,
-            CobblemonBlocks.BLACK_TUMBLESTONE_CLUSTER,/*
-            CobblemonBlocks.SMALL_TYPE_GEM,
-            CobblemonBlocks.MEDIUM_TYPE_GEM,
-            CobblemonBlocks.LARGE_TYPE_GEM,
-            CobblemonBlocks.TYPE_GEM_CLUSTER,*/
+            CobblemonBlocks.BLACK_TUMBLESTONE_CLUSTER,
             CobblemonBlocks.TYPE_GEM_CLUSTER_NORMAL,
             CobblemonBlocks.TYPE_GEM_CLUSTER_FIRE,
             CobblemonBlocks.TYPE_GEM_CLUSTER_WATER,
