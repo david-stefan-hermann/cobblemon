@@ -3,7 +3,7 @@ package com.cobblemon.mod.common.block
 import com.cobblemon.mod.common.CobblemonBlocks
 import com.cobblemon.mod.common.api.tags.CobblemonBlockTags
 import com.cobblemon.mod.common.block.TypeGemClusterBlock.Companion.SHOULD_GROW
-import com.cobblemon.mod.common.util.cobblemonResource
+import com.cobblemon.mod.common.block.TypeGemClusterBlock.Companion.STUNTED
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.core.registries.BuiltInRegistries
@@ -20,10 +20,10 @@ class TypeGemCoreBlock(properties: Properties) : Block(properties) {
     companion object {
         const val MAX_CONNECTED_GEMS = 30
         const val MIN_DISTANCE_BETWEEN_GEMS = 1
-        const val GROWTH_CONTINUATION_BONUS = 3
+        const val CONTINUATION_CHANCE = 0.8f
 
-        // todo clean this shit up. The lack of lazy made this not work and it drove me crazy trying to debug what was happening >:C
-        val BLOCK_TO_CLUSTER: Map<ResourceLocation, Block> by lazy {  mapOf(
+        val BLOCK_TO_CLUSTER: Map<ResourceLocation, Block> by lazy {
+            mapOf(
                     ResourceLocation.parse("cobblemon:type_gem_block_normal") to CobblemonBlocks.TYPE_GEM_CLUSTER_NORMAL,
                     ResourceLocation.parse("cobblemon:type_gem_block_fire") to CobblemonBlocks.TYPE_GEM_CLUSTER_FIRE,
                     ResourceLocation.parse("cobblemon:type_gem_block_water") to CobblemonBlocks.TYPE_GEM_CLUSTER_WATER,
@@ -47,134 +47,100 @@ class TypeGemCoreBlock(properties: Properties) : Block(properties) {
     }
 
     override fun randomTick(state: BlockState, level: ServerLevel, pos: BlockPos, random: RandomSource) {
-        println("[TypeGemCoreBlock] Tick at $pos")
-
         val connectedGems = getConnectedGems(level, pos)
-        println("[TypeGemCoreBlock] Found ${connectedGems.size} connected gems")
-
-        if (connectedGems.size >= MAX_CONNECTED_GEMS) {
-            println("[TypeGemCoreBlock] Max connected gems reached. No growth.")
-            return
-        }
 
         val gemBlocks = connectedGems.filter { isGem(it.first) }
-        val chosenBlock = gemBlocks.randomOrNull() ?: run {
-            println("[TypeGemCoreBlock] No gem blocks found to grow from.")
-            return
-        }
+        val chosenBlock = gemBlocks.randomOrNull() ?: return
 
         val chosenBlockState = chosenBlock.first
         val chosenBlockPosition = chosenBlock.second
         val sourceBlock = chosenBlockState.block
-        val chosenDirection = if (chosenBlockState.hasProperty(DirectionalBlock.FACING)) {
+        val chosenDirection = if (chosenBlockState.hasProperty(DirectionalBlock.FACING))
             chosenBlockState.getValue(DirectionalBlock.FACING)
-        } else null
+        else null
 
-        val registryKey = BuiltInRegistries.BLOCK.getKey(sourceBlock) ?: run {
-            println("[TypeGemCoreBlock] Source block has no registry name!")
-            return
-        }
+        val registryKey = BuiltInRegistries.BLOCK.getKey(sourceBlock) ?: return
+        val blockToGrow = BLOCK_TO_CLUSTER[registryKey] ?: return
 
-        val blockToGrow = BLOCK_TO_CLUSTER[registryKey] ?: run {
-            println("[TypeGemCoreBlock] No cluster mapped for $registryKey")
-            return
-        }
+        val possibleGrowthPositions = Direction.entries
+                .map { it to chosenBlockPosition.relative(it) }
+                .filter { (_, pos) ->
+                    level.getBlockState(pos).isAir && isPositionValidForGrowth(level, pos)
+                }
+                .map { (dir, pos) -> pos to dir }
 
-        println("[TypeGemCoreBlock] Chose block at $chosenBlockPosition facing $chosenDirection")
-        println("[TypeGemCoreBlock] Growing cluster block: ${blockToGrow.name}")
+        if (possibleGrowthPositions.isEmpty()) return
 
-        val possibleGrowthPositions = mutableListOf<Pair<BlockPos, Direction>>()
-        for (direction in Direction.entries) {
-            val newPosition = chosenBlockPosition.relative(direction)
-            if (level.getBlockState(newPosition).isAir && isPositionValidForGrowth(level, newPosition)) {
-                possibleGrowthPositions.add(Pair(newPosition, direction))
-            }
-        }
+        val (preferred, fallback) = if (chosenDirection != null)
+            possibleGrowthPositions.partition { it.second == chosenDirection }
+        else
+            Pair(emptyList(), possibleGrowthPositions)
 
-        if (possibleGrowthPositions.isEmpty()) {
-            println("[TypeGemCoreBlock] No valid positions for growth.")
-            return
-        }
+        val chosenPair = when {
+            preferred.isNotEmpty() && random.nextFloat() < CONTINUATION_CHANCE -> preferred[random.nextInt(preferred.size)]
+            fallback.isNotEmpty() -> fallback[random.nextInt(fallback.size)]
+            else -> null
+        } ?: return
 
-        val weightedGrowthPositions = possibleGrowthPositions.flatMap { (pos, dir) ->
-            if (dir == chosenDirection) List(GROWTH_CONTINUATION_BONUS) { Pair(pos, dir) }
-            else listOf(Pair(pos, dir))
-        }
+        val (posToGrow, directionToGrow) = chosenPair
 
-        val (posToGrow, directionToGrow) = weightedGrowthPositions[random.nextInt(weightedGrowthPositions.size)]
-        println("[TypeGemCoreBlock] Growing new block at $posToGrow facing $directionToGrow")
+        val overLimit = connectedGems.size >= MAX_CONNECTED_GEMS
 
         var newBlockState = blockToGrow.defaultBlockState()
 
         if (newBlockState.hasProperty(DirectionalBlock.FACING)) {
             newBlockState = newBlockState.setValue(DirectionalBlock.FACING, directionToGrow)
         }
+
         if (newBlockState.hasProperty(SHOULD_GROW)) {
-            newBlockState = newBlockState.setValue(SHOULD_GROW, true)
+            newBlockState = newBlockState.setValue(SHOULD_GROW, !overLimit)
+        }
+
+        if (newBlockState.hasProperty(STUNTED)) {
+            newBlockState = newBlockState.setValue(STUNTED, overLimit)
         }
 
         level.setBlockAndUpdate(posToGrow, newBlockState)
-        val placed = level.getBlockState(posToGrow)
-        println("[TypeGemCoreBlock] Block now at $posToGrow is ${placed.block.name}")
     }
 
     private fun getConnectedGems(level: ServerLevel, pos: BlockPos): List<Pair<BlockState, BlockPos>> {
-        println("[TypeGemCoreBlock] Scanning for connected gems around core at $pos")
-
         val connectedGems = mutableListOf<Pair<BlockState, BlockPos>>()
-        val visitedPositions = mutableSetOf<BlockPos>()
-        val positionsToVisit: Queue<BlockPos> = LinkedList()
+        val visited = mutableSetOf<BlockPos>()
+        val queue: Queue<BlockPos> = LinkedList()
 
         for (direction in Direction.entries) {
-            val adjacentPos = pos.relative(direction)
-            visitedPositions.add(adjacentPos)
-            positionsToVisit.add(adjacentPos)
-            println("[TypeGemCoreBlock] Checking adjacent block at $adjacentPos")
+            val adjacent = pos.relative(direction)
+            visited.add(adjacent)
+            queue.add(adjacent)
         }
 
-        while (positionsToVisit.isNotEmpty()) {
-            val currentPos = positionsToVisit.poll()
-            val blockState = level.getBlockState(currentPos)
-            val block = blockState.block
+        while (queue.isNotEmpty()) {
+            val current = queue.poll()
+            val state = level.getBlockState(current)
 
-            println("[TypeGemCoreBlock] Visiting $currentPos - ${block.name}")
-
-            if (!isGem(blockState)) {
-                println("[TypeGemCoreBlock] Skipping $currentPos - not a gem block")
-                continue
-            }
-
-            println("[TypeGemCoreBlock] Connected gem found at $currentPos (${block.name})")
-            connectedGems.add(Pair(blockState, currentPos))
+            if (!isGem(state)) continue
+            connectedGems.add(state to current)
 
             for (direction in Direction.entries) {
-                val neighborPos = currentPos.relative(direction)
-                if (visitedPositions.add(neighborPos)) {
-                    positionsToVisit.add(neighborPos)
-                }
+                val neighbor = current.relative(direction)
+                if (visited.add(neighbor)) queue.add(neighbor)
             }
         }
 
-        println("[TypeGemCoreBlock] Total connected gems found: ${connectedGems.size}")
         return connectedGems
     }
 
     private fun isPositionValidForGrowth(level: ServerLevel, pos: BlockPos): Boolean {
-        for (direction in Direction.entries) {
-            val nearbyPos = pos.relative(direction)
-            val nearbyState = level.getBlockState(nearbyPos)
-
-            if (isGem(nearbyState)) {
-                if (pos.distManhattan(nearbyPos) < MIN_DISTANCE_BETWEEN_GEMS) {
-                    return false
-                }
-            }
+        return Direction.entries.none { dir ->
+            val nearby = pos.relative(dir)
+            isGem(level.getBlockState(nearby)) &&
+                    pos.distManhattan(nearby) < MIN_DISTANCE_BETWEEN_GEMS
         }
-        return true
     }
 
-    private fun isGem(block: BlockState): Boolean =
-            block.`is`(CobblemonBlockTags.TYPE_GEM_BLOCKS)
+    private fun isGem(state: BlockState): Boolean {
+        return state.`is`(CobblemonBlockTags.TYPE_GEM_BLOCKS)
+    }
 
     override fun isRandomlyTicking(state: BlockState): Boolean = true
 }
