@@ -67,63 +67,57 @@ class TypeGemClusterBlock(
         val currentStage = state.getValue(STAGE)
 
         if (currentStage < 3) {
-            // Advance stage
+            // Progress through stages regardless of STUNTED
             level.setBlockAndUpdate(pos, state.setValue(STAGE, currentStage + 1))
-        } else {
-            if (state.getValue(STUNTED)) {
-                println("[TypeGemClusterBlock] Cluster at $pos is already stunted. Growth halted.")
-                level.setBlockAndUpdate(pos, state.setValue(SHOULD_GROW, false))
-                return
-            }
+            return
+        }
 
-            val facing = state.getValue(FACING)
+        // At STAGE_3
+        val isStunted = state.getValue(STUNTED)
+        val facing = state.getValue(FACING)
 
-            // Log type of cluster based on nextStage
-            val clusterType = level.registryAccess()
-                    .registryOrThrow(BuiltInRegistries.BLOCK.key())
-                    .getKey(nextStage)
-                    .toString()
+        if (isStunted) {
+            println("[TypeGemClusterBlock] Cluster at $pos is STUNTED at STAGE_3. Finalizing growth.")
+            level.setBlockAndUpdate(pos, state.setValue(SHOULD_GROW, false))
+            return
+        }
 
-            println("[TypeGemClusterBlock] Attempting to grow into TypeGemBlock at $pos")
-            println("[TypeGemClusterBlock] Cluster type: $clusterType")
+        // Log type of cluster based on nextStage
+        val clusterType = level.registryAccess()
+                .registryOrThrow(BuiltInRegistries.BLOCK.key())
+                .getKey(nextStage)
+                .toString()
 
-            // Scan neighboring blocks (excluding where it grew from)
-            val neighbors = Direction.entries
-                    .filter { it != facing.opposite }
-                    .map { dir ->
-                        val neighborPos = pos.relative(dir)
-                        val neighborState = level.getBlockState(neighborPos)
-                        val name = BuiltInRegistries.BLOCK.getKey(neighborState.block)
-                        println("[TypeGemClusterBlock] Neighbor at $dir -> $name")
-                        neighborState.block
-                    }
+        println("[TypeGemClusterBlock] Attempting to grow into TypeGemBlock at $pos")
+        println("[TypeGemClusterBlock] Cluster type: $clusterType")
 
-            val hasConflict = Direction.entries
-                    .filter { it != facing.opposite }
-                    .any { dir ->
-                        val neighborPos = pos.relative(dir)
-                        val neighborState = level.getBlockState(neighborPos)
-                        val neighborBlockId = BuiltInRegistries.BLOCK.getKey(neighborState.block)
-                        println("[TypeGemClusterBlock] Neighbor at $dir -> $neighborBlockId")
-                        isGem(neighborState)
-                    }
-
-            if (hasConflict) {
-                println("[TypeGemClusterBlock] Found nearby TypeGemBlock(s). Stunting cluster at $pos.")
-                level.setBlockAndUpdate(
-                        pos,
-                        state.setValue(STUNTED, true).setValue(SHOULD_GROW, false)
-                )
-            } else {
-                println("[TypeGemClusterBlock] No conflicts. Converting cluster to TypeGemBlock.")
-                var nextState = nextStage.defaultBlockState()
-                if (nextState.hasProperty(FACING)) {
-                    nextState = nextState.setValue(FACING, facing)
+        // Check neighboring gem blocks
+        val hasConflict = Direction.entries
+                .filter { it != facing.opposite }
+                .any { dir ->
+                    val neighborPos = pos.relative(dir)
+                    val neighborState = level.getBlockState(neighborPos)
+                    val neighborBlockId = BuiltInRegistries.BLOCK.getKey(neighborState.block)
+                    println("[TypeGemClusterBlock] Neighbor at $dir -> $neighborBlockId")
+                    isGem(neighborState)
                 }
-                level.setBlockAndUpdate(pos, nextState)
+
+        if (hasConflict) {
+            println("[TypeGemClusterBlock] Found nearby TypeGemBlock(s). Stunting cluster at $pos.")
+            level.setBlockAndUpdate(
+                    pos,
+                    state.setValue(STUNTED, true).setValue(SHOULD_GROW, false)
+            )
+        } else {
+            println("[TypeGemClusterBlock] No conflicts. Converting cluster to TypeGemBlock.")
+            var nextState = nextStage.defaultBlockState()
+            if (nextState.hasProperty(FACING)) {
+                nextState = nextState.setValue(FACING, facing)
             }
+            level.setBlockAndUpdate(pos, nextState)
         }
     }
+
 
     private fun isGem(state: BlockState): Boolean {
         return state.`is`(CobblemonBlockTags.TYPE_GEM_BLOCKS)

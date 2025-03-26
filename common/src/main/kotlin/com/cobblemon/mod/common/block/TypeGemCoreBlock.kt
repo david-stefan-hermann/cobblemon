@@ -48,60 +48,44 @@ class TypeGemCoreBlock(properties: Properties) : Block(properties) {
 
     override fun randomTick(state: BlockState, level: ServerLevel, pos: BlockPos, random: RandomSource) {
         val connectedGems = getConnectedGems(level, pos)
+        val gemCount = connectedGems.count { isGem(it.first) }
+        val isOverLimit = gemCount >= MAX_CONNECTED_GEMS
 
-        val gemBlocks = connectedGems.filter { isGem(it.first) }
-        val chosenBlock = gemBlocks.randomOrNull() ?: return
+        val javaRandom = java.util.Random(random.nextLong())
 
-        val chosenBlockState = chosenBlock.first
-        val chosenBlockPosition = chosenBlock.second
-        val sourceBlock = chosenBlockState.block
-        val chosenDirection = if (chosenBlockState.hasProperty(DirectionalBlock.FACING))
-            chosenBlockState.getValue(DirectionalBlock.FACING)
-        else null
+        for ((gemState, gemPos) in connectedGems.shuffled(javaRandom)) {
+            val registryKey = BuiltInRegistries.BLOCK.getKey(gemState.block) ?: continue
+            val clusterBlock = BLOCK_TO_CLUSTER[registryKey] ?: continue
 
-        val registryKey = BuiltInRegistries.BLOCK.getKey(sourceBlock) ?: return
-        val blockToGrow = BLOCK_TO_CLUSTER[registryKey] ?: return
+            for (dir in Direction.entries.shuffled(javaRandom)) {
+                val targetPos = gemPos.relative(dir)
 
-        val possibleGrowthPositions = Direction.entries
-                .map { it to chosenBlockPosition.relative(it) }
-                .filter { (_, pos) ->
-                    level.getBlockState(pos).isAir && isPositionValidForGrowth(level, pos)
+                if (!level.getBlockState(targetPos).isAir) continue
+                if (!isPositionValidForGrowth(level, targetPos)) continue
+
+                var clusterState = clusterBlock.defaultBlockState()
+
+                if (clusterState.hasProperty(DirectionalBlock.FACING)) {
+                    clusterState = clusterState.setValue(DirectionalBlock.FACING, dir)
                 }
-                .map { (dir, pos) -> pos to dir }
 
-        if (possibleGrowthPositions.isEmpty()) return
+                if (clusterState.hasProperty(SHOULD_GROW)) {
+                    clusterState = clusterState.setValue(SHOULD_GROW, true)
+                }
 
-        val (preferred, fallback) = if (chosenDirection != null)
-            possibleGrowthPositions.partition { it.second == chosenDirection }
-        else
-            Pair(emptyList(), possibleGrowthPositions)
+                if (clusterState.hasProperty(STUNTED)) {
+                    clusterState = clusterState.setValue(STUNTED, isOverLimit)
+                }
 
-        val chosenPair = when {
-            preferred.isNotEmpty() && random.nextFloat() < CONTINUATION_CHANCE -> preferred[random.nextInt(preferred.size)]
-            fallback.isNotEmpty() -> fallback[random.nextInt(fallback.size)]
-            else -> null
-        } ?: return
-
-        val (posToGrow, directionToGrow) = chosenPair
-
-        val overLimit = connectedGems.size >= MAX_CONNECTED_GEMS
-
-        var newBlockState = blockToGrow.defaultBlockState()
-
-        if (newBlockState.hasProperty(DirectionalBlock.FACING)) {
-            newBlockState = newBlockState.setValue(DirectionalBlock.FACING, directionToGrow)
+                println("[TypeGemCoreBlock] Placing ${if (isOverLimit) "STUNTED" else "normal"} cluster at $targetPos facing $dir")
+                level.setBlockAndUpdate(targetPos, clusterState)
+                return // Exit after successful placement
+            }
         }
 
-        if (newBlockState.hasProperty(SHOULD_GROW)) {
-            newBlockState = newBlockState.setValue(SHOULD_GROW, !overLimit)
-        }
-
-        if (newBlockState.hasProperty(STUNTED)) {
-            newBlockState = newBlockState.setValue(STUNTED, overLimit)
-        }
-
-        level.setBlockAndUpdate(posToGrow, newBlockState)
+        println("[TypeGemCoreBlock] No valid spot found for cluster placement.")
     }
+
 
     private fun getConnectedGems(level: ServerLevel, pos: BlockPos): List<Pair<BlockState, BlockPos>> {
         val connectedGems = mutableListOf<Pair<BlockState, BlockPos>>()
