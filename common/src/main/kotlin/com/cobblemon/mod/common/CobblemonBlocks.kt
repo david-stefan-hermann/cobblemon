@@ -17,7 +17,6 @@ import com.cobblemon.mod.common.block.sign.CobblemonHangingSignBlock
 import com.cobblemon.mod.common.block.sign.CobblemonSignBlock
 import com.cobblemon.mod.common.block.sign.CobblemonWallHangingSignBlock
 import com.cobblemon.mod.common.block.sign.CobblemonWallSignBlock
-import com.cobblemon.mod.common.block.TypeGemBlock
 import com.cobblemon.mod.common.mixin.invoker.*
 import com.cobblemon.mod.common.platform.PlatformRegistry
 import com.cobblemon.mod.common.util.cobblemonResource
@@ -206,24 +205,26 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     @JvmField
     val TYPE_GEM_CORE = this.create("type_gem_core", TypeGemCoreBlock(BlockBehaviour.Properties.of()))
 
-    @JvmField val TYPE_GEM_BLOCK_NORMAL = this.create("type_gem_block_normal", Block(BlockBehaviour.Properties.of()))
-    @JvmField val TYPE_GEM_BLOCK_FIRE = this.create("type_gem_block_fire", Block(BlockBehaviour.Properties.of()))
-    @JvmField val TYPE_GEM_BLOCK_WATER = this.create("type_gem_block_water", Block(BlockBehaviour.Properties.of()))
-    @JvmField val TYPE_GEM_BLOCK_ELECTRIC = this.create("type_gem_block_electric", Block(BlockBehaviour.Properties.of()))
-    @JvmField val TYPE_GEM_BLOCK_GRASS = this.create("type_gem_block_grass", Block(BlockBehaviour.Properties.of()))
-    @JvmField val TYPE_GEM_BLOCK_ICE = this.create("type_gem_block_ice", Block(BlockBehaviour.Properties.of()))
-    @JvmField val TYPE_GEM_BLOCK_FIGHTING = this.create("type_gem_block_fighting", Block(BlockBehaviour.Properties.of()))
-    @JvmField val TYPE_GEM_BLOCK_POISON = this.create("type_gem_block_poison", Block(BlockBehaviour.Properties.of()))
-    @JvmField val TYPE_GEM_BLOCK_GROUND = this.create("type_gem_block_ground", Block(BlockBehaviour.Properties.of()))
-    @JvmField val TYPE_GEM_BLOCK_FLYING = this.create("type_gem_block_flying", Block(BlockBehaviour.Properties.of()))
-    @JvmField val TYPE_GEM_BLOCK_PSYCHIC = this.create("type_gem_block_psychic", Block(BlockBehaviour.Properties.of()))
-    @JvmField val TYPE_GEM_BLOCK_BUG = this.create("type_gem_block_bug", Block(BlockBehaviour.Properties.of()))
-    @JvmField val TYPE_GEM_BLOCK_ROCK = this.create("type_gem_block_rock", Block(BlockBehaviour.Properties.of()))
-    @JvmField val TYPE_GEM_BLOCK_GHOST = this.create("type_gem_block_ghost", Block(BlockBehaviour.Properties.of()))
-    @JvmField val TYPE_GEM_BLOCK_DRAGON = this.create("type_gem_block_dragon", Block(BlockBehaviour.Properties.of()))
-    @JvmField val TYPE_GEM_BLOCK_DARK = this.create("type_gem_block_dark", Block(BlockBehaviour.Properties.of()))
-    @JvmField val TYPE_GEM_BLOCK_STEEL = this.create("type_gem_block_steel", Block(BlockBehaviour.Properties.of()))
-    @JvmField val TYPE_GEM_BLOCK_FAIRY = this.create("type_gem_block_fairy", Block(BlockBehaviour.Properties.of()))
+    private val typeGemBlocks = mutableMapOf<ResourceLocation, Block>()
+
+    @JvmField val TYPE_GEM_BLOCK_NORMAL = typeGemBlock("type_gem_block_normal")
+    @JvmField val TYPE_GEM_BLOCK_FIRE = typeGemBlock("type_gem_block_fire")
+    @JvmField val TYPE_GEM_BLOCK_WATER = typeGemBlock("type_gem_block_water")
+    @JvmField val TYPE_GEM_BLOCK_ELECTRIC = typeGemBlock("type_gem_block_electric")
+    @JvmField val TYPE_GEM_BLOCK_GRASS = typeGemBlock("type_gem_block_grass")
+    @JvmField val TYPE_GEM_BLOCK_ICE = typeGemBlock("type_gem_block_ice")
+    @JvmField val TYPE_GEM_BLOCK_FIGHTING = typeGemBlock("type_gem_block_fighting")
+    @JvmField val TYPE_GEM_BLOCK_POISON = typeGemBlock("type_gem_block_poison")
+    @JvmField val TYPE_GEM_BLOCK_GROUND = typeGemBlock("type_gem_block_ground")
+    @JvmField val TYPE_GEM_BLOCK_FLYING = typeGemBlock("type_gem_block_flying")
+    @JvmField val TYPE_GEM_BLOCK_PSYCHIC = typeGemBlock("type_gem_block_psychic")
+    @JvmField val TYPE_GEM_BLOCK_BUG = typeGemBlock("type_gem_block_bug")
+    @JvmField val TYPE_GEM_BLOCK_ROCK = typeGemBlock("type_gem_block_rock")
+    @JvmField val TYPE_GEM_BLOCK_GHOST = typeGemBlock("type_gem_block_ghost")
+    @JvmField val TYPE_GEM_BLOCK_DRAGON = typeGemBlock("type_gem_block_dragon")
+    @JvmField val TYPE_GEM_BLOCK_DARK = typeGemBlock("type_gem_block_dark")
+    @JvmField val TYPE_GEM_BLOCK_STEEL = typeGemBlock("type_gem_block_steel")
+    @JvmField val TYPE_GEM_BLOCK_FAIRY = typeGemBlock("type_gem_block_fairy")
 
     private val typeGemClusters = mutableMapOf<ResourceLocation, TypeGemClusterBlock>()
 
@@ -599,6 +600,17 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
         val block = BlocksInvoker.createLeavesBlock(SoundType.GRASS)
         return this.create(name, block)
     }
+
+    private fun typeGemBlock(name: String): Block {
+        val typeGemBlock = this.create(name, Block(BlockBehaviour.Properties.of()))
+
+        val identifier = cobblemonResource(name)
+        typeGemBlocks[identifier] = typeGemBlock
+
+        return typeGemBlock
+    }
+
+    fun typeGemBlocks() = typeGemBlocks.toMap()
 
     private fun typeGemCluster(name: String, gemBlock: Block): Block {
         val gemClusterBlock = this.create(name, TypeGemClusterBlock(BlockBehaviour.Properties.of(), gemBlock))

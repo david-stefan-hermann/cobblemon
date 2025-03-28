@@ -1,8 +1,8 @@
 package com.cobblemon.mod.common.world.feature
 
 import com.cobblemon.mod.common.CobblemonBlocks.TYPE_GEM_CORE
-import com.cobblemon.mod.common.CobblemonBlocks.typeGemClusters
-import com.cobblemon.mod.common.block.TypeGemClusterBlock.Companion.FACING
+import com.cobblemon.mod.common.CobblemonBlocks.typeGemBlocks
+import com.cobblemon.mod.common.block.TypeGemCoreBlock
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.tags.BlockTags
@@ -28,28 +28,30 @@ class TypeGemFeature : Feature<BlockStateConfiguration>(BlockStateConfiguration.
             return false
         }
 
-        val randomAirBlock = neighborAirBlocks[random.nextInt(0, neighborAirBlocks.size)]
-        val randomGemPos = randomAirBlock.first
-        val randomGemDirection = randomAirBlock.second
+        val randomGemPos = neighborAirBlocks[random.nextInt(0, neighborAirBlocks.size)]
+        val typeGemBlocks = typeGemBlocks().toList()
+        val randomGemBlock = typeGemBlocks[random.nextInt(0, typeGemBlocks.size)].second
+        val randomGemBlockBlockState = randomGemBlock.defaultBlockState()
 
-        val typeGemClusters = typeGemClusters().toList()
-        val randomGem = typeGemClusters[random.nextInt(0, typeGemClusters.size)].second
-        val randomGemBlockState = randomGem.defaultBlockState().setValue(FACING, randomGemDirection)
+        val typeGemCoreBlockState = TYPE_GEM_CORE.defaultBlockState()
 
-        worldGenLevel.setBlock(origin, TYPE_GEM_CORE.defaultBlockState(), UPDATE_ALL)
-        worldGenLevel.setBlock(randomGemPos, randomGemBlockState, UPDATE_ALL)
+        worldGenLevel.setBlock(origin, typeGemCoreBlockState, UPDATE_ALL)
+        worldGenLevel.setBlock(randomGemPos, randomGemBlockBlockState, UPDATE_ALL)
+
+        val typeGemCoreBlock = typeGemCoreBlockState.block as TypeGemCoreBlock
+        typeGemCoreBlock.forceGrow(worldGenLevel, origin, random, 0.5f)
 
         return true
     }
 
-    fun getNeighborAirBlocks(worldGenLevel: WorldGenLevel, origin: BlockPos): List<Pair<BlockPos, Direction>> {
-        val airBlocks = mutableListOf<Pair<BlockPos, Direction>>()
+    fun getNeighborAirBlocks(worldGenLevel: WorldGenLevel, origin: BlockPos): List<BlockPos> {
+        val airBlocks = mutableListOf<BlockPos>()
 
         for (direction: Direction in Direction.entries) {
             val pos = origin.offset(direction.normal)
             val blockState = worldGenLevel.getBlockState(pos)
             if (blockState.isAir) {
-                airBlocks.add(Pair(pos, direction))
+                airBlocks.add(pos)
             }
         }
 
