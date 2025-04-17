@@ -1,15 +1,15 @@
 {
-  "moveName": "self-destruct",
+  "moveName": "mudslap",
   "obtainMethods": [
     {
       "variant": "cobblemon:impossible"
     }
   ],
-  "type": "normal",
+  "type": "ground",
   "recipe": [
     {
-      "item": "cobblemon:normal_gem",
-      "count": 4
+      "item": "cobblemon:ground_gem",
+      "count": 1
     }
   ]
 }

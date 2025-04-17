@@ -1,15 +1,15 @@
 {
-  "moveName": "u-turn",
+  "moveName": "doubleedge",
   "obtainMethods": [
     {
       "variant": "cobblemon:impossible"
     }
   ],
-  "type": "bug",
+  "type": "normal",
   "recipe": [
     {
-      "item": "cobblemon:bug_gem",
-      "count": 8
+      "item": "cobblemon:normal_gem",
+      "count": 10
     },
     {
       "item": "gold",

@@ -1,15 +1,15 @@
 {
-  "moveName": "will-o-wisp",
+  "moveName": "uturn",
   "obtainMethods": [
     {
       "variant": "cobblemon:impossible"
     }
   ],
-  "type": "fire",
+  "type": "bug",
   "recipe": [
     {
-      "item": "cobblemon:fire_gem",
-      "count": 6
+      "item": "cobblemon:bug_gem",
+      "count": 8
     },
     {
       "item": "gold",

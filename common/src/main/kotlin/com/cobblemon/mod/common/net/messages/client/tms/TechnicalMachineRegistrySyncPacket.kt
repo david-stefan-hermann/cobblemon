@@ -36,8 +36,11 @@ class TechnicalMachineRegistrySyncPacket(tms: List<TechnicalMachine>) : DataRegi
         buffer.writeUtf(entry.moveName.name)
         if (entry.recipe != null) {
             buffer.writeBoolean(true)
-            buffer.writeResourceLocation(entry.recipe.item)
-            buffer.writeVarInt(entry.recipe.count)
+            buffer.writeVarInt(entry.recipe.size)
+            entry.recipe.forEach {
+                buffer.writeResourceLocation(it.item)
+                buffer.writeVarInt(it.count)
+            }
         } else {
             buffer.writeBoolean(false)
         }
@@ -51,9 +54,12 @@ class TechnicalMachineRegistrySyncPacket(tms: List<TechnicalMachine>) : DataRegi
         val moveName = buffer.readUtf()
 
         val recipe = if (buffer.readBoolean()) {
-            val item = buffer.readResourceLocation()
-            val count = buffer.readVarInt()
-            TechnicalMachineRecipe(item, count)
+            val recipeCount = buffer.readVarInt()
+            List(recipeCount) {
+                val item = buffer.readResourceLocation()
+                val count = buffer.readVarInt()
+                TechnicalMachineRecipe(item, count)
+            }
         } else null
 
         val obtainMethods = List(buffer.readVarInt()) { ObtainMethod.readFromBuffer(buffer) }

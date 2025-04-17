@@ -200,9 +200,12 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
 
             if (this.tmmInventory.getItem(1).item != this.level?.itemRegistry?.get(this.tmmInventory.filterTM!!.elementalType.typeGem)) return
 
-            val recipe = TechnicalMachines.moveToTM[this.tmmInventory.filterTM]?.recipe
-            if (recipe != null) {
-                if (this.tmmInventory.getItem(2).item != this.level?.itemRegistry?.get(recipe.item) || this.tmmInventory.getItem(2).count < recipe.count) return
+            val recipes = TechnicalMachines.moveToTM[this.tmmInventory.filterTM]?.recipe ?: emptyList()
+            for ((index, recipe) in recipes.withIndex()) {
+                val slot = 2 + index
+                val item = this.tmmInventory.getItem(slot)
+                val expected = this.level?.itemRegistry?.get(recipe.item) ?: return
+                if (!item.`is`(expected) || item.count < recipe.count) return
             }
 
             stack = ItemStack(CobblemonItems.TECHNICAL_MACHINE)
@@ -210,8 +213,8 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
 
             this.tmmInventory.getItem(0).shrink(1)
             this.tmmInventory.getItem(1).shrink(1)
-            if (recipe != null) {
-                this.tmmInventory.getItem(2).shrink(recipe.count)
+            for ((index, recipe) in recipes.withIndex()) {
+                this.tmmInventory.getItem(2 + index).shrink(recipe.count)
             }
             this.tmmInventory.setChanged()
         }
@@ -244,9 +247,12 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
 
             if (this.tmmInventory.getItem(1).item != this.level?.itemRegistry?.get(filterTM.elementalType.typeGem)) return 0
 
-            val recipe = TechnicalMachines.moveToTM[filterTM]?.recipe
-            if (recipe != null) {
-                if (this.tmmInventory.getItem(2).item != this.level?.itemRegistry?.get(recipe.item) || this.tmmInventory.getItem(2).count < recipe.count) return 0
+            val recipes = TechnicalMachines.moveToTM[filterTM]?.recipe ?: emptyList()
+            for ((index, recipe) in recipes.withIndex()) {
+                val slot = 2 + index
+                val expected = this.level?.itemRegistry?.get(recipe.item) ?: return 0
+                val item = this.tmmInventory.getItem(slot)
+                if (!item.`is`(expected) || item.count < recipe.count) return 0
             }
 
             return 15
@@ -274,7 +280,13 @@ class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity
                 return when (slot) {
                     0 -> item == CobblemonItems.BLANK_TM
                     1 -> item == blockEntity.level?.itemRegistry?.get(filterTM.elementalType.typeGem)
-                    2 -> item == blockEntity.level?.itemRegistry?.get(tm.recipe?.item)
+                    2, 3 -> {
+                        val recipes = tm.recipe ?: return false
+                        val recipeIndex = slot - 2
+                        if (recipeIndex >= recipes.size) return false
+                        val expected = blockEntity.level?.itemRegistry?.get(recipes[recipeIndex].item) ?: return false
+                        item == expected
+                    }
                     else -> false
                 }
             }

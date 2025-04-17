@@ -23,7 +23,7 @@ import net.minecraft.network.chat.Component
 
 class TechnicalMachine(
         val moveName: MoveTemplate,
-        val recipe: TechnicalMachineRecipe?,
+        val recipe: List<TechnicalMachineRecipe>?,
         val obtainMethods: List<ObtainMethod> = emptyList(),
         val type: String
 ) {

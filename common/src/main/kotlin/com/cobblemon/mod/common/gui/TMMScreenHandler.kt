@@ -93,8 +93,8 @@ class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMe
         return itemStack
     }
 
-    override fun stillValid(player: Player?): Boolean {
-        return inventory?.stillValid(player) ?: false
+    override fun stillValid(player: Player): Boolean {
+        return player?.let { inventory?.stillValid(it) } ?: false
     }
 
     /*override fun removed(player: Player?) {

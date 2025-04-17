@@ -249,7 +249,24 @@ class TMMHandledScreen(
             matrixStack = context.pose(),
         )
 
-        val typeGem = BuiltInRegistries.ITEM.get(ElementalTypes.get(currentTm.type)?.typeGem).defaultInstance
+        val recipes = currentTm.recipe ?: listOf()
+
+        // render our ingredients here
+        recipes.forEachIndexed { index, ingredient ->
+            val iconX = (x + 197 + 18 + (index * 18)).toDouble()
+            val iconY = (y + 127).toDouble()
+
+            renderScaledGuiItemIcon(
+                    itemStack = BuiltInRegistries.ITEM.get(ingredient.item).defaultInstance,
+                    x = iconX,
+                    y = iconY,
+                    zTranslation = 1f, // Icons behind the text
+                    matrixStack = context.pose()
+            )
+        }
+
+        // todo we can kill this probably as it was for when we assumed we needed Type Gems, but we might want to not use them too or other people might not etc
+        /*val typeGem = BuiltInRegistries.ITEM.get(ElementalTypes.get(currentTm.type)?.typeGem).defaultInstance
         // type gem
         renderScaledGuiItemIcon(
             itemStack = typeGem ?: ItemStack.EMPTY,
@@ -259,27 +276,32 @@ class TMMHandledScreen(
         )
 
         val recipe = currentTm.recipe ?: TechnicalMachineRecipe(ResourceLocation.tryParse("minecraft:air")!!, 1)
-        // ingredient
+        // 2nd ingredient
         renderScaledGuiItemIcon(
             itemStack = BuiltInRegistries.ITEM.get(recipe.item).defaultInstance,
             x = (x + 197 + 36).toDouble(),
             y = (y + 127).toDouble(),
             zTranslation = 1f,
             matrixStack = context.pose(),
-        )
+        )*/
 
         context.pose().pushPose()
         context.pose().translate(0f, 0f, 2f)
 
-        if (recipe.count > 1) {
-            val xIncrease = if (recipe.count < 10) 47 else 41
-            drawScaledText(
-                context = context,
-                text = Component.literal(recipe.count.toString()),
-                x = (x + 197 + xIncrease).toDouble(),
-                y = (y + 136).toDouble(),
-                shadow = true
-            )
+        // render the count of the ingredients here
+        recipes.forEachIndexed { index, ingredient ->
+            if (ingredient.count > 1) {
+                val textX = (x + 197 + 18 + (index * 18) + 11).toDouble()
+                val textY = (y + 136).toDouble()
+
+                drawScaledText(
+                        context = context,
+                        text = Component.literal(ingredient.count.toString()),
+                        x = textX,
+                        y = textY,
+                        shadow = true
+                )
+            }
         }
 
         context.pose().popPose()
@@ -514,9 +536,9 @@ class TMMHandledScreen(
 
     fun clearGUI() {
         for (id in children.keys) {
-            removeWidget(children[id]) // Remove the widget from rendering
+            children[id]?.let { removeWidget(it) }
         }
-        children.clear() // Clear the map
+        children.clear()
     }
 
     override fun renderBg(context: GuiGraphics, delta: Float, mouseX: Int, mouseY: Int) {

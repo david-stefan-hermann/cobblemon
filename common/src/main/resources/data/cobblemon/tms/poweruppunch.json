@@ -1,15 +1,15 @@
 {
-  "moveName": "mud-slap",
+  "moveName": "poweruppunch",
   "obtainMethods": [
     {
       "variant": "cobblemon:impossible"
     }
   ],
-  "type": "ground",
+  "type": "fighting",
   "recipe": [
     {
-      "item": "cobblemon:ground_gem",
-      "count": 1
+      "item": "cobblemon:fighting_gem",
+      "count": 3
     }
   ]
 }

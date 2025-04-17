@@ -1,20 +1,9 @@
-/*
- * Copyright (C) 2023 Cobblemon Contributors
- *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
-
 package com.cobblemon.mod.common.client.net.gui
 
 import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.CobblemonSounds
-import com.cobblemon.mod.common.api.moves.Moves
 import com.cobblemon.mod.common.api.net.ServerNetworkPacketHandler
-import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.gui.TMMScreenHandler
-import com.cobblemon.mod.common.item.TechnicalMachineItem
 import com.cobblemon.mod.common.item.components.TMMoveComponent
 import com.cobblemon.mod.common.net.messages.client.ui.CraftTMPacket
 import com.cobblemon.mod.common.util.itemRegistry
@@ -26,43 +15,35 @@ import net.minecraft.world.item.ItemStack
 
 object CraftTMPacketHandler : ServerNetworkPacketHandler<CraftTMPacket> {
     override fun handle(packet: CraftTMPacket, server: MinecraftServer, player: ServerPlayer) {
-        val screen = player.containerMenu as TMMScreenHandler
-        if (screen.inventory == null) return
-        val discSlot = screen.inventory!!.getItem(0)
-        val gemSlot = screen.inventory!!.getItem(1)
-        val ingredientSlot = screen.inventory!!.getItem(2)
+        val screen = player.containerMenu as? TMMScreenHandler ?: return
+        val inventory = screen.inventory ?: return
+
         val outputSlot = screen.result.getItem(0)
-        val typeGem = player.serverLevel().itemRegistry.get(ElementalTypes.get(packet.tm.type)?.typeGem)
+        if (!outputSlot.isEmpty) return
 
-        if (!outputSlot.isEmpty) {
-            return
+        val discSlot = inventory.getItem(0)
+        if (discSlot.item != CobblemonItems.BLANK_TM) return
+
+        val recipes = packet.tm.recipe ?: emptyList()
+        for ((index, recipe) in recipes.withIndex()) {
+            val slot = 1 + index
+            val item = inventory.getItem(slot)
+            val expected = player.serverLevel().itemRegistry.get(recipe.item) ?: return
+            if (!item.`is`(expected) || item.count < recipe.count) return
         }
 
-        if (discSlot.item != CobblemonItems.BLANK_TM) {
-            return
-        }
-
-        if (gemSlot.item != typeGem) {
-            return
-        }
-
-        if (packet.tm.recipe != null) {
-            if (!player.serverLevel().itemRegistry.get(packet.tm.recipe.item)?.let { ingredientSlot.`is`(it) }!! || ingredientSlot.count < packet.tm.recipe.count) {
-                return
-            }
-        }
-
+        // Craft the TM
         val stack = ItemStack(CobblemonItems.TECHNICAL_MACHINE)
-        val moveTemplate = packet.tm.moveName
-        TMMoveComponent.setTMMove(stack, moveTemplate)
+        TMMoveComponent.setTMMove(stack, packet.tm.moveName)
         screen.result.setItem(0, stack)
-        screen.inventory!!.getItem(0).shrink(1)
-        screen.inventory!!.getItem(1).shrink(1)
-        if (packet.tm.recipe != null) {
-            screen.inventory!!.getItem(2).shrink(packet.tm.recipe.count)
+
+        // Consume ingredients
+        inventory.getItem(0).shrink(1)
+        for ((index, recipe) in recipes.withIndex()) {
+            inventory.getItem(1 + index).shrink(recipe.count)
         }
 
-        screen.inventory!!.setChanged()
+        inventory.setChanged()
         screen.result.setChanged()
         player.containerMenu.broadcastChanges()
 
