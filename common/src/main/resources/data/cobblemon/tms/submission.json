@@ -1,0 +1,20 @@
+{
+  "moveName": "submission",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:advancement",
+      "advancement": "cobblemon:craft_remedy"
+    }
+  ],
+  "type": "fighting",
+  "recipe": [
+    {
+      "item": "cobblemon:fighting_gem",
+      "count": 3
+    },
+    {
+      "item": "minecraft:bone",
+      "count": 1
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "moveName": "earthquake",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "ground",
+  "recipe": [
+    {
+      "item": "cobblemon:ground_gem",
+      "count": 12
+    },
+    {
+      "item": "diamond",
+      "count": 1
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "moveName": "dragonrage",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:advancement",
+      "advancement": "cobblemon:craft_remedy"
+    }
+  ],
+  "type": "dragon",
+  "recipe": [
+    {
+      "item": "cobblemon:dragon_gem",
+      "count": 2
+    }
+  ]
+}

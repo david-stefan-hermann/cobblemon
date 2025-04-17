@@ -1,0 +1,20 @@
+{
+  "moveName": "furycutter",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:advancement",
+      "advancement": "cobblemon:craft_remedy"
+    }
+  ],
+  "type": "bug",
+  "recipe": [
+    {
+      "item": "cobblemon:bug_gem",
+      "count": 2
+    },
+    {
+      "item": "minecraft:iron_nugget",
+      "count": 1
+    }
+  ]
+}

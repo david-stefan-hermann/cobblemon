@@ -1,0 +1,20 @@
+{
+  "moveName": "psywave",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:advancement",
+      "advancement": "cobblemon:craft_remedy"
+    }
+  ],
+  "type": "psychic",
+  "recipe": [
+    {
+      "item": "cobblemon:psychic_gem",
+      "count": 3
+    },
+    {
+      "item": "minecraft:amethyst_shard",
+      "count": 1
+    }
+  ]
+}

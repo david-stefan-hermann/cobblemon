@@ -1,0 +1,16 @@
+{
+  "moveName": "bubblebeam",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:advancement",
+      "advancement": "cobblemon:craft_remedy"
+    }
+  ],
+  "type": "water",
+  "recipe": [
+    {
+      "item": "cobblemon:water_gem",
+      "count": 3
+    }
+  ]
+}
