@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "cobblemon:dragon_gem"
+    }
+  ],
+  "result": {
+    "id": "cobblemon:type_gem_cluster_dragon",
+    "count": 9
+  }
+}

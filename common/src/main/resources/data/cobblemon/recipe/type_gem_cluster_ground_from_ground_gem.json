@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "cobblemon:ground_gem"
+    }
+  ],
+  "result": {
+    "id": "cobblemon:type_gem_cluster_ground",
+    "count": 9
+  }
+}

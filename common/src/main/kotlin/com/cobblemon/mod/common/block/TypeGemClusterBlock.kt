@@ -1,34 +1,52 @@
 package com.cobblemon.mod.common.block
 
+import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.api.tags.CobblemonBlockTags
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.util.RandomSource
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import net.minecraft.world.item.context.BlockPlaceContext
+import net.minecraft.world.level.LevelAccessor
+import net.minecraft.world.level.LevelReader
+import net.minecraft.world.level.block.AirBlock
 import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.DirectionalBlock
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.StateDefinition
 import net.minecraft.world.level.block.state.properties.BooleanProperty
 import net.minecraft.world.level.block.state.properties.DirectionProperty
 import net.minecraft.world.level.block.state.properties.IntegerProperty
+import net.minecraft.world.level.storage.loot.LootContext
+import net.minecraft.world.level.storage.loot.LootParams
 import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
+import javax.swing.text.html.HTML.Attribute.SHAPES
 
 class TypeGemClusterBlock(
         settings: Properties,
-        val nextStage: Block
+        val nextStage: Block,
+        val dropItemId: ResourceLocation
 ) : DirectionalBlock(settings) {
 
     companion object {
-        val CODEC: MapCodec<TypeGemClusterBlock> = RecordCodecBuilder.mapCodec { it.group(
-                propertiesCodec(),
-                Block.CODEC.fieldOf("nextStage").forGetter { it.nextStage }
-        ).apply(it, ::TypeGemClusterBlock) }
+        val CODEC: MapCodec<TypeGemClusterBlock> = RecordCodecBuilder.mapCodec { instance ->
+            instance.group(
+                    propertiesCodec(),
+                    Block.CODEC.fieldOf("nextStage").forGetter { it.nextStage },
+                    ResourceLocation.CODEC.fieldOf("dropItem").forGetter { it.dropItemId }
+            ).apply(instance) { settings, nextStage, dropItemId ->
+                TypeGemClusterBlock(settings, nextStage, dropItemId)
+            }
+        }
 
         val SHOULD_GROW: BooleanProperty = BooleanProperty.create("should_grow")
         val FACING: DirectionProperty = DirectionalBlock.FACING
@@ -123,6 +141,10 @@ class TypeGemClusterBlock(
         return state.`is`(CobblemonBlockTags.TYPE_GEM_BLOCKS)
     }
 
+    override fun getDrops(state: BlockState, params: LootParams.Builder): List<ItemStack> {
+        val item = BuiltInRegistries.ITEM.getOptional(dropItemId).orElse(Items.AIR)
+        return listOf(ItemStack(item))
+    }
 
     override fun getShape(
             state: BlockState,
@@ -130,14 +152,41 @@ class TypeGemClusterBlock(
             pos: BlockPos,
             context: net.minecraft.world.phys.shapes.CollisionContext
     ): VoxelShape {
-        return when (state.getValue(STAGE)) {
-            0 -> box(5.0, 0.0, 5.0, 11.0, 6.0, 11.0)  // small bud
-            1 -> box(4.0, 0.0, 4.0, 12.0, 9.0, 12.0)  // medium bud
-            2 -> box(3.0, 0.0, 3.0, 13.0, 13.0, 13.0) // large bud
-            3 -> box(2.0, 0.0, 2.0, 14.0, 16.0, 14.0) // full cluster
-            else -> Shapes.empty()
+        val stage = state.getValue(STAGE)
+        val facing = state.getValue(FACING)
+
+        val (min, max) = when (stage) {
+            0 -> 5.0 to 11.0
+            1 -> 4.0 to 12.0
+            2 -> 3.0 to 13.0
+            3 -> 2.0 to 14.0
+            else -> return Shapes.empty()
+        }
+
+        return when (facing) {
+            Direction.UP    -> Shapes.box(min / 16, 0.0, min / 16, max / 16, (min + 1) / 16, max / 16)
+            Direction.DOWN  -> Shapes.box(min / 16, (16 - (min + 1)) / 16, min / 16, max / 16, 1.0, max / 16)
+            Direction.NORTH -> Shapes.box(min / 16, min / 16, (16 - (min + 1)) / 16, max / 16, max / 16, 1.0)
+            Direction.SOUTH -> Shapes.box((16 - max) / 16, min / 16, 0.0, (16 - min) / 16, max / 16, (min + 1) / 16)
+            Direction.WEST  -> Shapes.box((16 - (min + 1)) / 16, min / 16, min / 16, 1.0, max / 16, max / 16)
+            Direction.EAST  -> Shapes.box(0.0, min / 16, min / 16, (min + 1) / 16, max / 16, max / 16)
         }
     }
+
+    override fun updateShape(state: BlockState, direction: Direction, neighborState: BlockState, level: LevelAccessor, pos: BlockPos, neighborPos: BlockPos): BlockState {
+        val facing = state.getValue(FACING)
+        if (direction == facing.opposite && !canSurvive(state, level, pos)) {
+            return Blocks.AIR.defaultBlockState()
+        }
+        return super.updateShape(state, direction, neighborState, level, pos, neighborPos)
+    }
+
+    override fun canSurvive(state: BlockState, level: LevelReader, pos: BlockPos): Boolean {
+        val supportPos = pos.relative(state.getValue(FACING).opposite)
+        val supportBlock = level.getBlockState(supportPos).block
+        return supportBlock !is AirBlock
+    }
+
 
     override fun codec(): MapCodec<out DirectionalBlock> = CODEC
 

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "cobblemon:psychic_gem"
+    }
+  ],
+  "result": {
+    "id": "cobblemon:type_gem_cluster_psychic",
+    "count": 9
+  }
+}

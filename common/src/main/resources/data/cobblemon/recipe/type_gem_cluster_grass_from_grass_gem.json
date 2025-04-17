@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "cobblemon:grass_gem"
+    }
+  ],
+  "result": {
+    "id": "cobblemon:type_gem_cluster_grass",
+    "count": 9
+  }
+}

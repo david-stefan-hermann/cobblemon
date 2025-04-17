@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CCC",
+    "CCC",
+    "CCC"
+  ],
+  "key": {
+    "C": {
+      "item": "cobblemon:type_gem_cluster_water"
+    }
+  },
+  "result": {
+    "id": "cobblemon:water_gem",
+    "count": 1
+  }
+}
