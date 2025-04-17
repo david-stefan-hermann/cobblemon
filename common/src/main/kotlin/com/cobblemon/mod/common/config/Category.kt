@@ -18,5 +18,7 @@ enum class Category(val lang: String) {
     Pokedex("pokedex"),
     Storage("storage"),
     Starter("starter"),
+    Interface("interface"),
+    Riding("riding"),
     Debug("debug"),
 }
