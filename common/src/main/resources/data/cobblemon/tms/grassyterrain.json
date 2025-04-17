@@ -1,0 +1,19 @@
+{
+  "moveName": "grassyterrain",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "grass",
+  "recipe": [
+    {
+      "item": "cobblemon:grass_gem",
+      "count": 3
+    },
+    {
+      "item": "iron",
+      "count": 1
+    }
+  ]
+}

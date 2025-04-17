@@ -1,0 +1,19 @@
+{
+  "moveName": "scaleshot",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "dragon",
+  "recipe": [
+    {
+      "item": "cobblemon:dragon_gem",
+      "count": 5
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

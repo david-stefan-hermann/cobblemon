@@ -1,0 +1,19 @@
+{
+  "moveName": "knockoff",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "dark",
+  "recipe": [
+    {
+      "item": "cobblemon:dark_gem",
+      "count": 7
+    },
+    {
+      "item": "diamond",
+      "count": 1
+    }
+  ]
+}

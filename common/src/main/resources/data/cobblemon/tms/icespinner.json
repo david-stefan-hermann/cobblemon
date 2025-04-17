@@ -1,0 +1,19 @@
+{
+  "moveName": "icespinner",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "ice",
+  "recipe": [
+    {
+      "item": "cobblemon:ice_gem",
+      "count": 8
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

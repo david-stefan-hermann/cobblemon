@@ -1,0 +1,19 @@
+{
+  "moveName": "heatwave",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "fire",
+  "recipe": [
+    {
+      "item": "cobblemon:fire_gem",
+      "count": 9
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

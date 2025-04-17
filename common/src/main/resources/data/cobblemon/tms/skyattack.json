@@ -2,10 +2,18 @@
   "moveName": "skyattack",
   "obtainMethods": [
     {
-      "variant": "cobblemon:y_level",
-      "yLevel": 100,
-      "operator": "greater"
+      "variant": "cobblemon:impossible"
     }
   ],
-  "type": "flying"
+  "type": "flying",
+  "recipe": [
+    {
+      "item": "cobblemon:flying_gem",
+      "count": 10
+    },
+    {
+      "item": "iron",
+      "count": 1
+    }
+  ]
 }

@@ -1,0 +1,15 @@
+{
+  "moveName": "workup",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "normal",
+  "recipe": [
+    {
+      "item": "cobblemon:normal_gem",
+      "count": 2
+    }
+  ]
+}

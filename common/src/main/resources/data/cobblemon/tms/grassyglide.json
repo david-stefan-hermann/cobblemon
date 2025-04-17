@@ -1,0 +1,19 @@
+{
+  "moveName": "grassyglide",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "grass",
+  "recipe": [
+    {
+      "item": "cobblemon:grass_gem",
+      "count": 6
+    },
+    {
+      "item": "iron",
+      "count": 1
+    }
+  ]
+}

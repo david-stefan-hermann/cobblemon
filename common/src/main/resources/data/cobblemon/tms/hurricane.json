@@ -1,0 +1,19 @@
+{
+  "moveName": "hurricane",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "flying",
+  "recipe": [
+    {
+      "item": "cobblemon:flying_gem",
+      "count": 12
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

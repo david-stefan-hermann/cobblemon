@@ -1,0 +1,19 @@
+{
+  "moveName": "ironhead",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "steel",
+  "recipe": [
+    {
+      "item": "cobblemon:steel_gem",
+      "count": 8
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

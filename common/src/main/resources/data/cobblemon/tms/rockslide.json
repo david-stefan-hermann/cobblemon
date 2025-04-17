@@ -5,5 +5,15 @@
       "variant": "cobblemon:impossible"
     }
   ],
-  "type": "rock"
+  "type": "rock",
+  "recipe": [
+    {
+      "item": "cobblemon:rock_gem",
+      "count": 8
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
 }

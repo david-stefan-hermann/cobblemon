@@ -1,0 +1,15 @@
+{
+  "moveName": "icefang",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "ice",
+  "recipe": [
+    {
+      "item": "cobblemon:ice_gem",
+      "count": 5
+    }
+  ]
+}

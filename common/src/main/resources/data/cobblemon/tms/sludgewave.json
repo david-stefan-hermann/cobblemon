@@ -1,0 +1,19 @@
+{
+  "moveName": "sludgewave",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "poison",
+  "recipe": [
+    {
+      "item": "cobblemon:poison_gem",
+      "count": 10
+    },
+    {
+      "item": "diamond",
+      "count": 1
+    }
+  ]
+}

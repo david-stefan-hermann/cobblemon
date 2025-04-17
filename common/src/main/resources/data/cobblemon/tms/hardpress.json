@@ -1,0 +1,19 @@
+{
+  "moveName": "hardpress",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "steel",
+  "recipe": [
+    {
+      "item": "cobblemon:steel_gem",
+      "count": 6
+    },
+    {
+      "item": "iron",
+      "count": 1
+    }
+  ]
+}

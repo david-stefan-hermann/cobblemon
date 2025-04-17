@@ -1,0 +1,19 @@
+{
+  "moveName": "foulplay",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "dark",
+  "recipe": [
+    {
+      "item": "cobblemon:dark_gem",
+      "count": 9
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

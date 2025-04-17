@@ -1,0 +1,15 @@
+{
+  "moveName": "lowkick",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "fighting",
+  "recipe": [
+    {
+      "item": "cobblemon:fighting_gem",
+      "count": 3
+    }
+  ]
+}

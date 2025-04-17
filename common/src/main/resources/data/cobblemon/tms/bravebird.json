@@ -1,0 +1,19 @@
+{
+  "moveName": "bravebird",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "flying",
+  "recipe": [
+    {
+      "item": "cobblemon:flying_gem",
+      "count": 10
+    },
+    {
+      "item": "diamond",
+      "count": 1
+    }
+  ]
+}

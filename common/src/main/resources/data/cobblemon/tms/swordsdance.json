@@ -1,0 +1,19 @@
+{
+  "moveName": "swordsdance",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "normal",
+  "recipe": [
+    {
+      "item": "cobblemon:normal_gem",
+      "count": 6
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

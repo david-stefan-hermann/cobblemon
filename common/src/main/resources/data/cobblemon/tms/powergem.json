@@ -1,0 +1,19 @@
+{
+  "moveName": "powergem",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "rock",
+  "recipe": [
+    {
+      "item": "cobblemon:rock_gem",
+      "count": 9
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

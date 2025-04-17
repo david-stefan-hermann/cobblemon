@@ -1,0 +1,19 @@
+{
+  "moveName": "highhorsepower",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "ground",
+  "recipe": [
+    {
+      "item": "cobblemon:ground_gem",
+      "count": 10
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

@@ -5,5 +5,15 @@
       "variant": "cobblemon:impossible"
     }
   ],
-  "type": "fairy"
+  "type": "fairy",
+  "recipe": [
+    {
+      "item": "cobblemon:fairy_gem",
+      "count": 8
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
 }

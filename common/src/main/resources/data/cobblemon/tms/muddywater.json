@@ -1,0 +1,19 @@
+{
+  "moveName": "muddywater",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "water",
+  "recipe": [
+    {
+      "item": "cobblemon:water_gem",
+      "count": 9
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

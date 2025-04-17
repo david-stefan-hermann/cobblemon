@@ -1,0 +1,19 @@
+{
+  "moveName": "irondefense",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "steel",
+  "recipe": [
+    {
+      "item": "cobblemon:steel_gem",
+      "count": 4
+    },
+    {
+      "item": "iron",
+      "count": 1
+    }
+  ]
+}

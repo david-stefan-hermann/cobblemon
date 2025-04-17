@@ -1,0 +1,19 @@
+{
+  "moveName": "wildcharge",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "electric",
+  "recipe": [
+    {
+      "item": "cobblemon:electric_gem",
+      "count": 8
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

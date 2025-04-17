@@ -1,0 +1,19 @@
+{
+  "moveName": "steelbeam",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "steel",
+  "recipe": [
+    {
+      "item": "cobblemon:steel_gem",
+      "count": 10
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

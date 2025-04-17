@@ -5,5 +5,15 @@
       "variant": "cobblemon:impossible"
     }
   ],
-  "type": "ice"
+  "type": "ice",
+  "recipe": [
+    {
+      "item": "cobblemon:ice_gem",
+      "count": 10
+    },
+    {
+      "item": "diamond",
+      "count": 1
+    }
+  ]
 }

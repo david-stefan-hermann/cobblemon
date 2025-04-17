@@ -1,0 +1,19 @@
+{
+  "moveName": "gunkshot",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "poison",
+  "recipe": [
+    {
+      "item": "cobblemon:poison_gem",
+      "count": 12
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

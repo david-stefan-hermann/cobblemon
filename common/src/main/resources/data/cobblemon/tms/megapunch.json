@@ -1,0 +1,19 @@
+{
+  "moveName": "megapunch",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "normal",
+  "recipe": [
+    {
+      "item": "cobblemon:normal_gem",
+      "count": 8
+    },
+    {
+      "item": "iron",
+      "count": 1
+    }
+  ]
+}

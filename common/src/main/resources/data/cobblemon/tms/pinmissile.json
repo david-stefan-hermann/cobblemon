@@ -1,0 +1,15 @@
+{
+  "moveName": "pinmissile",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "bug",
+  "recipe": [
+    {
+      "item": "cobblemon:bug_gem",
+      "count": 2
+    }
+  ]
+}

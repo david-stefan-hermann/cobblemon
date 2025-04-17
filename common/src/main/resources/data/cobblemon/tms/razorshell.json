@@ -1,0 +1,19 @@
+{
+  "moveName": "razorshell",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "water",
+  "recipe": [
+    {
+      "item": "cobblemon:water_gem",
+      "count": 7
+    },
+    {
+      "item": "iron",
+      "count": 1
+    }
+  ]
+}

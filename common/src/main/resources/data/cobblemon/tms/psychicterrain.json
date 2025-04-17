@@ -1,0 +1,19 @@
+{
+  "moveName": "psychicterrain",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "psychic",
+  "recipe": [
+    {
+      "item": "cobblemon:psychic_gem",
+      "count": 3
+    },
+    {
+      "item": "iron",
+      "count": 1
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "moveName": "supercellslam",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "electric",
+  "recipe": [
+    {
+      "item": "cobblemon:electric_gem",
+      "count": 10
+    },
+    {
+      "item": "diamond",
+      "count": 1
+    }
+  ]
+}

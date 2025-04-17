@@ -1,0 +1,19 @@
+{
+  "moveName": "phantomforce",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "ghost",
+  "recipe": [
+    {
+      "item": "cobblemon:ghost_gem",
+      "count": 8
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

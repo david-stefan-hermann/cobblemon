@@ -1,0 +1,19 @@
+{
+  "moveName": "scald",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "water",
+  "recipe": [
+    {
+      "item": "cobblemon:water_gem",
+      "count": 12
+    },
+    {
+      "item": "diamond",
+      "count": 1
+    }
+  ]
+}

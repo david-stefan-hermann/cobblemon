@@ -1,0 +1,19 @@
+{
+  "moveName": "thunderwave",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "electric",
+  "recipe": [
+    {
+      "item": "cobblemon:electric_gem",
+      "count": 6
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

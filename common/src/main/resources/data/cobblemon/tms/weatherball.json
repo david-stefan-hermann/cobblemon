@@ -1,0 +1,19 @@
+{
+  "moveName": "weatherball",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "normal",
+  "recipe": [
+    {
+      "item": "cobblemon:normal_gem",
+      "count": 5
+    },
+    {
+      "item": "iron",
+      "count": 1
+    }
+  ]
+}

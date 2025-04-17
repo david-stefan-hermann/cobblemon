@@ -1,0 +1,15 @@
+{
+  "moveName": "brine",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "water",
+  "recipe": [
+    {
+      "item": "cobblemon:water_gem",
+      "count": 6
+    }
+  ]
+}

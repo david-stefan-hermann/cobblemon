@@ -1,0 +1,19 @@
+{
+  "moveName": "signalbeam",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "bug",
+  "recipe": [
+    {
+      "item": "cobblemon:bug_gem",
+      "count": 7
+    },
+    {
+      "item": "iron",
+      "count": 1
+    }
+  ]
+}

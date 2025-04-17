@@ -1,0 +1,19 @@
+{
+  "moveName": "stealthrock",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "rock",
+  "recipe": [
+    {
+      "item": "cobblemon:rock_gem",
+      "count": 6
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

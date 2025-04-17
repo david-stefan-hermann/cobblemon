@@ -1,0 +1,19 @@
+{
+  "moveName": "focusblast",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "fighting",
+  "recipe": [
+    {
+      "item": "cobblemon:fighting_gem",
+      "count": 10
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

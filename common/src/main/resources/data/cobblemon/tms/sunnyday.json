@@ -1,0 +1,19 @@
+{
+  "moveName": "sunnyday",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "fire",
+  "recipe": [
+    {
+      "item": "cobblemon:fire_gem",
+      "count": 3
+    },
+    {
+      "item": "iron",
+      "count": 1
+    }
+  ]
+}

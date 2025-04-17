@@ -1,0 +1,19 @@
+{
+  "moveName": "leafstorm",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "grass",
+  "recipe": [
+    {
+      "item": "cobblemon:grass_gem",
+      "count": 12
+    },
+    {
+      "item": "diamond",
+      "count": 1
+    }
+  ]
+}

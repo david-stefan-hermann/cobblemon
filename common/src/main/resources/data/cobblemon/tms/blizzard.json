@@ -1,0 +1,19 @@
+{
+  "moveName": "blizzard",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "ice",
+  "recipe": [
+    {
+      "item": "cobblemon:ice_gem",
+      "count": 12
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

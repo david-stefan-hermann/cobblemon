@@ -1,0 +1,19 @@
+{
+  "moveName": "bounce",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "flying",
+  "recipe": [
+    {
+      "item": "cobblemon:flying_gem",
+      "count": 6
+    },
+    {
+      "item": "iron",
+      "count": 1
+    }
+  ]
+}

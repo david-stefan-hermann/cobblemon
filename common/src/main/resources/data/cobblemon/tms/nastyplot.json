@@ -1,0 +1,19 @@
+{
+  "moveName": "nastyplot",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "dark",
+  "recipe": [
+    {
+      "item": "cobblemon:dark_gem",
+      "count": 6
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

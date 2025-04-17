@@ -1,9 +1,0 @@
-{
-  "moveName": "toxic",
-  "obtainMethods": [
-    {
-      "variant": "cobblemon:impossible"
-    }
-  ],
-  "type": "poison"
-}

@@ -1,0 +1,19 @@
+{
+  "moveName": "bugbuzz",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "bug",
+  "recipe": [
+    {
+      "item": "cobblemon:bug_gem",
+      "count": 9
+    },
+    {
+      "item": "diamond",
+      "count": 1
+    }
+  ]
+}

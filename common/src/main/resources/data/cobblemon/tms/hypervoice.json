@@ -1,0 +1,19 @@
+{
+  "moveName": "hypervoice",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "normal",
+  "recipe": [
+    {
+      "item": "cobblemon:normal_gem",
+      "count": 9
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

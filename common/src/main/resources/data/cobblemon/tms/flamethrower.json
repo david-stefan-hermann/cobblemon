@@ -1,0 +1,19 @@
+{
+  "moveName": "flamethrower",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "fire",
+  "recipe": [
+    {
+      "item": "cobblemon:fire_gem",
+      "count": 10
+    },
+    {
+      "item": "diamond",
+      "count": 1
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "moveName": "icepunch",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "ice",
+  "recipe": [
+    {
+      "item": "cobblemon:ice_gem",
+      "count": 7
+    },
+    {
+      "item": "iron",
+      "count": 1
+    }
+  ]
+}

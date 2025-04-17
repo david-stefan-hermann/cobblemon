@@ -1,0 +1,19 @@
+{
+  "moveName": "closecombat",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "fighting",
+  "recipe": [
+    {
+      "item": "cobblemon:fighting_gem",
+      "count": 12
+    },
+    {
+      "item": "diamond",
+      "count": 1
+    }
+  ]
+}

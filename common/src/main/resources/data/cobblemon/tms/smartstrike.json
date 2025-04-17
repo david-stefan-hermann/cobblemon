@@ -1,0 +1,19 @@
+{
+  "moveName": "smartstrike",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "steel",
+  "recipe": [
+    {
+      "item": "cobblemon:steel_gem",
+      "count": 7
+    },
+    {
+      "item": "iron",
+      "count": 1
+    }
+  ]
+}

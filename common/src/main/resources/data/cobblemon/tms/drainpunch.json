@@ -1,0 +1,19 @@
+{
+  "moveName": "drainpunch",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "fighting",
+  "recipe": [
+    {
+      "item": "cobblemon:fighting_gem",
+      "count": 7
+    },
+    {
+      "item": "iron",
+      "count": 1
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "moveName": "futuresight",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "psychic",
+  "recipe": [
+    {
+      "item": "cobblemon:psychic_gem",
+      "count": 10
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

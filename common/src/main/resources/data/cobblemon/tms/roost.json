@@ -1,0 +1,19 @@
+{
+  "moveName": "roost",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "flying",
+  "recipe": [
+    {
+      "item": "cobblemon:flying_gem",
+      "count": 6
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

@@ -2,8 +2,18 @@
   "moveName": "irontail",
   "obtainMethods": [
     {
-      "variant": "cobblemon:none"
+      "variant": "cobblemon:impossible"
     }
   ],
-  "type": "steel"
+  "type": "steel",
+  "recipe": [
+    {
+      "item": "cobblemon:steel_gem",
+      "count": 9
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
 }

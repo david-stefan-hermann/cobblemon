@@ -1,0 +1,15 @@
+{
+  "moveName": "breakingswipe",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "dragon",
+  "recipe": [
+    {
+      "item": "cobblemon:dragon_gem",
+      "count": 6
+    }
+  ]
+}

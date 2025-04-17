@@ -1,0 +1,19 @@
+{
+  "moveName": "batonpass",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "normal",
+  "recipe": [
+    {
+      "item": "cobblemon:normal_gem",
+      "count": 7
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

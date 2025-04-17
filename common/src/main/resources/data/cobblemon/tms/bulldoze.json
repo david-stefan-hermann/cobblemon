@@ -1,0 +1,15 @@
+{
+  "moveName": "bulldoze",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "ground",
+  "recipe": [
+    {
+      "item": "cobblemon:ground_gem",
+      "count": 5
+    }
+  ]
+}

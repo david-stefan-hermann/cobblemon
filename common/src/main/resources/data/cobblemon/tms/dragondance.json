@@ -1,0 +1,19 @@
+{
+  "moveName": "dragondance",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "dragon",
+  "recipe": [
+    {
+      "item": "cobblemon:dragon_gem",
+      "count": 6
+    },
+    {
+      "item": "gld",
+      "count": 1
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "moveName": "powerwhip",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "grass",
+  "recipe": [
+    {
+      "item": "cobblemon:grass_gem",
+      "count": 10
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}

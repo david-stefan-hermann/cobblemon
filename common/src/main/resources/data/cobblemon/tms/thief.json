@@ -1,9 +1,0 @@
-{
-  "moveName": "thief",
-  "obtainMethods": [
-    {
-      "variant": "cobblemon:impossible"
-    }
-  ],
-  "type": "dark"
-}

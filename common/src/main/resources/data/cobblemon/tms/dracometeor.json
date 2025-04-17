@@ -1,0 +1,19 @@
+{
+  "moveName": "dracometeor",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "dragon",
+  "recipe": [
+    {
+      "item": "cobblemon:dragon_gem",
+      "count": 12
+    },
+    {
+      "item": "diamond",
+      "count": 1
+    }
+  ]
+}

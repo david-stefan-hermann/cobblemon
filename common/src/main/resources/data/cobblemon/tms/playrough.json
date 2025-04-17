@@ -1,0 +1,19 @@
+{
+  "moveName": "playrough",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "fairy",
+  "recipe": [
+    {
+      "item": "cobblemon:fairy_gem",
+      "count": 8
+    },
+    {
+      "item": "diamond",
+      "count": 1
+    }
+  ]
+}

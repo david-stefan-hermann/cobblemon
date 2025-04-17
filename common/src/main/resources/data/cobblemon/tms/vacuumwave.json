@@ -1,0 +1,19 @@
+{
+  "moveName": "vacuumwave",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "fighting",
+  "recipe": [
+    {
+      "item": "cobblemon:fighting_gem",
+      "count": 5
+    },
+    {
+      "item": "iron",
+      "count": 1
+    }
+  ]
+}

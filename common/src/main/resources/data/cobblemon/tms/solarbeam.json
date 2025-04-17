@@ -1,0 +1,19 @@
+{
+  "moveName": "solarbeam",
+  "obtainMethods": [
+    {
+      "variant": "cobblemon:impossible"
+    }
+  ],
+  "type": "grass",
+  "recipe": [
+    {
+      "item": "cobblemon:grass_gem",
+      "count": 12
+    },
+    {
+      "item": "gold",
+      "count": 1
+    }
+  ]
+}
