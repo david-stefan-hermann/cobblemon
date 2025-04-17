@@ -10,11 +10,7 @@
   "recipe": [
     {
       "item": "cobblemon:fighting_gem",
-      "count": 3
-    },
-    {
-      "item": "minecraft:bone",
-      "count": 1
+      "count": 4
     }
   ]
 }

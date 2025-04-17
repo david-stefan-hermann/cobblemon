@@ -10,11 +10,7 @@
   "recipe": [
     {
       "item": "cobblemon:psychic_gem",
-      "count": 3
-    },
-    {
-      "item": "minecraft:amethyst_shard",
-      "count": 1
+      "count": 2
     }
   ]
 }
