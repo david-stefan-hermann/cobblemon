@@ -58,6 +58,7 @@ import net.minecraft.server.packs.repository.Pack.Position
 import net.minecraft.server.packs.repository.PackSource
 import net.minecraft.server.packs.resources.PreparableReloadListener
 import net.minecraft.tags.TagKey
+import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.item.CreativeModeTab
 import net.minecraft.world.item.CreativeModeTab.TabVisibility
 import net.minecraft.world.item.ItemStack
@@ -411,6 +412,13 @@ class CobblemonNeoForge : CobblemonImplementation {
         else {
             CobblemonNeoForgeClient.registerResourceReloader(reloader)
         }
+    }
+
+    override fun registerScreenHandlerType(
+        identifier: ResourceLocation,
+        menuType: MenuType<*>
+    ) {
+        TODO("Not yet implemented")
     }
 
     private fun onReload(e: AddReloadListenerEvent) {

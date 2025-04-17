@@ -47,6 +47,7 @@ object TechnicalMachines : JsonDataRegistry<TechnicalMachine> {
 
     override fun reload(data: Map<ResourceLocation, TechnicalMachine>) {
         data.forEach { (id, tm) ->
+            //TODO remove the logging
             Cobblemon.LOGGER.info("Processing TM: $id with moveName: ${tm.moveName}")
             if (tm.moveName == null) {
                 Cobblemon.LOGGER.error("Failed to resolve move for TM: $id with moveName: ${tm.moveName}")
