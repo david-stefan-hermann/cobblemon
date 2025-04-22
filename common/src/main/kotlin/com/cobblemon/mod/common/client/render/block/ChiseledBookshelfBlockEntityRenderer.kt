@@ -126,13 +126,13 @@ class ChiseledBookshelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Cont
         val b = 1f
         val a = 1f
 
-        consumer.addVertex(matrix, 0f, 0f, 0f).setColor(r, g, b, a).setUv(0f, 1f)
+        consumer.addVertex(matrix, 0f, 0f, 0f).setColor(r, g, b, a).setUv(1f, 1f)
             .setUv1(0, 0).setUv2(light and 0xFFFF, light shr 16).setNormal(0f, 0f, -1f)
-        consumer.addVertex(matrix, 0f, 1f, 0f).setColor(r, g, b, a).setUv(0f, 0f)
+        consumer.addVertex(matrix, 0f, 1f, 0f).setColor(r, g, b, a).setUv(1f, 0f)
             .setUv1(0, 0).setUv2(light and 0xFFFF, light shr 16).setNormal(0f, 0f, -1f)
-        consumer.addVertex(matrix, 1f, 1f, 0f).setColor(r, g, b, a).setUv(1f, 0f)
+        consumer.addVertex(matrix, 1f, 1f, 0f).setColor(r, g, b, a).setUv(0f, 0f)
             .setUv1(0, 0).setUv2(light and 0xFFFF, light shr 16).setNormal(0f, 0f, -1f)
-        consumer.addVertex(matrix, 1f, 0f, 0f).setColor(r, g, b, a).setUv(1f, 1f)
+        consumer.addVertex(matrix, 1f, 0f, 0f).setColor(r, g, b, a).setUv(0f, 1f)
             .setUv1(0, 0).setUv2(light and 0xFFFF, light shr 16).setNormal(0f, 0f, -1f)
     }
 }
