@@ -1,6 +1,7 @@
 package com.cobblemon.mod.common.block.entity
 
 import com.cobblemon.mod.common.CobblemonBlockEntities
+import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.block.ChiseledBookshelfBlock
 import com.cobblemon.mod.common.item.TechnicalMachineItem
 import net.minecraft.core.BlockPos
@@ -33,7 +34,7 @@ class ChiseledBookshelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEnti
         if (stack.isEmpty) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
         val slot = getHitSlot(hit, state).orElse(-1)
         if (slot !in 0 until 14) return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION
-        if (!isTMItem(stack)) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
+        if (!isValidItem(stack)) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
 
         val oldStack = items[slot]
         if (!oldStack.isEmpty) {
@@ -99,8 +100,10 @@ class ChiseledBookshelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEnti
         return OptionalInt.of(row * 7 + col)
     }
 
-    fun isTMItem(stack: ItemStack): Boolean {
-        return stack.getItem() is TechnicalMachineItem;
+    fun isValidItem(stack: ItemStack): Boolean {
+        return stack.item is TechnicalMachineItem ||
+                stack.item == CobblemonItems.UPGRADE ||
+                stack.item == CobblemonItems.DUBIOUS_DISC
     }
 
     fun markUpdated() {

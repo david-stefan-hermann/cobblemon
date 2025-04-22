@@ -1,5 +1,6 @@
 package com.cobblemon.mod.common.client.render.block
 
+import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.block.entity.ChiseledBookshelfBlockEntity
 import com.cobblemon.mod.common.item.components.TMMoveComponent
 import com.cobblemon.mod.common.util.cobblemonResource
@@ -20,7 +21,9 @@ import org.joml.Matrix4f
 class ChiseledBookshelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) :
     BlockEntityRenderer<ChiseledBookshelfBlockEntity> {
 
-    private val texture = cobblemonResource("textures/block/chiseled_bookshelf/technical_machine_case.png")
+    private val tmTexture = cobblemonResource("textures/block/chiseled_bookshelf/technical_machine_case.png")
+    private val upgradeTexture = cobblemonResource("textures/block/chiseled_bookshelf/upgrade_case.png")
+    private val dubiousTexture = cobblemonResource("textures/block/chiseled_bookshelf/dubious_disc_case.png")
     private val vanillaFaceTexture = ResourceLocation.parse("minecraft:textures/block/chiseled_bookshelf_empty.png")
 
     private val slotWidthPixels = 2
@@ -66,18 +69,27 @@ class ChiseledBookshelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Cont
                 val row = index / 7
 
                 val posX = (leftMargin + (6 - col) * slotWidthPixels) / textureSize
-                val posY = when (row) {
-                    0 -> (topMargin + slotHeightPixels + interRowSpacing) / textureSize
-                    1 -> topMargin / textureSize
-                    else -> continue
-                }
-
-                val move = TMMoveComponent.getTMMove(item)
-                val color = move?.elementalType?.primaryColor ?: 0xAAAAAA
+                val posY = if (row == 0)
+                    (topMargin + slotHeightPixels + interRowSpacing) / textureSize
+                else
+                    topMargin / textureSize
 
                 poseStack.pushPose()
                 poseStack.translate(posX, posY, -0.001f)
-                renderSlotQuad(poseStack, buffer, texture, color, light, slotWidth, slotHeight)
+
+                val (tex, colorize) = when (item.item) {
+                    CobblemonItems.UPGRADE -> upgradeTexture to false
+                    CobblemonItems.DUBIOUS_DISC -> dubiousTexture to false
+                    else -> tmTexture to true
+                }
+
+                val color = if (colorize) {
+                    val move = TMMoveComponent.getTMMove(item)
+                    move?.elementalType?.primaryColor ?: 0xAAAAAA
+                } else 0xFFFFFF
+
+                renderSlotQuad(poseStack, buffer, tex, color, light, slotWidth, slotHeight, tint = colorize)
+
                 poseStack.popPose()
             }
         }
@@ -92,15 +104,20 @@ class ChiseledBookshelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Cont
         color: Int,
         light: Int,
         width: Float,
-        height: Float
+        height: Float,
+        tint: Boolean
     ) {
         val consumer: VertexConsumer = buffer.getBuffer(RenderType.text(texture))
         val matrix: Matrix4f = poseStack.last().pose()
 
-        val r = FastColor.ARGB32.red(color) / 255f
-        val g = FastColor.ARGB32.green(color) / 255f
-        val b = FastColor.ARGB32.blue(color) / 255f
-        val a = 1.0f
+        val (r, g, b, a) = if (tint) {
+            listOf(
+                FastColor.ARGB32.red(color) / 255f,
+                FastColor.ARGB32.green(color) / 255f,
+                FastColor.ARGB32.blue(color) / 255f,
+                1.0f
+            )
+        } else listOf(1f, 1f, 1f, 1f)
 
         consumer.addVertex(matrix, 0f, 0f, 0f).setColor(r, g, b, a).setUv(0f, 0f)
             .setUv1(0, 0).setUv2(light and 0xFFFF, light shr 16).setNormal(0f, 0f, -1f)
@@ -120,7 +137,6 @@ class ChiseledBookshelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Cont
     ) {
         val consumer = buffer.getBuffer(RenderType.text(texture))
         val matrix = poseStack.last().pose()
-
         val r = 1f
         val g = 1f
         val b = 1f

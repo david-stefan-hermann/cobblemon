@@ -1,6 +1,7 @@
 package com.cobblemon.mod.common.mixin;
 
 import com.cobblemon.mod.common.CobblemonBlocks;
+import com.cobblemon.mod.common.CobblemonItems;
 import com.cobblemon.mod.common.block.entity.ChiseledBookshelfBlockEntity;
 import com.cobblemon.mod.common.item.TechnicalMachineItem;
 import net.minecraft.core.BlockPos;
@@ -31,7 +32,7 @@ public abstract class ChiseledBookShelfMixin {
     private void cobblemon$replaceWithTMBookshelf(ItemStack stack, BlockState state, Level level, BlockPos pos,
                                                   Player player, InteractionHand hand, BlockHitResult hit,
                                                   CallbackInfoReturnable<ItemInteractionResult> cir) {
-        if (!level.isClientSide && isTMItem_(stack)) {
+        if (!level.isClientSide && isInsertableItem_(stack)) {
             Direction facing = state.getValue(HorizontalDirectionalBlock.FACING);
             OptionalInt slotOpt = getHitSlot_(hit, facing);
             if (slotOpt.isEmpty()) return;
@@ -81,7 +82,9 @@ public abstract class ChiseledBookShelfMixin {
         return OptionalInt.of(row * 7 + col);
     }
 
-    private boolean isTMItem_(ItemStack stack) {
-        return stack.getItem() instanceof TechnicalMachineItem;
+    private boolean isInsertableItem_(ItemStack stack) {
+        return stack.getItem() instanceof TechnicalMachineItem
+                || stack.is(CobblemonItems.UPGRADE)
+                || stack.is(CobblemonItems.DUBIOUS_DISC);
     }
 }
