@@ -38,6 +38,7 @@
     "ExplosionMixin",
     "ItemStackComponentizationFixMixin",
     "LecternBlockMixin",
+    "ChiseledBookShelfMixin",
     "LivingEntityMixin",
     "LocalPlayerMixin",
     "MinecraftDedicatedServerMixin",
