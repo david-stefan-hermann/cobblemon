@@ -2,6 +2,7 @@ package com.cobblemon.mod.common.client.render.block
 
 import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.block.entity.ChiseledBookshelfBlockEntity
+import com.cobblemon.mod.common.item.TechnicalMachineItem
 import com.cobblemon.mod.common.item.components.TMMoveComponent
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.mojang.blaze3d.systems.RenderSystem
@@ -16,14 +17,14 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.util.FastColor
 import net.minecraft.world.level.block.HorizontalDirectionalBlock
 import net.minecraft.core.Direction
+import net.minecraft.core.Registry
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.world.item.ItemStack
 import org.joml.Matrix4f
 
 class ChiseledBookshelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) :
     BlockEntityRenderer<ChiseledBookshelfBlockEntity> {
 
-    private val tmTexture = cobblemonResource("textures/block/chiseled_bookshelf/technical_machine_case.png")
-    private val upgradeTexture = cobblemonResource("textures/block/chiseled_bookshelf/upgrade_case.png")
-    private val dubiousTexture = cobblemonResource("textures/block/chiseled_bookshelf/dubious_disc_case.png")
     private val vanillaFaceTexture = ResourceLocation.parse("minecraft:textures/block/chiseled_bookshelf_empty.png")
 
     private val slotWidthPixels = 2
@@ -77,11 +78,8 @@ class ChiseledBookshelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Cont
                 poseStack.pushPose()
                 poseStack.translate(posX, posY, -0.001f)
 
-                val (tex, colorize) = when (item.item) {
-                    CobblemonItems.UPGRADE -> upgradeTexture to false
-                    CobblemonItems.DUBIOUS_DISC -> dubiousTexture to false
-                    else -> tmTexture to true
-                }
+                val tex = getItemTextureAndTint(item)
+                val colorize = item.item is TechnicalMachineItem
 
                 val color = if (colorize) {
                     val move = TMMoveComponent.getTMMove(item)
@@ -150,5 +148,10 @@ class ChiseledBookshelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Cont
             .setUv1(0, 0).setUv2(light and 0xFFFF, light shr 16).setNormal(0f, 0f, -1f)
         consumer.addVertex(matrix, 1f, 0f, 0f).setColor(r, g, b, a).setUv(0f, 1f)
             .setUv1(0, 0).setUv2(light and 0xFFFF, light shr 16).setNormal(0f, 0f, -1f)
+    }
+
+    private fun getItemTextureAndTint(itemStack: ItemStack): ResourceLocation  {
+        val id = BuiltInRegistries.ITEM.getKey(itemStack.item)
+        return cobblemonResource("textures/block/chiseled_bookshelf/${id.path}_case.png")
     }
 }

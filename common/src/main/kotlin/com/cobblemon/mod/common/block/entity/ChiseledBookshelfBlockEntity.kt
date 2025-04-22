@@ -101,9 +101,37 @@ class ChiseledBookshelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEnti
     }
 
     fun isValidItem(stack: ItemStack): Boolean {
-        return stack.item is TechnicalMachineItem ||
-                stack.item == CobblemonItems.UPGRADE ||
-                stack.item == CobblemonItems.DUBIOUS_DISC
+        return stack.item is TechnicalMachineItem
+                || stack.item == CobblemonItems.UPGRADE
+                || stack.item == CobblemonItems.DUBIOUS_DISC
+                || stack.item == CobblemonItems.POKEDEX_BLACK
+                || stack.item == CobblemonItems.POKEDEX_BLUE
+                || stack.item == CobblemonItems.POKEDEX_GREEN
+                || stack.item == CobblemonItems.POKEDEX_PINK
+                || stack.item == CobblemonItems.POKEDEX_RED
+                || stack.item == CobblemonItems.POKEDEX_YELLOW
+                || stack.item == CobblemonItems.POKEDEX_WHITE
+                || stack.item == CobblemonItems.MAGMARIZER
+                || stack.item == CobblemonItems.ELECTIRIZER
+                || stack.item == Items.MUSIC_DISC_13
+                || stack.item == Items.MUSIC_DISC_CAT
+                || stack.item == Items.MUSIC_DISC_BLOCKS
+                || stack.item == Items.MUSIC_DISC_CHIRP
+                || stack.item == Items.MUSIC_DISC_FAR
+                || stack.item == Items.MUSIC_DISC_MALL
+                || stack.item == Items.MUSIC_DISC_MELLOHI
+                || stack.item == Items.MUSIC_DISC_STAL
+                || stack.item == Items.MUSIC_DISC_STRAD
+                || stack.item == Items.MUSIC_DISC_WARD
+                || stack.item == Items.MUSIC_DISC_11
+                || stack.item == Items.MUSIC_DISC_WAIT
+                || stack.item == Items.MUSIC_DISC_OTHERSIDE
+                || stack.item == Items.MUSIC_DISC_5
+                || stack.item == Items.MUSIC_DISC_RELIC
+                || stack.item == Items.MUSIC_DISC_PRECIPICE
+                || stack.item == Items.MUSIC_DISC_CREATOR
+                || stack.item == Items.MUSIC_DISC_CREATOR_MUSIC_BOX
+                || stack.item == Items.MUSIC_DISC_PIGSTEP
     }
 
     fun markUpdated() {

@@ -12,6 +12,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.ChiseledBookShelfBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -85,6 +86,34 @@ public abstract class ChiseledBookShelfMixin {
     private boolean isInsertableItem_(ItemStack stack) {
         return stack.getItem() instanceof TechnicalMachineItem
                 || stack.is(CobblemonItems.UPGRADE)
-                || stack.is(CobblemonItems.DUBIOUS_DISC);
+                || stack.is(CobblemonItems.DUBIOUS_DISC)
+                || stack.is(CobblemonItems.POKEDEX_BLACK)
+                || stack.is(CobblemonItems.POKEDEX_BLUE)
+                || stack.is(CobblemonItems.POKEDEX_GREEN)
+                || stack.is(CobblemonItems.POKEDEX_PINK)
+                || stack.is(CobblemonItems.POKEDEX_RED)
+                || stack.is(CobblemonItems.POKEDEX_YELLOW)
+                || stack.is(CobblemonItems.POKEDEX_WHITE)
+                || stack.is(CobblemonItems.MAGMARIZER)
+                || stack.is(CobblemonItems.ELECTIRIZER)
+                || stack.is(Items.MUSIC_DISC_13)
+                || stack.is(Items.MUSIC_DISC_CAT)
+                || stack.is(Items.MUSIC_DISC_BLOCKS)
+                || stack.is(Items.MUSIC_DISC_CHIRP)
+                || stack.is(Items.MUSIC_DISC_FAR)
+                || stack.is(Items.MUSIC_DISC_MALL)
+                || stack.is(Items.MUSIC_DISC_MELLOHI)
+                || stack.is(Items.MUSIC_DISC_STAL)
+                || stack.is(Items.MUSIC_DISC_STRAD)
+                || stack.is(Items.MUSIC_DISC_WARD)
+                || stack.is(Items.MUSIC_DISC_11)
+                || stack.is(Items.MUSIC_DISC_WAIT)
+                || stack.is(Items.MUSIC_DISC_OTHERSIDE)
+                || stack.is(Items.MUSIC_DISC_5)
+                || stack.is(Items.MUSIC_DISC_RELIC)
+                || stack.is(Items.MUSIC_DISC_PRECIPICE)
+                || stack.is(Items.MUSIC_DISC_CREATOR)
+                || stack.is(Items.MUSIC_DISC_CREATOR_MUSIC_BOX)
+                || stack.is(Items.MUSIC_DISC_PIGSTEP);
     }
 }
