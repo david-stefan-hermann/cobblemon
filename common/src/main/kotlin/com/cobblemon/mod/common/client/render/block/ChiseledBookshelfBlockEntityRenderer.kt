@@ -22,6 +22,17 @@ class ChiseledBookshelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Cont
 
     private val texture = cobblemonResource("textures/block/chiseled_bookshelf/technical_machine_case.png")
 
+    // Layout parameters in pixels (relative to 16x16 block face)
+    private val slotWidthPixels = 2
+    private val slotHeightPixels = 6
+    private val textureSize = 16f
+
+    private val leftMargin = 1
+    private val topMargin = 1
+    private val interRowSpacing = 2
+    private val slotSpacing = 0  // Horizontal spacing between slots if needed
+
+
     override fun render(
         entity: ChiseledBookshelfBlockEntity,
         partialTicks: Float,
@@ -44,23 +55,26 @@ class ChiseledBookshelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Cont
         poseStack.mulPose(Axis.YP.rotationDegrees(rotation))
         poseStack.translate(-0.5, -0.5, -0.5)
 
+        val slotWidth = slotWidthPixels / textureSize
+        val slotHeight = slotHeightPixels / textureSize
+
         for ((index, item) in entity.items.withIndex()) {
             if (!item.isEmpty) {
                 val col = index % 7
                 val row = index / 7
 
-                val slotWidth = 1f / 7f
-                val slotHeight = 0.5f
-
-                val posX = (6 - col) * slotWidth
-                val posY = if (row == 0) 0.5f else 0.0f
-                val posZ = -0.001f
+                val posX = (leftMargin + (6 - col) * slotWidthPixels) / textureSize
+                val posY = when (row) {
+                    0 -> (topMargin + slotHeightPixels + interRowSpacing) / textureSize
+                    1 -> topMargin / textureSize
+                    else -> continue
+                }
 
                 val move = TMMoveComponent.getTMMove(item)
                 val color = move?.elementalType?.primaryColor ?: 0xAAAAAA
 
                 poseStack.pushPose()
-                poseStack.translate(posX, posY, posZ)
+                poseStack.translate(posX, posY, -0.001f)
                 renderSlotQuad(poseStack, buffer, texture, color, light, slotWidth, slotHeight)
                 poseStack.popPose()
             }
@@ -86,35 +100,30 @@ class ChiseledBookshelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Cont
         val b = FastColor.ARGB32.blue(color) / 255f
         val a = 1.0f
 
-        val u0 = 0f
-        val v0 = 0f
-        val u1 = 1f
-        val v1 = 1f
-
         consumer.addVertex(matrix, 0f, 0f, 0f)
             .setColor(r, g, b, a)
-            .setUv(u0, v0)
+            .setUv(0f, 0f)
             .setUv1(0, 0)
             .setUv2(light and 0xFFFF, light shr 16)
             .setNormal(0f, 0f, -1f)
 
         consumer.addVertex(matrix, 0f, height, 0f)
             .setColor(r, g, b, a)
-            .setUv(u0, v1)
+            .setUv(0f, 1f)
             .setUv1(0, 0)
             .setUv2(light and 0xFFFF, light shr 16)
             .setNormal(0f, 0f, -1f)
 
         consumer.addVertex(matrix, width, height, 0f)
             .setColor(r, g, b, a)
-            .setUv(u1, v1)
+            .setUv(1f, 1f)
             .setUv1(0, 0)
             .setUv2(light and 0xFFFF, light shr 16)
             .setNormal(0f, 0f, -1f)
 
         consumer.addVertex(matrix, width, 0f, 0f)
             .setColor(r, g, b, a)
-            .setUv(u1, v0)
+            .setUv(1f, 0f)
             .setUv1(0, 0)
             .setUv2(light and 0xFFFF, light shr 16)
             .setNormal(0f, 0f, -1f)
