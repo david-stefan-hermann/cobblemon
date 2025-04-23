@@ -737,6 +737,7 @@
 
   "cobblemon.tooltip.see_more_info": "Hold shift to see info",
   "cobblemon.item_class.fishing_bait": "Fishing Bait",
+  "cobblemon.item_class.technical_machine": "Technical Machine",
 
   "cobblemon.fossil.armor": "Armor",
   "cobblemon.fossil.bird": "Bird",
@@ -913,6 +914,9 @@
   "cobblemon.fishing_bait_effects.pokemon_chance.tooltip": "%1$s%% - Reel in a Pokémon",
   "cobblemon.fishing_bait_effects.friendship.tooltip": "%1$s%% - Boost Friendship +%3$s",
   "cobblemon.fishing_bait_effects.inert.tooltip": "No known effect",
+
+  "cobblemon.technical_machine_effect_header": "Technical Machine info:",
+
 
   "cobblemon.egg_group.monster": "Monster",
   "cobblemon.egg_group.water_1": "Water 1",
@@ -3130,6 +3134,7 @@
   "cobblemon.stat.accuracy.name": "Accuracy",
   "cobblemon.stat.evasion.name": "Evasion",
 
+  "cobblemon.move.category": "Category",
   "cobblemon.move.category.physical": "Physical",
   "cobblemon.move.category.special": "Special",
   "cobblemon.move.category.status": "Status",

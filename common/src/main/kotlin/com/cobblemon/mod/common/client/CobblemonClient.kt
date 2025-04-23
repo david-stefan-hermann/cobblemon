@@ -46,10 +46,7 @@ import com.cobblemon.mod.common.client.requests.ClientPlayerActionRequests
 import com.cobblemon.mod.common.client.sound.BattleMusicController
 import com.cobblemon.mod.common.client.sound.EntitySoundTracker
 import com.cobblemon.mod.common.client.storage.ClientStorageManager
-import com.cobblemon.mod.common.client.tooltips.CobblemonTooltipGenerator
-import com.cobblemon.mod.common.client.tooltips.FishingBaitTooltipGenerator
-import com.cobblemon.mod.common.client.tooltips.FishingRodTooltipGenerator
-import com.cobblemon.mod.common.client.tooltips.TooltipManager
+import com.cobblemon.mod.common.client.tooltips.*
 import com.cobblemon.mod.common.client.trade.ClientTrade
 import com.cobblemon.mod.common.data.CobblemonDataProvider
 import com.cobblemon.mod.common.entity.boat.CobblemonBoatType
@@ -178,6 +175,7 @@ object CobblemonClient {
         TooltipManager.registerTooltipGenerator(CobblemonTooltipGenerator)
         TooltipManager.registerTooltipGenerator(FishingBaitTooltipGenerator)
         TooltipManager.registerTooltipGenerator(FishingRodTooltipGenerator)
+        TooltipManager.registerTooltipGenerator(TechnicalMachineTooltipGenerator)
     }
 
     fun registerFlywheelRenderers() {
