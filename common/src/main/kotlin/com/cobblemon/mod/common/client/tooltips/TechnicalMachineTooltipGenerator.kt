@@ -43,10 +43,10 @@ object TechnicalMachineTooltipGenerator : TooltipGenerator() {
         val categoryValue = lang(categoryKey).gold()
 
         result.add(
-                Component.empty()
-                        .append(typeLabel).append(": ").append(typeValue)
-                        .append(Component.literal("  "))
-                        .append(categoryLabel).append(": ").append(categoryValue)
+            Component.empty()
+                .append(typeLabel).append(": ").append(typeValue)
+                .append(Component.literal("  "))
+                .append(categoryLabel).append(": ").append(categoryValue)
         )
 
         // Power / Accuracy / PP
@@ -61,12 +61,12 @@ object TechnicalMachineTooltipGenerator : TooltipGenerator() {
         val ppValue = Component.literal(move.pp.toString()).yellow()
 
         result.add(
-                Component.empty()
-                        .append(powerLabel).append(": ").append(powerValue)
-                        .append(Component.literal("  "))
-                        .append(accuracyLabel).append(": ").append(accuracyValue)
-                        .append(Component.literal("  "))
-                        .append(ppLabel).append(": ").append(ppValue)
+            Component.empty()
+                .append(powerLabel).append(": ").append(powerValue)
+                .append(Component.literal("  "))
+                .append(accuracyLabel).append(": ").append(accuracyValue)
+                .append(Component.literal("  "))
+                .append(ppLabel).append(": ").append(ppValue)
         )
 
         // Description (wrapped)
