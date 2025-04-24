@@ -83,6 +83,7 @@ class TechnicalMachineItem(properties: Properties) : CobblemonItem(properties) {
         return InteractionResult.CONSUME
     }
 
+    // todo add in logic for only being able to use it on your own owned pokemon and not other mons!!
     override fun useOn(context: UseOnContext): InteractionResult {
         val level = context.level
         if (level.isClientSide) {

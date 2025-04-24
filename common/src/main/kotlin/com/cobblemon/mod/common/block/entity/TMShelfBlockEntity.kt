@@ -2,7 +2,7 @@ package com.cobblemon.mod.common.block.entity
 
 import com.cobblemon.mod.common.CobblemonBlockEntities
 import com.cobblemon.mod.common.CobblemonItems
-import com.cobblemon.mod.common.block.ChiseledBookshelfBlock
+import com.cobblemon.mod.common.block.TMShelfBlock
 import com.cobblemon.mod.common.item.TechnicalMachineItem
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
@@ -10,7 +10,6 @@ import net.minecraft.core.HolderLookup
 import net.minecraft.core.NonNullList
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket
-import net.minecraft.tags.TagKey
 import net.minecraft.world.ContainerHelper
 import net.minecraft.world.Containers
 import net.minecraft.world.InteractionResult
@@ -24,9 +23,8 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.level.gameevent.GameEvent
 import java.util.OptionalInt
-import net.minecraft.world.item.Item
 
-class ChiseledBookshelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(CobblemonBlockEntities.CHISELED_BOOKSHELF, pos, state) {
+class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(CobblemonBlockEntities.TM_SHELF, pos, state) {
     val items: NonNullList<ItemStack> = NonNullList.withSize(14, ItemStack.EMPTY)
     var lastInteractedSlot: Int = -1
 
@@ -65,20 +63,12 @@ class ChiseledBookshelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEnti
         lastInteractedSlot = slot
         updateBlockState(level, pos)
 
-        if (items.all { it.isEmpty }) {
-            // ✅ Replace with vanilla block
-            val facing = state.getValue(com.cobblemon.mod.common.block.ChiseledBookshelfBlock.FACING)
-            val newState = net.minecraft.world.level.block.Blocks.CHISELED_BOOKSHELF.defaultBlockState()
-                .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, facing)
-            level.setBlockAndUpdate(pos, newState)
-        }
-
         return InteractionResult.sidedSuccess(level.isClientSide)
     }
 
     private fun updateBlockState(level: Level, pos: BlockPos) {
-        val newState = ChiseledBookshelfBlock.SLOT_OCCUPIED_PROPERTIES.fold(blockState) { acc, prop ->
-            val index = ChiseledBookshelfBlock.SLOT_OCCUPIED_PROPERTIES.indexOf(prop)
+        val newState = TMShelfBlock.SLOT_OCCUPIED_PROPERTIES.fold(blockState) { acc, prop ->
+            val index = TMShelfBlock.SLOT_OCCUPIED_PROPERTIES.indexOf(prop)
             acc.setValue(prop, !items[index].isEmpty)
         }
         level.setBlock(pos, newState, 3)
@@ -86,33 +76,27 @@ class ChiseledBookshelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEnti
     }
 
     private fun getHitSlot(hit: BlockHitResult, state: BlockState): OptionalInt {
-        val facing = state.getValue(ChiseledBookshelfBlock.FACING)
+        val facing = state.getValue(TMShelfBlock.FACING)
         val relative = hit.location.subtract(hit.blockPos.x.toDouble(), hit.blockPos.y.toDouble(), hit.blockPos.z.toDouble())
+
         val (x, y) = when (facing) {
             Direction.NORTH -> 1.0 - relative.x to relative.y
             Direction.SOUTH -> relative.x to relative.y
-            Direction.WEST  -> relative.z to relative.y
-            Direction.EAST  -> 1.0 - relative.z to relative.y
+            Direction.WEST  ->  1.0 - relative.z to relative.y
+            Direction.EAST  -> relative.z to relative.y
             else -> return OptionalInt.empty()
         }
-        val row = if (y >= 0.5) 0 else 1
-        val col = (x * 7).toInt().coerceIn(0, 6)
-        return OptionalInt.of(row * 7 + col)
+
+        val col = if (x < 0.5) 1 else 0
+        val row = ((1.0 - y) * 7).toInt().coerceIn(0, 6)
+
+        return OptionalInt.of(row * 2 + col)
     }
 
     fun isValidItem(stack: ItemStack): Boolean {
         return stack.item is TechnicalMachineItem
                 || stack.item == CobblemonItems.UPGRADE
                 || stack.item == CobblemonItems.DUBIOUS_DISC
-                || stack.item == CobblemonItems.POKEDEX_BLACK
-                || stack.item == CobblemonItems.POKEDEX_BLUE
-                || stack.item == CobblemonItems.POKEDEX_GREEN
-                || stack.item == CobblemonItems.POKEDEX_PINK
-                || stack.item == CobblemonItems.POKEDEX_RED
-                || stack.item == CobblemonItems.POKEDEX_YELLOW
-                || stack.item == CobblemonItems.POKEDEX_WHITE
-                || stack.item == CobblemonItems.MAGMARIZER
-                || stack.item == CobblemonItems.ELECTIRIZER
                 || stack.item == Items.MUSIC_DISC_13
                 || stack.item == Items.MUSIC_DISC_CAT
                 || stack.item == Items.MUSIC_DISC_BLOCKS

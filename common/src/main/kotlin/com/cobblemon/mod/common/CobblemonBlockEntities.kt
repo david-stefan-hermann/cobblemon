@@ -40,7 +40,7 @@ object CobblemonBlockEntities : PlatformRegistry<Registry<BlockEntityType<*>>, R
     val LECTERN: BlockEntityType<LecternBlockEntity> = this.create("lectern", BlockEntityType.Builder.of(::LecternBlockEntity, CobblemonBlocks.LECTERN).build(null))
 
     @JvmField
-    val CHISELED_BOOKSHELF: BlockEntityType<ChiseledBookshelfBlockEntity> = this.create("chiseled_bookshelf", BlockEntityType.Builder.of(::ChiseledBookshelfBlockEntity, CobblemonBlocks.CHISELED_BOOKSHELF).build(null))
+    val TM_SHELF: BlockEntityType<TMShelfBlockEntity> = this.create("tm_shelf", BlockEntityType.Builder.of(::TMShelfBlockEntity, CobblemonBlocks.TM_SHELF).build(null))
 
     @JvmField
     val BERRY = this.create("berry", BlockEntityType.Builder.of(::BerryBlockEntity, *CobblemonBlocks.berries().values.toTypedArray()).build(null))
