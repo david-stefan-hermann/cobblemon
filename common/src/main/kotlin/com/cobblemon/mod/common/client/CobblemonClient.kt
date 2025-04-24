@@ -14,6 +14,7 @@ import com.cobblemon.mod.common.CobblemonBlocks
 import com.cobblemon.mod.common.CobblemonClientImplementation
 import com.cobblemon.mod.common.CobblemonEntities
 import com.cobblemon.mod.common.CobblemonItems
+import com.cobblemon.mod.common.CobblemonMenuType.COOKING_POT
 import com.cobblemon.mod.common.api.berry.Berries
 import com.cobblemon.mod.common.api.molang.ObjectValue
 import com.cobblemon.mod.common.api.scheduling.ClientTaskTracker
@@ -23,6 +24,7 @@ import com.cobblemon.mod.common.api.tags.CobblemonItemTags
 import com.cobblemon.mod.common.client.battle.ClientBattle
 import com.cobblemon.mod.common.client.gui.PartyOverlay
 import com.cobblemon.mod.common.client.gui.battle.BattleOverlay
+import com.cobblemon.mod.common.client.gui.cookingpot.CookingPotScreen
 import com.cobblemon.mod.common.client.gui.tm.TMMHandledScreen
 import com.cobblemon.mod.common.client.particle.BedrockParticleOptionsRepository
 import com.cobblemon.mod.common.client.render.ClientPlayerIcon
@@ -30,15 +32,15 @@ import com.cobblemon.mod.common.client.render.DeferredRenderer
 import com.cobblemon.mod.common.client.render.block.*
 import com.cobblemon.mod.common.client.render.boat.CobblemonBoatRenderer
 import com.cobblemon.mod.common.client.render.color.TechnicalMachineItemColorProvider
+import com.cobblemon.mod.common.client.render.color.AprijuiceItemColorProvider
+import com.cobblemon.mod.common.client.render.color.PokeBaitItemColorProvider
 import com.cobblemon.mod.common.client.render.entity.PokeBobberEntityRenderer
 import com.cobblemon.mod.common.client.render.generic.GenericBedrockRenderer
 import com.cobblemon.mod.common.client.render.item.CobblemonBuiltinItemRendererRegistry
 import com.cobblemon.mod.common.client.render.item.PokemonItemRenderer
 import com.cobblemon.mod.common.client.render.layer.PokemonOnShoulderRenderer
 import com.cobblemon.mod.common.client.render.models.blockbench.bedrock.animation.BedrockAnimationRepository
-import com.cobblemon.mod.common.client.render.models.blockbench.repository.BerryModelRepository
-import com.cobblemon.mod.common.client.render.models.blockbench.repository.MiscModelRepository
-import com.cobblemon.mod.common.client.render.models.blockbench.repository.VaryingModelRepository
+import com.cobblemon.mod.common.client.render.models.blockbench.repository.*
 import com.cobblemon.mod.common.client.render.npc.NPCRenderer
 import com.cobblemon.mod.common.client.render.pokeball.PokeBallRenderer
 import com.cobblemon.mod.common.client.render.pokemon.PokemonRenderer
@@ -127,11 +129,11 @@ object CobblemonClient {
         registerFlywheelRenderers()
         this.registerEntityRenderers()
         this.registerItemColors()
-        this.registerHandledScreens()
         Berries.observable.subscribe {
             BerryModelRepository.patchModels()
         }
         this.registerTooltipManagers()
+        this.registerMenuScreens()
 
         LOGGER.info("Registering custom BuiltinItemRenderers")
         CobblemonBuiltinItemRendererRegistry.register(CobblemonItems.POKEMON_MODEL, PokemonItemRenderer())
@@ -175,6 +177,8 @@ object CobblemonClient {
         TooltipManager.registerTooltipGenerator(CobblemonTooltipGenerator)
         TooltipManager.registerTooltipGenerator(FishingBaitTooltipGenerator)
         TooltipManager.registerTooltipGenerator(FishingRodTooltipGenerator)
+        TooltipManager.registerTooltipGenerator(SeasoningTooltipGenerator)
+        TooltipManager.registerTooltipGenerator(AprijuiceTooltipGenerator)
         TooltipManager.registerTooltipGenerator(TechnicalMachineTooltipGenerator)
     }
 
@@ -230,6 +234,7 @@ object CobblemonClient {
             CobblemonBlocks.BIG_ROOT,
             CobblemonBlocks.REVIVAL_HERB,
             CobblemonBlocks.VIVICHOKE_SEEDS,
+            CobblemonBlocks.HEARTY_GRAINS,
             CobblemonBlocks.PEP_UP_FLOWER,
             CobblemonBlocks.POTTED_PEP_UP_FLOWER,
             CobblemonBlocks.REVIVAL_HERB,
@@ -268,7 +273,25 @@ object CobblemonClient {
             CobblemonBlocks.SKY_TUMBLESTONE_CLUSTER,
             CobblemonBlocks.GIMMIGHOUL_CHEST,
             CobblemonBlocks.DISPLAY_CASE,
-            CobblemonBlocks.LECTERN
+            CobblemonBlocks.SACCHARINE_DOOR,
+            CobblemonBlocks.SACCHARINE_TRAPDOOR,
+            CobblemonBlocks.SACCHARINE_SIGN,
+            CobblemonBlocks.SACCHARINE_WALL_SIGN,
+            CobblemonBlocks.SACCHARINE_HANGING_SIGN,
+            CobblemonBlocks.SACCHARINE_WALL_HANGING_SIGN,
+            CobblemonBlocks.SACCHARINE_SAPLING,
+            CobblemonBlocks.LURE_CAKE,
+            CobblemonBlocks.POKE_CAKE,
+            CobblemonBlocks.LECTERN,
+            CobblemonBlocks.CAMPFIRE,
+            CobblemonBlocks.BLACK_CAMPFIRE_POT,
+            CobblemonBlocks.BLUE_CAMPFIRE_POT,
+            CobblemonBlocks.GREEN_CAMPFIRE_POT,
+            CobblemonBlocks.PINK_CAMPFIRE_POT,
+            CobblemonBlocks.RED_CAMPFIRE_POT,
+            CobblemonBlocks.WHITE_CAMPFIRE_POT,
+            CobblemonBlocks.YELLOW_CAMPFIRE_POT
+
         )
 
         this.createBoatModelLayers()
@@ -292,6 +315,11 @@ object CobblemonClient {
         renderer?.addLayer(PokemonOnShoulderRenderer(renderer))
     }
 
+    private fun registerMenuScreens() {
+        MenuScreens.register(COOKING_POT, ::CookingPotScreen)
+        MenuScreens.register(TMM_SCREEN, ::TMMHandledScreen)
+    }
+
     private fun registerBlockEntityRenderers() {
         this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.HEALING_MACHINE, ::HealingMachineRenderer)
         this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.BERRY, ::BerryBlockRenderer)
@@ -303,6 +331,10 @@ object CobblemonClient {
         this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.GILDED_CHEST, ::GildedChestBlockRenderer)
         this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.DISPLAY_CASE, ::DisplayCaseRenderer)
         this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.LECTERN, ::LecternBlockEntityRenderer)
+        this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.CAMPFIRE, ::CampfireBlockEntityRenderer)
+        this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.LURE_CAKE, ::CakeBlockEntityRenderer)
+        this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.POKE_CAKE, ::CakeBlockEntityRenderer)
+        this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.CANDLE_POKE_CAKE, ::CandlePokeCakeBlockEntityRenderer)
     }
 
     private fun registerEntityRenderers() {
@@ -325,6 +357,8 @@ object CobblemonClient {
     }
 
     private fun registerItemColors() {
+        implementation.registerItemColors(AprijuiceItemColorProvider, *CobblemonItems.aprijuices.toTypedArray())
+        implementation.registerItemColors(PokeBaitItemColorProvider, CobblemonItems.POKE_BAIT)
         implementation.registerItemColors(TechnicalMachineItemColorProvider, CobblemonItems.TECHNICAL_MACHINE)
     }
 
@@ -355,13 +389,6 @@ object CobblemonClient {
             this.implementation.registerLayer(CobblemonBoatRenderer.createBoatModelLayer(type, false), BoatModel::createBodyModel)
             this.implementation.registerLayer(CobblemonBoatRenderer.createBoatModelLayer(type, true), ChestBoatModel::createBodyModel)
         }
-    }
-
-    private fun registerHandledScreens() {
-        MenuScreens.register(
-            CobblemonMenuHandlers.TMM_SCREEN,
-                ::TMMHandledScreen
-        )
     }
 
 }

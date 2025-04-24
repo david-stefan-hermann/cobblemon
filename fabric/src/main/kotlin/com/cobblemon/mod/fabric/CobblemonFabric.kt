@@ -11,22 +11,11 @@ package com.cobblemon.mod.fabric
 import com.cobblemon.mod.common.*
 import com.cobblemon.mod.common.advancement.CobblemonCriteria
 import com.cobblemon.mod.common.advancement.predicate.CobblemonEntitySubPredicates
-import com.cobblemon.mod.common.api.net.serializers.IdentifierDataSerializer
-import com.cobblemon.mod.common.api.net.serializers.NPCPlayerTextureSerializer
-import com.cobblemon.mod.common.api.net.serializers.PlatformTypeDataSerializer
-import com.cobblemon.mod.common.api.net.serializers.PoseTypeDataSerializer
-import com.cobblemon.mod.common.api.net.serializers.StringSetDataSerializer
-import com.cobblemon.mod.common.api.net.serializers.UUIDSetDataSerializer
-import com.cobblemon.mod.common.api.net.serializers.Vec3DataSerializer
-import com.cobblemon.mod.common.gui.CobblemonMenuHandlers
+import com.cobblemon.mod.common.api.net.serializers.*
 import com.cobblemon.mod.common.item.group.CobblemonItemGroups
 import com.cobblemon.mod.common.loot.LootInjector
 import com.cobblemon.mod.common.particle.CobblemonParticles
-import com.cobblemon.mod.common.platform.events.ChangeDimensionEvent
-import com.cobblemon.mod.common.platform.events.PlatformEvents
-import com.cobblemon.mod.common.platform.events.ServerEvent
-import com.cobblemon.mod.common.platform.events.ServerPlayerEvent
-import com.cobblemon.mod.common.platform.events.ServerTickEvent
+import com.cobblemon.mod.common.platform.events.*
 import com.cobblemon.mod.common.sherds.CobblemonSherds
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.didSleep
@@ -39,9 +28,6 @@ import com.cobblemon.mod.common.world.structureprocessors.CobblemonStructureProc
 import com.cobblemon.mod.fabric.net.CobblemonFabricNetworkManager
 import com.cobblemon.mod.fabric.permission.FabricPermissionValidator
 import com.mojang.brigadier.arguments.ArgumentType
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
-import kotlin.reflect.KClass
 import net.fabricmc.api.EnvType
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectionContext
@@ -86,12 +72,14 @@ import net.minecraft.server.packs.resources.ResourceManager
 import net.minecraft.tags.TagKey
 import net.minecraft.util.profiling.ProfilerFiller
 import net.minecraft.world.InteractionResult
-import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.level.GameRules
 import net.minecraft.world.level.ItemLike
 import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.level.levelgen.GenerationStep
 import net.minecraft.world.level.levelgen.placement.PlacedFeature
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
+import kotlin.reflect.KClass
 
 object CobblemonFabric : CobblemonImplementation {
 
@@ -110,10 +98,6 @@ object CobblemonFabric : CobblemonImplementation {
 
         //This has to be registered elsewhere on forge so we cant do it in common
         CobblemonSherds.registerSherds()
-
-        // register our Menu handlers
-        CobblemonMenuHandlers.register()
-
         CobblemonBlockPredicates.touch()
         CobblemonPlacementModifierTypes.touch()
         CobblemonProcessorTypes.touch()
@@ -254,6 +238,7 @@ object CobblemonFabric : CobblemonImplementation {
         EntityDataSerializers.registerSerializer(IdentifierDataSerializer)
         EntityDataSerializers.registerSerializer(UUIDSetDataSerializer)
         EntityDataSerializers.registerSerializer(NPCPlayerTextureSerializer)
+        EntityDataSerializers.registerSerializer(RideBoostsDataSerializer)
     }
 
     override fun registerItems() {
@@ -291,8 +276,11 @@ object CobblemonFabric : CobblemonImplementation {
         CobblemonBlockEntities.register { identifier, type -> Registry.register(CobblemonBlockEntities.registry, identifier, type) }
     }
 
+    override fun registerPoiTypes() {
+        CobblemonPoiTypes.register { identifier, type -> PointOfInterestHelper.register(identifier, type.maxTickets, type.validRange, type.matchingStates) }
+    }
+
     override fun registerVillagers() {
-        CobblemonVillagerPoiTypes.register { identifier, type -> PointOfInterestHelper.register(identifier, type.maxTickets, type.validRange, type.matchingStates) }
         CobblemonVillagerProfessions.register { identifier, profession -> Registry.register(CobblemonVillagerProfessions.registry, identifier, profession) }
 
         CobblemonTradeOffers.tradeOffersForAll().forEach { tradeOffer -> TradeOfferHelper.registerVillagerOffers(tradeOffer.profession, tradeOffer.requiredLevel) { factories -> factories.addAll(tradeOffer.tradeOffers) } }
@@ -300,12 +288,25 @@ object CobblemonFabric : CobblemonImplementation {
         CobblemonTradeOffers.resolveWanderingTradeOffers().forEach { tradeOffer -> TradeOfferHelper.registerWanderingTraderOffers(if (tradeOffer.isRareTrade) 2 else 1) { factories -> factories.addAll(tradeOffer.tradeOffers) } }
     }
 
+    override fun registerRecipeSerializers() {
+        CobblemonRecipeSerializers.register { identifier, factory -> Registry.register(CobblemonRecipeSerializers.registry, identifier, factory) }
+    }
+
+    override fun registerRecipeTypes() {
+        CobblemonRecipeTypes.register { identifier, factory -> Registry.register(CobblemonRecipeTypes.registry, identifier, factory) }
+    }
+
+
     override fun registerWorldGenFeatures() {
         CobblemonFeatures.register { identifier, feature -> Registry.register(CobblemonFeatures.registry, identifier, feature) }
     }
 
     override fun registerParticles() {
         CobblemonParticles.register { identifier, particleType -> Registry.register(CobblemonParticles.registry, identifier, particleType) }
+    }
+
+    override fun registerMenu() {
+        CobblemonMenuType.register { identifier, factory -> Registry.register(CobblemonMenuType.registry, identifier, factory) }
     }
 
     override fun addFeatureToWorldGen(feature: ResourceKey<PlacedFeature>, step: GenerationStep.Decoration, validTag: TagKey<Biome>?) {
@@ -333,13 +334,6 @@ object CobblemonFabric : CobblemonImplementation {
 
     override fun registerResourceReloader(identifier: ResourceLocation, reloader: PreparableReloadListener, type: PackType, dependencies: Collection<ResourceLocation>) {
         ResourceManagerHelper.get(type).registerReloadListener(CobblemonReloadListener(identifier, reloader, dependencies))
-    }
-
-    override fun registerScreenHandlerType(
-        identifier: ResourceLocation,
-        menuType: MenuType<*>
-    ) {
-         Registry.register(BuiltInRegistries.MENU, identifier, menuType)
     }
 
     override fun server(): MinecraftServer? = if (this.environment() == Environment.CLIENT) Minecraft.getInstance().singleplayerServer else this.server
