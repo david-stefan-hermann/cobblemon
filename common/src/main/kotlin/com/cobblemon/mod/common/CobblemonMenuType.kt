@@ -10,9 +10,8 @@ package com.cobblemon.mod.common
 
 
 import com.cobblemon.mod.common.block.campfirepot.CookingPotMenu
-import com.cobblemon.mod.common.client.gui.cookingpot.CookingPotScreen
+import com.cobblemon.mod.common.block.tm.TMMScreenHandler
 import com.cobblemon.mod.common.platform.PlatformRegistry
-import net.minecraft.client.gui.screens.MenuScreens
 import net.minecraft.core.Registry
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
@@ -22,6 +21,7 @@ import net.minecraft.world.inventory.MenuType
 object CobblemonMenuType : PlatformRegistry<Registry<MenuType<*>>, ResourceKey<Registry<MenuType<*>>>, MenuType<*>>() {
 
     val COOKING_POT = MenuType.register("cooking_pot", ::CookingPotMenu)
+    val TM_MACHINE = MenuType.register("tmm_screen", ::TMMScreenHandler)
 
     override val registry: Registry<MenuType<*>>
         get() = BuiltInRegistries.MENU

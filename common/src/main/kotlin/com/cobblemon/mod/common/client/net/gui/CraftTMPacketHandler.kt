@@ -11,7 +11,7 @@ package com.cobblemon.mod.common.client.net.gui
 import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.api.net.ServerNetworkPacketHandler
-import com.cobblemon.mod.common.gui.TMMScreenHandler
+import com.cobblemon.mod.common.block.tm.TMMScreenHandler
 import com.cobblemon.mod.common.item.components.TMMoveComponent
 import com.cobblemon.mod.common.net.messages.client.ui.CraftTMPacket
 import com.cobblemon.mod.common.util.itemRegistry

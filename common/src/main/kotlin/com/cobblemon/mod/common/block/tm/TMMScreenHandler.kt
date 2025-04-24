@@ -6,19 +6,17 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package com.cobblemon.mod.common.gui
+package com.cobblemon.mod.common.block.tm
 
-import com.cobblemon.mod.common.CobblemonItems
-import com.cobblemon.mod.common.api.tms.TechnicalMachine
+import com.cobblemon.mod.common.CobblemonMenuType
 import com.cobblemon.mod.common.block.entity.TMBlockEntity
-import com.cobblemon.mod.common.util.itemRegistry
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.Container
+import net.minecraft.world.SimpleContainer
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.*
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.Items
 
 class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMenu(menuType, syncId) {
     var playerInventory: Inventory? = null
@@ -26,7 +24,43 @@ class TMMScreenHandler(menuType: MenuType<*>, syncId: Int) : AbstractContainerMe
     private var tmmEntity: TMBlockEntity? = null
     var inventory: Container? = null
 
-    constructor(syncId: Int, playerInventory: Inventory, inventory: Container) : this(CobblemonMenuHandlers.TMM_SCREEN, syncId) {
+    constructor(syncId: Int, playerInventory: Inventory) : this(CobblemonMenuType.TM_MACHINE, syncId) {
+        this.playerInventory = playerInventory
+        this.inventory = SimpleContainer(4)
+        this.tmmEntity = (this.inventory as? TMBlockEntity.TMBlockInventory)?.blockEntity
+
+        this.inventory?.startOpen(playerInventory.player)
+
+        val startX = 30
+        val startY = 140
+        val slotWidth = 18
+        val slotHeight = 18
+
+        for (row in 0..2) {
+            for (col in 0..8) {
+                this.addSlot(Slot(playerInventory, 9 + (row * 9) + col, startX + (slotWidth * col), startY + (slotHeight * row)))
+            }
+        }
+        for (col in 0..8) {
+            this.addSlot(Slot(playerInventory, col, startX + (slotWidth * col), startY + 58))
+        }
+
+        this.addSlot(Slot(this.inventory, 0, startX + 167, startY + 9))  // Input slot 1
+        this.addSlot(Slot(this.inventory, 1, startX + 185, startY + 9))  // Input slot 2
+        this.addSlot(Slot(this.inventory, 2, startX + 203, startY + 9))  // Input slot 3
+
+        this.addSlot(TMResultSlot(result, 0, startX + 123, startY - 22))
+        //this.addSlot(ResultSlot(
+        //    playerInventory.player,
+        //    input,
+        //    result,
+        //    0,
+        //    startX + 123,
+        //    startY - 22
+        //))
+    }
+
+    constructor(syncId: Int, playerInventory: Inventory, inventory: Container) : this(CobblemonMenuType.TM_MACHINE, syncId) {
         this.playerInventory = playerInventory
         this.inventory = inventory
         this.tmmEntity = (inventory as? TMBlockEntity.TMBlockInventory)?.blockEntity

@@ -15,6 +15,7 @@ import com.cobblemon.mod.common.CobblemonClientImplementation
 import com.cobblemon.mod.common.CobblemonEntities
 import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.CobblemonMenuType.COOKING_POT
+import com.cobblemon.mod.common.CobblemonMenuType.TM_MACHINE
 import com.cobblemon.mod.common.api.berry.Berries
 import com.cobblemon.mod.common.api.molang.ObjectValue
 import com.cobblemon.mod.common.api.scheduling.ClientTaskTracker
@@ -53,7 +54,6 @@ import com.cobblemon.mod.common.client.trade.ClientTrade
 import com.cobblemon.mod.common.data.CobblemonDataProvider
 import com.cobblemon.mod.common.entity.boat.CobblemonBoatType
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
-import com.cobblemon.mod.common.gui.CobblemonMenuHandlers
 import com.cobblemon.mod.common.platform.events.PlatformEvents
 import com.cobblemon.mod.common.pokedex.scanner.PokedexUsageContext
 import com.cobblemon.mod.common.util.isLookingAt
@@ -317,7 +317,7 @@ object CobblemonClient {
 
     private fun registerMenuScreens() {
         MenuScreens.register(COOKING_POT, ::CookingPotScreen)
-        MenuScreens.register(TMM_SCREEN, ::TMMHandledScreen)
+        MenuScreens.register(TM_MACHINE, ::TMMHandledScreen)
     }
 
     private fun registerBlockEntityRenderers() {

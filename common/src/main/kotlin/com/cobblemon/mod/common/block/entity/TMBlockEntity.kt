@@ -14,8 +14,8 @@ import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.api.moves.MoveTemplate
 import com.cobblemon.mod.common.api.moves.Moves
 import com.cobblemon.mod.common.api.tms.TechnicalMachines
-import com.cobblemon.mod.common.block.TMBlock
-import com.cobblemon.mod.common.gui.TMMScreenHandler
+import com.cobblemon.mod.common.block.tm.TMBlock
+import com.cobblemon.mod.common.block.tm.TMMScreenHandler
 import com.cobblemon.mod.common.item.components.TMMoveComponent
 import com.cobblemon.mod.common.util.itemRegistry
 import com.cobblemon.mod.common.util.playSoundServer
@@ -38,16 +38,12 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.nbt.CompoundTag
-import net.minecraft.resources.ResourceLocation
 import net.minecraft.sounds.SoundEvent
-import net.minecraft.sounds.SoundSource
 import net.minecraft.world.Container
 import net.minecraft.world.entity.item.ItemEntity
-import net.minecraft.world.item.Item
 import net.minecraft.world.item.Items
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter
-import net.minecraft.world.level.block.state.properties.BlockStateProperties
 
 class TMBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity(CobblemonBlockEntities.TM_BLOCK, pos, state) {
 

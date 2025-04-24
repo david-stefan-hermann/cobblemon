@@ -1,57 +1,37 @@
-/*
- * Copyright (C) 2023 Cobblemon Contributors
- *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
-
-package com.cobblemon.mod.common.block
+package com.cobblemon.mod.common.block.tm
 
 import com.cobblemon.mod.common.CobblemonItems
-import com.cobblemon.mod.common.CobblemonSounds
-import com.cobblemon.mod.common.api.tms.TechnicalMachine
-import com.cobblemon.mod.common.api.tms.TechnicalMachines
-import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.block.entity.TMBlockEntity
 import com.cobblemon.mod.common.item.components.TMMoveComponent
 import com.cobblemon.mod.common.util.giveOrDropItemStack
-import com.cobblemon.mod.common.util.itemRegistry
-import com.cobblemon.mod.common.util.playSoundServer
-import com.cobblemon.mod.common.util.toVec3d
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
-import net.minecraft.world.InteractionHand
+import net.minecraft.world.Containers
 import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.Items
-import net.minecraft.world.item.context.UseOnContext
-import net.minecraft.world.level.BlockAndTintGetter
+import net.minecraft.world.item.context.BlockPlaceContext
 import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
-import net.minecraft.world.level.LevelAccessor
-import net.minecraft.world.level.block.*
+import net.minecraft.world.level.block.BaseEntityBlock
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.RenderShape
+import net.minecraft.world.level.block.SimpleWaterloggedBlock
 import net.minecraft.world.level.block.entity.BlockEntity
-import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.StateDefinition
 import net.minecraft.world.level.block.state.properties.BlockStateProperties
 import net.minecraft.world.level.block.state.properties.BooleanProperty
-import net.minecraft.world.level.material.Fluids
 import net.minecraft.world.level.material.FluidState
+import net.minecraft.world.level.material.Fluids
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.shapes.CollisionContext
 import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
-import net.minecraft.server.level.ServerLevel
-import net.minecraft.sounds.SoundSource
-import net.minecraft.world.Containers
-import net.minecraft.world.entity.player.Player
-import net.minecraft.world.item.context.BlockPlaceContext
 
-class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(properties), SimpleWaterloggedBlock {
+class TMBlock(properties: Properties) : BaseEntityBlock(properties), SimpleWaterloggedBlock {
 
     companion object {
         val ON: BooleanProperty = BooleanProperty.create("on")
@@ -86,7 +66,7 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
 
         val CODEC: MapCodec<TMBlock> = RecordCodecBuilder.mapCodec { instance ->
             instance.group(
-                BlockBehaviour.Properties.CODEC.fieldOf("properties").forGetter { it.properties }
+                Properties.CODEC.fieldOf("properties").forGetter { it.properties }
             ).apply(instance, ::TMBlock)
         }
     }
@@ -125,12 +105,12 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
                     if (blockEntity.tmmInventory.filterTM != null) {
                         if (!player.isCreative) {
                             val stack = ItemStack(CobblemonItems.TECHNICAL_MACHINE)
-                            TMMoveComponent.setTMMove(stack, blockEntity.tmmInventory.filterTM!!)
+                            TMMoveComponent.Companion.setTMMove(stack, blockEntity.tmmInventory.filterTM!!)
                             player.giveOrDropItemStack(stack)
                         }
                         blockEntity.tmmInventory.filterTM = null
                         blockEntity.setChanged()
-                        level.sendBlockUpdated(pos, state, state, Block.UPDATE_ALL)
+                        level.sendBlockUpdated(pos, state, state, UPDATE_ALL)
                     }
                 }
                 else {
@@ -159,10 +139,10 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
     }
 
     override fun getShape(
-            state: BlockState,
-            getter: BlockGetter,
-            pos: BlockPos,
-            context: CollisionContext
+        state: BlockState,
+        getter: BlockGetter,
+        pos: BlockPos,
+        context: CollisionContext
     ): VoxelShape {
         return when (state.getValue(FACING)) {
             Direction.NORTH -> NORTH_OUTLINE
@@ -185,7 +165,7 @@ class TMBlock(properties: BlockBehaviour.Properties) : BaseEntityBlock(propertie
         if (!state.`is`(newState.block)) {
             if (blockEntity is TMBlockEntity && blockEntity.tmmInventory.filterTM != null) {
                 val stack = ItemStack(CobblemonItems.TECHNICAL_MACHINE)
-                TMMoveComponent.setTMMove(stack, blockEntity.tmmInventory.filterTM!!)
+                TMMoveComponent.Companion.setTMMove(stack, blockEntity.tmmInventory.filterTM!!)
                 Containers.dropItemStack(level, pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble(), stack)
             }
         }

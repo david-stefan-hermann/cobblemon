@@ -447,13 +447,6 @@ class CobblemonNeoForge : CobblemonImplementation {
         }
     }
 
-    override fun registerScreenHandlerType(
-        identifier: ResourceLocation,
-        menuType: MenuType<*>
-    ) {
-        TODO("Not yet implemented")
-    }
-
     private fun onReload(e: AddReloadListenerEvent) {
         this.reloadableResources.forEach(e::addListener)
     }

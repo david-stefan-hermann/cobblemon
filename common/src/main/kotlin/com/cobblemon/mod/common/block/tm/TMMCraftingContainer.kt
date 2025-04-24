@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package com.cobblemon.mod.common.gui
+package com.cobblemon.mod.common.block.tm
 
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.entity.player.Player
@@ -14,6 +14,7 @@ import net.minecraft.world.entity.player.StackedContents
 import net.minecraft.world.inventory.CraftingContainer
 import net.minecraft.world.inventory.StackedContentsCompatible
 
+//TODO still needed?
 class TMMCraftingContainer(
     private val menu: TMMScreenHandler, // Link to the parent screen handler
     private val width: Int,

@@ -169,8 +169,6 @@ interface CobblemonImplementation {
      */
     fun registerResourceReloader(identifier: ResourceLocation, reloader: PreparableReloadListener, type: PackType, dependencies: Collection<ResourceLocation>)
 
-    fun registerScreenHandlerType(identifier: ResourceLocation, menuType: MenuType<*>)
-
     /**
      * TODO
      *
