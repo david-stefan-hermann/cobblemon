@@ -48,7 +48,8 @@ class PokedexManager(
         val formName = pokemon.form.name
         getOrCreateSpeciesRecord(speciesId).getOrCreateFormRecord(formName).caught(PokedexEntityData(pokemon = pokemon, disguise = null))
 
-        syncTMsFromPokemon(pokemon, uuid)
+        // sync TM moves from caught pokemon
+        Cobblemon.playerDataManager.getTMData(uuid)?.syncTMsFromPokemon(pokemon)
     }
 
     override fun markDirty() {
@@ -85,16 +86,5 @@ class PokedexManager(
         val copied = mutableMapOf<ResourceLocation, SpeciesDexRecord>()
         speciesRecords.forEach { (key, value) -> copied[key] = value.clone() }
         return ClientPokedexManager(copied)
-    }
-
-    private fun syncTMsFromPokemon(pokemon: Pokemon, playerUUID: UUID) {
-        val tmMoveManager = Cobblemon.playerDataManager.getTMData(playerUUID) ?: return
-
-        val learnableTMs = TechnicalMachines.tmMap.values
-                .filter { tm -> pokemon.allAccessibleMoves.contains(tm.moveName) }
-
-        for (tm in learnableTMs) {
-            tmMoveManager.learn(tm.id)
-        }
     }
 }
