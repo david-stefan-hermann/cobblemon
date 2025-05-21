@@ -428,7 +428,7 @@ class TMMHandledScreen(
                     onPress = {
                         inventory.player.playSound(CobblemonSounds.GUI_CLICK, 1f, 1f)
                         Cobblemon.LOGGER.info("Filtered TMs for type: $type")
-                        tmList.set(TechnicalMachine.filterTms(null, type, null).toMutableList())
+                        tmList.set(TechnicalMachine.filterTms(null, type, null, player = inventory.player).toMutableList())
                         sortType = type
                         mode = TM_BROWSING_MODE
                         clearGUI()
@@ -477,7 +477,7 @@ class TMMHandledScreen(
                 onPress = {
                     inventory.player.playSound(CobblemonSounds.GUI_CLICK, 1f, 1f)
                     val test = Moves.getByName("thunderbolt")
-                    tmList.set(TechnicalMachine.filterTms(null, null, null).toMutableList())
+                    tmList.set(TechnicalMachine.filterTms(null, null, null, player = inventory.player).toMutableList())
                     Cobblemon.LOGGER.info("tmList updated with ${tmList.get().size} TMs.")
                     mode = TM_BROWSING_MODE
                     sortType = null

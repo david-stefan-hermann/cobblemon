@@ -8,10 +8,13 @@
 
 package com.cobblemon.mod.common.api.pokedex
 
+import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonNetwork.sendPacket
 import com.cobblemon.mod.common.api.storage.player.InstancedPlayerData
 import com.cobblemon.mod.common.api.storage.player.PlayerInstancedDataStoreTypes
 import com.cobblemon.mod.common.api.storage.player.client.ClientPokedexManager
+import com.cobblemon.mod.common.api.tms.TMMoveManager
+import com.cobblemon.mod.common.api.tms.TechnicalMachines
 import com.cobblemon.mod.common.net.messages.client.SetClientPlayerDataPacket
 import com.cobblemon.mod.common.pokedex.scanner.PokedexEntityData
 import com.cobblemon.mod.common.pokemon.Pokemon
@@ -21,6 +24,7 @@ import com.mojang.serialization.codecs.PrimitiveCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import java.util.UUID
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.entity.player.Player
 
 class PokedexManager(
     override val uuid: UUID,
@@ -43,6 +47,8 @@ class PokedexManager(
         val speciesId = pokemon.species.resourceIdentifier
         val formName = pokemon.form.name
         getOrCreateSpeciesRecord(speciesId).getOrCreateFormRecord(formName).caught(PokedexEntityData(pokemon = pokemon, disguise = null))
+
+        syncTMsFromPokemon(pokemon, uuid)
     }
 
     override fun markDirty() {
@@ -79,5 +85,16 @@ class PokedexManager(
         val copied = mutableMapOf<ResourceLocation, SpeciesDexRecord>()
         speciesRecords.forEach { (key, value) -> copied[key] = value.clone() }
         return ClientPokedexManager(copied)
+    }
+
+    private fun syncTMsFromPokemon(pokemon: Pokemon, playerUUID: UUID) {
+        val tmMoveManager = Cobblemon.playerDataManager.getTMData(playerUUID) ?: return
+
+        val learnableTMs = TechnicalMachines.tmMap.values
+                .filter { tm -> pokemon.allAccessibleMoves.contains(tm.moveName) }
+
+        for (tm in learnableTMs) {
+            tmMoveManager.learn(tm.id)
+        }
     }
 }

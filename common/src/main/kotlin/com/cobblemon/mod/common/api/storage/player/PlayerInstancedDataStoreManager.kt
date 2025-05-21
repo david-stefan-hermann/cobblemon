@@ -8,10 +8,12 @@
 
 package com.cobblemon.mod.common.api.storage.player
 
+import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.Cobblemon.MODID
 import com.cobblemon.mod.common.api.pokedex.PokedexManager
 import com.cobblemon.mod.common.api.scheduling.ScheduledTask
 import com.cobblemon.mod.common.api.scheduling.ServerTaskTracker
+import com.cobblemon.mod.common.api.tms.TMMoveManager
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import java.util.UUID
 import java.util.concurrent.Executors
@@ -66,6 +68,14 @@ open class PlayerInstancedDataStoreManager {
             .infiniteIterations()
             .tracker(ServerTaskTracker)
             .build()
+
+        saveTasks[PlayerInstancedDataStoreTypes.TM_MOVES] = ScheduledTask.Builder()
+                .execute { saveAllOfOneType(PlayerInstancedDataStoreTypes.TM_MOVES) }
+                .delay(30f)
+                .interval(120f)
+                .infiniteIterations()
+                .tracker(ServerTaskTracker)
+                .build()
     }
 
     open fun get(playerId: UUID, dataType: PlayerInstancedDataStoreType): InstancedPlayerData {
@@ -125,5 +135,17 @@ open class PlayerInstancedDataStoreManager {
 
     open fun getPokedexData(playerId: UUID): PokedexManager {
         return get(playerId, PlayerInstancedDataStoreTypes.POKEDEX) as PokedexManager
+    }
+
+    fun getTMData(player: ServerPlayer): TMMoveManager {
+        return getTMData(player.uuid)
+    }
+
+    fun getTMData(playerId: UUID): TMMoveManager {
+        val data = get(playerId, PlayerInstancedDataStoreTypes.TM_MOVES)
+        if (data !is TMMoveManager) {
+            Cobblemon.LOGGER.warn("getTMData: No TMMoveManager found for $playerId (got ${data?.javaClass?.name})")
+        }
+        return data as TMMoveManager
     }
 }

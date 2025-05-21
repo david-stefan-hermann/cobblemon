@@ -13,6 +13,7 @@ import com.cobblemon.mod.common.api.moves.MoveTemplate
 import com.cobblemon.mod.common.api.moves.Moves
 import com.cobblemon.mod.common.api.types.ElementalType
 import com.cobblemon.mod.common.api.types.ElementalTypes
+import com.cobblemon.mod.common.client.CobblemonClient
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.cobblemon.mod.common.tms.obtain.NoneObtainMethod
 import com.cobblemon.mod.common.util.lang
@@ -20,6 +21,7 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Component
+import net.minecraft.world.entity.player.Player
 
 class TechnicalMachine(
         val moveName: MoveTemplate,
@@ -44,7 +46,7 @@ class TechnicalMachine(
          * @param pokemon A [Pokemon] to check the [Learnset] of
          * @return A [MutableSet] of [TechnicalMachine] that passed the filter
          */
-        fun filterTms(search: String?, type: ElementalType?, pokemon: Pokemon?): MutableSet<TechnicalMachine> {
+        fun filterTms(search: String?, type: ElementalType?, pokemon: Pokemon?, player: Player? = null): MutableSet<TechnicalMachine> {
             val tms = TechnicalMachines.tmMap.values.toMutableSet()
 
             type?.let {
@@ -75,6 +77,11 @@ class TechnicalMachine(
                         iterator.remove()
                     }
                 }
+            }
+
+            player?.let {
+                val learnedTMs = CobblemonClient.clientTMMoveData?.learnedTMs ?: return@let
+                tms.retainAll { tm -> learnedTMs.contains(tm.id) }
             }
 
             return tms
