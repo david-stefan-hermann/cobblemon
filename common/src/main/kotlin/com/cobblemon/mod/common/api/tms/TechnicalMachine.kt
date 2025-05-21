@@ -9,11 +9,13 @@
 package com.cobblemon.mod.common.api.tms
 
 import com.cobblemon.mod.common.Cobblemon
+import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.api.moves.MoveTemplate
 import com.cobblemon.mod.common.api.moves.Moves
 import com.cobblemon.mod.common.api.types.ElementalType
 import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.client.CobblemonClient
+import com.cobblemon.mod.common.item.components.TMMoveComponent
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.cobblemon.mod.common.tms.obtain.NoneObtainMethod
 import com.cobblemon.mod.common.util.lang
@@ -22,6 +24,7 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
 
 class TechnicalMachine(
         val moveName: MoveTemplate,
@@ -108,4 +111,10 @@ class TechnicalMachine(
      * @return This [TechnicalMachine]'s move name, translated
      */
     fun translatedMoveName(): MutableComponent = moveName.displayName
+
+    fun createItemStack(): ItemStack {
+        val stack = ItemStack(CobblemonItems.TECHNICAL_MACHINE)
+        TMMoveComponent.setTMMove(stack, moveName)
+        return stack
+    }
 }
