@@ -75,6 +75,10 @@ abstract class PokemonStore<T : StorePosition> : Iterable<Pokemon> {
         remove(pokemon)
         val position = getFirstAvailablePosition() ?: return false // Couldn't fit, shrug emoji
         set(position, pokemon)
+        
+        // sync TM moves here
+        Cobblemon.playerDataManager.getTMData(uuid)?.syncTMsFromPokemon(pokemon)
+
         return true
     }
 

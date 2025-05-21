@@ -47,9 +47,6 @@ class PokedexManager(
         val speciesId = pokemon.species.resourceIdentifier
         val formName = pokemon.form.name
         getOrCreateSpeciesRecord(speciesId).getOrCreateFormRecord(formName).caught(PokedexEntityData(pokemon = pokemon, disguise = null))
-
-        // sync TM moves from caught pokemon
-        Cobblemon.playerDataManager.getTMData(uuid)?.syncTMsFromPokemon(pokemon)
     }
 
     override fun markDirty() {
