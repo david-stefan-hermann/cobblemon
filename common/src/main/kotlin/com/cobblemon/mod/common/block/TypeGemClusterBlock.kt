@@ -151,7 +151,8 @@ class TypeGemClusterBlock(
 
     override fun getDrops(state: BlockState, params: LootParams.Builder): List<ItemStack> {
         val item = BuiltInRegistries.ITEM.getOptional(dropItemId).orElse(Items.AIR)
-        return listOf(ItemStack(item))
+        val count = if (state.getValue(STAGE) >= 3) 2 else 1
+        return listOf(ItemStack(item, count))
     }
 
     override fun getShape(
