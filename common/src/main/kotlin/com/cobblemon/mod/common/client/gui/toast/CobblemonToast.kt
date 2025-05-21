@@ -29,27 +29,38 @@ class CobblemonToast(
     var description: Component,
     var frameTexture: ResourceLocation,
     var progress: Float,
-    var progressColor: Int
+    var progressColor: Int,
+    var durationMs: Long? = null
 ) : Toast {
 
-    constructor(packet: ToastPacket) : this(packet.uuid, packet.icon, packet.title, packet.description, packet.frameTexture, packet.progress, packet.progressColor)
+    constructor(packet: ToastPacket) : this(packet.uuid, packet.icon, packet.title, packet.description, packet.frameTexture, packet.progress, packet.progressColor, packet.durationMs)
 
+    private var startTime: Long = -1
     private var lastProgress = 0F
     private var lastTime = 0L
     internal var nextVisibility: Toast.Visibility = Toast.Visibility.SHOW
 
     override fun render(context: GuiGraphics, manager: ToastComponent, startTime: Long): Toast.Visibility {
+        if (this.startTime == -1L) this.startTime = startTime
+
+        val localDuration = this.durationMs
+        if (localDuration != null && startTime - this.startTime >= localDuration) {
+            return Toast.Visibility.HIDE
+        }
+
         context.blitSprite(this.frameTexture, 0, 0, this.width(), this.height())
         val textRenderer = manager.minecraft.font
         context.drawString(textRenderer, this.title, 30, 7, this.title.style.color?.value ?: -1, false)
         context.drawString(textRenderer, this.description, 30, 18, this.description.style.color?.value ?: -1, false)
         context.renderFakeItem(this.icon, 8, 8)
+
         if (this.hasProgressBar()) {
             context.fill(3, 28, 157, 29, -1)
             val f = Mth.clampedLerp(this.lastProgress, this.progress, (startTime - this.lastTime).toFloat() / 100F)
             context.fill(3, 28, (3F + 154F * f).toInt(), 29, this.progressColor)
             this.lastProgress = f
         }
+
         this.lastTime = startTime
         return this.nextVisibility
     }

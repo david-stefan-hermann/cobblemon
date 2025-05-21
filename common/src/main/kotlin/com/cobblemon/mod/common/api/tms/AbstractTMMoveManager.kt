@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2023 Cobblemon Contributors
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 package com.cobblemon.mod.common.api.tms
 
 import com.cobblemon.mod.common.api.storage.player.PlayerInstancedDataStoreType
@@ -32,14 +40,15 @@ abstract class AbstractTMMoveManager {
         val tm = TechnicalMachines.tmMap[tmId] ?: return
 
         val packet = ToastPacket(
-                title = Component.literal("New TM Learned"),
-                description = Component.literal(tm.moveName.name ?: tm.id.toString()),
+                title = Component.literal("New TM Learned"), // todp lang for this
+                description = tm.translatedMoveName(),
                 icon = tm.createItemStack(),
                 frameTexture = ResourceLocation.parse("minecraft:toast/advancement"),
                 progress = -1F,
                 progressColor = 0x00FF00,
                 uuid = UUID.nameUUIDFromBytes(("tm_toast:${tmId}").toByteArray()),
-                behaviour = ToastPacket.Behaviour.SHOW_OR_UPDATE
+                behaviour = ToastPacket.Behaviour.SHOW_OR_UPDATE,
+                durationMs = 4000L
         )
 
         player.sendPacket(packet)

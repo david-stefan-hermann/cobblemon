@@ -24,7 +24,8 @@ class ToastPacket(
     val progress: Float,
     val progressColor: Int,
     val uuid: UUID,
-    val behaviour: Behaviour
+    val behaviour: Behaviour,
+    val durationMs: Long? = null
 ) : NetworkPacket<ToastPacket> {
 
     override val id: ResourceLocation = ID
@@ -38,6 +39,7 @@ class ToastPacket(
         buffer.writeInt(this.progressColor)
         buffer.writeUUID(this.uuid)
         buffer.writeEnumConstant(this.behaviour)
+        if (durationMs != null) buffer.writeLong(durationMs)
     }
 
     companion object {
@@ -52,7 +54,8 @@ class ToastPacket(
             buffer.readFloat(),
             buffer.readInt(),
             buffer.readUUID(),
-            buffer.readEnumConstant(Behaviour::class.java)
+            buffer.readEnumConstant(Behaviour::class.java),
+            durationMs = if (buffer.readableBytes() >= 8) buffer.readLong() else null
         )
 
     }
