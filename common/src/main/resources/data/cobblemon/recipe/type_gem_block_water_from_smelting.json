@@ -4,7 +4,7 @@
     "item": "cobblemon:type_gem_block_water"
   },
   "result": {
-    "id": "cobblemon:type_gem_cluster_water"
+    "id": "cobblemon:water_gem"
   },
   "experience": 0.1,
   "cookingtime": 200
