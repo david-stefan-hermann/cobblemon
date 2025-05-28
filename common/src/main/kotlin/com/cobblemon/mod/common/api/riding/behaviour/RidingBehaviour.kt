@@ -39,9 +39,9 @@ interface RidingBehaviour<Settings : RidingBehaviourSettings, State : RidingBeha
 
     fun speed(settings: Settings, state: State, vehicle: PokemonEntity, driver: Player): Float
 
-    fun clampPassengerRotation(settings: Settings, state: State, entity: PokemonEntity, driver: LivingEntity) {}
+    fun clampPassengerRotation(settings: Settings, state: State, vehicle: PokemonEntity, driver: LivingEntity) {}
 
-    fun updatePassengerRotation(settings: Settings, state: State, entity: PokemonEntity, driver: LivingEntity) {}
+    fun updatePassengerRotation(settings: Settings, state: State, vehicle: PokemonEntity, driver: LivingEntity) {}
 
     fun rotation(settings: Settings, state: State, vehicle: PokemonEntity, driver: LivingEntity): Vec2
 
@@ -74,7 +74,7 @@ interface RidingBehaviour<Settings : RidingBehaviourSettings, State : RidingBeha
 
     fun useAngVelSmoothing(settings: Settings, state: State, vehicle: PokemonEntity): Boolean
 
-    fun useRidingAltPose(settings: Settings, state: State, vehicle: PokemonEntity, driver: Player): Boolean
+    fun useRidingAltPose(settings: Settings, state: State, vehicle: PokemonEntity, driver: Player): ResourceLocation
 
     fun inertia(settings: Settings, state: State, vehicle: PokemonEntity): Double
 
@@ -87,6 +87,8 @@ interface RidingBehaviour<Settings : RidingBehaviourSettings, State : RidingBeha
     fun shouldRotatePokemonHead(settings: Settings, state: State, vehicle: PokemonEntity): Boolean
 
     fun shouldRotatePlayerHead(settings: Settings, state: State, vehicle: PokemonEntity): Boolean
+
+    fun maxUpStep(settings: Settings, state: State, vehicle: PokemonEntity): Float? = null
 
     fun createDefaultState(settings: Settings): State
 

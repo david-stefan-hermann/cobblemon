@@ -17,7 +17,6 @@ import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.CobblemonMenuType.COOKING_POT
 import com.cobblemon.mod.common.CobblemonMenuType.TM_MACHINE
 import com.cobblemon.mod.common.api.berry.Berries
-import com.cobblemon.mod.common.api.molang.ObjectValue
 import com.cobblemon.mod.common.api.scheduling.ClientTaskTracker
 import com.cobblemon.mod.common.api.storage.player.client.ClientGeneralPlayerData
 import com.cobblemon.mod.common.api.storage.player.client.ClientPokedexManager
@@ -36,6 +35,8 @@ import com.cobblemon.mod.common.client.render.boat.CobblemonBoatRenderer
 import com.cobblemon.mod.common.client.render.color.TechnicalMachineItemColorProvider
 import com.cobblemon.mod.common.client.render.color.AprijuiceItemColorProvider
 import com.cobblemon.mod.common.client.render.color.PokeBaitItemColorProvider
+import com.cobblemon.mod.common.client.render.color.PonigiriItemColorProvider
+import com.cobblemon.mod.common.client.render.color.SinisterTeaItemColorProvider
 import com.cobblemon.mod.common.client.render.entity.PokeBobberEntityRenderer
 import com.cobblemon.mod.common.client.render.generic.GenericBedrockRenderer
 import com.cobblemon.mod.common.client.render.item.CobblemonBuiltinItemRendererRegistry
@@ -55,6 +56,7 @@ import com.cobblemon.mod.common.client.trade.ClientTrade
 import com.cobblemon.mod.common.data.CobblemonDataProvider
 import com.cobblemon.mod.common.entity.boat.CobblemonBoatType
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
+import com.cobblemon.mod.common.item.food.SinisterTeaItem
 import com.cobblemon.mod.common.platform.events.PlatformEvents
 import com.cobblemon.mod.common.pokedex.scanner.PokedexUsageContext
 import com.cobblemon.mod.common.util.isLookingAt
@@ -72,14 +74,10 @@ import net.minecraft.client.renderer.entity.EntityRenderer
 import net.minecraft.client.renderer.entity.LivingEntityRenderer
 import net.minecraft.client.renderer.entity.layers.RenderLayer
 import net.minecraft.client.resources.PlayerSkin
-import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.packs.resources.ResourceManager
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.phys.AABB
-import java.util.UUID
-import net.minecraft.client.player.AbstractClientPlayer
-import net.minecraft.server.level.ServerPlayer
 
 object CobblemonClient {
 
@@ -183,6 +181,9 @@ object CobblemonClient {
         TooltipManager.registerTooltipGenerator(SeasoningTooltipGenerator)
         TooltipManager.registerTooltipGenerator(AprijuiceTooltipGenerator)
         TooltipManager.registerTooltipGenerator(TechnicalMachineTooltipGenerator)
+        TooltipManager.registerTooltipGenerator(PokePuffTooltipGenerator)
+        TooltipManager.registerTooltipGenerator(FoodTooltipGenerator)
+        TooltipManager.registerTooltipGenerator(MobEffectTooltipGenerator)
     }
 
     fun registerFlywheelRenderers() {
@@ -216,6 +217,13 @@ object CobblemonClient {
             CobblemonBlocks.RED_APRICORN_SAPLING,
             CobblemonBlocks.WHITE_APRICORN_SAPLING,
             CobblemonBlocks.YELLOW_APRICORN_SAPLING,
+            CobblemonBlocks.POTTED_BLACK_APRICORN_SAPLING,
+            CobblemonBlocks.POTTED_BLUE_APRICORN_SAPLING,
+            CobblemonBlocks.POTTED_GREEN_APRICORN_SAPLING,
+            CobblemonBlocks.POTTED_PINK_APRICORN_SAPLING,
+            CobblemonBlocks.POTTED_RED_APRICORN_SAPLING,
+            CobblemonBlocks.POTTED_WHITE_APRICORN_SAPLING,
+            CobblemonBlocks.POTTED_YELLOW_APRICORN_SAPLING,
             CobblemonBlocks.BLACK_APRICORN,
             CobblemonBlocks.BLUE_APRICORN,
             CobblemonBlocks.GREEN_APRICORN,
@@ -283,6 +291,7 @@ object CobblemonClient {
             CobblemonBlocks.SACCHARINE_HANGING_SIGN,
             CobblemonBlocks.SACCHARINE_WALL_HANGING_SIGN,
             CobblemonBlocks.SACCHARINE_SAPLING,
+            CobblemonBlocks.POTTED_SACCHARINE_SAPLING,
             CobblemonBlocks.LURE_CAKE,
             CobblemonBlocks.POKE_CAKE,
             CobblemonBlocks.LECTERN,
@@ -363,6 +372,10 @@ object CobblemonClient {
     private fun registerItemColors() {
         implementation.registerItemColors(AprijuiceItemColorProvider, *CobblemonItems.aprijuices.toTypedArray())
         implementation.registerItemColors(PokeBaitItemColorProvider, CobblemonItems.POKE_BAIT)
+        implementation.registerItemColors(PokeBaitItemColorProvider, CobblemonItems.LURE_CAKE)
+        implementation.registerItemColors(PokeBaitItemColorProvider, CobblemonItems.POKE_CAKE)
+        implementation.registerItemColors(PonigiriItemColorProvider, CobblemonItems.PONIGIRI)
+        implementation.registerItemColors(SinisterTeaItemColorProvider, CobblemonItems.SINISTER_TEA)
         implementation.registerItemColors(TechnicalMachineItemColorProvider, CobblemonItems.TECHNICAL_MACHINE)
     }
 

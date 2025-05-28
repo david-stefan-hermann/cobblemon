@@ -10,8 +10,8 @@ package com.cobblemon.mod.common.api.riding.behaviour
 
 import com.cobblemon.mod.common.api.riding.RidingStyle
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
+import com.cobblemon.mod.common.util.cobblemonResource
 import net.minecraft.resources.ResourceLocation
-import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.SmoothDouble
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
@@ -26,7 +26,7 @@ import net.minecraft.world.phys.Vec3
 class RidingController<Settings : RidingBehaviourSettings, State : RidingBehaviourState>(val behaviour: RidingBehaviour<Settings, State>) : RidingBehaviour<Settings, State> {
 
     override val key = behaviour.key
-    
+
     override fun getRidingStyle(settings: Settings, state: State): RidingStyle {
         return behaviour.getRidingStyle(settings, state)
     }
@@ -43,6 +43,16 @@ class RidingController<Settings : RidingBehaviourSettings, State : RidingBehavio
     override fun speed(settings: Settings, state: State, vehicle: PokemonEntity, driver: Player): Float {
         if (!isActive(settings, state, vehicle)) return 0.0F
         return behaviour.speed(settings, state, vehicle, driver)
+    }
+
+    override fun updatePassengerRotation(
+        settings: Settings,
+        state: State,
+        vehicle: PokemonEntity,
+        driver: LivingEntity
+    ) {
+        if (!isActive(settings, state, vehicle)) return
+        return behaviour.updatePassengerRotation(settings, state, vehicle, driver)
     }
 
     override fun clampPassengerRotation(settings: Settings, state: State, vehicle: PokemonEntity, driver: LivingEntity) {
@@ -139,8 +149,8 @@ class RidingController<Settings : RidingBehaviourSettings, State : RidingBehavio
         return behaviour.inertia(settings, state, vehicle)
     }
 
-    override fun useRidingAltPose(settings: Settings, state: State, vehicle: PokemonEntity, driver: Player): Boolean {
-        if (!isActive(settings, state, vehicle)) return false
+    override fun useRidingAltPose(settings: Settings, state: State, vehicle: PokemonEntity, driver: Player): ResourceLocation {
+        if (!isActive(settings, state, vehicle)) return cobblemonResource("no_pose")
         return behaviour.useRidingAltPose(settings, state, vehicle, driver)
     }
 
@@ -173,6 +183,11 @@ class RidingController<Settings : RidingBehaviourSettings, State : RidingBehavio
     override fun setRideBar(settings: Settings, state: State, vehicle: PokemonEntity, driver: Player): Float {
         if (!isActive(settings, state, vehicle)) return 0.0F
         return behaviour.setRideBar(settings, state, vehicle, driver)
+    }
+
+    override fun maxUpStep(settings: Settings, state: State, vehicle: PokemonEntity): Float? {
+        if (!isActive(settings, state, vehicle)) return null
+        return behaviour.maxUpStep(settings, state, vehicle)
     }
 
     override fun createDefaultState(settings: Settings): State {

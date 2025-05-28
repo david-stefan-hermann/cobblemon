@@ -44,7 +44,17 @@ object CobblemonSounds : PlatformRegistry<Registry<SoundEvent>, ResourceKey<Regi
     val PC_WALLPAPER_UNLOCK = this.create("pc.wallpaper.unlock")
 
     @JvmField
+    val NPC_GIBBER_GENERIC = this.create("entity.npc.gibber.generic")
+    @JvmField
+    val NPC_GIBBER_SPEECH_TYPE_1_1 = this.create("entity.npc.gibber.speech_type_1_1")
+    @JvmField
+    val NPC_GIBBER_SPEECH_TYPE_1_2 = this.create("entity.npc.gibber.speech_type_1_2")
+    @JvmField
+    val NPC_GIBBER_SPEECH_TYPE_1_3 = this.create("entity.npc.gibber.speech_type_1_3")
+
+    @JvmField
     val VILLAGER_WORK_NURSE = this.create("entity.villager.work_nurse")
+
     @JvmField
     val HEALING_MACHINE_ACTIVE = this.create("block.healing_machine.active")
 
@@ -114,6 +124,7 @@ object CobblemonSounds : PlatformRegistry<Registry<SoundEvent>, ResourceKey<Regi
     val MEDICINE_FEATHER_USE = this.create("item.medicine.feather.use")
     @JvmField
     val MOCHI_USE = this.create("item.medicine.feather.use")
+
 
     @JvmField
     val MULCH_PLACE = this.create("block.mulch.place")
@@ -218,6 +229,8 @@ object CobblemonSounds : PlatformRegistry<Registry<SoundEvent>, ResourceKey<Regi
     val BERRY_HARVEST = this.create("block.berry_bush.harvest")
     @JvmField
     val BERRY_EAT = this.create("item.berry.eat")
+    @JvmField
+    val BERRY_EAT_FULL = this.create("item.berry.eat.full")
 
     @JvmField
     val BIG_ROOT_BREAK = this.create("block.big_root.break")

@@ -46,6 +46,11 @@
   "features": [
     "hisuian"
   ],
+  "behaviour": {
+    "entityInteract": {
+      "avoidedBySkeleton": true
+    }
+  },
   "baseScale": 1.1,
   "hitbox": {
     "width": 1.2,
@@ -344,7 +349,7 @@
         },
         "seats": [],
         "behaviour": {
-          "key": "cobblemon:land/generic"
+          "key": "cobblemon:land/horse"
         }
       }
     }
@@ -369,7 +374,7 @@
     },
     "seats": [],
     "behaviour": {
-      "key": "cobblemon:land/generic"
+      "key": "cobblemon:land/horse"
     }
   }
 }
