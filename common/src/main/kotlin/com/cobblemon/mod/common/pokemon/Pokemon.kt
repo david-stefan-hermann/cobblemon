@@ -66,6 +66,7 @@ import com.cobblemon.mod.common.api.storage.StoreCoordinates
 import com.cobblemon.mod.common.api.storage.party.NPCPartyStore
 import com.cobblemon.mod.common.api.storage.party.PlayerPartyStore
 import com.cobblemon.mod.common.api.storage.pc.PCStore
+import com.cobblemon.mod.common.api.tms.TMMoveManager
 import com.cobblemon.mod.common.api.types.ElementalType
 import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.api.types.tera.TeraType
@@ -431,7 +432,10 @@ open class Pokemon : ShowdownIdentifiable {
         get() = mintedNature ?: nature
 
     val moveSet = MoveSet().also {
-        it.changeFunction = { onChange(MoveSetUpdatePacket({ this }, it)) }
+        it.changeFunction = {
+            onChange(MoveSetUpdatePacket({ this }, it))
+            this.getOwnerUUID()?.let { it1 -> Cobblemon.playerDataManager.getTMData(it1)?.syncTMsFromPokemon(this) } // we want to make sure to update the players TM Data store when any moves are learned
+        }
     }
 
     val experienceGroup: ExperienceGroup
