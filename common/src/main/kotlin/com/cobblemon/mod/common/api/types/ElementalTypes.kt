@@ -24,8 +24,8 @@ object ElementalTypes {
         displayName = Component.translatable("cobblemon.type.normal"),
         hue = 0xDDDDCF,
         textureXMultiplier = 0,
-        primaryColor = 0x88AA83,
-        secondaryColor = 0xFFFFD8
+        primaryColor = 0x8FA689,
+        secondaryColor = 0xFFFBE2
     )
 
     val FIRE = register(
@@ -33,8 +33,8 @@ object ElementalTypes {
         displayName = Component.translatable("cobblemon.type.fire"),
         hue = 0xE55C32,
         textureXMultiplier = 1,
-        primaryColor = 0xFF0202,
-        secondaryColor = 0xFFAA00
+        primaryColor = 0xF92D2D,
+        secondaryColor = 0xF99B1D
     )
 
     val WATER = register(
@@ -42,8 +42,8 @@ object ElementalTypes {
         displayName = Component.translatable("cobblemon.type.water"),
         hue = 0x4A9BE8,
         textureXMultiplier = 2,
-        primaryColor = 0x1447FF,
-        secondaryColor = 0x1EFBFF
+        primaryColor = 0x377AF6,
+        secondaryColor = 0x50DDF9
     )
 
     val GRASS = register(
@@ -51,8 +51,8 @@ object ElementalTypes {
         displayName = Component.translatable("cobblemon.type.grass"),
         hue = 0x4DBC3C,
         textureXMultiplier = 3,
-        primaryColor = 0x03B59D,
-        secondaryColor = 0xD1FF05
+        primaryColor = 0x0EAE95,
+        secondaryColor = 0xC6F554
     )
 
     val ELECTRIC = register(
@@ -60,8 +60,8 @@ object ElementalTypes {
         displayName = Component.translatable("cobblemon.type.electric"),
         hue = 0xEFD128,
         textureXMultiplier = 4,
-        primaryColor = 0xFF8800,
-        secondaryColor = 0xFFFF4F
+        primaryColor = 0xF7AB19,
+        secondaryColor = 0xFFF257
     )
 
     val ICE = register(
@@ -69,8 +69,8 @@ object ElementalTypes {
         displayName = Component.translatable("cobblemon.type.ice"),
         hue = 0x6BC3EF,
         textureXMultiplier = 5,
-        primaryColor = 0x009DFF,
-        secondaryColor = 0xA3FFF1
+        primaryColor = 0x41BAED,
+        secondaryColor = 0x91F4F9
     )
 
     val FIGHTING = register(
@@ -78,8 +78,8 @@ object ElementalTypes {
         displayName = Component.translatable("cobblemon.type.fighting"),
         hue = 0xC44C5C,
         textureXMultiplier = 6,
-        primaryColor = 0xCC005B,
-        secondaryColor = 0xFF831E
+        primaryColor = 0xC8356B,
+        secondaryColor = 0xF36A3F
     )
 
     val POISON = register(
@@ -87,8 +87,8 @@ object ElementalTypes {
         displayName = Component.translatable("cobblemon.type.poison"),
         hue = 0xA24BD8,
         textureXMultiplier = 7,
-        primaryColor = 0x6E02EA,
-        secondaryColor = 0xFF49DA
+        primaryColor = 0x7B41DD,
+        secondaryColor = 0xE568F4
     )
 
     val GROUND = register(
@@ -96,8 +96,8 @@ object ElementalTypes {
         displayName = Component.translatable("cobblemon.type.ground"),
         hue = 0xD89950,
         textureXMultiplier = 8,
-        primaryColor = 0xE02E0B,
-        secondaryColor = 0xFFD632
+        primaryColor = 0xE08835,
+        secondaryColor = 0xFFD057
     )
 
     val FLYING = register(
@@ -105,8 +105,8 @@ object ElementalTypes {
         displayName = Component.translatable("cobblemon.type.flying"),
         hue = 0xBCC1FF,
         textureXMultiplier = 9,
-        primaryColor = 0x3059FF,
-        secondaryColor = 0xD0C1FF
+        primaryColor = 0x6083F6,
+        secondaryColor = 0xD5CCFA
     )
 
     val PSYCHIC = register(
@@ -114,8 +114,8 @@ object ElementalTypes {
         displayName = Component.translatable("cobblemon.type.psychic"),
         hue = 0xD86AD6,
         textureXMultiplier = 10,
-        primaryColor = 0xFF11A0,
-        secondaryColor = 0xFF9666
+        primaryColor = 0xE553CE,
+        secondaryColor = 0xF69DD5
     )
 
     val BUG = register(
@@ -123,8 +123,8 @@ object ElementalTypes {
         displayName = Component.translatable("cobblemon.type.bug"),
         hue = 0xA2C831,
         textureXMultiplier = 11,
-        primaryColor = 0xA0BC00,
-        secondaryColor = 0xF4FF32
+        primaryColor = 0x9FBE1B,
+        secondaryColor = 0xE9FB5B
     )
 
     val ROCK = register(
@@ -132,8 +132,8 @@ object ElementalTypes {
         displayName = Component.translatable("cobblemon.type.rock"),
         hue = 0xAA9666,
         textureXMultiplier = 12,
-        primaryColor = 0xA87932,
-        secondaryColor = 0xFFD477
+        primaryColor = 0x9F814A,
+        secondaryColor = 0xEECB7A
     )
 
     val GHOST = register(
@@ -141,8 +141,8 @@ object ElementalTypes {
         displayName = Component.translatable("cobblemon.type.ghost"),
         hue = 0x9572E5,
         textureXMultiplier = 13,
-        primaryColor = 0x3221EF,
-        secondaryColor = 0xCA68FF
+        primaryColor = 0x4F57DD,
+        secondaryColor = 0xC182F1
     )
 
     val DRAGON = register(
@@ -150,8 +150,8 @@ object ElementalTypes {
         displayName = Component.translatable("cobblemon.type.dragon"),
         hue = 0x535DE8,
         textureXMultiplier = 14,
-        primaryColor = 0x610ECE,
-        secondaryColor = 0x32D6FF
+        primaryColor = 0x4E68E2,
+        secondaryColor = 0x47C7F7
     )
 
     val DARK = register(
@@ -159,8 +159,8 @@ object ElementalTypes {
         displayName = Component.translatable("cobblemon.type.dark"),
         hue = 0x5C6CB2,
         textureXMultiplier = 15,
-        primaryColor = 0x153166,
-        secondaryColor = 0x52A5C4
+        primaryColor = 0x465B99,
+        secondaryColor = 0x689EBF
     )
 
     val STEEL = register(
@@ -168,8 +168,8 @@ object ElementalTypes {
         displayName = Component.translatable("cobblemon.type.steel"),
         hue = 0xC3CCE0,
         textureXMultiplier = 16,
-        primaryColor = 0x2B77E2,
-        secondaryColor = 0xCCFFFA
+        primaryColor = 0x628CB9,
+        secondaryColor = 0xD6F7F3
     )
 
     val FAIRY = register(
@@ -177,8 +177,8 @@ object ElementalTypes {
         displayName = Component.translatable("cobblemon.type.fairy"),
         hue = 0xEA727E,
         textureXMultiplier = 17,
-        primaryColor = 0xDB28FF,
-        secondaryColor = 0xFF9F8C
+        primaryColor = 0xE2678C,
+        secondaryColor = 0xF5A7B7
     )
 
     fun register(name: String, displayName: MutableComponent, hue: Int, textureXMultiplier: Int, primaryColor: Int, secondaryColor: Int): ElementalType {
