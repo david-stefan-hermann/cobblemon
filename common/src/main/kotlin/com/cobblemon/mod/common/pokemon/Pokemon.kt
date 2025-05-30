@@ -432,10 +432,7 @@ open class Pokemon : ShowdownIdentifiable {
         get() = mintedNature ?: nature
 
     val moveSet = MoveSet().also {
-        it.changeFunction = {
-            onChange(MoveSetUpdatePacket({ this }, it))
-            this.getOwnerUUID()?.let { it1 -> Cobblemon.playerDataManager.getTMData(it1)?.syncTMsFromPokemon(this) } // we want to make sure to update the players TM Data store when any moves are learned
-        }
+        it.changeFunction = { onChange(MoveSetUpdatePacket({ this }, it)) }
     }
 
     val experienceGroup: ExperienceGroup
@@ -485,7 +482,11 @@ open class Pokemon : ShowdownIdentifiable {
      * swap in moves they've used before at any time, while holding onto the remaining PP
      * that they had last.
      */
-    var benchedMoves = BenchedMoves().also { it.changeFunction = { onChange(BenchedMovesUpdatePacket({ this }, it)) }}
+    var benchedMoves = BenchedMoves().also { it.changeFunction = {
+                onChange(BenchedMovesUpdatePacket({ this }, it))
+                this.getOwnerUUID()?.let { it1 -> Cobblemon.playerDataManager.getTMData(it1)?.syncTMsFromPokemon(this) } // we want to make sure to update the players TM Data store when any moves are learned
+            }
+        }
         internal set(value) {
             val oldChangeFunction = field.changeFunction
             field.changeFunction = {}
