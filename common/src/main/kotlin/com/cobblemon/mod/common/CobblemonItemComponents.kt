@@ -8,14 +8,6 @@
 
 package com.cobblemon.mod.common
 
-import com.cobblemon.mod.common.block.PotComponent
-import com.cobblemon.mod.common.item.components.BaitEffectsComponent
-import com.cobblemon.mod.common.item.components.FlavourComponent
-import com.cobblemon.mod.common.item.components.FoodColourComponent
-import com.cobblemon.mod.common.item.components.HeldItemCapableComponent
-import com.cobblemon.mod.common.item.components.PokemonItemComponent
-import com.cobblemon.mod.common.item.components.RodBaitComponent
-import com.cobblemon.mod.common.item.components.TMMoveComponent
 import com.cobblemon.mod.common.item.components.*
 import com.cobblemon.mod.common.platform.PlatformRegistry
 import com.mojang.serialization.Codec

@@ -63,7 +63,8 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
             if (containerData.get(BURN_ACTIVE_INDEX) == 1) {
                 val currentProgress = containerData.get(BURN_PROGRESS_INDEX)
                 if (currentProgress < TOTAL_PROCESS_TIME) {
-                    containerData.set(BURN_PROGRESS_INDEX, currentProgress + BURN_PROGRESS_PER_TICK)
+                    val progressPerTick = if (currentProgress >= BURN_TOTAL_TIME) 1 else BURN_PROGRESS_PER_TICK
+                    containerData.set(BURN_PROGRESS_INDEX, currentProgress + progressPerTick)
                 }
             }
 
