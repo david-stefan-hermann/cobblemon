@@ -82,6 +82,7 @@ interface TaskConfig {
             cobblemonResource("calm_down") to CalmDownTaskConfig::class.java,
             cobblemonResource("flee_attacker") to FleeAttackerTaskConfig::class.java,
             cobblemonResource("flee_nearest_hostile") to FleeNearestHostileTaskConfig::class.java,
+            cobblemonResource("fly_in_circles") to FlyInCirclesTaskConfig::class.java,
             cobblemonResource("run_script") to RunScript::class.java,
             cobblemonResource("look_in_direction") to LookInDirectionTaskConfig::class.java,
             cobblemonResource("wake_up") to WakeUpTaskConfig::class.java,
@@ -94,7 +95,15 @@ interface TaskConfig {
             cobblemonResource("point_to_spawn") to PointToSpawnTaskConfig::class.java,
             cobblemonResource("eat_grass") to EatGrassTaskConfig::class.java,
             cobblemonResource("find_air") to FindAirTaskConfig::class.java,
-            cobblemonResource("go_to_land") to GoToLandTaskConfig::class.java
+            cobblemonResource("go_to_land") to GoToLandTaskConfig::class.java,
+            cobblemonResource("battle_flight_task") to BattleFlightTaskConfig::class.java,
+            cobblemonResource("move_into_fluid") to MoveIntoFluidTaskConfig::class.java,
+            cobblemonResource("find_herd_leader") to FindHerdLeaderTaskConfig::class.java,
+            cobblemonResource("follow_herd_leader") to FollowHerdLeaderTaskConfig::class.java,
+            cobblemonResource("switch_to_herd") to SwitchToHerdTaskConfig::class.java,
+            cobblemonResource("switch_from_herd") to SwitchFromHerdTaskConfig::class.java,
+            cobblemonResource("maintain_herd_leader") to MaintainHerdLeaderTaskConfig::class.java,
+            cobblemonResource("count_followers") to CountFollowersTaskConfig::class.java,
         )
         
         val runtime = MoLangRuntime().setup()

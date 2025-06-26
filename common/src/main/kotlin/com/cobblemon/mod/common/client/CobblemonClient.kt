@@ -55,6 +55,7 @@ import com.cobblemon.mod.common.client.trade.ClientTrade
 import com.cobblemon.mod.common.data.CobblemonDataProvider
 import com.cobblemon.mod.common.entity.boat.CobblemonBoatType
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
+import com.cobblemon.mod.common.item.food.SinisterTeaItem
 import com.cobblemon.mod.common.platform.events.PlatformEvents
 import com.cobblemon.mod.common.pokedex.scanner.PokedexUsageContext
 import com.cobblemon.mod.common.util.isLookingAt
@@ -70,6 +71,7 @@ import net.minecraft.client.renderer.blockentity.HangingSignRenderer
 import net.minecraft.client.renderer.blockentity.SignRenderer
 import net.minecraft.client.renderer.entity.EntityRenderer
 import net.minecraft.client.renderer.entity.LivingEntityRenderer
+import net.minecraft.client.renderer.entity.layers.RenderLayer
 import net.minecraft.client.resources.PlayerSkin
 import net.minecraft.server.packs.resources.ResourceManager
 import net.minecraft.world.InteractionHand
@@ -85,6 +87,7 @@ object CobblemonClient {
     var clientPlayerData = ClientGeneralPlayerData()
     var clientPokedexData = ClientPokedexManager(mutableMapOf())
     var clientTMMoveData = ClientTMMoveManager(mutableSetOf())
+
     /** If true then we won't bother them anymore about choosing a starter even if it's a thing they can do. */
     var checkedStarterScreen = false
     var requests = ClientPlayerActionRequests()
@@ -245,6 +248,7 @@ object CobblemonClient {
             CobblemonBlocks.REVIVAL_HERB,
             *CobblemonBlocks.berries().values.toTypedArray(),
             CobblemonBlocks.POTTED_PEP_UP_FLOWER,
+            CobblemonBlocks.GALARICA_NUT_BUSH,
             CobblemonBlocks.RESTORATION_TANK,
             CobblemonBlocks.SMALL_BUDDING_TUMBLESTONE,
             CobblemonBlocks.MEDIUM_BUDDING_TUMBLESTONE,
