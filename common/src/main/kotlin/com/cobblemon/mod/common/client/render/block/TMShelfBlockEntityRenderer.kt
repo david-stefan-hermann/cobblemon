@@ -9,7 +9,7 @@
 package com.cobblemon.mod.common.client.render.block
 
 import com.cobblemon.mod.common.block.entity.TMShelfBlockEntity
-import com.cobblemon.mod.common.item.TechnicalMachineItem
+import com.cobblemon.mod.common.item.interactive.TechnicalMachineItem
 import com.cobblemon.mod.common.item.components.TMMoveComponent
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.mojang.blaze3d.vertex.PoseStack

@@ -1121,6 +1121,7 @@
 
   "cobblemon.container.campfire_pot": "Campfire Pot",
   "cobblemon.container.campfire_pot.recipe_book.toggle_recipes": "Showing Cookable",
+  "cobblemon.container.tm_machine": "TM Machine",
 
   "cobblemon.ui.pokenav.title": "PokéNav",
   "cobblemon.ui.pokenav.narrator.backbutton": "Poke Nav button pressed",
@@ -1141,14 +1142,14 @@
   "cobblemon.ui.moves.pp": "%1$sPP",
   "cobblemon.ui.moves.forget": "Forget Move",
 
+  "cobblemon.ui.tm_machine.can_learn": "Can Learn",
+  "cobblemon.ui.tm_machine.cannot_learn": "Cannot Learn",
+
   "cobblemon.tms.unknown_move": "Unknown Move",
   "cobblemon.tms.already_known": "%1$s already knows %2$s!",
   "cobblemon.tms.teach_move": "%1$s learned %2$s!",
   "cobblemon.tms.cannot_learn": "%1$s cannot learn %2$s!",
   "cobblemon.tms.unlock_tm": "You unlocked the %1$s TM!",
-
-  "cobblemon.ui.tms.material_cost": "Material Cost",
-  "cobblemon.ui.tms.blank_tm_desc": "A blank disc used for crafting Technical Machines.",
 
   "cobblemon.ui.stats": "Stats",
   "cobblemon.ui.stats.stat": "Stat",
@@ -1196,7 +1197,6 @@
   "cobblemon.ui.party": "Party",
   "cobblemon.ui.power": "Power",
   "cobblemon.ui.accuracy": "Accuracy",
-  "cobblemon.ui.accuracy_short": "Acc.",
   "cobblemon.ui.pp": "PP",
   "cobblemon.ui.effect": "Effect",
   "cobblemon.ui.pokemon": "Pokémon",
@@ -2062,12 +2062,6 @@
   "key.cobblemon.printmodelsettings": "Print Model Settings",
   "key.cobblemon.categories.cobblemon.debug": "Cobblemon Debug",
 
-  "cobblemon.subtitle.tm.use": "Technical Machine used",
-  "cobblemon.subtitle.tmm.craft": "TM Machine prints TM",
-  "cobblemon.subtitle.tmm.craft_blank": "TM Machine crafts blank TM",
-  "cobblemon.subtitle.tmm.off": "TM Machine deactivates",
-  "cobblemon.subtitle.tmm.on": "TM Machine activates",
-
   "cobblemon.subtitle.poke_ball.capture_succeeded": "Poké Ball capture succeeds",
   "cobblemon.subtitle.pokemon.shiny_shine": "Owned shiny Pokémon shines",
   "cobblemon.subtitle.pokemon.wild_shiny_shine": "Wild shiny Pokémon shines!",
@@ -2085,6 +2079,13 @@
   "cobblemon.subtitle.fossilmachine.unprotected": "Restoration Machine protection ends",
   "cobblemon.subtitle.fossilmachine.assemble": "Restoration Machine assembles",
   "cobblemon.subtitle.wallpaper.unlock": "PC box wallpaper unlocked",
+  "cobblemon.subtitle.tm.use": "Technical Machine used",
+
+  "cobblemon.subtitle.block.tm_machine.craft": "TM Machine prints TM",
+  "cobblemon.subtitle.block.tm_machine.off": "TM Machine deactivates",
+  "cobblemon.subtitle.block.tm_machine.on": "TM Machine activates",
+  "cobblemon.subtitle.block.tm_machine.open": "TM Machine lid opens",
+  "cobblemon.subtitle.block.tm_machine.close": "TM Machine lid closes",
 
   "cobblemon.healingmachine.alreadyinuse": "This healing machine is already in use!",
   "cobblemon.healingmachine.nopokemon": "You don't have any Pokémon in your party to heal!",

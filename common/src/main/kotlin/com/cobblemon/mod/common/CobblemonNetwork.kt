@@ -26,11 +26,7 @@ import com.cobblemon.mod.common.client.net.dialogue.DialogueOpenedHandler
 import com.cobblemon.mod.common.client.net.effect.RunPosableMoLangHandler
 import com.cobblemon.mod.common.client.net.effect.SpawnSnowstormEntityParticleHandler
 import com.cobblemon.mod.common.client.net.effect.SpawnSnowstormParticleHandler
-import com.cobblemon.mod.common.client.net.gui.CraftBlankTMPacketHandler
-import com.cobblemon.mod.common.client.net.gui.CraftTMPacketHandler
-import com.cobblemon.mod.common.client.net.gui.InteractPokemonUIPacketHandler
-import com.cobblemon.mod.common.client.net.gui.PokedexUIPacketHandler
-import com.cobblemon.mod.common.client.net.gui.SummaryUIPacketHandler
+import com.cobblemon.mod.common.client.net.gui.*
 import com.cobblemon.mod.common.client.net.npc.CloseNPCEditorHandler
 import com.cobblemon.mod.common.client.net.npc.OpenNPCEditorHandler
 import com.cobblemon.mod.common.client.net.orientation.S2CUpdateOrientationHandler
@@ -46,8 +42,6 @@ import com.cobblemon.mod.common.client.net.settings.ServerSettingsPacketHandler
 import com.cobblemon.mod.common.client.net.sound.UnvalidatedPlaySoundS2CPacketHandler
 import com.cobblemon.mod.common.client.net.spawn.SpawnExtraDataEntityHandler
 import com.cobblemon.mod.common.client.net.starter.StarterUIPacketHandler
-import com.cobblemon.mod.common.net.messages.client.ui.CraftBlankTMPacket
-import com.cobblemon.mod.common.net.messages.client.ui.CraftTMPacket
 import com.cobblemon.mod.common.client.net.storage.RemoveClientPokemonHandler
 import com.cobblemon.mod.common.client.net.storage.SwapClientPokemonHandler
 import com.cobblemon.mod.common.client.net.storage.party.InitializePartyHandler
@@ -128,9 +122,7 @@ import com.cobblemon.mod.common.net.messages.client.trade.TradeOfferNotification
 import com.cobblemon.mod.common.net.messages.client.trade.TradeProcessStartedPacket
 import com.cobblemon.mod.common.net.messages.client.trade.TradeStartedPacket
 import com.cobblemon.mod.common.net.messages.client.trade.TradeUpdatedPacket
-import com.cobblemon.mod.common.net.messages.client.ui.InteractPokemonUIPacket
-import com.cobblemon.mod.common.net.messages.client.ui.PokedexUIPacket
-import com.cobblemon.mod.common.net.messages.client.ui.SummaryUIPacket
+import com.cobblemon.mod.common.net.messages.client.ui.*
 import com.cobblemon.mod.common.net.messages.server.BattleChallengePacket
 import com.cobblemon.mod.common.net.messages.server.BattleChallengeResponsePacket
 import com.cobblemon.mod.common.net.messages.server.BenchMovePacket
@@ -564,9 +556,9 @@ object CobblemonNetwork {
         // Cooking
         list.add(PacketRegisterInfo(ToggleCookingPotLidPacket.ID, ToggleCookingPotLidPacket::decode, ToggleCookingPotLidHandler))
 
-        // TMs
-        list.add(PacketRegisterInfo(CraftBlankTMPacket.ID, CraftBlankTMPacket::decode, CraftBlankTMPacketHandler))
-        list.add(PacketRegisterInfo(CraftTMPacket.ID, CraftTMPacket::decode, CraftTMPacketHandler))
+        // TM Machine
+        list.add(PacketRegisterInfo(SetActiveTMPacket.ID, SetActiveTMPacket::decode, SetActiveTMPacketHandler))
+        list.add(PacketRegisterInfo(SetTMMachineContainerDataPacket.ID, SetTMMachineContainerDataPacket::decode, SetTMMachineContainerDataPacketHandler))
 
         // Behaviour Packets
         list.add(PacketRegisterInfo(SetEntityBehaviourPacket.ID, SetEntityBehaviourPacket::decode, SetEntityBehaviourHandler))

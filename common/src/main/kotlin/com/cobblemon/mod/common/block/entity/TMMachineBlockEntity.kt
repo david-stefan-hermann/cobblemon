@@ -1,0 +1,293 @@
+/*
+ * Copyright (C) 2023 Cobblemon Contributors
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
+package com.cobblemon.mod.common.block.entity
+
+import com.cobblemon.mod.common.CobblemonBlockEntities
+import com.cobblemon.mod.common.CobblemonItems
+import com.cobblemon.mod.common.api.moves.Moves
+import com.cobblemon.mod.common.api.tms.TechnicalMachines
+import com.cobblemon.mod.common.block.tmmachine.TMMachineBlock
+import com.cobblemon.mod.common.block.tmmachine.TMMachineMenu
+import com.cobblemon.mod.common.client.gui.tmmachine.TMMachineScreen
+import com.cobblemon.mod.common.item.components.TMMoveComponent
+import com.cobblemon.mod.common.util.itemRegistry
+import net.minecraft.core.BlockPos
+import net.minecraft.core.HolderLookup
+import net.minecraft.core.NonNullList
+import net.minecraft.network.chat.Component
+import net.minecraft.network.protocol.Packet
+import net.minecraft.network.protocol.game.ClientGamePacketListener
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket
+import net.minecraft.world.ContainerHelper
+import net.minecraft.world.SimpleContainer
+import net.minecraft.world.entity.player.Inventory
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BaseContainerBlockEntity
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.Container
+import net.minecraft.world.inventory.ContainerData
+import net.minecraft.world.level.Level
+
+class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity(CobblemonBlockEntities.TM_MACHINE, pos, state) {
+    companion object {
+        const val BURN_ACTIVE_TAG = "burnActive"
+        const val BURN_PROGRESS_TAG = "burnProgress"
+        const val REPEAT_PROCESS_TAG = "repeatProcess"
+        const val ACTIVE_MOVE_TAG = "activeMove"
+
+        const val BURN_PROGRESS_PER_TICK = 2
+        const val BURN_TOTAL_TIME = 200
+        const val TOTAL_PROCESS_TIME = BURN_TOTAL_TIME + ((TMMachineScreen.CRAFT_TICKS + TMMachineScreen.RESET_DISC_TICKS) * BURN_PROGRESS_PER_TICK)
+
+        // Container data IDs
+        const val BURN_PROGRESS_INDEX = 0
+        const val BURN_ACTIVE_INDEX = 1
+        const val REPEAT_PROCESS_INDEX = 2
+        const val POSITION_X_INDEX = 3
+        const val POSITION_Y_INDEX = 4
+        const val POSITION_Z_INDEX = 5
+
+        fun serverTick(level: Level, pos: BlockPos, state: BlockState, blockEntity: TMMachineBlockEntity) {
+            if (level.isClientSide) return
+            val containerData = blockEntity.containerData
+
+            if (containerData.get(BURN_ACTIVE_INDEX) == 1) {
+                val currentProgress = containerData.get(BURN_PROGRESS_INDEX)
+                if (currentProgress < TOTAL_PROCESS_TIME) {
+                    containerData.set(BURN_PROGRESS_INDEX, currentProgress + BURN_PROGRESS_PER_TICK)
+                }
+            }
+
+            val burnProgressValue = containerData.get(BURN_PROGRESS_INDEX)
+            val postCraftTicks = if (burnProgressValue >= BURN_TOTAL_TIME) (burnProgressValue - BURN_TOTAL_TIME) else 0
+            if (postCraftTicks > 0) {
+                if (postCraftTicks == TMMachineScreen.CRAFT_TICKS) {
+                    blockEntity.craftTM()
+                }
+                if (postCraftTicks  >= (TMMachineScreen.CRAFT_TICKS + TMMachineScreen.RESET_DISC_TICKS)) {
+                    val shouldRepeatProcess = containerData.get(REPEAT_PROCESS_INDEX) == 1
+                    if (!shouldRepeatProcess) containerData.set(BURN_ACTIVE_INDEX, 0) // Set active to false if only running once
+                    containerData.set(BURN_PROGRESS_INDEX, 0)
+                    blockEntity.setChanged()
+                }
+            }
+        }
+    }
+
+    var tmMachineInventory = TMMachineBlockInventory(this)
+    var partialTicks: Float = 0F
+
+    var burnProgress : Int = 0
+    var burnActive : Boolean = false
+    var repeatProcess: Boolean = false
+    var activeMove: String = ""
+
+    var containerData: ContainerData = object : ContainerData {
+        override fun get(index: Int): Int {
+            return when (index) {
+                BURN_PROGRESS_INDEX -> burnProgress
+                BURN_ACTIVE_INDEX -> if (burnActive) 1 else 0
+                REPEAT_PROCESS_INDEX -> if (repeatProcess) 1 else 0
+                POSITION_X_INDEX -> blockPos.x
+                POSITION_Y_INDEX -> blockPos.y
+                POSITION_Z_INDEX -> blockPos.z
+                else -> 0
+            }
+        }
+
+        override fun set(index: Int, value: Int) {
+            when (index) {
+                BURN_PROGRESS_INDEX -> burnProgress = value
+                BURN_ACTIVE_INDEX -> burnActive = value == 1
+                REPEAT_PROCESS_INDEX -> repeatProcess = value == 1
+            }
+        }
+
+        override fun getCount(): Int {
+            return 6
+        }
+    }
+
+    private fun craftTM() {
+        if (!(level?.isClientSide ?: true)) {
+            Moves.getByName(activeMove)?.let { move ->
+                TechnicalMachines.moveToTM[move]?.let { tm ->
+                    val resultStack = getItem(TMMachineMenu.RESULT_SLOT)
+                    if (!resultStack.isEmpty && resultStack.count >= resultStack.maxStackSize) return
+
+                    // Craft the TM
+                    val craftedTmStack = ItemStack(CobblemonItems.TECHNICAL_MACHINE)
+                        .also { TMMoveComponent.setTMMove(it, tm.moveName) }
+
+                    if (!resultStack.isEmpty && !ItemStack.isSameItemSameComponents(resultStack, craftedTmStack)) return
+
+                    val blankTmStack = getItem(TMMachineMenu.BLANK_TM_SLOT)
+                    if (blankTmStack.item != CobblemonItems.BLANK_TM) return
+
+                    val recipe = tm.getClampedRecipe() ?: emptyList()
+                    for ((index, ingredient) in recipe.withIndex()) {
+                        val slot = TMMachineMenu.INGREDIENT_SLOTS.first + index
+                        val provided = getItem(slot)
+                        val expected = level?.itemRegistry?.get(ingredient.item) ?: return
+                        if (provided.item != expected || provided.count < ingredient.count) return
+                    }
+
+                    // Consume ingredients
+                    blankTmStack.shrink(1)
+                    for ((index, ingredient) in recipe.withIndex()) {
+                        getItem(TMMachineMenu.INGREDIENT_SLOTS.first + index).shrink(ingredient.count)
+                    }
+
+                    // Add crafted TM to result slot
+                    if (resultStack.isEmpty) {
+                        setItem(TMMachineMenu.RESULT_SLOT, craftedTmStack)
+                    } else if (resultStack.count < resultStack.maxStackSize) {
+                        resultStack.grow(1)
+                    }
+
+                    tmMachineInventory.setChanged()
+                    setChanged()
+                }
+            }
+        }
+    }
+
+    override fun createMenu(containerId: Int, inventory: Inventory): AbstractContainerMenu {
+        return TMMachineMenu(containerId, inventory, tmMachineInventory, containerData)
+    }
+
+    override fun saveAdditional(compound: CompoundTag, registries: HolderLookup.Provider) {
+        super.saveAdditional(compound, registries)
+        compound.putBoolean(BURN_ACTIVE_TAG, burnActive)
+        compound.putBoolean(REPEAT_PROCESS_TAG, repeatProcess)
+        compound.putInt(BURN_PROGRESS_TAG, burnProgress)
+        compound.putString(ACTIVE_MOVE_TAG, activeMove)
+        ContainerHelper.saveAllItems(compound, tmMachineInventory.items, registries)
+    }
+
+    override fun loadAdditional(compound: CompoundTag, registries: HolderLookup.Provider) {
+        super.loadAdditional(compound, registries)
+        burnActive = compound.getBoolean(BURN_ACTIVE_TAG)
+        repeatProcess = compound.getBoolean(REPEAT_PROCESS_TAG)
+        burnProgress = compound.getInt(BURN_PROGRESS_TAG)
+        activeMove = compound.getString(ACTIVE_MOVE_TAG)
+        ContainerHelper.loadAllItems(compound, tmMachineInventory.items, registries)
+    }
+
+    override fun getDisplayName(): Component = Component.translatable("block.cobblemon.tm_machine")
+
+    override fun getDefaultName(): Component = Component.translatable("cobblemon.container.tm_machine")
+
+    override fun getItems(): NonNullList<ItemStack> = tmMachineInventory.items
+
+    override fun setItems(items: NonNullList<ItemStack>) {
+        for (i in items.indices) {
+            tmMachineInventory.setItem(i, items[i])
+        }
+    }
+
+    override fun getUpdatePacket(): Packet<ClientGamePacketListener> = ClientboundBlockEntityDataPacket.create(this)
+
+    override fun getUpdateTag(registryLookup: HolderLookup.Provider): CompoundTag = saveWithoutMetadata(registryLookup)
+
+    override fun getContainerSize(): Int = tmMachineInventory.containerSize
+
+    override fun isEmpty(): Boolean = tmMachineInventory.isEmpty
+
+    override fun getItem(slot: Int): ItemStack = tmMachineInventory.getItem(slot)
+
+    override fun removeItem(slot: Int, amount: Int): ItemStack = tmMachineInventory.removeItem(slot, amount)
+
+    override fun removeItemNoUpdate(slot: Int): ItemStack = tmMachineInventory.removeItemNoUpdate(slot)
+
+    override fun setItem(slot: Int, stack: ItemStack) = tmMachineInventory.setItem(slot, stack)
+
+    override fun setChanged() {
+        var currentState = blockState
+        level?.getBlockState(worldPosition)?.let { state ->
+            currentState = state
+            var updated = false
+
+            if (state.hasProperty(TMMachineBlock.EMPTY)) {
+                val isEmpty = getItem(TMMachineMenu.BLANK_TM_SLOT).isEmpty
+                if (currentState.getValue(TMMachineBlock.EMPTY) != isEmpty) {
+                    currentState = currentState.setValue(TMMachineBlock.EMPTY, isEmpty)
+                    updated = true
+                }
+            }
+            if (state.hasProperty(TMMachineBlock.ACTIVE)) {
+                val isActive = containerData.get(BURN_ACTIVE_INDEX) == 1
+                if (currentState.getValue(TMMachineBlock.ACTIVE) != isActive) {
+                    currentState = currentState.setValue(TMMachineBlock.ACTIVE, isActive)
+                    updated = true
+                }
+            }
+            if (updated) level?.setBlockAndUpdate(worldPosition, currentState)
+        }
+
+        // Notify the block entity's level that this block entity has changed
+        level?.blockEntityChanged(worldPosition)
+
+        // Mark the chunk containing this block entity as dirty, ensuring it is saved
+        level?.getChunkAt(worldPosition)?.setUnsaved(true)
+
+        // Update Neighbours
+        level?.updateNeighborsAt(blockPos, currentState.block)
+    }
+
+    override fun stillValid(player: Player): Boolean = tmMachineInventory.stillValid(player)
+
+    override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean = tmMachineInventory.canPlaceItem(slot, stack)
+
+    override fun canTakeItem(target: Container, slot: Int, stack: ItemStack): Boolean = tmMachineInventory.canTakeItem(target, slot, stack)
+
+    class TMMachineBlockInventory(val blockEntity: TMMachineBlockEntity) : SimpleContainer(6) {
+        override fun canTakeItem(target: Container, slot: Int, stack: ItemStack): Boolean =
+            if (slot == 0) true else false
+
+        override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean {
+            if (blockEntity.containerData.get(BURN_ACTIVE_INDEX) == 1) {
+                Moves.getByName(blockEntity.activeMove)?.let {
+                    val tm = TechnicalMachines.moveToTM[it] ?: return false
+                    val item = stack.item
+
+                    return when (slot) {
+                        1 -> item == CobblemonItems.BLANK_TM
+                        2, 3, 4 -> {
+                            val recipe = tm.getClampedRecipe() ?: return false
+                            val recipeIndex = slot - 2
+                            if (recipeIndex >= recipe.size) return false
+                            val expected = blockEntity.level?.itemRegistry?.get(recipe[recipeIndex].item) ?: return false
+                            item == expected
+                        }
+                        else -> false
+                    }
+                }
+            }
+
+            return false
+        }
+
+        override fun setChanged() {
+            blockEntity.level?.updateNeighborsAt(blockEntity.blockPos, blockEntity.blockState.block)
+            super.setChanged()
+        }
+
+        override fun startOpen(player: Player) {
+            blockEntity.startOpen(player)
+        }
+
+        override fun stopOpen(player: Player) {
+            blockEntity.stopOpen(player)
+        }
+    }
+}

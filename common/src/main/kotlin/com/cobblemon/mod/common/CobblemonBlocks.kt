@@ -19,7 +19,7 @@ import com.cobblemon.mod.common.block.sign.CobblemonHangingSignBlock
 import com.cobblemon.mod.common.block.sign.CobblemonSignBlock
 import com.cobblemon.mod.common.block.sign.CobblemonWallHangingSignBlock
 import com.cobblemon.mod.common.block.sign.CobblemonWallSignBlock
-import com.cobblemon.mod.common.block.tm.TMBlock
+import com.cobblemon.mod.common.block.tmmachine.TMMachineBlock
 import com.cobblemon.mod.common.mixin.invoker.*
 import com.cobblemon.mod.common.platform.PlatformRegistry
 import com.cobblemon.mod.common.util.cobblemonResource
@@ -33,7 +33,6 @@ import net.minecraft.util.valueproviders.UniformInt
 import net.minecraft.world.effect.MobEffects
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.level.BlockGetter
-import net.minecraft.world.item.Item
 import net.minecraft.world.level.block.*
 import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
@@ -531,14 +530,13 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
 
     val TM_MACHINE = create(
             "tm_machine",
-        TMBlock(
+        TMMachineBlock(
             BlockBehaviour.Properties.of()
                 .mapColor(MapColor.COLOR_GREEN)
                 .sound(SoundType.METAL)
                 .pushReaction(PushReaction.BLOCK)
                 .strength(2F)
                 .noOcclusion()
-                .lightLevel { if (it.getValue(TMBlock.ON) as Boolean) 10 else 0 }
         )
     )
 

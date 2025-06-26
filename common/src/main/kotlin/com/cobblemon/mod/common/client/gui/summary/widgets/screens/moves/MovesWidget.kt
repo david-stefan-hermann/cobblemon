@@ -39,6 +39,11 @@ class MovesWidget(
             it.roundingMode = RoundingMode.CEILING
         }
 
+        fun format(input: Double): String {
+            if (input <= 0) return "—"
+            return "${decimalFormat.format(input)}%"
+        }
+
         private val movesBaseResource = cobblemonResource("textures/gui/summary/summary_moves_base.png")
         val movesPowerIconResource = cobblemonResource("textures/gui/summary/summary_moves_icon_power.png")
         val movesAccuracyIconResource = cobblemonResource("textures/gui/summary/summary_moves_icon_accuracy.png")
@@ -65,11 +70,7 @@ class MovesWidget(
         addWidget(it)
     }
 
-    private var descriptionScrollList = MoveDescriptionScrollList(
-        x + 69,
-        y + 113,
-        5
-    )
+    private var descriptionScrollList = MoveDescriptionScrollList(x + 69, y + 113, 5)
 
 
     override fun renderWidget(context: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {
@@ -206,11 +207,6 @@ class MovesWidget(
                 slot = CobblemonClient.storage.myParty.getPosition(summary.selectedPokemon.uuid)
             )
         )
-    }
-
-    fun format(input: Double): String {
-        if (input <= 0) return "—"
-        return "${decimalFormat.format(input)}%"
     }
 
     fun selectMove(move: Move?) {

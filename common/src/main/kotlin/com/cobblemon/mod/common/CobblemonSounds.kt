@@ -196,15 +196,17 @@ object CobblemonSounds : PlatformRegistry<Registry<SoundEvent>, ResourceKey<Regi
     val TUMBLESTONE_STEP = this.create("block.tumblestone.step")
 
     @JvmField
-    val TM_USE = this.create("tm.use")
+    val TM_USE = this.create("item.tm.use")
     @JvmField
-    val TMM_CRAFT = this.create("tmm.craft")
+    val TM_MACHINE_CRAFT = this.create("block.tm_machine.craft")
     @JvmField
-    val TMM_CRAFT_BLANK = this.create("tmm.craft_blank")
+    val TM_MACHINE_OFF = this.create("block.tm_machine.off")
     @JvmField
-    val TMM_OFF = this.create("tmm.off")
+    val TM_MACHINE_ON = this.create("block.tm_machine.on")
     @JvmField
-    val TMM_ON = this.create("tmm.on")
+    val TM_MACHINE_OPEN = this.create("block.tm_machine.open")
+    @JvmField
+    val TM_MACHINE_CLOSE = this.create("block.tm_machine.close")
 
 
     @JvmField

@@ -8,10 +8,8 @@
 
 package com.cobblemon.mod.common.api.tms
 
-import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.api.moves.MoveTemplate
-import com.cobblemon.mod.common.api.moves.Moves
 import com.cobblemon.mod.common.api.types.ElementalType
 import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.client.CobblemonClient
@@ -22,7 +20,6 @@ import com.cobblemon.mod.common.util.lang
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.network.chat.MutableComponent
-import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 
@@ -32,14 +29,6 @@ class TechnicalMachine(
         val obtainMethods: List<ObtainMethod> = emptyList(),
         val type: String
 ) {
-    lateinit var id: ResourceLocation
-/*
-    val move: MoveTemplate? = Moves.getByName(moveName.displayName.toString()).also {
-        if (it == null) {
-            Cobblemon.LOGGER.error("MoveTemplate not found for moveName: $moveName")
-        }
-    }*/
-
     companion object {
         /**
          * Filters all available [TechnicalMachines] based on three optional arguments
@@ -91,6 +80,16 @@ class TechnicalMachine(
         }
     }
 
+    lateinit var id: ResourceLocation
+
+    /**
+     * Gets the recipe list limited to the provided amount to match the slot amount of the TM Machine.
+     *
+     * @param limit The amount of recipe item slots to take.
+     * @return The recipe list limited to 3 ingredients.
+     */
+    fun getClampedRecipe(limit: Int = 3): List<TechnicalMachineRecipe>? = recipe?.take(limit)
+
     /**
      * Unlocks this [TechnicalMachine] for the player.
      *
@@ -98,7 +97,6 @@ class TechnicalMachine(
      * @return Whether the player was successfully granted the [TechnicalMachine]
      */
     fun unlock(player: ServerPlayer): Boolean {
-        Cobblemon.playerDataManager.getGenericData(player) // .get(player, ).tmSet.add(id)// .playerData.get(player).tmSet.add(id)
         if (!obtainMethods.any { it is NoneObtainMethod }) {
             player.sendSystemMessage(lang("tms.unlock_tm", moveName.displayName))
         }

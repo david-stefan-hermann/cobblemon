@@ -11,7 +11,7 @@ package com.cobblemon.mod.common.block.entity
 import com.cobblemon.mod.common.CobblemonBlockEntities
 import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.block.TMShelfBlock
-import com.cobblemon.mod.common.item.TechnicalMachineItem
+import com.cobblemon.mod.common.item.interactive.TechnicalMachineItem
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.core.HolderLookup

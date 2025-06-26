@@ -9,13 +9,11 @@
 package com.cobblemon.mod.common.client.tooltips
 
 import com.cobblemon.mod.common.api.text.*
-import com.cobblemon.mod.common.api.tms.TechnicalMachines
-import com.cobblemon.mod.common.item.TechnicalMachineItem
+import com.cobblemon.mod.common.item.interactive.TechnicalMachineItem
 import com.cobblemon.mod.common.item.components.TMMoveComponent
 import com.cobblemon.mod.common.util.lang
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.MutableComponent
 import net.minecraft.world.item.ItemStack
 
 object TechnicalMachineTooltipGenerator : TooltipGenerator() {

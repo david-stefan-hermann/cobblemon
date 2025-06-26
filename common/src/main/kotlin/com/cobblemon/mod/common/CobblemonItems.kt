@@ -1530,7 +1530,7 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     @JvmField
     val RELIC_COIN_SACK = blockItem("relic_coin_sack", CobblemonBlocks.RELIC_COIN_SACK)
     @JvmField
-    val TECHNICAL_MACHINE = this.create("technical_machine", TechnicalMachineItem(Item.Properties()))
+    val TECHNICAL_MACHINE = this.create("technical_machine", TechnicalMachineItem(Properties()))
     @JvmField
     val BLANK_TM = this.create("blank_tm", CobblemonItem(Item.Properties()))
 
