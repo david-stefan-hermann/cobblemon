@@ -27,29 +27,29 @@ class TechnicalMachineItem(properties: Properties) : CobblemonItem(properties), 
     override val accepted: Set<PokemonEntityInteraction.Ownership> = setOf(PokemonEntityInteraction.Ownership.OWNER)
 
     override fun processInteraction(player: ServerPlayer, entity: PokemonEntity, stack: ItemStack): Boolean {
-        val tm = TMMoveComponent.getTMMove(stack) ?: return false
+        val moveTemplate = TMMoveComponent.getTMMove(stack) ?: return false
         val pokemon = entity.pokemon
 
         val tmLearnableMoves = pokemon.species.moves.tmLearnableMoves()
 
-        if (!tmLearnableMoves.contains(tm)) {
-            player.displayClientMessage(lang("tms.cannot_learn", pokemon.getDisplayName(), tm.displayName), true)
+        if (!tmLearnableMoves.contains(moveTemplate)) {
+            player.displayClientMessage(lang("tms.cannot_learn", pokemon.getDisplayName(), moveTemplate.displayName), true)
             return false
         }
-        if (pokemon.allAccessibleMoves.contains(tm)) {
-            player.displayClientMessage(lang("tms.already_known", pokemon.getDisplayName(), tm.displayName), true)
+        if (pokemon.moveSet.getMoveTemplates().contains(moveTemplate) || pokemon.allAccessibleMoves.contains(moveTemplate)) {
+            player.displayClientMessage(lang("tms.already_known", pokemon.getDisplayName(), moveTemplate.displayName), true)
             return false
         }
 
         if (!player.isCreative) stack.shrink(1)
 
         if (pokemon.moveSet.hasSpace()) {
-            pokemon.moveSet.add(tm.create())
+            pokemon.moveSet.add(moveTemplate.create())
         } else {
-            pokemon.benchedMoves.add(BenchedMove(tm, 0))
+            pokemon.benchedMoves.add(BenchedMove(moveTemplate, 0))
         }
 
-        player.displayClientMessage(lang("tms.teach_move", pokemon.getDisplayName(), tm.displayName).green(), true)
+        player.displayClientMessage(lang("tms.teach_move", pokemon.getDisplayName(), moveTemplate.displayName).green(), true)
         player.level().playSound(null, player.blockPosition(), CobblemonSounds.TM_USE, SoundSource.PLAYERS, 1.0F, 1.0F)
         entity.cry()
         return true

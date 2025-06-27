@@ -207,6 +207,8 @@ object CobblemonSounds : PlatformRegistry<Registry<SoundEvent>, ResourceKey<Regi
     val TM_MACHINE_OPEN = this.create("block.tm_machine.open")
     @JvmField
     val TM_MACHINE_CLOSE = this.create("block.tm_machine.close")
+    @JvmField
+    val TM_MACHINE_PLACE_DISC = this.create("block.tm_machine.place_disc")
 
 
     @JvmField

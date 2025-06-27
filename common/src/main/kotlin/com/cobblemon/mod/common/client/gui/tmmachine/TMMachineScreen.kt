@@ -14,6 +14,7 @@ import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.api.gui.ColourLibrary
 import com.cobblemon.mod.common.api.gui.MultiLineLabelK
 import com.cobblemon.mod.common.api.gui.blitk
+import com.cobblemon.mod.common.api.moves.MoveTemplate
 import com.cobblemon.mod.common.api.moves.Moves
 import com.cobblemon.mod.common.api.reactive.SettableObservable
 import com.cobblemon.mod.common.api.text.bold
@@ -32,6 +33,7 @@ import com.cobblemon.mod.common.client.render.drawScaledTextJustifiedRight
 import com.cobblemon.mod.common.item.components.TMMoveComponent
 import com.cobblemon.mod.common.net.messages.client.ui.SetActiveTMPacket
 import com.cobblemon.mod.common.net.messages.client.ui.SetTMMachineContainerDataPacket
+import com.cobblemon.mod.common.net.messages.server.block.TMMachineTeachMovePacket
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.cobblemon.mod.common.util.asTranslated
 import com.cobblemon.mod.common.util.cobblemonResource
@@ -81,6 +83,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     }
 
     var selectedTM: TechnicalMachine? = null
+    var heldStackMove: MoveTemplate? = null
     var tmList: SettableObservable<MutableList<TechnicalMachine>> = SettableObservable(mutableListOf())
     var output: ItemStack? = null
     var mode: Int = TYPE_SELECT_MODE
@@ -113,11 +116,21 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
                 pY = topPos + 9 + ((TMPartySlotWidget.HEIGHT + 3) * index),
                 pokemon = pokemon,
                 onPress = {
-                    if (mode == TYPE_SELECT_MODE && pokemon != null) {
-                        setMoveList(pokemon = pokemon)
-                        setScreenFromMode(MOVE_SELECT_MODE)
-                        selectedPokemon = pokemon
-                        playSound(CobblemonSounds.GUI_CLICK)
+                    if ((it as TMPartySlotWidget).clickable) {
+                        if (heldStackMove != null && pokemon != null) {
+                            heldStackMove?.let { move ->
+                                if (canLearnTMMove(move, pokemon) == TMPartySlotWidget.CAN_LEARN) {
+                                    CobblemonNetwork.sendToServer(TMMachineTeachMovePacket(pokemon.uuid, menu.carried, move))
+                                }
+                            }
+                        } else {
+                            if (mode == TYPE_SELECT_MODE && pokemon != null) {
+                                setMoveList(pokemon = pokemon)
+                                setScreenFromMode(MOVE_SELECT_MODE)
+                                selectedPokemon = pokemon
+                                playSound(CobblemonSounds.GUI_CLICK)
+                            }
+                        }
                     }
                 }
             ))
@@ -262,6 +275,32 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             if (!initScreen) loadBurnScreenData()
         }
 
+        if (mode != MOVE_SELECT_MODE) {
+            val heldStack = menu.carried
+            if (heldStack.item == CobblemonItems.TECHNICAL_MACHINE) {
+                // Store move of TM item picked up by player cursor
+                TMMoveComponent.getTMMove(heldStack)?.let { move ->
+                    if (heldStackMove != move) heldStackMove = move
+                    if (mode == TYPE_SELECT_MODE) updatePartySlotStatus(heldStackMove)
+                }
+
+            } else {
+                if (heldStackMove != null) {
+                    heldStackMove = null
+                    updatePartySlotStatus(null)
+                }
+            }
+
+            // Allow slots to be clicked if player holding TM item
+            if ((mode == TM_BURN_MODE)) {
+                for (slot in partySlotList) slot.clickable = (heldStackMove == selectedTM?.moveName)
+                updatePartySlotStatus(selectedTM?.moveName)
+            } else if (mode == MOVE_SELECT_MODE) {
+                for (slot in partySlotList) slot.clickable = false
+            }
+
+        }
+
         super.containerTick()
     }
 
@@ -292,8 +331,6 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     }
 
     private fun isBurnActive(): Boolean = (menu.containerData?.get(TMMachineBlockEntity.BURN_ACTIVE_INDEX) ?: 0) == 1
-
-    private fun shouldRepeatProcess(): Boolean = (menu.containerData?.get(TMMachineBlockEntity.REPEAT_PROCESS_INDEX) ?: 0) == 1
 
     private fun setScreenFromMode(screen: Int) {
         mode = screen
@@ -358,6 +395,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         if (::backButton.isInitialized) {
             backButton.visible = isVisible
         }
+        heldStackMove = null
     }
 
     private fun toggleTMBurn(isVisible: Boolean) {
@@ -366,19 +404,17 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         if (::startButton.isInitialized) startButton.visible = isVisible
     }
 
-    fun setSelectedTM(tm: TechnicalMachine?, clicked: Boolean) {
-        for (slot in partySlotList) {
-            if (slot.pokemon != null) {
-                slot.teachable = if (tm != null) {
-                    val learnableMoves = slot.pokemon.form.moves.tmLearnableMoves()
-                    learnableMoves.contains(tm.moveName)
-                } else {
-                    null
-                }
-            }
-        }
+    fun canLearnTMMove(move: MoveTemplate, pokemon: Pokemon): Int {
+        if (pokemon.moveSet.getMoveTemplates().contains(move) || pokemon.allAccessibleMoves.contains(move)) return TMPartySlotWidget.LEARNED
+        val learnableMoves = pokemon.form.moves.tmLearnableMoves()
+        return if (learnableMoves.contains(move)) TMPartySlotWidget.CAN_LEARN else TMPartySlotWidget.CANNOT_LEARN
+    }
 
-        if (selectedTM != tm) selectedTM = tm
+    fun setSelectedTM(tm: TechnicalMachine?, clicked: Boolean) {
+        if (selectedTM != tm) {
+            selectedTM = tm
+            updatePartySlotStatus(tm?.moveName)
+        }
 
         if (::movesScrollingList.isInitialized) {
             movesScrollingList.setSlotHighlighted(if (clicked) null else selectedTM?.id)
@@ -393,6 +429,14 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
                     }
                     setScreenFromMode(TM_BURN_MODE)
                 }
+            }
+        }
+    }
+
+    fun updatePartySlotStatus(moveTemplate: MoveTemplate?) {
+        for (slot in partySlotList) {
+            if (slot.pokemon != null) {
+                slot.teachable = if (moveTemplate != null) canLearnTMMove(moveTemplate, slot.pokemon) else null
             }
         }
     }

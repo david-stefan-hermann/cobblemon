@@ -324,6 +324,10 @@
     "sounds": [ "cobblemon:block/tm_machine/tm_machine_close" ],
     "subtitle": "cobblemon.subtitle.block.tm_machine.close"
   },
+  "block.tm_machine.place_disc": {
+    "sounds": [ "cobblemon:block/tm_machine/tm_machine_place_disc" ],
+    "subtitle": "cobblemon.subtitle.block.tm_machine.place_disc"
+  },
   "pokemon.gimmighoul.give_item": {
     "sounds": [ "cobblemon:pokemon/gimmighoul/gimmighoul_give_item" ]
   },

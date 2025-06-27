@@ -1155,6 +1155,7 @@
 
   "cobblemon.ui.tm_machine.can_learn": "Can Learn",
   "cobblemon.ui.tm_machine.cannot_learn": "Cannot Learn",
+  "cobblemon.ui.tm_machine.learned": "Learned",
 
   "cobblemon.tms.unknown_move": "Unknown Move",
   "cobblemon.tms.already_known": "%1$s already knows %2$s!",
@@ -2097,6 +2098,7 @@
   "cobblemon.subtitle.block.tm_machine.on": "TM Machine activates",
   "cobblemon.subtitle.block.tm_machine.open": "TM Machine lid opens",
   "cobblemon.subtitle.block.tm_machine.close": "TM Machine lid closes",
+  "cobblemon.subtitle.block.tm_machine.place_disc": "Blank TM placed in TM Machine",
 
   "cobblemon.healingmachine.alreadyinuse": "This healing machine is already in use!",
   "cobblemon.healingmachine.nopokemon": "You don't have any Pokémon in your party to heal!",

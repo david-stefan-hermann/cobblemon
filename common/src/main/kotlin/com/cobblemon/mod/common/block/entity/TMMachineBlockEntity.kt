@@ -10,6 +10,7 @@ package com.cobblemon.mod.common.block.entity
 
 import com.cobblemon.mod.common.CobblemonBlockEntities
 import com.cobblemon.mod.common.CobblemonItems
+import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.api.moves.Moves
 import com.cobblemon.mod.common.api.tms.TechnicalMachines
 import com.cobblemon.mod.common.block.tmmachine.TMMachineBlock
@@ -33,6 +34,8 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.sounds.SoundSource
 import net.minecraft.world.Container
 import net.minecraft.world.inventory.ContainerData
 import net.minecraft.world.level.Level
@@ -221,6 +224,7 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
             if (state.hasProperty(TMMachineBlock.EMPTY)) {
                 val isEmpty = getItem(TMMachineMenu.BLANK_TM_SLOT).isEmpty
                 if (currentState.getValue(TMMachineBlock.EMPTY) != isEmpty) {
+                    if (!isEmpty) playSound(CobblemonSounds.TM_MACHINE_PLACE_DISC, 0.5F)
                     currentState = currentState.setValue(TMMachineBlock.EMPTY, isEmpty)
                     updated = true
                 }
@@ -250,6 +254,10 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
     override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean = tmMachineInventory.canPlaceItem(slot, stack)
 
     override fun canTakeItem(target: Container, slot: Int, stack: ItemStack): Boolean = tmMachineInventory.canTakeItem(target, slot, stack)
+
+    fun playSound(soundEvent: SoundEvent, volume: Float = 1F, pitch: Float = 1F) {
+        level?.playSound(null, worldPosition, soundEvent, SoundSource.BLOCKS, volume, pitch)
+    }
 
     class TMMachineBlockInventory(val blockEntity: TMMachineBlockEntity) : SimpleContainer(6) {
         override fun canTakeItem(target: Container, slot: Int, stack: ItemStack): Boolean =
