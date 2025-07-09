@@ -782,6 +782,8 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     private fun typeGemCluster(name: String, gemBlock: Block, dropItemId: ResourceLocation): Block {
         val gemClusterBlock = this.create(name, TypeGemClusterBlock(BlockBehaviour.Properties.of().strength(2.0f, 3.0f).pushReaction(PushReaction.DESTROY), gemBlock, dropItemId))
 
+        TypeGemClusterBlock.gemToClusterMap[gemBlock] = gemClusterBlock
+
         val identifier = cobblemonResource(name)
         typeGemClusters[identifier] = gemClusterBlock
 

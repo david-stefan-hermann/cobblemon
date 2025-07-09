@@ -48,18 +48,25 @@ class TypeGemClusterBlock(
     companion object {
         val CODEC: MapCodec<TypeGemClusterBlock> = RecordCodecBuilder.mapCodec { instance ->
             instance.group(
-                    propertiesCodec(),
-                    Block.CODEC.fieldOf("nextStage").forGetter { it.nextStage },
-                    ResourceLocation.CODEC.fieldOf("dropItem").forGetter { it.dropItemId }
+                propertiesCodec(),
+                Block.CODEC.fieldOf("nextStage").forGetter { it.nextStage },
+                ResourceLocation.CODEC.fieldOf("dropItem").forGetter { it.dropItemId }
             ).apply(instance) { settings, nextStage, dropItemId ->
-                TypeGemClusterBlock(settings, nextStage, dropItemId)
+                TypeGemClusterBlock(settings, nextStage, dropItemId).also {
+                    gemToClusterMap[nextStage] = it
+                }
             }
         }
+        val gemToClusterMap: MutableMap<Block, TypeGemClusterBlock> = mutableMapOf()
 
         val SHOULD_GROW: BooleanProperty = BooleanProperty.create("should_grow")
         val FACING: DirectionProperty = DirectionalBlock.FACING
         val STAGE: IntegerProperty = IntegerProperty.create("stage", 0, 3)
         val STUNTED: BooleanProperty = BooleanProperty.create("stunted")
+
+        fun clusterFromGemBlock(gemBlock: Block): TypeGemClusterBlock? {
+            return gemToClusterMap[gemBlock]
+        }
     }
 
     init {
