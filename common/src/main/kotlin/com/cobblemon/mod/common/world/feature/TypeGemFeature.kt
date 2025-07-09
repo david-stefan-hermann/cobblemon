@@ -1,15 +1,8 @@
-/*
- * Copyright (C) 2023 Cobblemon Contributors
- *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
-
 package com.cobblemon.mod.common.world.feature
 
 import com.cobblemon.mod.common.CobblemonBlocks.TYPE_GEM_CORE
 import com.cobblemon.mod.common.CobblemonBlocks.typeGemBlocks
+import com.cobblemon.mod.common.block.TypeGemClusterBlock
 import com.cobblemon.mod.common.block.TypeGemCoreBlock
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
@@ -48,6 +41,24 @@ class TypeGemFeature : Feature<BlockStateConfiguration>(BlockStateConfiguration.
 
         val typeGemCoreBlock = typeGemCoreBlockState.block as TypeGemCoreBlock
         typeGemCoreBlock.forceGrow(worldGenLevel, origin, random, 0.5f)
+
+        // here we want a 10% chance to place TypeGemCluster around the placed gem block
+        for (dir in Direction.entries) {
+            val clusterPos = randomGemPos.relative(dir)
+            if (!worldGenLevel.getBlockState(clusterPos).isAir) continue
+            if (random.nextFloat() > 0.10f) continue // 10% chance
+
+            val baseState = randomGemBlock.defaultBlockState()
+            if (baseState.hasProperty(TypeGemClusterBlock.FACING)) {
+                val clusterState = randomGemBlock.defaultBlockState()
+                    .setValue(TypeGemClusterBlock.FACING, dir.opposite)
+                    .setValue(TypeGemClusterBlock.STAGE, 1)
+                    .setValue(TypeGemClusterBlock.SHOULD_GROW, true)
+                    .setValue(TypeGemClusterBlock.STUNTED, false)
+
+                worldGenLevel.setBlock(clusterPos, clusterState, UPDATE_ALL)
+            }
+        }
 
         return true
     }
