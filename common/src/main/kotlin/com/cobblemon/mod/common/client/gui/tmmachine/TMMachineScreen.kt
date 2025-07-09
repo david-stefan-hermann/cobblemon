@@ -110,7 +110,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         super.init()
 
         partySlotList.clear()
-        CobblemonClient.storage.myParty.forEachIndexed { index, pokemon ->
+        CobblemonClient.storage.party.forEachIndexed { index, pokemon ->
             partySlotList.add(TMPartySlotWidget(
                 pX = leftPos - 60,
                 pY = topPos + 9 + ((TMPartySlotWidget.HEIGHT + 3) * index),
