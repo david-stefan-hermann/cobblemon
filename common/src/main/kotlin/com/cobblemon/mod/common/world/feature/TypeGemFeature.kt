@@ -19,7 +19,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfi
 
 class TypeGemFeature : Feature<BlockStateConfiguration>(BlockStateConfiguration.CODEC) {
     override fun place(context: FeaturePlaceContext<BlockStateConfiguration?>): Boolean {
-        val worldGenLevel: WorldGenLevel = context.level()
+        val worldGenLevel = context.level()
         val random = context.random()
         val origin = context.origin()
 
@@ -33,43 +33,21 @@ class TypeGemFeature : Feature<BlockStateConfiguration>(BlockStateConfiguration.
             return false
         }
 
-        // Pick a random air block for the gem
         val chosenPos = neighborAirBlocks[random.nextInt(neighborAirBlocks.size)]
-
         val typeGemBlocks = typeGemBlocks().toList()
-        val randomGemEntry = typeGemBlocks[random.nextInt(0, typeGemBlocks.size)]
-        val randomGemId = randomGemEntry.first
-        val randomGemBlock = randomGemEntry.second
-        val randomGemBlockState = randomGemBlock.defaultBlockState()
+        val (gemId, gemBlock) = typeGemBlocks[random.nextInt(typeGemBlocks.size)]
+        val gemState = gemBlock.defaultBlockState()
+        val coreState = TYPE_GEM_CORE.defaultBlockState()
 
-        val typeGemCoreBlockState = TYPE_GEM_CORE.defaultBlockState()
-        worldGenLevel.setBlock(origin, typeGemCoreBlockState, UPDATE_ALL)
-        worldGenLevel.setBlock(chosenPos, randomGemBlockState, UPDATE_ALL)
+        // Place core and initial gem
+        worldGenLevel.setBlock(origin, coreState, UPDATE_ALL)
+        worldGenLevel.setBlock(chosenPos, gemState, UPDATE_ALL)
 
-        val typeGemCoreBlock = typeGemCoreBlockState.block as TypeGemCoreBlock
-        typeGemCoreBlock.forceGrow(worldGenLevel, origin, random, 0.5f)
+        // Trigger forced growth with clusters
+        val coreBlock = coreState.block as TypeGemCoreBlock
+        coreBlock.forceGrow(worldGenLevel, origin, random, 0.5f)
 
-        val clusterBlock = TypeGemClusterBlock.clusterFromGemBlock(randomGemBlock)
-        if (clusterBlock != null) {
-            for (dir in Direction.entries) {
-                val clusterPos = origin.relative(dir)
-                if (clusterPos == chosenPos) continue // skip the gem block's position
-                if (!worldGenLevel.getBlockState(clusterPos).isAir) continue
-                if (random.nextFloat() > 0.95f) continue // 80% chance
-
-                val clusterState = clusterBlock.defaultBlockState()
-                    .setValue(TypeGemClusterBlock.FACING, dir)
-                    .setValue(TypeGemClusterBlock.STAGE, 1)
-                    .setValue(TypeGemClusterBlock.SHOULD_GROW, true)
-                    .setValue(TypeGemClusterBlock.STUNTED, false)
-
-                println("[TypeGemCoreBlock] Placing ${randomGemId.path} cluster at $clusterPos facing ${dir.opposite}")
-                worldGenLevel.setBlock(clusterPos, clusterState, UPDATE_ALL)
-            }
-        } else {
-            println("[TypeGemFeature] Could not find cluster block for gem: $randomGemId")
-        }
-
+        println("[TypeGemFeature] Placed ${gemId.path} at $chosenPos")
         return true
     }
 

@@ -71,7 +71,12 @@ class TypeGemCoreBlock(properties: Properties) : Block(properties) {
         }
     }
 
-    private fun grow(level: WorldGenLevel, pos: BlockPos, random: RandomSource, forced: Boolean = false): Pair<Boolean, Int> {
+    private fun grow(
+        level: WorldGenLevel,
+        pos: BlockPos,
+        random: RandomSource,
+        forced: Boolean = false
+    ): Pair<Boolean, Int> {
         val connectedGems = getConnectedGems(level, pos)
         val gemCount = connectedGems.count { isGem(it.first) }
         val isOverLimit = gemCount >= MAX_CONNECTED_GEMS
@@ -80,42 +85,52 @@ class TypeGemCoreBlock(properties: Properties) : Block(properties) {
 
         for ((gemState, gemPos) in connectedGems.shuffled(javaRandom)) {
             val registryKey = BuiltInRegistries.BLOCK.getKey(gemState.block)
-            val clusterBlock = BLOCK_TO_CLUSTER[registryKey] ?: continue
+            val clusterBlock = BLOCK_TO_CLUSTER[registryKey]
 
             for (dir in Direction.entries.shuffled(javaRandom)) {
                 val targetPos = gemPos.relative(dir)
+                val targetState = level.getBlockState(targetPos)
 
-                if (!level.getBlockState(targetPos).isAir) continue
+                // Allow growth into air or existing clusters
+                if (!(targetState.isAir || targetState.block is TypeGemClusterBlock)) continue
                 if (!isPositionValidForGrowth(level, targetPos)) continue
 
-                // Forces the growing gem to generate as a full block during world generation
-                if (!forced) {
-                    var clusterState = clusterBlock.defaultBlockState()
+                // Place gem block
+                val gemCopy = gemState.block.defaultBlockState()
+                level.setBlock(targetPos, gemCopy, UPDATE_ALL)
 
-                    if (clusterState.hasProperty(DirectionalBlock.FACING)) {
-                        clusterState = clusterState.setValue(DirectionalBlock.FACING, dir)
+                // if forced immediately surround with clusters
+                if (forced && clusterBlock != null) {
+                    for (clusterDir in Direction.entries) {
+                        val clusterPos = targetPos.relative(clusterDir)
+                        if (!level.getBlockState(clusterPos).isAir) continue
+
+                        var clusterState = clusterBlock.defaultBlockState()
+
+                        if (clusterState.hasProperty(DirectionalBlock.FACING)) {
+                            clusterState = clusterState.setValue(DirectionalBlock.FACING, clusterDir)
+                        }
+                        if (clusterState.hasProperty(SHOULD_GROW)) {
+                            clusterState = clusterState.setValue(SHOULD_GROW, true)
+                        }
+                        if (clusterState.hasProperty(STUNTED)) {
+                            clusterState = clusterState.setValue(STUNTED, isOverLimit)
+                        }
+                        if (clusterState.hasProperty(TypeGemClusterBlock.STAGE)) {
+                            val randomStage = random.nextInt(0, 4)
+                            clusterState = clusterState.setValue(TypeGemClusterBlock.STAGE, randomStage)
+                        }
+
+                        //println("[TypeGemCoreBlock] Placing ${if (isOverLimit) "STUNTED" else "normal"} cluster at $clusterPos facing ${clusterDir.opposite}")
+                        level.setBlock(clusterPos, clusterState, UPDATE_ALL)
                     }
-
-                    if (clusterState.hasProperty(SHOULD_GROW)) {
-                        clusterState = clusterState.setValue(SHOULD_GROW, true)
-                    }
-
-                    if (clusterState.hasProperty(STUNTED)) {
-                        clusterState = clusterState.setValue(STUNTED, isOverLimit)
-                    }
-
-                    println("[TypeGemCoreBlock] Placing ${if (isOverLimit) "STUNTED" else "normal"} cluster at $targetPos facing $dir")
-                    level.setBlock(targetPos, clusterState, UPDATE_ALL)
-                } else {
-                    val gemCopy = gemState.block.defaultBlockState()
-                    level.setBlock(targetPos, gemCopy, UPDATE_ALL)
                 }
 
                 return Pair(true, connectedGems.size)
             }
         }
 
-        println("[TypeGemCoreBlock] No valid spot found for cluster placement.")
+        println("[TypeGemCoreBlock] No valid spot found for gem placement.")
         return Pair(false, connectedGems.size)
     }
 
