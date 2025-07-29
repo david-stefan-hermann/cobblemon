@@ -28,15 +28,12 @@ class ElementalType(
     val name: String,
     val displayName: MutableComponent,
     val hue: Int,
-    val textureXMultiplier: Int,
+    val textureXMultiplier: Int, val primaryColor: Int,
     val resourceLocation: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Cobblemon.MODID, "ui/types.png"),
-    val primaryColor: Int,
+    val showdownId: String = ShowdownIdentifiable.REGEX.replace(name.lowercase(), ""),
     val secondaryColor: Int,
-    val typeGem: ResourceLocation
-) {
-    val resourceLocation: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Cobblemon.MODID, "ui/types.png"),
-    val showdownId: String = ShowdownIdentifiable.REGEX.replace(name.lowercase(), "")
-) : ShowdownIdentifiable {
+    val typeGem: ResourceLocation,
+    ) : ShowdownIdentifiable {
 
     override fun showdownId(): String {
         return showdownId
