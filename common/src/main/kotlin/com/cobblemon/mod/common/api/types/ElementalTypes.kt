@@ -188,8 +188,7 @@ object ElementalTypes {
             hue = hue,
             textureXMultiplier = textureXMultiplier,
             primaryColor =  primaryColor,
-            secondaryColor = secondaryColor,
-            typeGem = cobblemonResource("${name}_gem")
+            secondaryColor = secondaryColor
         ).also {
             allTypes.add(it)
         }

@@ -32,7 +32,7 @@ class ElementalType(
     val resourceLocation: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Cobblemon.MODID, "ui/types.png"),
     val showdownId: String = ShowdownIdentifiable.REGEX.replace(name.lowercase(), ""),
     val secondaryColor: Int,
-    val typeGem: ResourceLocation,
+    val typeGem: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Cobblemon.MODID, showdownId + "_gem"),
     ) : ShowdownIdentifiable {
 
     override fun showdownId(): String {
