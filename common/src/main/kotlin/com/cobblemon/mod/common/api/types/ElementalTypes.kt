@@ -140,9 +140,7 @@ object ElementalTypes {
         name = "Ghost",
         displayName = Component.translatable("cobblemon.type.ghost"),
         hue = 0x9572E5,
-        textureXMultiplier = 13,
-        primaryColor = 0x4F57DD,
-        secondaryColor = 0xC182F1
+        textureXMultiplier = 13
     )
 
     val DRAGON = register(
