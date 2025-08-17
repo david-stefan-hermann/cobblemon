@@ -158,21 +158,27 @@ object ElementalTypes {
         name = "Dark",
         displayName = Component.translatable("cobblemon.type.dark"),
         hue = 0x5C6CB2,
-        textureXMultiplier = 15
+        textureXMultiplier = 1,
+        primaryColor = 0x465B99,
+        secondaryColor = 0x689EBF
     )
 
     val STEEL = register(
         name = "Steel",
         displayName = Component.translatable("cobblemon.type.steel"),
         hue = 0xC3CCE0,
-        textureXMultiplier = 16
+        textureXMultiplier = 16,
+        primaryColor = 0x628CB9,
+        secondaryColor = 0xD6F7F3
     )
 
     val FAIRY = register(
         name = "Fairy",
         displayName = Component.translatable("cobblemon.type.fairy"),
         hue = 0xEA727E,
-        textureXMultiplier = 17
+        textureXMultiplier = 17,
+        primaryColor = 0xE2678C,
+        secondaryColor = 0xF5A7B7
     )
 
     fun register(name: String, displayName: MutableComponent, hue: Int, textureXMultiplier: Int, primaryColor: Int, secondaryColor: Int): ElementalType {
