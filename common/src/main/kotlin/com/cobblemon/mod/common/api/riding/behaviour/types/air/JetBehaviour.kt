@@ -114,10 +114,10 @@ class JetBehaviour : RidingBehaviour<JetSettings, JetState> {
         val stamDrainRate = (1.0f / vehicle.runtime.resolveDouble(settings.staminaExpr)).toFloat() / 20.0f
 
         if (state.boosting.get()) {
-            newStam = max(0.0f,stam - stamDrainRate)
+            newStam = max(0.0f,stam - stamDrainRate * 1.5f)
 
         } else {
-            newStam = min(1.0f,stam + stamDrainRate * 0.25f)
+            newStam = max(0.0f,stam - stamDrainRate)
         }
 
         state.stamina.set(newStam)
@@ -149,11 +149,15 @@ class JetBehaviour : RidingBehaviour<JetSettings, JetState> {
 
         //Translate ride space velocity to world space velocity.
         if (controller != null) {
-            upForce = -1.0 * sin(Math.toRadians(controller.pitch.toDouble())) * state.rideVelocity.get().z
+            upForce =  if(state.stamina.get() != 0.0f) -1.0 * sin(Math.toRadians(controller.pitch.toDouble())) * state.rideVelocity.get().z
+                else min(0.0, -1.0 * sin(Math.toRadians(controller.pitch.toDouble())) * state.rideVelocity.get().z)
             forwardForce = cos(Math.toRadians(controller.pitch.toDouble())) * state.rideVelocity.get().z
         }
 
-        val velocity = Vec3(0.0, upForce, forwardForce)
+        // The downward force used to encourage players to stop flying upside down.
+        val extraDownwardForce = if(state.stamina.get() == 0.0f) -0.3 else 0.0 // 6 blocks a second downward
+
+        val velocity = Vec3(0.0, upForce + extraDownwardForce, forwardForce)
 
         return velocity
     }
@@ -177,7 +181,17 @@ class JetBehaviour : RidingBehaviour<JetSettings, JetState> {
         val boostAccel = accel * boostMult
 
         //speed up and slow down based on input
-        if (state.boosting.get() && speed < boostTopSpeed) {
+        if (state.stamina.get() == 0.0f) {
+            // Decelerate currently always a constant half of max acceleration.
+            state.rideVelocity.set(
+                Vec3(
+                    state.rideVelocity.get().x,
+                    state.rideVelocity.get().y,
+                    max(state.rideVelocity.get().z - ((accel) / 2), minSpeed * 0.5)
+                )
+            )
+        }
+        else if (state.boosting.get() && speed < boostTopSpeed) {
             state.rideVelocity.set(
                 Vec3(
                     state.rideVelocity.get().x,
@@ -305,7 +319,8 @@ class JetBehaviour : RidingBehaviour<JetSettings, JetState> {
         state.currMouseYForce.set((state.currMouseYForce.get() + (0.0015 * mouseY)).coerceIn(-1.0, 1.0))
 
         //Get handling in degrees per second
-        var handling = vehicle.runtime.resolveDouble(settings.handlingExpr)
+        val handlingDebuff = if(state.stamina.get() == 0.0f) 0.5 else 1.0
+        var handling = vehicle.runtime.resolveDouble(settings.handlingExpr) * handlingDebuff
         //convert it to delta time
         handling *= (cappedDeltaTime)
 
@@ -358,7 +373,8 @@ class JetBehaviour : RidingBehaviour<JetSettings, JetState> {
         state.currMouseYForce.set((state.currMouseYForce.get() + (0.0015 * mouseY)).coerceIn(-1.0, 1.0))
 
         //Get handling in degrees per second
-        var handling = vehicle.runtime.resolveDouble(settings.handlingExpr)
+        val handlingDebuff = if(state.stamina.get() == 0.0f) 0.5 else 1.0
+        var handling = vehicle.runtime.resolveDouble(settings.handlingExpr) * handlingDebuff
 
         //convert it to delta time
         handling *= (cappedDeltaTime)
@@ -521,21 +537,21 @@ class JetSettings : RidingBehaviourSettings {
         private set
 
     // Boost power. Mult for top speed and accel while boosting
-    var jumpExpr: Expression = "q.get_ride_stats('JUMP', 'AIR', 1.7, 1.2)".asExpression()
+    var jumpExpr: Expression = "q.get_ride_stats('JUMP', 'AIR', 2.0, 1.0)".asExpression()
         private set
 
     // Turn rate in degrees per second
-    var handlingExpr: Expression = "q.get_ride_stats('SKILL', 'AIR', 120.0, 60.0)".asExpression()
+    var handlingExpr: Expression = "q.get_ride_stats('SKILL', 'AIR', 60.0, 20.0)".asExpression()
         private set
     // Top Speed in blocks per second
-    var speedExpr: Expression = "q.get_ride_stats('SPEED', 'AIR', 36.0, 20.0)".asExpression()
+    var speedExpr: Expression = "q.get_ride_stats('SPEED', 'AIR', 24.0, 4.0)".asExpression()
         private set
     // Acceleration in blocks per s^2
     var accelerationExpr: Expression =
-        "q.get_ride_stats('ACCELERATION', 'AIR', 5.0, 2.5)".asExpression()
+        "q.get_ride_stats('ACCELERATION', 'AIR', 4.0, 1.0)".asExpression()
         private set
-    // Time in seconds to drain full bar of stamina when boosting
-    var staminaExpr: Expression = "q.get_ride_stats('STAMINA', 'AIR', 8.0, 4.0)".asExpression()
+    // Time in seconds to drain full bar of stamina flying
+    var staminaExpr: Expression = "q.get_ride_stats('STAMINA', 'AIR', 60.0, 4.0)".asExpression()
         private set
 
     var rideSounds: RideSoundSettingsList = RideSoundSettingsList()
