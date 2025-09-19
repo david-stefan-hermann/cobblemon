@@ -40,7 +40,7 @@ abstract class AbstractTMMoveManager {
         val tm = TechnicalMachines.tmMap[tmId] ?: return
 
         val packet = ToastPacket(
-                title = Component.literal("New TM Learned"), // todp lang for this
+                title = Component.literal("New TM Learned"), // TODO lang for this
                 description = tm.translatedMoveName(),
                 icon = tm.createItemStack(),
                 frameTexture = ResourceLocation.parse("minecraft:toast/advancement"),
