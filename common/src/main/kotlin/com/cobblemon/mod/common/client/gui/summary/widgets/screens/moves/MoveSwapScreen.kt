@@ -74,132 +74,140 @@ class MoveSwapScreen(
                 val rgb = elementalType.hue.toRGB()
 
                 blitk(
-                    matrixStack = matrices,
-                    texture = moveResource,
-                    x = rowLeft,
-                    y = tweakedRowTop,
-                    height = SLOT_HEIGHT,
-                    width = rowWidth,
-                    vOffset = if (isHovered) SLOT_HEIGHT else 0,
-                    textureHeight = SLOT_HEIGHT * 2,
-                    red = rgb.first,
-                    green = rgb.second,
-                    blue = rgb.third
+                        matrixStack = matrices,
+                        texture = moveResource,
+                        x = rowLeft,
+                        y = tweakedRowTop,
+                        height = SLOT_HEIGHT,
+                        width = rowWidth,
+                        vOffset = if (isHovered) SLOT_HEIGHT else 0,
+                        textureHeight = SLOT_HEIGHT * 2,
+                        red = rgb.first,
+                        green = rgb.second,
+                        blue = rgb.third
                 )
 
                 blitk(
-                    matrixStack = matrices,
-                    texture = moveOverlayResource,
-                    x = rowLeft,
-                    y = tweakedRowTop,
-                    height = SLOT_HEIGHT,
-                    width = rowWidth
+                        matrixStack = matrices,
+                        texture = moveOverlayResource,
+                        x = rowLeft,
+                        y = tweakedRowTop,
+                        height = SLOT_HEIGHT,
+                        width = rowWidth
                 )
 
                 // Type Icon
-                TypeIcon(x = rowLeft - 9, y = tweakedRowTop, type = elementalType).render(context)
+                TypeIcon(
+                    x = rowLeft - 9,
+                    y = tweakedRowTop,
+                    type = elementalType
+                ).render(context)
 
                 // Move Category
-                MoveCategoryIcon(x = rowLeft + 77, y = tweakedRowTop + 1.5, category = move.damageCategory).render(context)
+                MoveCategoryIcon(
+                        x = rowLeft + 77,
+                        y = tweakedRowTop + 1.5,
+                        category = move.damageCategory
+                ).render(context)
 
                 drawScaledText(
-                    context = context,
-                    text = move.displayName,
-                    x = rowLeft + 14,
-                    y = tweakedRowTop + 3.5,
-                    scale = MovesWidget.SCALE,
-                    shadow = true
+                        context = context,
+                        text = move.displayName,
+                        x = rowLeft + 14,
+                        y = tweakedRowTop + 3.5,
+                        scale = MovesWidget.SCALE,
+                        shadow = true
                 )
 
                 // Move icons
                 blitk(
-                    matrixStack = matrices,
-                    texture = MovesWidget.movesPowerIconResource,
-                    x= (rowLeft + 10) / MovesWidget.SCALE,
-                    y = (tweakedRowTop + 11) / MovesWidget.SCALE,
-                    width = MovesWidget.MOVE_ICON_SIZE,
-                    height = MovesWidget.MOVE_ICON_SIZE,
-                    scale = MovesWidget.SCALE
+                        matrixStack = matrices,
+                        texture = MovesWidget.movesPowerIconResource,
+                        x= (rowLeft + 10) / MovesWidget.SCALE,
+                        y = (tweakedRowTop + 11) / MovesWidget.SCALE,
+                        width = MovesWidget.MOVE_ICON_SIZE,
+                        height = MovesWidget.MOVE_ICON_SIZE,
+                        scale = MovesWidget.SCALE
                 )
 
                 blitk(
-                    matrixStack = matrices,
-                    texture = MovesWidget.movesAccuracyIconResource,
-                    x= (rowLeft + 30) / MovesWidget.SCALE,
-                    y = (tweakedRowTop + 11) / MovesWidget.SCALE,
-                    width = MovesWidget.MOVE_ICON_SIZE,
-                    height = MovesWidget.MOVE_ICON_SIZE,
-                    scale = MovesWidget.SCALE
+                        matrixStack = matrices,
+                        texture = MovesWidget.movesAccuracyIconResource,
+                        x= (rowLeft + 30) / MovesWidget.SCALE,
+                        y = (tweakedRowTop + 11) / MovesWidget.SCALE,
+                        width = MovesWidget.MOVE_ICON_SIZE,
+                        height = MovesWidget.MOVE_ICON_SIZE,
+                        scale = MovesWidget.SCALE
                 )
 
                 blitk(
-                    matrixStack = matrices,
-                    texture = MovesWidget.movesEffectIconResource,
-                    x= (rowLeft + 53.5) / MovesWidget.SCALE,
-                    y = (tweakedRowTop + 11) / MovesWidget.SCALE,
-                    width = MovesWidget.MOVE_ICON_SIZE,
-                    height = MovesWidget.MOVE_ICON_SIZE,
-                    scale = MovesWidget.SCALE
+                        matrixStack = matrices,
+                        texture = MovesWidget.movesEffectIconResource,
+                        x= (rowLeft + 53.5) / MovesWidget.SCALE,
+                        y = (tweakedRowTop + 11) / MovesWidget.SCALE,
+                        width = MovesWidget.MOVE_ICON_SIZE,
+                        height = MovesWidget.MOVE_ICON_SIZE,
+                        scale = MovesWidget.SCALE
                 )
 
                 val movePower = if (move.power.toInt() > 0) move.power.toInt().toString().text() else "—".text()
                 drawScaledText(
-                    context = context,
-                    text = movePower,
-                    x = rowLeft + 16.5,
-                    y = tweakedRowTop + 12,
-                    scale = MovesWidget.SCALE,
-                    shadow = true
+                        context = context,
+                        text = movePower,
+                        x = rowLeft + 16.5,
+                        y = tweakedRowTop + 12,
+                        scale = MovesWidget.SCALE,
+                        shadow = true
                 )
 
                 drawScaledText(
-                    context = context,
-                    text = MovesWidget.format(move.accuracy).text(),
-                    x = rowLeft + 37,
-                    y = tweakedRowTop + 12,
-                    scale = MovesWidget.SCALE,
-                    shadow = true
+                        context = context,
+                        text = MovesWidget.format(move.accuracy).text(),
+                        x = rowLeft + 37,
+                        y = tweakedRowTop + 12,
+                        scale = MovesWidget.SCALE,
+                        shadow = true
                 )
 
                 drawScaledText(
-                    context = context,
-                    text = MovesWidget.format(move.effectChances.firstOrNull() ?: 0.0).text(),
-                    x = rowLeft + 60.5,
-                    y = tweakedRowTop + 12,
-                    scale = MovesWidget.SCALE,
-                    shadow = true
+                        context = context,
+                        text = MovesWidget.format(move.effectChances.firstOrNull() ?: 0.0).text(),
+                        x = rowLeft + 60.5,
+                        y = tweakedRowTop + 12,
+                        scale = MovesWidget.SCALE,
+                        shadow = true
                 )
 
                 val pp = move.pp + ppRaisedStages * move.pp / 5
                 drawScaledText(
-                    context = context,
-                    text = lang("ui.moves.pp", pp),
-                    x = rowLeft + 76,
-                    y = tweakedRowTop + 12,
-                    scale = MovesWidget.SCALE,
-                    shadow = true
+                        context = context,
+                        text = lang("ui.moves.pp", pp),
+                        x = rowLeft + 76,
+                        y = tweakedRowTop + 12,
+                        scale = MovesWidget.SCALE,
+                        shadow = true
                 )
             } else {
                 // Forget move slot
                 blitk(
-                    matrixStack = matrices,
-                    texture = forgetMoveOverlayResource,
-                    x = rowLeft - 9,
-                    y = tweakedRowTop,
-                    height = SLOT_HEIGHT,
-                    width = 100,
-                    vOffset = if (isHovered) SLOT_HEIGHT else 0,
-                    textureHeight = SLOT_HEIGHT * 2
+                        matrixStack = matrices,
+                        texture = forgetMoveOverlayResource,
+                        x = rowLeft - 9,
+                        y = tweakedRowTop,
+                        height = SLOT_HEIGHT,
+                        width = 100,
+                        vOffset = if (isHovered) SLOT_HEIGHT else 0,
+                        textureHeight = SLOT_HEIGHT * 2,
                 )
                 blitk(
-                    matrixStack = matrices,
-                    texture = forgetMoveIconResource,
-                    x = rowLeft + rowWidth / 2 - 7,
-                    y = tweakedRowTop + SLOT_HEIGHT / 2 - 4,
-                    height = 7,
-                    width = 7,
-                    vOffset = if (isHovered) 7 else 0,
-                    textureHeight = 14
+                        matrixStack = matrices,
+                        texture = forgetMoveIconResource,
+                        x = rowLeft + rowWidth / 2 - 7,
+                        y = tweakedRowTop + SLOT_HEIGHT / 2 - 4,
+                        height = 7,
+                        width = 7,
+                        vOffset = if (isHovered) 7 else 0,
+                        textureHeight = 14,
                 )
             }
 

@@ -160,9 +160,9 @@ object CobblemonClient {
                 if (pokedexUsageContext.scanningGuiOpen &&
                     !(selectedItem.`is`(CobblemonItemTags.POKEDEX)) &&
                     !(player.offhandItem.`is`(CobblemonItemTags.POKEDEX) &&
-                        player.isUsingItem == true &&
-                        player.usedItemHand == InteractionHand.OFF_HAND
-                    )
+                            player.isUsingItem == true &&
+                            player.usedItemHand == InteractionHand.OFF_HAND
+                            )
                 ) {
                     // Stop using Pokédex in main hand if player switches to a different slot in hotbar
                     pokedexUsageContext.stopUsing(PokedexUsageContext.OPEN_SCANNER_BUFFER_TICKS + 1)
@@ -171,7 +171,10 @@ object CobblemonClient {
                     return@subscribe
                 }
 
-                val nearbyPokemon = player.level().getEntities(player, AABB.ofSize(player.position(), 16.0, 16.0, 16.0)) { it is PokemonEntity }
+                val nearbyPokemon = player.level().getEntities(
+                    player,
+                    AABB.ofSize(player.position(), 16.0, 16.0, 16.0)
+                ) { it is PokemonEntity }
 
                 nearbyPokemon?.forEach { entity ->
                     if (entity is PokemonEntity && !entity.isSilent) {
@@ -345,7 +348,8 @@ object CobblemonClient {
 
     @Suppress("UNCHECKED_CAST")
     fun onAddLayer(skinMap: Map<PlayerSkin.Model, EntityRenderer<out Player>>?) {
-        var renderer: LivingEntityRenderer<Player, PlayerModel<Player>>? = skinMap?.get(PlayerSkin.Model.WIDE) as LivingEntityRenderer<Player, PlayerModel<Player>>
+        var renderer: LivingEntityRenderer<Player, PlayerModel<Player>>? =
+            skinMap?.get(PlayerSkin.Model.WIDE) as LivingEntityRenderer<Player, PlayerModel<Player>>
         renderer?.addLayer(PokemonOnShoulderRenderer(renderer))
         renderer = skinMap[PlayerSkin.Model.SLIM] as LivingEntityRenderer<Player, PlayerModel<Player>>?
         renderer?.addLayer(PokemonOnShoulderRenderer(renderer))
@@ -357,12 +361,21 @@ object CobblemonClient {
     }
 
     private fun registerBlockEntityRenderers() {
-        this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.HEALING_MACHINE, ::HealingMachineRenderer)
+        this.implementation.registerBlockEntityRenderer(
+            CobblemonBlockEntities.HEALING_MACHINE,
+            ::HealingMachineRenderer
+        )
         this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.BERRY, ::BerryBlockRenderer)
         this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.SIGN, ::SignRenderer)
         this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.HANGING_SIGN, ::HangingSignRenderer)
-        this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.FOSSIL_ANALYZER, ::FossilAnalyzerRenderer)
-        this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.RESTORATION_TANK, ::RestorationTankRenderer)
+        this.implementation.registerBlockEntityRenderer(
+            CobblemonBlockEntities.FOSSIL_ANALYZER,
+            ::FossilAnalyzerRenderer
+        )
+        this.implementation.registerBlockEntityRenderer(
+            CobblemonBlockEntities.RESTORATION_TANK,
+            ::RestorationTankRenderer
+        )
         this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.GILDED_CHEST, ::GildedChestBlockRenderer)
         this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.DISPLAY_CASE, ::DisplayCaseRenderer)
         this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.LECTERN, ::LecternBlockEntityRenderer)
@@ -377,7 +390,12 @@ object CobblemonClient {
         LOGGER.info("Registering PokéBall renderer")
         this.implementation.registerEntityRenderer(CobblemonEntities.EMPTY_POKEBALL, ::PokeBallRenderer)
         LOGGER.info("Registering Boat renderer")
-        this.implementation.registerEntityRenderer(CobblemonEntities.BOAT) { ctx -> CobblemonBoatRenderer(ctx, false) }
+        this.implementation.registerEntityRenderer(CobblemonEntities.BOAT) { ctx ->
+            CobblemonBoatRenderer(
+                ctx,
+                false
+            )
+        }
         LOGGER.info("Registering Boat with Chest renderer")
         this.implementation.registerEntityRenderer(CobblemonEntities.CHEST_BOAT) { ctx -> CobblemonBoatRenderer(ctx, true) }
         LOGGER.info("Registering Generic Bedrock renderer")
@@ -423,8 +441,14 @@ object CobblemonClient {
 
     private fun createBoatModelLayers() {
         CobblemonBoatType.entries.forEach { type ->
-            this.implementation.registerLayer(CobblemonBoatRenderer.createBoatModelLayer(type, false), BoatModel::createBodyModel)
-            this.implementation.registerLayer(CobblemonBoatRenderer.createBoatModelLayer(type, true), ChestBoatModel::createBodyModel)
+            this.implementation.registerLayer(
+                CobblemonBoatRenderer.createBoatModelLayer(type, false),
+                BoatModel::createBodyModel
+            )
+            this.implementation.registerLayer(
+                CobblemonBoatRenderer.createBoatModelLayer(type, true),
+                ChestBoatModel::createBodyModel
+            )
         }
     }
 
