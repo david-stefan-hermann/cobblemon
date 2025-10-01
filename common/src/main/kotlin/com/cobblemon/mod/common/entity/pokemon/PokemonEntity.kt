@@ -73,6 +73,7 @@ import com.cobblemon.mod.common.battles.BattleBuilder
 import com.cobblemon.mod.common.battles.BattleRegistry
 import com.cobblemon.mod.common.battles.SuccessfulBattleStart
 import com.cobblemon.mod.common.block.entity.PokemonPastureBlockEntity
+import com.cobblemon.mod.common.client.MountedCameraTypeHandler
 import com.cobblemon.mod.common.client.entity.PokemonClientDelegate
 import com.cobblemon.mod.common.entity.BehaviourEditingTracker
 import com.cobblemon.mod.common.entity.EntityCallbacks
@@ -96,6 +97,7 @@ import com.cobblemon.mod.common.net.messages.client.sound.UnvalidatedPlaySoundS2
 import com.cobblemon.mod.common.net.messages.client.spawn.SpawnPokemonPacket
 import com.cobblemon.mod.common.net.messages.client.ui.InteractPokemonUIPacket
 import com.cobblemon.mod.common.net.messages.server.behaviour.DamageOnCollisionPacket
+import com.cobblemon.mod.common.net.messages.server.riding.DismountPokemonPacket
 import com.cobblemon.mod.common.net.serverhandling.storage.SendOutPokemonHandler.SEND_OUT_DURATION
 import com.cobblemon.mod.common.pokeball.PokeBall
 import com.cobblemon.mod.common.pokedex.scanner.PokedexEntityData
@@ -123,6 +125,7 @@ import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import kotlin.math.PI
 import kotlin.math.ceil
+import kotlin.math.max
 import kotlin.math.min
 import net.minecraft.core.BlockPos
 import net.minecraft.core.component.DataComponents
@@ -174,6 +177,7 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.LightLayer
 import net.minecraft.world.level.block.SuspiciousEffectHolder
+import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.gameevent.GameEvent
 import net.minecraft.world.level.material.EmptyFluid
 import net.minecraft.world.level.material.FluidState
@@ -213,6 +217,7 @@ open class PokemonEntity(
         @JvmStatic val EVOLUTION_STARTED = SynchedEntityData.defineId(PokemonEntity::class.java, EntityDataSerializers.BOOLEAN)
         @JvmStatic var SHOWN_HELD_ITEM = SynchedEntityData.defineId(PokemonEntity::class.java, EntityDataSerializers.ITEM_STACK)
         @JvmStatic var RIDE_BOOSTS = SynchedEntityData.defineId(PokemonEntity::class.java, RideBoostsDataSerializer)
+        @JvmStatic var RIDE_STAMINA = SynchedEntityData.defineId(PokemonEntity::class.java, EntityDataSerializers.FLOAT)
 
         const val BATTLE_LOCK = "battle"
         const val EVOLUTION_LOCK = "evolving"
@@ -457,6 +462,7 @@ open class PokemonEntity(
         builder.define(EVOLUTION_STARTED, false)
         builder.define(SHOWN_HELD_ITEM, ItemStack.EMPTY)
         builder.define(RIDE_BOOSTS, emptyMap())
+        builder.define(RIDE_STAMINA, 1F)
     }
 
     override fun onSyncedDataUpdated(data: EntityDataAccessor<*>) {
@@ -534,8 +540,12 @@ open class PokemonEntity(
         if (passengerIndex != -1) {
             occupiedSeats[passengerIndex] = null
         }
+        if (level().isClientSide) {
+            MountedCameraTypeHandler.handleDismount(passenger, this)
+        }
         super.removePassenger(passenger)
         if (passengers.isEmpty()) {
+            ifRidingAvailable { _, _, state -> pokemon.rideStamina = state.stamina.get() }
             ridingController?.context?.state?.reset()
             ridingAnimationData.clear()
         }
@@ -1452,7 +1462,7 @@ open class PokemonEntity(
     fun tryRidingPokemon(player: ServerPlayer): Boolean {
         val event = RidePokemonEvent.Pre(player, this)
         CobblemonEvents.RIDE_EVENT_PRE.post(event)
-        if(!event.isCanceled) {
+        if (!event.isCanceled) {
             player.startRiding(this)
             CobblemonEvents.RIDE_EVENT_POST.post(RidePokemonEvent.Post(player, this))
             return true
@@ -1795,7 +1805,7 @@ open class PokemonEntity(
                             for (passenger in this.passengers) {
                                 passenger.deltaMovement = this.deltaMovement
                             }
-                            this.ejectPassengers()
+                            DismountPokemonPacket().sendToServer()
 
                             // Reset ride velocity
                             state.rideVelocity.set(state.rideVelocity.get().multiply(0.0, 1.0, 0.0))
@@ -1861,6 +1871,13 @@ open class PokemonEntity(
 
     fun isFalling() =
         this.fallDistance > 0 && this.level().getBlockState(this.blockPosition().below()).isAir && !this.isFlying()
+
+    override fun checkFallDamage(y: Double, onGround: Boolean, state: BlockState, pos: BlockPos) {
+        super.checkFallDamage(y, onGround, state, pos)
+        if (isFlying() && this.passengers.isEmpty() && y < 0.0 && !onGround) {
+            fallDistance = 0F // Prevent fall damage after flying without a rider
+        }
+    }
 
     override fun getCurrentPoseType(): PoseType = this.entityData.get(POSE_TYPE)
 
@@ -2034,10 +2051,6 @@ open class PokemonEntity(
     }
 
     override fun canBeLeashed() = true
-//    override fun canBeLeashedBy(player: Player): Boolean {
-//        return this.ownerUuid == null || this.ownerUuid == player.uuid
-//    }
-
     override fun setLeashedTo(entity: Entity, bl: Boolean) {
         super.setLeashedTo(entity, bl)
         if (this.ownerUUID != null && this.ownerUUID != entity.uuid) {
@@ -2045,8 +2058,8 @@ open class PokemonEntity(
         }
     }
 
-    /** Retrieves the battle theme associated with this Pokemon's Species/Form, or the default PVW theme if not found. */
-    fun getBattleTheme() = this.form.battleTheme ?: CobblemonSounds.PVW_BATTLE.location
+    /** Retrieves the battle theme associated with this Pokemon's Species/Form which falls back to the default PVW theme if not found. */
+    fun getBattleTheme() = this.form.battleTheme
 
     /**
      * A utility method to instance a [Pokemon] aware if the [world] is client sided or not.
@@ -2060,22 +2073,23 @@ open class PokemonEntity(
     }
 
     // Takes in a requested stat type with a base minimum and base maximum and returns the interpolated
-    // stat based on the boost of that pokemons stat
-    fun getRideStat(stat: RidingStat, style: RidingStyle, baseMin: Double, baseMax: Double): Double {
-        //TODO: Change from static zero boost once aprijuice is implemented.
-        if (rideStatOverrides[style] != null && rideStatOverrides[style]!![stat] != null) {
-            return (((baseMax - baseMin) / 100) * rideStatOverrides[style]!![stat]!!) + baseMin
+    // stat based on the boost of that Pokémon's stat
+    fun getRideStat(rideStat: RidingStat, style: RidingStyle, baseMin: Double, baseMax: Double): Double {
+        if (rideStatOverrides[style] != null && rideStatOverrides[style]!![rideStat] != null) {
+            return (((baseMax - baseMin) / 100) * rideStatOverrides[style]!![rideStat]!!) + baseMin
         }
-        val stat = this.rideProp.behaviours?.get(style)?.calculate(stat, 0) ?: return 0.0
+        val stat = this.rideProp.behaviours?.get(style)?.calculate(rideStat, entityData.get(RIDE_BOOSTS)[rideStat] ?: 0F) ?: return 0.0
         val statVal = (((baseMax - baseMin) / 100) * stat) + baseMin
-        return statVal
+        // Cap the minimum value at a very small value to prevent control inversions and other unexpected behaviour in
+        // the ride controllers when using negative values
+        return max(statVal, 1e-6)
     }
 
     fun getRawRideStat(stat: RidingStat, style: RidingStyle): Double {
         if (rideStatOverrides[style] != null && rideStatOverrides[style]!![stat] != null) {
             return rideStatOverrides[style]!![stat]!!
         }
-        return this.rideProp.behaviours?.get(style)?.calculate(stat, 0)?.toDouble() ?: 0.0
+        return this.rideProp.behaviours?.get(style)?.calculate(stat, 0F)?.toDouble() ?: 0.0
     }
 
     internal fun overrideRideStat(style: RidingStyle, stat: RidingStat, value: Double) {
@@ -2091,16 +2105,37 @@ open class PokemonEntity(
 
     public override fun addPassenger(passenger: Entity) {
         if (passenger is ServerPlayer) {
+            // Recall all the rest of the player's party pokes
             passenger.party()
                 .mapNotNull { it.entity }
                 .filter { it != this }
                 .forEach { it.recallWithAnimation() }
+
+            // Driver is hopping on, figure out the stamina situation
+            if (passengers.isEmpty()) {
+                CobblemonEvents.RIDE_EVENT_APPLY_STAMINA.post(
+                    RidePokemonEvent.ApplyStamina(
+                        player = passenger,
+                        pokemon = this,
+                        rideStamina = if (Cobblemon.config.infiniteRideStamina) -1F else entityData.get(RIDE_STAMINA)
+                    ),
+                    then = { event -> entityData.set(RIDE_STAMINA, event.rideStamina) }
+                )
+            }
+        } else if (level().isClientSide) {
+            MountedCameraTypeHandler.handleMount(passenger, this)
         }
         val passengerIndex = occupiedSeats.indexOfFirst { it == null }
         if (passengerIndex != -1) {
             occupiedSeats[passengerIndex] = passenger
         }
         super.addPassenger(passenger)
+        if (passengers.size == 1) {
+            // Someone just started riding, fill in the stamina value! Gets run from both sides.
+            ifRidingAvailable { _, _, state ->
+                state.stamina.set(entityData.get(RIDE_STAMINA))
+            }
+        }
     }
 
     fun getIsJumping() = jumping
@@ -2130,6 +2165,9 @@ open class PokemonEntity(
         super.tickRidden(driver, movementInput)
         ifRidingAvailable { behaviour, settings, state ->
             behaviour.tick(settings, state, this, driver, movementInput)
+            if (entityData.get(RIDE_STAMINA) == -1F) {
+                state.stamina.set(1F, forced = true)
+            }
 
             if (!this.level().isClientSide) {
                 val pose = behaviour.pose(settings, state, this)
@@ -2389,8 +2427,10 @@ open class PokemonEntity(
 
     override fun canWalk() = exposedForm.behaviour.moving.walk.canWalk
     override fun canSwimInWater() = exposedForm.behaviour.moving.swim.canSwimInWater
+    override fun canWalkOnWater() = exposedForm.behaviour.moving.swim.canWalkOnWater
     override fun canFly() = exposedForm.behaviour.moving.fly.canFly
     override fun canSwimInLava() = exposedForm.behaviour.moving.swim.canSwimInLava
+    override fun canWalkOnLava() = exposedForm.behaviour.moving.swim.canWalkOnLava
     override fun entityOnGround() = onGround()
 
     override fun canSwimUnderFluid(fluidState: FluidState): Boolean {

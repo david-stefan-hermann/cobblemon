@@ -86,7 +86,7 @@ class ClientEvolutionController(
     override fun asIntermediate(): Intermediate = Intermediate(this.evolutions)
 
     fun sendPlayerNotification() {
-        if (pokemon.heldItem?.item != CobblemonItems.EVERSTONE) {
+        if (pokemon.heldItem.item != CobblemonItems.EVERSTONE) {
             Minecraft.getInstance().player?.let { player ->
                 player.sendSystemMessage("cobblemon.ui.evolve.hint".asTranslated(pokemon.getDisplayName()).green())
                 player.playSound(CobblemonSounds.EVOLUTION_NOTIFICATION, 1F, 1F)
