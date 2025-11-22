@@ -70,7 +70,11 @@ class MovesWidget(
         addWidget(it)
     }
 
-    private var descriptionScrollList = MoveDescriptionScrollList(x + 69, y + 113, 5)
+    private var descriptionScrollList = MoveDescriptionScrollList(
+        x + 69,
+        y + 113,
+        5
+    )
 
 
     override fun renderWidget(context: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {

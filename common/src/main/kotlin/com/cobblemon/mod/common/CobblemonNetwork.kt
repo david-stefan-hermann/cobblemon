@@ -30,6 +30,7 @@ import com.cobblemon.mod.common.client.net.effect.RunPosableMoLangHandler
 import com.cobblemon.mod.common.client.net.effect.SaccharineLogBlockParticlesHandler
 import com.cobblemon.mod.common.client.net.effect.SpawnSnowstormEntityParticleHandler
 import com.cobblemon.mod.common.client.net.effect.SpawnSnowstormParticleHandler
+import com.cobblemon.mod.common.client.net.gui.*
 import com.cobblemon.mod.common.client.net.gui.ExpGainedDataPacketHandler
 import com.cobblemon.mod.common.client.net.gui.*
 import com.cobblemon.mod.common.client.net.npc.CloseNPCEditorHandler

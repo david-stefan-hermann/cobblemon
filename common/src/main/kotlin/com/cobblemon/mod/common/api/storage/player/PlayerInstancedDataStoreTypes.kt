@@ -8,6 +8,7 @@
 
 package com.cobblemon.mod.common.api.storage.player
 
+import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.api.storage.player.client.ClientGeneralPlayerData
 import com.cobblemon.mod.common.api.storage.player.client.ClientTMMoveManager
 import com.cobblemon.mod.common.api.storage.player.client.ClientPokedexManager
@@ -36,14 +37,14 @@ object PlayerInstancedDataStoreTypes {
     ))
 
     fun register(type: PlayerInstancedDataStoreType): PlayerInstancedDataStoreType {
-        println("Registering PlayerInstancedDataStoreType: ${type.id}")
+        Cobblemon.LOGGER.debug("Registering PlayerInstancedDataStoreType: {}", type.id)
         types[type.id] = type
         return type
     }
 
     fun getTypeById(id: ResourceLocation): PlayerInstancedDataStoreType? {
         val type = types[id]
-        if (type == null) println("Unknown PlayerInstancedDataStoreType ID: $id")
+        if (type == null) Cobblemon.LOGGER.warn("Unknown PlayerInstancedDataStoreType ID: {}", id)
         return type
     }
 }

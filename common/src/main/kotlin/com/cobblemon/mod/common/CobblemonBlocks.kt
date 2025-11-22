@@ -118,7 +118,12 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     @JvmField
     val STRIPPED_APRICORN_WOOD = log("stripped_apricorn_wood")
     @JvmField
-    val APRICORN_PLANKS = this.create("apricorn_planks", Block(BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).instrument(NoteBlockInstrument.BASS).strength(2.0f, 3.0f).sound(SoundType.WOOD)))
+    val APRICORN_PLANKS = this.create("apricorn_planks",
+        Block(
+            BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).instrument(NoteBlockInstrument.BASS)
+                .strength(2.0f, 3.0f).sound(SoundType.WOOD)
+        )
+    )
     @JvmField
     val APRICORN_LEAVES = leaves("apricorn_leaves")
     @JvmField
@@ -132,10 +137,16 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     @JvmField
     val APRICORN_SIGN = this.create("apricorn_sign", CobblemonSignBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_SIGN), APRICORN_WOOD_TYPE))
 
-    @JvmField // If you wonder why we don't copy OAK_WALL_SIGN, then I can tell you it's because it uses Properties#dropsLike to point to the SIGN loot table, but we can't use that in our setup due to a deeper rooted issue, so falling back to this and writing dedicated (duplicated) loot tables
-    val APRICORN_WALL_SIGN = this.create("apricorn_wall_sign", CobblemonWallSignBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_SIGN), APRICORN_WOOD_TYPE))
+    @JvmField //if you wonder why we don't copy of OAK_WALL_SIGN, then I can tell you its because it uses Properties#dropsLike to point to the SIGN loot table, but we cant use that in our setup due to a deeper rooted issue, so falling back to this and writing dedicated (duplicated) loot tables
+    val APRICORN_WALL_SIGN = this.create(
+        "apricorn_wall_sign",
+        CobblemonWallSignBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_SIGN), APRICORN_WOOD_TYPE)
+    )
     @JvmField
-    val APRICORN_HANGING_SIGN = this.create("apricorn_hanging_sign", CobblemonHangingSignBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_HANGING_SIGN), APRICORN_WOOD_TYPE))
+    val APRICORN_HANGING_SIGN = this.create(
+        "apricorn_hanging_sign",
+        CobblemonHangingSignBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_HANGING_SIGN), APRICORN_WOOD_TYPE)
+    )
     @JvmField
     val APRICORN_WALL_HANGING_SIGN = this.create("apricorn_wall_hanging_sign", CobblemonWallHangingSignBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_HANGING_SIGN), APRICORN_WOOD_TYPE))
     @JvmField
@@ -179,7 +190,9 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     val SACCHARINE_PLANKS = this.create("saccharine_planks", Block(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_BLUE).instrument(NoteBlockInstrument.BASS).strength(2.0f, 3.0f).sound(SoundType.WOOD)))
     @JvmField
     val SACCHARINE_LEAVES = this.create("saccharine_leaves", SaccharineLeafBlock(
-        BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).strength(0.2f).randomTicks().sound(SoundType.GRASS).noOcclusion()
+        BlockBehaviour.Properties.of().mapColor(
+            MapColor.PLANT
+        ).strength(0.2f).randomTicks().sound(SoundType.GRASS).noOcclusion()
             .isValidSpawn { _: BlockState?, _: BlockGetter?, _: BlockPos?, entity: EntityType<*>? ->
                 entity === EntityType.OCELOT || entity === EntityType.PARROT
             }.isSuffocating { _: BlockState?, _: BlockGetter?, _: BlockPos? ->
@@ -487,6 +500,7 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
 
     @JvmField
     val SOUL_CAMPFIRE = create("soul_campfire", CampfireBlock(BlockBehaviour.Properties.of().sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK).mapColor(MapColor.PODZOL).strength(2.0F).lightLevel{9}, true))
+
 
     @JvmField
     val RELIC_COIN_POUCH = create("relic_coin_pouch", CoinPouchBlock(BlockBehaviour.Properties.of().sound(CobblemonSounds.RELIC_COIN_POUCH_SOUNDS).pushReaction(PushReaction.DESTROY).noOcclusion(), true))
