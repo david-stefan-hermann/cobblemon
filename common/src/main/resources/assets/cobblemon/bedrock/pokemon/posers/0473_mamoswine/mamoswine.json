@@ -3,6 +3,28 @@
   "portraitTranslation": [-0.65, 1.48, 0],
   "profileScale": 0.33,
   "profileTranslation": [-0.05, 1.16, 0],
+  "rootBone": "mamoswine",
+  "firstPersonCameraOffset": {
+    "seat_1": [0, 0.45, 0],
+    "seat_2": [0, 0.45, 0],
+    "seat_3": [0, 0.45, 0]
+  },
+  "thirdPersonCameraOffset": {
+    "seat_1": [0, 0.4, 1],
+    "seat_1_reverse": [0, 0.4, 1],
+    "seat_2": [0, 0.4, 1],
+    "seat_2_reverse": [0, 0.4, 1],
+    "seat_3": [0, 0.4, 1],
+    "seat_3_reverse": [0, 0.4, 1]
+  },
+  "thirdPersonCameraOffsetNoViewBobbing": {
+    "seat_1": [0, 0.4, 1],
+    "seat_1_reverse": [0, 0.4, 1],
+    "seat_2": [0, 0.4, 1],
+    "seat_2_reverse": [0, 0.4, 1],
+    "seat_3": [0, 0.4, 1],
+    "seat_3_reverse": [0, 0.4, 1]
+  },
   "animations": {
     "faint": "q.bedrock_primary('mamoswine', 'faint', q.curve('one'))",
     "cry": "q.bedrock_stateful('mamoswine', 'cry')",
@@ -21,6 +43,15 @@
       "animations": ["q.look('head')", "q.bedrock('mamoswine', 'ground_idle')"],
       "quirks": ["q.bedrock_quirk('mamoswine', 'blink')"]
     },
+    "in-air": {
+      "poseTypes": ["STAND", "WALK", "FLOAT"],
+      "isBattle": false,
+      "condition": "q.in_air && q.is_ridden && q.has_entity",
+      "animations": ["q.look('head')", "q.bedrock('mamoswine', 'ride_jump')"],
+      "quirks": ["q.bedrock_quirk('mamoswine', 'blink')"],
+      "transformTicks": 2,
+      "transformToTicks": 2
+    },
     "standing": {
       "poseTypes": ["STAND", "NONE", "PORTRAIT", "PROFILE"],
       "isBattle": false,
@@ -28,18 +59,9 @@
       "animations": ["q.look('head')", "q.bedrock('mamoswine', 'ground_idle')"],
       "quirks": ["q.bedrock_quirk('mamoswine', 'blink')"]
     },
-    "in-air": {
-      "poseTypes": ["STAND", "NONE", "PORTRAIT", "PROFILE"],
-      "isBattle": false,
-      "condition": "q.has_entity ? q.in_air && q.is_ridden : 0.0",
-      "animations": ["q.look('head')", "q.bedrock('mamoswine', 'ride_jump')"],
-      "quirks": ["q.bedrock_quirk('mamoswine', 'blink')"],
-      "transformTicks": 2,
-      "transformToTicks": 2
-    },
     "walking": {
-      "poseTypes": ["WALK"],
-      "condition": "q.has_entity ? !q.in_air && !q.is_sprinting : 1.0",
+      "poseTypes": ["WALK", "SWIM"],
+      "condition": "!q.in_air && !q.is_sprinting",
       "animations": [
         "q.look('head')",
         "q.bedrock('mamoswine', 'ground_walk')",
@@ -52,7 +74,7 @@
     },
     "running": {
       "poseTypes": ["WALK"],
-      "condition": "q.has_entity ? !q.in_air && q.is_sprinting : 0.0",
+      "condition": "!q.in_air && q.is_sprinting",
       "animations": [
         "q.look('head')",
         "q.bedrock('mamoswine', 'ground_run')",
@@ -65,6 +87,9 @@
     },
     "sleep": {
       "poseTypes": ["SLEEP"],
+      "namedAnimations": {
+        "cry": "q.bedrock_stateful('dummy', 'cry')"
+      },
       "animations": ["q.bedrock('mamoswine', 'sleep')"]
     }
   }

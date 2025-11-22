@@ -24,6 +24,7 @@ import com.cobblemon.mod.common.api.tags.CobblemonItemTags
 import com.cobblemon.mod.common.block.entity.TintBlockEntity
 import com.cobblemon.mod.common.client.battle.ClientBattle
 import com.cobblemon.mod.common.client.gui.PartyOverlay
+import com.cobblemon.mod.common.client.gui.PartyOverlayDataControl
 import com.cobblemon.mod.common.client.gui.RideControlsOverlay
 import com.cobblemon.mod.common.client.gui.battle.BattleOverlay
 import com.cobblemon.mod.common.client.gui.cookingpot.CookingPotScreen
@@ -31,7 +32,15 @@ import com.cobblemon.mod.common.client.gui.tmmachine.TMMachineScreen
 import com.cobblemon.mod.common.client.particle.BedrockParticleOptionsRepository
 import com.cobblemon.mod.common.client.render.ClientPlayerIcon
 import com.cobblemon.mod.common.client.render.DeferredRenderer
-import com.cobblemon.mod.common.client.render.block.*
+import com.cobblemon.mod.common.client.render.block.BerryBlockRenderer
+import com.cobblemon.mod.common.client.render.block.CampfireBlockEntityRenderer
+import com.cobblemon.mod.common.client.render.block.DisplayCaseRenderer
+import com.cobblemon.mod.common.client.render.block.FossilAnalyzerRenderer
+import com.cobblemon.mod.common.client.render.block.GildedChestBlockRenderer
+import com.cobblemon.mod.common.client.render.block.HealingMachineRenderer
+import com.cobblemon.mod.common.client.render.block.LecternBlockEntityRenderer
+import com.cobblemon.mod.common.client.render.block.PokeSnackBlockEntityRenderer
+import com.cobblemon.mod.common.client.render.block.RestorationTankRenderer
 import com.cobblemon.mod.common.client.render.boat.CobblemonBoatRenderer
 import com.cobblemon.mod.common.client.render.color.TechnicalMachineItemColorProvider
 import com.cobblemon.mod.common.client.render.color.AprijuiceItemColorProvider
@@ -45,7 +54,9 @@ import com.cobblemon.mod.common.client.render.item.CobblemonBuiltinItemRendererR
 import com.cobblemon.mod.common.client.render.item.PokemonItemRenderer
 import com.cobblemon.mod.common.client.render.layer.PokemonOnShoulderRenderer
 import com.cobblemon.mod.common.client.render.models.blockbench.bedrock.animation.BedrockAnimationRepository
-import com.cobblemon.mod.common.client.render.models.blockbench.repository.*
+import com.cobblemon.mod.common.client.render.models.blockbench.repository.BerryModelRepository
+import com.cobblemon.mod.common.client.render.models.blockbench.repository.MiscModelRepository
+import com.cobblemon.mod.common.client.render.models.blockbench.repository.VaryingModelRepository
 import com.cobblemon.mod.common.client.render.npc.NPCRenderer
 import com.cobblemon.mod.common.client.render.pokeball.PokeBallRenderer
 import com.cobblemon.mod.common.client.render.pokemon.PokemonRenderer
@@ -53,18 +64,22 @@ import com.cobblemon.mod.common.client.requests.ClientPlayerActionRequests
 import com.cobblemon.mod.common.client.sound.BattleMusicController
 import com.cobblemon.mod.common.client.sound.EntitySoundTracker
 import com.cobblemon.mod.common.client.storage.ClientStorageManager
-import com.cobblemon.mod.common.client.tooltips.*
+import com.cobblemon.mod.common.client.tooltips.AprijuiceTooltipGenerator
+import com.cobblemon.mod.common.client.tooltips.CobblemonTooltipGenerator
+import com.cobblemon.mod.common.client.tooltips.FishingBaitTooltipGenerator
+import com.cobblemon.mod.common.client.tooltips.FishingRodTooltipGenerator
+import com.cobblemon.mod.common.client.tooltips.PokePuffTooltipGenerator
+import com.cobblemon.mod.common.client.tooltips.RecipeSeasoningAbsorptionTooltipGenerator
+import com.cobblemon.mod.common.client.tooltips.SeasoningTooltipGenerator
+import com.cobblemon.mod.common.client.tooltips.TooltipManager
 import com.cobblemon.mod.common.client.trade.ClientTrade
-import com.cobblemon.mod.common.data.CobblemonDataProvider
 import com.cobblemon.mod.common.entity.boat.CobblemonBoatType
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
-import com.cobblemon.mod.common.item.food.SinisterTeaItem
 import com.cobblemon.mod.common.platform.events.PlatformEvents
 import com.cobblemon.mod.common.pokedex.scanner.PokedexUsageContext
 import com.cobblemon.mod.common.util.isLookingAt
 import net.minecraft.client.Minecraft
 import net.minecraft.client.color.block.BlockColor
-import net.minecraft.client.color.item.ItemColor
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.MenuScreens
 import net.minecraft.client.gui.screens.Screen
@@ -110,7 +125,7 @@ object CobblemonClient {
         clientPokedexData = ClientPokedexManager(mutableMapOf())
         clientTMMoveData = ClientTMMoveManager(mutableSetOf())
         storage.onLogin()
-        CobblemonDataProvider.canReload = false
+//        CobblemonDataProvider.canReload = false
     }
 
     fun onLogout() {
@@ -119,7 +134,7 @@ object CobblemonClient {
         battleOverlay.onLogout()
         ClientTaskTracker.clear()
         checkedStarterScreen = false
-        CobblemonDataProvider.canReload = true
+//        CobblemonDataProvider.canReload = true
         DeferredRenderer.clearAll()
         ClientPlayerIcon.clear()
     }
@@ -181,12 +196,13 @@ object CobblemonClient {
                 }
             }
             ClientPlayerIcon.onTick()
+            PartyOverlayDataControl.tick(event.client.isPaused)
         }
     }
 
     private fun registerTooltipManagers() {
         TooltipManager.registerTooltipGenerator(CobblemonTooltipGenerator)
-        TooltipManager.registerTooltipGenerator(RecipeSeasoningAbsorbtionTooltipGenerator)
+        TooltipManager.registerTooltipGenerator(RecipeSeasoningAbsorptionTooltipGenerator)
         TooltipManager.registerTooltipGenerator(FishingBaitTooltipGenerator)
         TooltipManager.registerTooltipGenerator(SeasoningTooltipGenerator)
         TooltipManager.registerTooltipGenerator(FishingRodTooltipGenerator)
@@ -219,7 +235,8 @@ object CobblemonClient {
         this.implementation.registerBlockRenderType(
             RenderType.cutoutMipped(),
             CobblemonBlocks.APRICORN_LEAVES,
-            CobblemonBlocks.SACCHARINE_LEAVES
+            CobblemonBlocks.SACCHARINE_LEAVES,
+            CobblemonBlocks.POKE_CAKE
         )
 
         this.implementation.registerBlockRenderType(
@@ -427,5 +444,4 @@ object CobblemonClient {
             this.implementation.registerLayer(CobblemonBoatRenderer.createBoatModelLayer(type, true), ChestBoatModel::createBodyModel)
         }
     }
-
 }

@@ -135,9 +135,17 @@ class RideControlsOverlay : Gui(Minecraft.getInstance()) {
                 // Configure what controls to show for each behaviour
                 when (currentBehaviourKey) {
                     BirdBehaviour.KEY -> {}
-                    BoatBehaviour.KEY -> {}
+                    BoatBehaviour.KEY -> {
+                        showVerticalMouse = false
+                        showHorizontalMouse = false
+                        showSneakKey = false
+                    }
                     BurstBehaviour.KEY -> {}
-                    DolphinBehaviour.KEY -> {}
+                    DolphinBehaviour.KEY -> {
+                        disableHorizontalMovementKeys = true
+                        showSneakKey = false
+                        showJumpKey = false
+                    }
                     GliderBehaviour.KEY -> {}
                     HelicopterBehaviour.KEY -> {}
                     HorseBehaviour.KEY -> {

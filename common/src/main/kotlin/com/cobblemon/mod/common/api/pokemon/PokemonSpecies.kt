@@ -17,6 +17,7 @@ import com.cobblemon.mod.common.api.ai.config.BehaviourConfig
 import com.cobblemon.mod.common.api.ai.config.task.TaskConfig
 import com.cobblemon.mod.common.api.conditional.RegistryLikeCondition
 import com.cobblemon.mod.common.api.data.JsonDataRegistry
+import com.cobblemon.mod.common.api.data.ShowdownIdentifiable
 import com.cobblemon.mod.common.api.drop.DropEntry
 import com.cobblemon.mod.common.api.drop.ItemDropMethod
 import com.cobblemon.mod.common.api.entity.EntityDimensionsAdapter
@@ -39,11 +40,9 @@ import com.cobblemon.mod.common.api.pokemon.stats.Stats
 import com.cobblemon.mod.common.api.reactive.SimpleObservable
 import com.cobblemon.mod.common.api.riding.behaviour.RidingBehaviourSettings
 import com.cobblemon.mod.common.api.riding.sound.RideSoundSettingsList
-import com.cobblemon.mod.common.api.riding.stats.RidingStatDefinition
 import com.cobblemon.mod.common.api.spawning.TimeRange
 import com.cobblemon.mod.common.api.types.ElementalType
 import com.cobblemon.mod.common.api.types.adapters.ElementalTypeAdapter
-import com.cobblemon.mod.common.battles.runner.ShowdownService
 import com.cobblemon.mod.common.net.messages.client.data.SpeciesRegistrySyncPacket
 import com.cobblemon.mod.common.pokemon.FormData
 import com.cobblemon.mod.common.pokemon.Species
@@ -54,10 +53,8 @@ import com.cobblemon.mod.common.pokemon.ai.ObtainableItemConditionAdapter
 import com.cobblemon.mod.common.pokemon.evolution.adapters.CobblemonEvolutionAdapter
 import com.cobblemon.mod.common.pokemon.evolution.adapters.CobblemonPreEvolutionAdapter
 import com.cobblemon.mod.common.pokemon.evolution.adapters.LegacyItemConditionWrapperAdapter
-import com.cobblemon.mod.common.pokemon.helditem.CobblemonHeldItemManager
 import com.cobblemon.mod.common.util.adapters.*
 import com.cobblemon.mod.common.util.cobblemonResource
-import com.cobblemon.mod.common.util.ifClient
 import com.google.common.collect.HashBasedTable
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -65,13 +62,11 @@ import com.google.gson.reflect.TypeToken
 import com.mojang.datafixers.util.Either
 import net.minecraft.advancements.critereon.ItemPredicate
 import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.core.registries.Registries
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.server.packs.PackType
-import net.minecraft.tags.TagKey
 import net.minecraft.world.effect.MobEffect
 import net.minecraft.world.entity.EntityDimensions
 import net.minecraft.world.entity.ai.memory.MemoryModuleType
@@ -134,7 +129,6 @@ object PokemonSpecies : JsonDataRegistry<Species> {
         .registerTypeAdapter(MobEffect::class.java, RegistryElementAdapter<MobEffect>(BuiltInRegistries::MOB_EFFECT))
         .registerTypeAdapter(ItemPredicate::class.java, LegacyItemConditionWrapperAdapter)
         .registerTypeAdapter(RidingBehaviourSettings::class.java, RidingBehaviourSettingsAdapter)
-        .registerTypeAdapter(RidingStatDefinition::class.java, RidingStatDefinitionAdapter)
         .registerTypeAdapter(RideSoundSettingsList::class.java, RideSoundSettingsListAdapter)
         .registerTypeAdapter(ObtainableItemCondition::class.java, ObtainableItemConditionAdapter)
         .disableHtmlEscaping()
@@ -149,26 +143,21 @@ object PokemonSpecies : JsonDataRegistry<Species> {
     private val speciesByIdentifier = hashMapOf<ResourceLocation, Species>()
     private val speciesByDex = HashBasedTable.create<String, Int, Species>()
 
+    @JvmStatic
     val species: Collection<Species>
         get() = this.speciesByIdentifier.values
-    val implemented = mutableListOf<Species>()
+    @JvmStatic
+    val implemented: List<Species>
+        get() = this.species.filter { it.implemented }
 
     init {
         SpeciesAdditions.observable.subscribe {
-            implemented.clear()
             this.species.forEach(Species::initialize)
-            this.species.forEach {
-                if (it.implemented) {
-                    this.implemented.add(it)
-                }
-            }
             this.species.forEach(Species::resolveEvolutionMoves)
             Cobblemon.showdownThread.queue {
                 it.resetRegistryData("species")
                 it.sendRegistryData(allShowdownSpecies(), "species")
                 it.indicateSpeciesInitialized()
-                // Reload this with the mod
-                CobblemonHeldItemManager.load()
                 Cobblemon.LOGGER.info("Loaded {} Pokémon species", this.speciesByIdentifier.size)
                 this.observable.emit(this)
             }
@@ -183,6 +172,7 @@ object PokemonSpecies : JsonDataRegistry<Species> {
      * @param name The path of the species asset.
      * @return The [Species] if existing.
      */
+    @JvmStatic
     fun getByName(name: String) = this.getByIdentifier(cobblemonResource(name))
 
     /**
@@ -191,6 +181,7 @@ object PokemonSpecies : JsonDataRegistry<Species> {
      * @param ndex The [Species.nationalPokedexNumber].
      * @return The [Species] if existing.
      */
+    @JvmStatic
     fun getByPokedexNumber(ndex: Int, namespace: String = Cobblemon.MODID) = this.speciesByDex.get(namespace, ndex)
 
     /**
@@ -199,6 +190,7 @@ object PokemonSpecies : JsonDataRegistry<Species> {
      * @param identifier The unique [Species.resourceIdentifier] of the [Species].
      * @return The [Species] if existing.
      */
+    @JvmStatic
     fun getByIdentifier(identifier: ResourceLocation) = this.speciesByIdentifier[identifier]
 
     /**
@@ -206,6 +198,7 @@ object PokemonSpecies : JsonDataRegistry<Species> {
      *
      * @return The loaded species amount.
      */
+    @JvmStatic
     fun count() = this.speciesByIdentifier.size
 
     /**
@@ -213,6 +206,7 @@ object PokemonSpecies : JsonDataRegistry<Species> {
      *
      * @return The dex numbers map to species.
      */
+    @JvmStatic
     fun getSpeciesInNamespace(namespace: String = Cobblemon.MODID): MutableMap<Int, Species> = speciesByDex.row(namespace)
 
     /**
@@ -220,6 +214,7 @@ object PokemonSpecies : JsonDataRegistry<Species> {
      *
      * @return The list of loaded namespaces.
      */
+    @JvmStatic
     fun getNamespaces() = speciesByDex.rowKeySet().toList()
 
     /**
@@ -229,11 +224,11 @@ object PokemonSpecies : JsonDataRegistry<Species> {
      *
      * @return A randomly selected [Species].
      */
+    @JvmStatic
     fun random(): Species = this.implemented.random()
 
     override fun reload(data: Map<ResourceLocation, Species>) {
         this.speciesByIdentifier.clear()
-        this.implemented.clear()
         this.speciesByDex.clear()
         data.forEach { (identifier, species) ->
             species.resourceIdentifier = identifier
@@ -241,11 +236,6 @@ object PokemonSpecies : JsonDataRegistry<Species> {
                 this.speciesByDex.remove(old.resourceIdentifier.namespace, old.nationalPokedexNumber)
             }
             this.speciesByDex.put(species.resourceIdentifier.namespace, species.nationalPokedexNumber, species)
-            ifClient {
-                if (species.implemented) {
-                    this.implemented.add(species)
-                }
-            }
         }
     }
 
@@ -324,11 +314,11 @@ object PokemonSpecies : JsonDataRegistry<Species> {
         val result = mutableMapOf<String, String>()
         this.species.forEach {species ->
             val baseSpecies = ShowdownSpecies(species, null)
-            result[baseSpecies.name] = this.gson.toJson(baseSpecies)
+            result[ShowdownIdentifiable.REGEX.replace(baseSpecies.name, "")] = this.gson.toJson(baseSpecies)
             species.forms.forEach { form ->
                 if (form != species.standardForm) {
                     val formSpecies = ShowdownSpecies(species, form)
-                    result[formSpecies.name] = this.gson.toJson(formSpecies)
+                    result[ShowdownIdentifiable.REGEX.replace(formSpecies.name, "")] = this.gson.toJson(formSpecies)
                 }
             }
         }

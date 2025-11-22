@@ -51,11 +51,13 @@
   },
   "behaviour": {
     "moving": {
+      "walk": {
+        "avoidsLand": true,
+        "walkSpeed": 0.1
+      },
       "swim": {
         "swimSpeed": 0.1,
-        "canSwimInWater": true,
-        "canBreatheUnderwater": true,
-        "canSwimInLava": false
+        "canBreatheUnderwater": true
       }
     },
     "herd": {
@@ -66,6 +68,16 @@
           "tier": 1
         }
       ]
+    },
+    "resting": {
+      "willSleepOnBed": true,
+      "drowsyChance": 0.0333,
+      "rouseChance": 0.0042
+    },
+    "combat": {
+      "willDefendSelf": true,
+      "willDefendOwner": true,
+      "willFlee": false
     }
   },
   "drops": {
