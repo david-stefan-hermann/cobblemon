@@ -112,7 +112,7 @@ object CobblemonDataProvider : DataProvider {
         this.register(PokemonInteractions, reloadable = false)
         this.register(SpawnBaitEffects, reloadable = false)
         this.register(CobblemonRideSettings, reloadable = true)
-        this.register(TechnicalMachines)
+        this.register(TechnicalMachines, reloadable = false)
         SpawnBait.Effects.setupEffects()
 
         PlatformEvents.SERVER_PLAYER_LOGOUT.subscribe {

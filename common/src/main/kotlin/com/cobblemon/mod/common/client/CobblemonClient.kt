@@ -41,6 +41,7 @@ import com.cobblemon.mod.common.client.render.block.HealingMachineRenderer
 import com.cobblemon.mod.common.client.render.block.LecternBlockEntityRenderer
 import com.cobblemon.mod.common.client.render.block.PokeSnackBlockEntityRenderer
 import com.cobblemon.mod.common.client.render.block.RestorationTankRenderer
+import com.cobblemon.mod.common.client.render.block.TMShelfBlockEntityRenderer
 import com.cobblemon.mod.common.client.render.boat.CobblemonBoatRenderer
 import com.cobblemon.mod.common.client.render.color.TechnicalMachineItemColorProvider
 import com.cobblemon.mod.common.client.render.color.AprijuiceItemColorProvider
@@ -71,6 +72,7 @@ import com.cobblemon.mod.common.client.tooltips.FishingRodTooltipGenerator
 import com.cobblemon.mod.common.client.tooltips.PokePuffTooltipGenerator
 import com.cobblemon.mod.common.client.tooltips.RecipeSeasoningAbsorptionTooltipGenerator
 import com.cobblemon.mod.common.client.tooltips.SeasoningTooltipGenerator
+import com.cobblemon.mod.common.client.tooltips.TechnicalMachineTooltipGenerator
 import com.cobblemon.mod.common.client.tooltips.TooltipManager
 import com.cobblemon.mod.common.client.trade.ClientTrade
 import com.cobblemon.mod.common.entity.boat.CobblemonBoatType
