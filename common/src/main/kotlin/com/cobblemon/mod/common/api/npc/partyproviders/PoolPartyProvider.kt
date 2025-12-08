@@ -150,10 +150,10 @@ class PoolPartyProvider : NPCPartyProvider {
             val instance = selected.pokemon.copy().also { it.level = it.level ?: dictatedLevel ?: randomLevel }.create()
             party.add(instance)
         }
-        if (party.none()) {
-            LOGGER.error("${npc} has no Pokemon on Party")
-        }
 
+        if (party.none()) {
+            LOGGER.error("$npc had no Pokémon produced by their party provider")
+        }
     }
 
     override fun provide(npc: NPCEntity, level: Int, players: List<ServerPlayer>): NPCPartyStore {
