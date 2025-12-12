@@ -110,6 +110,7 @@ import com.cobblemon.mod.common.util.codec.internal.ClientPokemonP3
 import com.cobblemon.mod.common.util.codec.internal.PokemonP1
 import com.cobblemon.mod.common.util.codec.internal.PokemonP2
 import com.cobblemon.mod.common.util.codec.internal.PokemonP3
+import com.cobblemon.mod.common.util.nextBetween
 import com.cobblemon.mod.common.util.playSoundServer
 import com.cobblemon.mod.common.util.server
 import com.cobblemon.mod.common.util.setPositionSafely
@@ -238,12 +239,26 @@ open class Pokemon : ShowdownIdentifiable {
     var characteristic: Characteristic = Characteristic.calculate(ivs, uuid)
         private set
 
+    var isAlpha: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                updateAspects()
+                onChange(AlphaUpdatePacket({ this }, value))
+            }
+        }
+
     fun setIV(stat : Stat, value : Int) {
         val quotient = clamp(currentHealth / maxHealth.toFloat(), 0F, 1F)
         ivs[stat] = value
         if (stat == Stats.HP) {
             updateHP(quotient)
         }
+    }
+
+    fun initializeScale() {
+        val variation = Cobblemon.config.pokemonSizeVariation
+        scaleModifier = Random.nextBetween(1 - variation, 1 + variation)
     }
 
     fun hyperTrainIV(stat: Stat, value: Int) {
@@ -550,7 +565,23 @@ open class Pokemon : ShowdownIdentifiable {
     val speed: Int
         get() = getStat(Stats.SPEED)
 
-    var scaleModifier = 1F
+    var scaleModifier: Float = 1F
+        set(value) {
+            if (field != value) {
+                field = value
+                onChange(ScaleModifierUpdatePacket({ this }, value))
+            }
+        }
+
+    val effectiveScale: Float
+        get() {
+            val babyPokemonMultiplier = if (level - Cobblemon.config.babyPokemonLevelDuration < 1) {
+                Cobblemon.config.babyPokemonSizeMultiplier
+            } else {
+                1F
+            }
+            return babyPokemonMultiplier * if (this.isAlpha) Cobblemon.config.alphaPokemonSizeMultiplier else scaleModifier
+        }
 
     var caughtBall: PokeBall = PokeBalls.POKE_BALL
         set(value) {
@@ -1999,6 +2030,10 @@ open class Pokemon : ShowdownIdentifiable {
      */
     fun createPokemonProperties(extractors: MutableList<PokemonPropertyExtractor>): PokemonProperties {
         return createPokemonProperties(*extractors.toTypedArray())
+    }
+
+    fun getSizeCategory(): PokemonSizeCategory {
+        return PokemonSizeCategory.fromScale(scaleModifier)
     }
 
     fun addExperience(source: ExperienceSource, xp: Int): AddExperienceResult {

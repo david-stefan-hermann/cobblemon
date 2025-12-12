@@ -213,6 +213,7 @@ open class PokemonEntity(
         @JvmStatic var RIDE_BOOSTS = SynchedEntityData.defineId(PokemonEntity::class.java, RideBoostsDataSerializer)
         @JvmStatic var RIDE_STAMINA = SynchedEntityData.defineId(PokemonEntity::class.java, EntityDataSerializers.FLOAT)
         @JvmStatic var SCALE_MODIFIER = SynchedEntityData.defineId(PokemonEntity::class.java, EntityDataSerializers.FLOAT)
+        @JvmStatic var IS_ALPHA = SynchedEntityData.defineId(PokemonEntity::class.java, EntityDataSerializers.BOOLEAN)
 
         const val BATTLE_LOCK = "battle"
         const val EVOLUTION_LOCK = "evolving"
@@ -460,6 +461,7 @@ open class PokemonEntity(
         builder.define(RIDE_BOOSTS, emptyMap())
         builder.define(RIDE_STAMINA, 1F)
         builder.define(SCALE_MODIFIER, 1F)
+        builder.define(IS_ALPHA, false)
     }
 
     override fun onSyncedDataUpdated(data: EntityDataAccessor<*>) {
@@ -1095,7 +1097,7 @@ open class PokemonEntity(
     override fun getBreedOffspring(serverLevel: ServerLevel, ageableMob: AgeableMob) = null
 
     override fun canSitOnShoulder(): Boolean {
-        return pokemon.form.shoulderMountable
+        return pokemon.form.shoulderMountable && !pokemon.isAlpha
     }
 
     override fun wantsToPickUp(stack: ItemStack): Boolean {
@@ -1253,7 +1255,7 @@ open class PokemonEntity(
     }
 
     override fun getDimensions(pose: Pose): EntityDimensions {
-        val scale = effects.mockEffect?.scale ?: (form.baseScale * pokemon.scaleModifier)
+        val scale = effects.mockEffect?.scale ?: (form.baseScale * pokemon.effectiveScale)
         var result = this.exposedForm.hitbox.scale(scale)
         result = result.withEyeHeight(this.exposedForm.eyeHeight(this) * result.height)
         result = result.scale(this.scale)
@@ -2610,11 +2612,15 @@ open class PokemonEntity(
      *   represents a kind of 'responsibility' that the leader feels towards their followers - they believe in this
      *   leader with some amount of fervor, and this gets used to ensure that the leader doesn't choose to follow a
      *   different Pokémon that is of an equal or lower tier than this Pokémon is to its followers.
+     * - Alpha Pokémon automatically have the maximum possible tier.
      */
     fun getHerdTier(): Int {
         val world = level() as? ServerLevel ?: return 0
         val herdLeader = this.brain.getMemorySafely(CobblemonMemories.HERD_LEADER).orElse(null)?.let(UUID::fromString)?.let(world::getEntity) as? PokemonEntity
         return if (herdLeader == null) {
+            if (pokemon.isAlpha) {
+                return Int.MAX_VALUE
+            }
             if (!brain.hasMemoryValue(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)) {
                 return 0
             }
@@ -2626,6 +2632,9 @@ open class PokemonEntity(
                 it.behaviour.herd.bestMatchLeader(follower = it, possibleLeader = this)?.tier ?: 0
             } ?: 0
         } else {
+            if (herdLeader.pokemon.isAlpha) {
+                return Int.MAX_VALUE
+            }
             herdLeader.behaviour.herd.bestMatchLeader(follower = this, possibleLeader = herdLeader)?.tier ?: 0
         }
     }

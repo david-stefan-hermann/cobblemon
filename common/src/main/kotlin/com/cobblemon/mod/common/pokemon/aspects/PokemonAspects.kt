@@ -53,6 +53,26 @@ val COSMETIC_SLOT_ASPECT = object : AspectProvider {
     override fun provide(properties: PokemonProperties) = emptySet<String>()
 }
 
+val ALPHA_ASPECT = object : AspectProvider {
+    val ASPECT = "alpha"
+
+    override fun provide(pokemon: Pokemon): Set<String> {
+        return if (pokemon.isAlpha) {
+            setOf(ASPECT)
+        } else {
+            emptySet()
+        }
+    }
+
+    override fun provide(properties: PokemonProperties): Set<String> {
+        return if (properties.isAlpha == true) {
+            setOf(ASPECT)
+        } else {
+            emptySet()
+        }
+    }
+}
+
 val CHARACTERISTIC_RAINBOW_ASPECT = object : AspectProvider {
     fun calculateColourAspect(nature: Nature, characteristic: Characteristic): String? {
         return when (nature.increasedStat to characteristic.relevantStat) {

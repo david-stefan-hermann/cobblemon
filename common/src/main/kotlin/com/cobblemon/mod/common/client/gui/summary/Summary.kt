@@ -601,6 +601,20 @@ class Summary private constructor(party: Collection<Pokemon?>, private val edita
             shadow = true
         )
 
+        val sizeCategory = selectedPokemon.getSizeCategory()
+        val isAlpha = selectedPokemon.isAlpha
+
+        drawScaledText(
+            x = x + 62,
+            y = y + 32,
+            font = CobblemonResources.DEFAULT_LARGE,
+            context = context,
+            text = (if (isAlpha) "A".text() else sizeCategory.name.text()).bold(),
+            scale = 1F,
+            shadow = true,
+            centered = true
+        )
+
         // Shiny Icon
         if (selectedPokemon.shiny) {
             blitk(

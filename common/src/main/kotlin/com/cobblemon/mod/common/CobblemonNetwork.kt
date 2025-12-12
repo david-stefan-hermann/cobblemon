@@ -325,6 +325,8 @@ object CobblemonNetwork {
         list.add(PacketRegisterInfo(MarkingsUpdatePacket.ID, MarkingsUpdatePacket::decode, PokemonUpdatePacketHandler()))
         list.add(PacketRegisterInfo(RideBoostsUpdatePacket.ID, RideBoostsUpdatePacket::decode, PokemonUpdatePacketHandler()))
         list.add(PacketRegisterInfo(RideStaminaUpdatePacket.ID, RideStaminaUpdatePacket::decode, PokemonUpdatePacketHandler()))
+        list.add(PacketRegisterInfo(AlphaUpdatePacket.ID, AlphaUpdatePacket::decode, PokemonUpdatePacketHandler()))
+        list.add(PacketRegisterInfo(ScaleModifierUpdatePacket.ID, ScaleModifierUpdatePacket::decode, PokemonUpdatePacketHandler()))
 
         // Evolution start
         list.add(PacketRegisterInfo(AddEvolutionPacket.ID, AddEvolutionPacket::decode, PokemonUpdatePacketHandler()))

@@ -113,7 +113,7 @@ open class PosableModel(@Transient override val rootPart: Bone) : ModelFrame {
     open var properties = mutableMapOf<String, String>()
 
     /*
-     * Hello future Hiro, this is past Hiro. You've gotten forgetful in your old age.
+     * Hello future Hiro, this is past Hiro. You've become forgetful in your old age.
      *
      * The profile translation is not actually necessary. The reason why you thought it was necessary
      * is that there is a 1.5 block offset applied by living-entity-renderer-intended models due to

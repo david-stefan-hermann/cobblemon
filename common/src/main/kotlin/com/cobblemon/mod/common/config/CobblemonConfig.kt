@@ -219,6 +219,18 @@ class CobblemonConfig {
     @CobblemonConfigField(Category.Pokemon, lang = "player_damage_pokemon", SERVER)
     var playerDamagePokemon = true
 
+    @CobblemonConfigField(Category.Pokemon, lang = "pokemon_size_variation", SERVER)
+    var pokemonSizeVariation = 0.05F
+
+    @CobblemonConfigField(Category.Pokemon, lang = "alpha_pokemon_size_multiplier", SERVER)
+    var alphaPokemonSizeMultiplier = 1.2F
+
+    @CobblemonConfigField(Category.Pokemon, lang = "baby_pokemon_level_duration", SERVER)
+    var babyPokemonLevelDuration = 9
+
+    @CobblemonConfigField(Category.Pokemon, lang = "baby_pokemon_size_multiplier", SERVER)
+    var babyPokemonSizeMultiplier = 0.8F
+
     @CobblemonConfigField(Category.World, lang = "apple_leftovers_chance", SERVER)
     var appleLeftoversChance = 0.025
 

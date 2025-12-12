@@ -243,6 +243,9 @@ class PokemonServerDelegate : PokemonSideDelegate {
         if (entity.entityData.get(PokemonEntity.MARK) !=trackedMark) {
             entity.entityData.set(PokemonEntity.MARK, trackedMark)
         }
+        if (entity.entityData.get(PokemonEntity.IS_ALPHA) != entity.pokemon.isAlpha) {
+            entity.entityData.set(PokemonEntity.IS_ALPHA, entity.pokemon.isAlpha)
+        }
         entity.entityData.set(PokemonEntity.ASPECTS, trackedAspects)
         entity.entityData.set(PokemonEntity.LABEL_LEVEL, entity.pokemon.level)
 

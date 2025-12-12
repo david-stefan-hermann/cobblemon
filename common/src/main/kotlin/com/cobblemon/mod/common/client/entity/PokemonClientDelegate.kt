@@ -20,8 +20,6 @@ import com.cobblemon.mod.common.api.pokeball.PokeBalls
 import com.cobblemon.mod.common.api.pokemon.aspect.aspectParticleMap
 import com.cobblemon.mod.common.api.pokemon.PokemonSpecies
 import com.cobblemon.mod.common.api.pokemon.aspect.ParticleData
-import com.cobblemon.mod.common.api.riding.behaviour.RidingBehaviourState
-import com.cobblemon.mod.common.api.riding.stats.RidingStat
 import com.cobblemon.mod.common.api.scheduling.ScheduledTask
 import com.cobblemon.mod.common.api.scheduling.SchedulingTracker
 import com.cobblemon.mod.common.api.scheduling.afterOnClient
@@ -112,6 +110,8 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
                 // force a model update - handles edge case where the PosableState's tracked PosableModel isn't updated until the LivingEntityRenderer render is run
                 currentModel = VaryingModelRepository.getPoser(identifier, this)
                 currentEntity.refreshRiding()
+            } else if (data == PokemonEntity.IS_ALPHA) {
+                currentEntity.pokemon.isAlpha = currentEntity.entityData.get(PokemonEntity.IS_ALPHA)
             } else if (data == PokemonEntity.ASPECTS) {
                 currentAspects = currentEntity.entityData.get(PokemonEntity.ASPECTS)
                 currentEntity.pokemon.shiny = currentAspects.contains("shiny")
