@@ -46,9 +46,12 @@ object Moves : DataRegistry {
         this.idMapping.clear()
         this.moveScripts.clear()
 
-
-        val weightsJson = manager.getResource(cobblemonResource("move_weights.json")).get().open().use {
-            GsonBuilder().create().fromJson<Map<String, Number>>(it.reader())
+        val weights = mutableMapOf<String, Number>()
+        manager.getResourceStack(cobblemonResource("move_weights.json")).forEach {
+            it.open().use {
+                val map = GsonBuilder().create().fromJson<Map<String, Number>>(it.reader())
+                weights.putAll(map)
+            }
         }
 
         ShowdownService.service.resetRegistryData("move")
@@ -80,7 +83,7 @@ object Moves : DataRegistry {
                 val priority = jsMove.get("priority").asInt
                 val critRatio = jsMove.get("critRatio")?.asDouble ?: 1.0
                 val effectChances = arrayListOf<Double>()
-                val weight = weightsJson[id]?.toFloat() ?: 50F
+                val weight = weights[id]?.toFloat() ?: 50F
                 val secondariesMember = jsMove.get("secondaries")
                 val secondaryMember = jsMove.get("secondary")
                 if (secondariesMember != null && secondariesMember is JsonArray) {
