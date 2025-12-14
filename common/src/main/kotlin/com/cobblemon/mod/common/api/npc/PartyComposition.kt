@@ -54,7 +54,7 @@ class PartyComposition {
             val properties = entry.pokemon.copy()
             properties.level = properties.level ?: finalLevel
             val pokemon = properties.create()
-            entry.movesetBuilder.randomOrNull()?.let(pokemon::initializeMovesetFrom)
+            entry.movesetBuilders.randomOrNull()?.let(pokemon::initializeMovesetFrom)
             pokemon
         }
 
