@@ -10,6 +10,7 @@ package com.cobblemon.mod.common.api.moves
 
 import com.cobblemon.mod.common.api.moves.categories.DamageCategories
 import com.cobblemon.mod.common.api.pokemon.moves.Learnset
+import com.cobblemon.mod.common.api.pokemon.stats.Stats
 import com.cobblemon.mod.common.pokemon.FormData
 import com.cobblemon.mod.common.util.weightedSelection
 
@@ -39,6 +40,23 @@ fun interface MoveSelector {
             val levels = learnset.levelUpMoves.keys.filter { it <= level }.sortedDescending()
             levels.forEach {
                 val moves = (learnset.levelUpMoves[it]?.filter { it.damageCategory != DamageCategories.STATUS } ?: return@forEach) - chosenMoves
+                if (moves.isNotEmpty()) {
+                    return@MoveSelector moves.weightedSelection { it.getSelectionWeight(form) }
+                }
+            }
+            return@MoveSelector null
+        }
+        val LAST_SUITABLE_OFFENSIVE = MoveSelector { form, learnset, level, chosenMoves ->
+            val levels = learnset.levelUpMoves.keys.filter { it <= level }.sortedDescending()
+            val suitableCategories = if (form.baseStats[Stats.ATTACK]!! > form.baseStats[Stats.SPECIAL_ATTACK]!!) {
+                setOf(DamageCategories.PHYSICAL)
+            } else if (form.baseStats[Stats.SPECIAL_ATTACK]!! > form.baseStats[Stats.ATTACK]!!) {
+                setOf(DamageCategories.SPECIAL)
+            } else {
+                setOf(DamageCategories.PHYSICAL, DamageCategories.SPECIAL)
+            }
+            levels.forEach {
+                val moves = (learnset.levelUpMoves[it]?.filter { it.damageCategory in suitableCategories } ?: return@forEach) - chosenMoves
                 if (moves.isNotEmpty()) {
                     return@MoveSelector moves.weightedSelection { it.getSelectionWeight(form) }
                 }
@@ -108,6 +126,7 @@ fun interface MoveSelector {
             "none" to NONE,
             "last_levelup" to LAST_LEVELUP,
             "last_offensive" to LAST_OFFENSIVE,
+            "last_suitable_offensive" to LAST_SUITABLE_OFFENSIVE,
             "last_status" to LAST_STATUS,
             "levelup" to RANDOM_LEVELUP,
             "stab" to STAB,
