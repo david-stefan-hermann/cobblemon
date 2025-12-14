@@ -5,20 +5,6 @@ datapack folders to function.
 The `moveset_builders` datapack folder has all the ways that a moveset can be composed
 logically. This consists of up to 4 slots of moves defined with some list of move selectors.
 
-For example, take `alpha.json`, used for alpha Pokémon:
-
-```json
-{
-  "slot1": ["last_suitable_offensive", "last_offensive", "last_levelup"],
-  "slot2": ["last_offensive", "last_levelup"],
-  "slot3": ["last_levelup"],
-  "slot4": ["tm", "last_levelup"]
-}
-```
-
-This moveset builder will try to fill slot 1 with the last suitable offensive move the Pokémon can learn,
-falling back to the last offensive move, and then the last level-up move if all else fails.
-
 The full list of possible move selectors is as follows:
 
 | Type                      | Description                                                                                                   |
@@ -47,9 +33,36 @@ If you add a datapack with a `move_weights.json` in the `cobblemon` namespace, i
 with the datapack layering over the top. In other words, you can override a few of the existing weights with a small 
 JSON file, if you want.
 
+For example, take `alpha.json`, used for alpha Pokémon:
+
+```json
+{
+  "slot1": ["last_suitable_offensive", "last_offensive", "last_levelup"],
+  "slot2": ["last_offensive", "last_levelup"],
+  "slot3": ["last_levelup"],
+  "slot4": ["tm", "last_levelup"]
+}
+```
+
+This moveset builder will try to fill slot 1 with the last suitable offensive move the Pokémon can learn,
+falling back to the last offensive move, and then the last level-up move if all else fails.
+
 ### Party Pools
 The `party_pools` datapack folder has all the pools of Pokémon that can be used to draw from when composing a party. 
 Each entry of the pool has some number of labels used by the party composition.
+
+| Property             | Description                                                                                                                                                                            |
+|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `pokemon`            | The guaranteed Pokémon information, such as `geodude shiny=true`                                                                                                                       |
+| `labels`             | The identifying labels of the Pokémon. These can be anything you want. Definitely shouldn't be empty though.                                                                           |
+| `npcLevels`          | The seed levels that the NPC can be for which this entry is possible. 1-30 would mean a level 40 NPC cannot use that entry.                                                            |
+| `npcAspects`         | The aspects that the NPC must have for this entry to be possible. If the list is empty, as is the default, then it won't check the NPC aspects.                                        |
+| `weight`             | The relative weight of this entry compared to others in the pool. Defaults to 50.                                                                                                      |
+| `levelVariation`     | The possible variation around the NPC's seed level that is possible. `-2-3` would mean the Pokémon's level could be anywhere from 2 levels below the NPC seed level to 3 levels above. |
+| `maxTimesSelectable` | The maximum number of times this entry can be selected for a party. Defaults to 6.                                                                                                     |
+| `movesetBuilders`    | A list of moveset builders from the `moveset_builders` folder that can be used to create this Pokémon's moveset. One will be selected at random if there are multiple.                 |
+| `requires`           | A list of labels that must be present in the party for this entry to be selected. These are from the `labels` of entries that were already selected.                                   |
+| `incompatible`       | A list of labels that cannot be present in the party for this entry to be selected. These are from the `labels` of entries that were already selected.                                 |
 
 As an example, a trivially small pool might look like:
 ```json
@@ -104,19 +117,6 @@ As an example, a trivially small pool might look like:
   }
 ]
 ```
-| Property             | Description                                                                                                                                                                            |
-|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `pokemon`            | The guaranteed Pokémon information, such as `geodude shiny=true`                                                                                                                       |
-| `labels`             | The identifying labels of the Pokémon. These can be anything you want. Definitely shouldn't be empty though.                                                                           |
-| `npcLevels`          | The seed levels that the NPC can be for which this entry is possible. 1-30 would mean a level 40 NPC cannot use that entry.                                                            |
-| `npcAspects`         | The aspects that the NPC must have for this entry to be possible. If the list is empty, as is the default, then it won't check the NPC aspects.                                        |
-| `weight`             | The relative weight of this entry compared to others in the pool. Defaults to 50.                                                                                                      |
-| `levelVariation`     | The possible variation around the NPC's seed level that is possible. `-2-3` would mean the Pokémon's level could be anywhere from 2 levels below the NPC seed level to 3 levels above. |
-| `maxTimesSelectable` | The maximum number of times this entry can be selected for a party. Defaults to 6.                                                                                                     |
-| `movesetBuilders`    | A list of moveset builders from the `moveset_builders` folder that can be used to create this Pokémon's moveset. One will be selected at random if there are multiple.                 |
-| `requires`           | A list of labels that must be present in the party for this entry to be selected. These are from the `labels` of entries that were already selected.                                   |
-| `incompatible`       | A list of labels that cannot be present in the party for this entry to be selected. These are from the `labels` of entries that were already selected.                                 |
-
 
 ### Party Compositions
 The `party_compositions` datapack folder has all the ways that a party can be composed of a pool of Pokémon. This allows 
