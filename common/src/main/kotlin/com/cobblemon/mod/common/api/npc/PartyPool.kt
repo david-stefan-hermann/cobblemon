@@ -29,6 +29,7 @@ class PartyPool {
     class PoolEntry(
         val pokemon: PokemonProperties,
         val labels: List<String> = emptyList(),
+        val npcAspects: List<String> = emptyList(),
         val required: List<String> = emptyList(),
         val excluded: List<String> = emptyList(),
         val maxSelectableTimes: Int = 6,

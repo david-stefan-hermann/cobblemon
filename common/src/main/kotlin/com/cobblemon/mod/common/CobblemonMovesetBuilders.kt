@@ -44,7 +44,7 @@ object CobblemonMovesetBuilders : JsonDataRegistry<MovesetBuilder> {
             ?: throw IllegalArgumentException("Unknown MovesetBuilder id: $id")
     }
 
-    override fun sync(player: ServerPlayer) { /* These don't sync */ }
+    override fun sync(player: ServerPlayer) { /* These don't sync. But what if they did? Nah probably shouldn't sync. */ }
 
     override fun reload(data: Map<ResourceLocation, MovesetBuilder>) {
         movesetBuilders.clear()
