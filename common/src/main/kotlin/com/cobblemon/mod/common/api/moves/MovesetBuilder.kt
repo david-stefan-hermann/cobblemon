@@ -29,7 +29,7 @@ interface MovesetBuilder {
 
     companion object {
         /** Weight multiplier for moves that are in the form's signatureMoves list. Makes them way more likely to be chosen. */
-        var signatureMoveWeightMultiplier = 10F
+        var signatureMoveWeightMultiplier = 5F
         /** Subtypes of MovesetBuilder. I personally doubt you'll need any other subtypes, but hey. */
         val movesetBuilderTypes = mutableMapOf<ResourceLocation, Class<out MovesetBuilder>>(
             cobblemonResource("default") to DefaultMovesetBuilder::class.java

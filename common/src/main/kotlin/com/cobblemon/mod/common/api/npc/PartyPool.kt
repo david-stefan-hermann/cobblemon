@@ -34,7 +34,7 @@ class PartyPool {
         val maxSelectableTimes: Int = 6,
         val levelVariation: IntRange = 0..0,
         val npcLevels: IntRange = 1..100,
-        val movesetBuilder: List<MovesetBuilder> = emptyList(),
+        val movesetBuilders: List<MovesetBuilder> = emptyList(),
         val weight: Int = 50
     )
 
