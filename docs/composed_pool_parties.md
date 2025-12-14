@@ -136,11 +136,13 @@ For example, a standard NPC's party composition might look like:
 }
 ```
 
-This will make a party that is randomly ordered. One slot will have a Pokémon with the `ace` label if possible, falling 
-back to `strong` or `fodder` if not, and if all else fails the slot will be empty. That logic is applied to all the 
-remaining slots. The party composition is given the number of Pokémon that is desired, and in the case of a 3 Pokémon 
-party, slot1, slot, and slot3 will be used even if `scrambleOrder` is true. The scrambling occurs only after the Pokémon 
-have been selected.
+This will make a party that is randomly ordered. One slot will have a Pokémon with the `ace` label if it can find any
+suitable ones for this seed level and NPC aspects, falling back to `strong` or `fodder` if not, and if all else fails 
+the slot will be empty. That logic is applied to all the remaining slots. The party composition is given the number of 
+Pokémon that is desired, and in the case of a 3 Pokémon party, slot1, slot, and slot3 will be used even if 
+`scrambleOrder` is true. The scrambling occurs only after the Pokémon have been selected. The only exception is if any
+of slots 1-3 failed to produce a Pokémon, in which case the later slots will be used to make up the desired number of
+Pokémon.
 
 ### Composed Pool Party Provider
 The `composed_pool` party provider type uses a party pool and a party composition to create a potentially quite complex
@@ -148,9 +150,13 @@ party. When generating the party, it first decides how many Pokémon to select, 
 expressions. It then uses the party composition and pool to select that many Pokémon and builds a party.
 
 For the Molang expression properties, the following Molang queries will be available:
+
 `q.players` - A list of players that are challenging the NPC.
+
 `q.player` - The player challenging the NPC, specifically if being challenged only by one player. If there are multiple players, this will be 0.
+
 `q.npc` - The NPC entity.
+
 `q.level` - The seed level of the NPC.
 
 
