@@ -20,7 +20,7 @@ import kotlin.random.Random
  */
 class PartyComposition {
     var id = cobblemonResource("dummy_composition")
-    val displayName = "cobblemon.party_composition.$id" // dunno if i will use this yet
+//    val displayName = "cobblemon.party_composition.$id" // dunno if i will use this yet
     val scrambleOrder: Boolean = false
     val slot1 = listOf<String>()
     val slot2 = listOf<String>()
@@ -29,12 +29,15 @@ class PartyComposition {
     val slot5 = listOf<String>()
     val slot6 = listOf<String>()
 
-    fun compose(pool: PartyPool, level: Int, desiredPokemonCount: Int, random: Random = Random.Default): List<Pokemon> {
+    fun compose(pool: PartyPool, level: Int, aspects: Set<String>, desiredPokemonCount: Int, random: Random = Random.Default): List<Pokemon> {
         val chosenEntries = mutableListOf<PartyPool.PoolEntry>()
-        val availableEntries = pool.entries.filter { level in it.npcLevels }
+        val availableEntries = pool.entries.filter { level in it.npcLevels && (it.npcAspects.isEmpty() || it.npcAspects.all(aspects::contains)) }
 
-        for (labelSet in listOf(slot1, slot2, slot3, slot4, slot5, slot6).take(desiredPokemonCount)) {
+        for (labelSet in listOf(slot1, slot2, slot3, slot4, slot5, slot6)) {
             pool.tryChoosingEntry(labelSet, random, availableEntries, chosenEntries)
+            if (chosenEntries.size >= desiredPokemonCount) {
+                break
+            }
         }
 
         val finalEntries = if (scrambleOrder) {

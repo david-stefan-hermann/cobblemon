@@ -34,7 +34,7 @@ object CobblemonPartyCompositions : JsonDataRegistry<PartyComposition> {
     val partyCompositions = mutableMapOf<ResourceLocation, PartyComposition>()
 
     override fun sync(player: ServerPlayer) {
-        // probably worth syncing which exist, yeah. the deeper details probably not
+        // probably worth syncing which exist, yeah. the deeper details probably not. I'll get to this eventually.
     }
 
     override fun reload(data: Map<ResourceLocation, PartyComposition>) {

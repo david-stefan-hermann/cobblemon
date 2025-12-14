@@ -87,6 +87,20 @@ As an example, a trivially small pool might look like:
       "steelix-ace",
       "ace"
     ]
+  },
+  {
+    "pokemon": "steelix shiny=true",
+    "labels": [
+      "ace",
+      "strong"
+    ],
+    "npcLevels": "15-30",
+    "npcAspects": ["steel-boots"],
+    "weight": 10,
+    "levelVariation": "0-2",
+    "maxTimesSelectable": 1,
+    "movesetBuilders": ["cobblemon:offensive_npc_pokemon"],
+    "requires": []
   }
 ]
 ```
@@ -95,6 +109,7 @@ As an example, a trivially small pool might look like:
 | `pokemon`            | The guaranteed Pokémon information, such as `geodude shiny=true`                                                                                                                       |
 | `labels`             | The identifying labels of the Pokémon. These can be anything you want. Definitely shouldn't be empty though.                                                                           |
 | `npcLevels`          | The seed levels that the NPC can be for which this entry is possible. 1-30 would mean a level 40 NPC cannot use that entry.                                                            |
+| `npcAspects`         | The aspects that the NPC must have for this entry to be possible. If the list is empty, as is the default, then it won't check the NPC aspects.                                        |
 | `weight`             | The relative weight of this entry compared to others in the pool. Defaults to 50.                                                                                                      |
 | `levelVariation`     | The possible variation around the NPC's seed level that is possible. `-2-3` would mean the Pokémon's level could be anywhere from 2 levels below the NPC seed level to 3 levels above. |
 | `maxTimesSelectable` | The maximum number of times this entry can be selected for a party. Defaults to 6.                                                                                                     |

@@ -80,6 +80,7 @@ class ComposedPoolPartyProvider : NPCPartyProvider {
         val pokemonList = composition.compose(
             pool = pool,
             level = level,
+            aspects = npc.aspects,
             desiredPokemonCount = desiredPokemonCount,
             random = random
         )
