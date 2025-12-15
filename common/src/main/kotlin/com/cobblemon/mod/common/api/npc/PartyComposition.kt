@@ -8,6 +8,7 @@
 
 package com.cobblemon.mod.common.api.npc
 
+import com.bedrockk.molang.runtime.MoLangRuntime
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.cobblemon.mod.common.util.cobblemonResource
 import kotlin.random.Random
@@ -29,12 +30,12 @@ class PartyComposition {
     val slot5 = listOf<String>()
     val slot6 = listOf<String>()
 
-    fun compose(pool: PartyPool, level: Int, aspects: Set<String>, desiredPokemonCount: Int, random: Random = Random.Default): List<Pokemon> {
+    fun compose(pool: PartyPool, level: Int, aspects: Set<String>, desiredPokemonCount: Int, runtime: MoLangRuntime, random: Random = Random.Default): List<Pokemon> {
         val chosenEntries = mutableListOf<PartyPool.PoolEntry>()
-        val availableEntries = pool.entries.filter { level in it.npcLevels && (it.npcAspects.isEmpty() || it.npcAspects.all(aspects::contains)) }
+        val availableEntries = pool.entries.filter { level in it.npcLevels.resolve(runtime) && (it.npcAspects.isEmpty() || it.npcAspects.all(aspects::contains)) }
 
         for (labelSet in listOf(slot1, slot2, slot3, slot4, slot5, slot6)) {
-            pool.tryChoosingEntry(labelSet, random, availableEntries, chosenEntries)
+            pool.tryChoosingEntry(labelSet, runtime, random, availableEntries, chosenEntries)
             if (chosenEntries.size >= desiredPokemonCount) {
                 break
             }
@@ -47,10 +48,11 @@ class PartyComposition {
         }
 
         val pokemon = finalEntries.map { entry ->
-            val lvlVariation = if (entry.levelVariation.first == entry.levelVariation.last) {
-                entry.levelVariation.first
+            val levelVariation = entry.levelVariation.resolve(runtime)
+            val lvlVariation = if (levelVariation.first == levelVariation.last) {
+                levelVariation.first
             } else {
-                entry.levelVariation.random(random)
+                levelVariation.random(random)
             }
 
             val finalLevel = level + lvlVariation

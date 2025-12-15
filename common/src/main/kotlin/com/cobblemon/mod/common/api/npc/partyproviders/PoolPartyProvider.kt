@@ -48,7 +48,7 @@ import kotlin.random.Random
  */
 class PoolPartyProvider : NPCPartyProvider {
     companion object {
-        const val TYPE = "pool"
+        val TYPE = cobblemonResource("pool")
     }
 
     @Transient

@@ -9,14 +9,18 @@
 package com.cobblemon.mod.common
 
 import com.cobblemon.mod.common.api.data.JsonDataRegistry
+import com.cobblemon.mod.common.api.molang.ExpressionLike
 import com.cobblemon.mod.common.api.moves.MovesetBuilder
 import com.cobblemon.mod.common.api.npc.PartyPool
 import com.cobblemon.mod.common.api.pokemon.PokemonProperties
 import com.cobblemon.mod.common.api.reactive.SimpleObservable
+import com.cobblemon.mod.common.util.ScriptableIntRange
+import com.cobblemon.mod.common.util.adapters.ExpressionLikeAdapter
 import com.cobblemon.mod.common.util.adapters.IdentifierAdapter
 import com.cobblemon.mod.common.util.adapters.IntRangeAdapter
 import com.cobblemon.mod.common.util.adapters.MovesetBuilderReferenceAdapter
 import com.cobblemon.mod.common.util.adapters.PokemonPropertiesAdapter
+import com.cobblemon.mod.common.util.adapters.ScriptableIntRangeAdapter
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -35,7 +39,9 @@ object CobblemonPartyPools : JsonDataRegistry<PartyPool> {
         .registerTypeAdapter(ResourceLocation::class.java, IdentifierAdapter)
         .registerTypeAdapter(PokemonProperties::class.java, PokemonPropertiesAdapter(saveLong = false))
         .registerTypeAdapter(IntRange::class.java, IntRangeAdapter)
+        .registerTypeAdapter(ScriptableIntRange::class.java, ScriptableIntRangeAdapter)
         .registerTypeAdapter(MovesetBuilder::class.java, MovesetBuilderReferenceAdapter)
+        .registerTypeAdapter(ExpressionLike::class.java, ExpressionLikeAdapter)
         .setPrettyPrinting()
         .create()
 
