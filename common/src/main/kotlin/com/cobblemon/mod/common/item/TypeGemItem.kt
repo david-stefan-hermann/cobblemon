@@ -25,10 +25,12 @@ class TypeGemItem(
     override fun useOn(context: UseOnContext): InteractionResult {
         val level = context.level
         val clickedPos = context.clickedPos
-        val clickedBlock = level.getBlockState(clickedPos).block
+        val clickedState = level.getBlockState(clickedPos)
+
+        val placePos = clickedPos.relative(context.clickedFace)
 
         // Only place the cluster on TypeGemCore or TypeGemBlock
-        if (clickedBlock is TypeGemCoreBlock || clickedBlock is TypeGemBlock) {
+        if (level.isEmptyBlock(placePos) || level.getBlockState(placePos).canBeReplaced()) {
             val placePos = clickedPos.relative(context.clickedFace)
 
             if (level.isEmptyBlock(placePos) || level.getBlockState(placePos).canBeReplaced()) {
@@ -37,10 +39,13 @@ class TypeGemItem(
 
                 if (!level.isClientSide) {
                     val facing = context.clickedFace
+
+                    val shouldGrow = clickedState.block is TypeGemCoreBlock
+
                     val state = clusterBlock.defaultBlockState()
                         .setValue(DirectionalBlock.FACING, facing)
                         .setValue(TypeGemClusterBlock.STAGE, 0)
-                        .setValue(TypeGemClusterBlock.SHOULD_GROW, true)
+                        .setValue(TypeGemClusterBlock.SHOULD_GROW, shouldGrow)
 
                     level.setBlock(placePos, state, 3)
 
