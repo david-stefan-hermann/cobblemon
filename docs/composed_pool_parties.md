@@ -24,6 +24,7 @@ The full list of possible move selectors is as follows:
 | `tm`                      | Picks a random TM move                                                                                        |
 | `stab_tm`                 | Picks a random STAB TM move                                                                                   |
 | `last_status`             | Same as last_levelup but only status moves                                                                    |
+| `egg`                     | Picks a random egg move                                                                                       |
 
 When selecting from one of multiple possible moves, the selection is a weighted random. The base move weight is drawn 
 from the `move_weights.json` file in the root data folder. If a move is not in that JSON then the weight will be `50`. 
