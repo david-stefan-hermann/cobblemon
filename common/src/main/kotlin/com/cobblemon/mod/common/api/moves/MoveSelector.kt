@@ -112,17 +112,21 @@ fun interface MoveSelector {
             val statusMoves = moves.filter { it.damageCategory == DamageCategories.STATUS }
             return@MoveSelector statusMoves.weightedSelection { it.getSelectionWeight(form) }
         }
-        val TM = MoveSelector { form, learnset, _, chosenMoves ->
-            val moves = learnset.tmMoves - chosenMoves
+        val TM = MoveSelector { form, learnset, level, chosenMoves ->
+            val moves = learnset.tmMoves - chosenMoves - learnset.getLevelUpMovesUpTo(level)
             return@MoveSelector moves.weightedSelection { it.getSelectionWeight(form) }
         }
-        val STAB_TM = MoveSelector { form, learnset, _, chosenMoves ->
-            val moves = learnset.tmMoves - chosenMoves
+        val STAB_TM = MoveSelector { form, learnset, level, chosenMoves ->
+            val moves = learnset.tmMoves - chosenMoves - learnset.getLevelUpMovesUpTo(level)
             val stabMoves = moves.filter { it.elementalType in form.types }
             return@MoveSelector stabMoves.weightedSelection { it.getSelectionWeight(form) }
         }
+        val EGG = MoveSelector { form, learnset, level, chosenMoves ->
+            val moves = learnset.eggMoves - chosenMoves - learnset.getLevelUpMovesUpTo(level)
+            return@MoveSelector moves.weightedSelection { it.getSelectionWeight(form) }
+        }
 
-        val selectors = mutableMapOf<String, MoveSelector>(
+        val selectors = mutableMapOf(
             "none" to NONE,
             "last_levelup" to LAST_LEVELUP,
             "last_offensive" to LAST_OFFENSIVE,
@@ -137,7 +141,8 @@ fun interface MoveSelector {
             "offensive" to OFFENSIVE,
             "status" to STATUS,
             "tm" to TM,
-            "stab_tm" to STAB_TM
+            "stab_tm" to STAB_TM,
+            "egg" to EGG
         )
     }
 }
