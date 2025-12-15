@@ -1,25 +1,21 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "GGI",
-    "GTD",
-    "IRI"
+    "ITI",
+    "CRC"
   ],
   "key": {
-    "G": {
-      "item": "minecraft:glass"
-    },
     "I": {
       "item": "minecraft:iron_ingot"
     },
     "T": {
-      "item": "cobblemon:blank_tm"
+      "item": "minecraft:tinted_glass"
     },
-    "D": {
-      "item": "minecraft:diamond"
+    "C": {
+      "item": "minecraft:copper_ingot"
     },
     "R": {
-      "item": "minecraft:comparator"
+      "item": "minecraft:redstone"
     }
   },
   "result": {
