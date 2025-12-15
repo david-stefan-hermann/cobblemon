@@ -118,6 +118,11 @@ interface CobblemonImplementation {
 
     fun registerEntitySubPredicates()
 
+    /**
+     * TODO
+     */
+    fun registerMobEffects()
+
 
     /**
      * Add a feature to the current platform implementation.
