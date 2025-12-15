@@ -158,7 +158,10 @@ class TypeGemClusterBlock(
 
     override fun getDrops(state: BlockState, params: LootParams.Builder): List<ItemStack> {
         val item = BuiltInRegistries.ITEM.getOptional(dropItemId).orElse(Items.AIR)
-        val count = if (state.getValue(STAGE) >= 3) 2 else 1
+
+        // If stage is 3 drop 2-3 type gems otherwise drop 1.
+        val count = if (state.getValue(STAGE) == 3) (2..3).random() else 1
+
         return listOf(ItemStack(item, count))
     }
 
