@@ -27,7 +27,7 @@ import java.util.*
 class TypeGemCoreBlock(properties: Properties) : Block(properties) {
 
     companion object {
-        const val MAX_CONNECTED_GEMS = 30
+        const val MAX_CONNECTED_GEMS = 7
         const val MIN_DISTANCE_BETWEEN_GEMS = 1
         const val CONTINUATION_CHANCE = 0.8f
 
