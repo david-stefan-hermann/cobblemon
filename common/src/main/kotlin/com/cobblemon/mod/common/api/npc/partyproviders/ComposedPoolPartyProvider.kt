@@ -23,6 +23,7 @@ import com.cobblemon.mod.common.entity.npc.NPCEntity
 import com.cobblemon.mod.common.util.asArrayValue
 import com.cobblemon.mod.common.util.asExpression
 import com.cobblemon.mod.common.util.asIdentifierDefaultingNamespace
+import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.resolveInt
 import com.cobblemon.mod.common.util.withQueryValue
 import com.google.gson.JsonElement
@@ -41,10 +42,10 @@ import net.minecraft.server.level.ServerPlayer
  */
 class ComposedPoolPartyProvider : NPCPartyProvider {
     companion object {
-        const val TYPE = "composed_pool"
+        val TYPE = cobblemonResource("composed_pool")
     }
 
-    override val type: String = TYPE
+    override val type = TYPE
     override var isStatic: Boolean = true
     var useFixedRandom: Boolean = false
     var minPokemon: Expression = "1".asExpression()
@@ -82,6 +83,7 @@ class ComposedPoolPartyProvider : NPCPartyProvider {
             level = level,
             aspects = npc.aspects,
             desiredPokemonCount = desiredPokemonCount,
+            runtime = runtime,
             random = random
         )
 

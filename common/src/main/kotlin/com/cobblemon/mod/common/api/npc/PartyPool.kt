@@ -8,9 +8,14 @@
 
 package com.cobblemon.mod.common.api.npc
 
+import com.bedrockk.molang.runtime.MoLangRuntime
+import com.cobblemon.mod.common.api.molang.ExpressionLike
 import com.cobblemon.mod.common.api.moves.MovesetBuilder
 import com.cobblemon.mod.common.api.pokemon.PokemonProperties
+import com.cobblemon.mod.common.util.ScriptableIntRange
+import com.cobblemon.mod.common.util.asExpressionLike
 import com.cobblemon.mod.common.util.cobblemonResource
+import com.cobblemon.mod.common.util.toProperties
 import com.cobblemon.mod.common.util.weightedSelection
 import kotlin.random.Random
 
@@ -26,18 +31,18 @@ class PartyPool {
     val displayName = "cobblemon.party_pool.$id"
     val entries = mutableListOf<PoolEntry>()
 
-    class PoolEntry(
-        val pokemon: PokemonProperties,
-        val labels: List<String> = emptyList(),
-        val npcAspects: List<String> = emptyList(),
-        val required: List<String> = emptyList(),
-        val excluded: List<String> = emptyList(),
-        val maxSelectableTimes: Int = 6,
-        val levelVariation: IntRange = 0..0,
-        val npcLevels: IntRange = 1..100,
-        val movesetBuilders: List<MovesetBuilder> = emptyList(),
-        val weight: Int = 50
-    )
+    class PoolEntry {
+        val pokemon: PokemonProperties = "pikachu".toProperties()
+        val labels: List<String> = emptyList()
+        val npcAspects: List<String> = emptyList()
+        val required: List<String> = emptyList()
+        val excluded: List<String> = emptyList()
+        val maxSelectableTimes: ExpressionLike = "6".asExpressionLike()
+        val levelVariation: ScriptableIntRange = ScriptableIntRange(0, 0)
+        val npcLevels: ScriptableIntRange = ScriptableIntRange(1, 100)
+        val movesetBuilders: List<MovesetBuilder> = emptyList()
+        val weight: ExpressionLike = "50".asExpressionLike()
+    }
 
     /**
      * Goes through each of the labels in order, trying to find a valid choice. Once it finds one, it skips the later
@@ -45,6 +50,7 @@ class PartyPool {
      */
     fun tryChoosingEntry(
         labels: List<String>,
+        runtime: MoLangRuntime,
         random: Random,
         availableEntries: List<PoolEntry>,
         chosenEntries: MutableList<PoolEntry>,
@@ -58,11 +64,11 @@ class PartyPool {
                             // Check excluded labels
                             entry.excluded.none { it in labels } &&
                             // Check max selectable times
-                            chosenEntries.count { it == entry } < entry.maxSelectableTimes
+                            chosenEntries.count { it == entry } < entry.maxSelectableTimes.resolveFloat(runtime)
                 }
 
             if (entries.isNotEmpty()) {
-                val selectedEntry = entries.weightedSelection(random) { it.weight } ?: return
+                val selectedEntry = entries.weightedSelection(random) { it.weight.resolveFloat(runtime) } ?: return
                 chosenEntries.add(selectedEntry)
                 return
             }

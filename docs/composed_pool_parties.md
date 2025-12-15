@@ -48,75 +48,94 @@ For example, take `alpha.json`, used for alpha Pokémon:
 This moveset builder will try to fill slot 1 with the last suitable offensive move the Pokémon can learn,
 falling back to the last offensive move, and then the last level-up move if all else fails.
 
+### Molang Expressions in Composed Parties
+For the Molang expression properties in the following sections, the following Molang queries will be available:
+
+`q.players` - A list of players that are challenging the NPC.
+
+`q.player` - The player challenging the NPC, specifically if being challenged only by one player. If there are multiple players, this will be 0.
+
+`q.npc` - The NPC entity.
+
+`q.level` - The seed level of the NPC.
+
+
 ### Party Pools
 The `party_pools` datapack folder has all the pools of Pokémon that can be used to draw from when composing a party. 
 Each entry of the pool has some number of labels used by the party composition.
 
-| Property             | Description                                                                                                                                                                            |
-|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `pokemon`            | The guaranteed Pokémon information, such as `geodude shiny=true`                                                                                                                       |
-| `labels`             | The identifying labels of the Pokémon. These can be anything you want. Definitely shouldn't be empty though.                                                                           |
-| `npcLevels`          | The seed levels that the NPC can be for which this entry is possible. 1-30 would mean a level 40 NPC cannot use that entry.                                                            |
-| `npcAspects`         | The aspects that the NPC must have for this entry to be possible. If the list is empty, as is the default, then it won't check the NPC aspects.                                        |
-| `weight`             | The relative weight of this entry compared to others in the pool. Defaults to 50.                                                                                                      |
-| `levelVariation`     | The possible variation around the NPC's seed level that is possible. `-2-3` would mean the Pokémon's level could be anywhere from 2 levels below the NPC seed level to 3 levels above. |
-| `maxTimesSelectable` | The maximum number of times this entry can be selected for a party. Defaults to 6.                                                                                                     |
-| `movesetBuilders`    | A list of moveset builders from the `moveset_builders` folder that can be used to create this Pokémon's moveset. One will be selected at random if there are multiple.                 |
-| `requires`           | A list of labels that must be present in the party for this entry to be selected. These are from the `labels` of entries that were already selected.                                   |
-| `incompatible`       | A list of labels that cannot be present in the party for this entry to be selected. These are from the `labels` of entries that were already selected.                                 |
+| Property             | Description                                                                                                                                                                                                                                                                      |
+|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `pokemon`            | The guaranteed Pokémon information, such as `geodude shiny=true`                                                                                                                                                                                                                 |
+| `labels`             | The identifying labels of the Pokémon. These can be anything you want. Definitely shouldn't be empty though.                                                                                                                                                                     |
+| `npcLevels`          | The seed levels that the NPC can be for which this entry is possible. 1-30 would mean a level 40 NPC cannot use that entry. You can also provide an object with `min` and `max` properties to use MoLang expressions.                                                            |
+| `npcAspects`         | The aspects that the NPC must have for this entry to be possible. If the list is empty, as is the default, then it won't check the NPC aspects.                                                                                                                                  |
+| `weight`             | The relative weight of this entry compared to others in the pool. Defaults to 50. You can also use a Molang expression here.                                                                                                                                                     |
+| `levelVariation`     | The possible variation around the NPC's seed level that is possible. `-2-3` would mean the Pokémon's level could be anywhere from 2 levels below the NPC seed level to 3 levels above. You can also provide an object with `min` and `max` properties to use MoLang expressions. |
+| `maxTimesSelectable` | The maximum number of times this entry can be selected for a party. Defaults to 6. You can also use a Molang expression here.                                                                                                                                                    |
+| `movesetBuilders`    | A list of moveset builders from the `moveset_builders` folder that can be used to create this Pokémon's moveset. One will be selected at random if there are multiple.                                                                                                           |
+| `requires`           | A list of labels that must be present in the party for this entry to be selected. These are from the `labels` of entries that were already selected.                                                                                                                             |
+| `incompatible`       | A list of labels that cannot be present in the party for this entry to be selected. These are from the `labels` of entries that were already selected.                                                                                                                           |
 
 As an example, a trivially small pool might look like:
 ```json
-[
-  {
-    "pokemon": "geodude",
-    "labels": [
-      "basic",
-      "rocky"
-    ],
-    "npcLevels": "1-30",
-    "weight": 20,
-    "levelVariation": "-1-3",
-    "maxTimesSelectable": 4,
-    "movesetBuilders": ["cobblemon:npc_pokemon"],
-    "requires": [
-      "golem-ace"
-    ],
-    "incompatible": [
-      "steelix-ace"
-    ]
-  },
-  {
-    "pokemon": "golem",
-    "labels": [
-      "ace",
-      "strong"
-    ],
-    "npcLevels": "1-30",
-    "weight": 20,
-    "levelVariation": "1-5",
-    "maxTimesSelectable": 1,
-    "movesetBuilders": ["cobblemon:offensive_npc_pokemon", "cobblemon:npc_pokemon"],
-    "incompatible": [
-      "steelix-ace",
-      "ace"
-    ]
-  },
-  {
-    "pokemon": "steelix shiny=true",
-    "labels": [
-      "ace",
-      "strong"
-    ],
-    "npcLevels": "15-30",
-    "npcAspects": ["steel-boots"],
-    "weight": 10,
-    "levelVariation": "0-2",
-    "maxTimesSelectable": 1,
-    "movesetBuilders": ["cobblemon:offensive_npc_pokemon"],
-    "requires": []
-  }
-]
+{
+  "displayName": "Some Name",
+  "entries": [
+    {
+      "pokemon": "geodude",
+      "labels": [
+        "basic",
+        "rocky"
+      ],
+      "npcLevels": "1-30",
+      "weight": 20,
+      "levelVariation": {
+        "min": "q.level < 10 ? -1 : -3",
+        "max": "q.level < 10 ? 1 : 3"
+      },
+      "maxTimesSelectable": 4,
+      "movesetBuilders": ["cobblemon:npc_pokemon"],
+      "requires": [
+        "golem-ace"
+      ],
+      "incompatible": [
+        "steelix-ace"
+      ]
+    },
+    {
+      "pokemon": "golem",
+      "labels": [
+        "ace",
+        "strong"
+      ],
+      "npcLevels": "1-30",
+      "weight": 20,
+      "levelVariation": "1-5",
+      "maxTimesSelectable": 1,
+      "movesetBuilders": ["cobblemon:offensive_npc_pokemon", "cobblemon:npc_pokemon"],
+      "incompatible": [
+        "steelix-ace",
+        "ace"
+      ]
+    },
+    {
+      "pokemon": "steelix shiny=true",
+      "labels": [
+        "ace",
+        "strong"
+      ],
+      "npcLevels": "15-30",
+      "npcAspects": ["steel-boots"],
+      "weight": "q.level < 20 ? 10 : 30",
+      "levelVariation": "0-2",
+      "maxTimesSelectable": "q.level > 25 ? 2 : 1",
+      "movesetBuilders": ["cobblemon:offensive_npc_pokemon"],
+      "requires": [],
+      "incompatible": []
+    }
+  ]
+}
 ```
 
 ### Party Compositions
@@ -150,16 +169,6 @@ The `composed_pool` party provider type uses a party pool and a party compositio
 party. When generating the party, it first decides how many Pokémon to select, based on the `minPokemon` and `maxPokemon`
 expressions. It then uses the party composition and pool to select that many Pokémon and builds a party.
 
-For the Molang expression properties, the following Molang queries will be available:
-
-`q.players` - A list of players that are challenging the NPC.
-
-`q.player` - The player challenging the NPC, specifically if being challenged only by one player. If there are multiple players, this will be 0.
-
-`q.npc` - The NPC entity.
-
-`q.level` - The seed level of the NPC.
-
 
 | Property         | Description                                                                                                                                                                                                          |
 |------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -174,7 +183,7 @@ An example `composed_pool` party provider might look like:
 
 ```json
 {
-  "type": "cobblemon:composed_pool",
+  "type": "composed_pool",
   "isStatic": false,
   "useFixedRandom": true,
   "minPokemon": "q.level > 30 ? 3 : 1",
