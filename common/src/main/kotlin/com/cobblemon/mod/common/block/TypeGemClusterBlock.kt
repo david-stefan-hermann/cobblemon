@@ -14,6 +14,7 @@ import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
+import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
@@ -22,6 +23,8 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.context.BlockPlaceContext
+import net.minecraft.world.item.enchantment.Enchantments
+import net.minecraft.world.item.enchantment.ItemEnchantments
 import net.minecraft.world.level.LevelAccessor
 import net.minecraft.world.level.LevelReader
 import net.minecraft.world.level.block.AirBlock
@@ -35,6 +38,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty
 import net.minecraft.world.level.block.state.properties.IntegerProperty
 import net.minecraft.world.level.storage.loot.LootContext
 import net.minecraft.world.level.storage.loot.LootParams
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams
 import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
 import javax.swing.text.html.HTML.Attribute.SHAPES
@@ -159,8 +163,26 @@ class TypeGemClusterBlock(
     override fun getDrops(state: BlockState, params: LootParams.Builder): List<ItemStack> {
         val item = BuiltInRegistries.ITEM.getOptional(dropItemId).orElse(Items.AIR)
 
+        // try to figure out Fortune level
+        val tool = params.getOptionalParameter(LootContextParams.TOOL)
+        var fortuneLevel = 0
+
+        if (tool != null && !tool.isEmpty) {
+            val enchantments = tool.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY)
+            for ((holder, level) in enchantments.entrySet()) {
+                if (holder.`is`(Enchantments.FORTUNE)) {
+                    fortuneLevel = level
+                    break
+                }
+            }
+        }
+
         // If stage is 3 drop 2-3 type gems otherwise drop 1.
-        val count = if (state.getValue(STAGE) == 3) (2..3).random() else 1
+        var count = if (state.getValue(STAGE) == 3) (2..3).random() else 1
+
+        if (fortuneLevel > 0) {
+            count += (0..fortuneLevel).random()
+        }
 
         return listOf(ItemStack(item, count))
     }
