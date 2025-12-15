@@ -36,6 +36,7 @@ import net.minecraft.world.level.block.state.StateDefinition
 import net.minecraft.world.level.block.state.properties.BooleanProperty
 import net.minecraft.world.level.block.state.properties.DirectionProperty
 import net.minecraft.world.level.block.state.properties.IntegerProperty
+import net.minecraft.world.level.material.PushReaction
 import net.minecraft.world.level.storage.loot.LootContext
 import net.minecraft.world.level.storage.loot.LootParams
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams
@@ -47,7 +48,7 @@ class TypeGemClusterBlock(
         settings: Properties,
         val nextStage: Block,
         val dropItemId: ResourceLocation
-) : DirectionalBlock(settings) {
+) : DirectionalBlock(settings.pushReaction(PushReaction.DESTROY)) {
 
     companion object {
         val CODEC: MapCodec<TypeGemClusterBlock> = RecordCodecBuilder.mapCodec { instance ->
@@ -227,7 +228,6 @@ class TypeGemClusterBlock(
         val supportBlock = level.getBlockState(supportPos).block
         return supportBlock !is AirBlock
     }
-
 
     override fun codec(): MapCodec<out DirectionalBlock> = CODEC
 
