@@ -22,6 +22,7 @@ import net.minecraft.util.RandomSource
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
+import net.minecraft.world.item.component.BlockItemStateProperties
 import net.minecraft.world.item.context.BlockPlaceContext
 import net.minecraft.world.item.enchantment.Enchantments
 import net.minecraft.world.item.enchantment.ItemEnchantments
@@ -167,15 +168,30 @@ class TypeGemClusterBlock(
         // try to figure out Fortune level
         val tool = params.getOptionalParameter(LootContextParams.TOOL)
         var fortuneLevel = 0
+        var hasSilkTouch = false
 
         if (tool != null && !tool.isEmpty) {
             val enchantments = tool.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY)
             for ((holder, level) in enchantments.entrySet()) {
+                if (holder.`is`(Enchantments.SILK_TOUCH)) {
+                    hasSilkTouch = true
+                }
                 if (holder.`is`(Enchantments.FORTUNE)) {
                     fortuneLevel = level
-                    break
                 }
             }
+        }
+
+        // silk touch
+        if (hasSilkTouch) {
+            val stack = ItemStack(this)
+            val currentStage = state.getValue(STAGE)
+
+            stack.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY
+                .with(STAGE, currentStage)
+                .with(SHOULD_GROW, false) // we do not want these ones to grow
+            )
+            return listOf(stack)
         }
 
         // If stage is 3 drop 2-3 type gems otherwise drop 1.
