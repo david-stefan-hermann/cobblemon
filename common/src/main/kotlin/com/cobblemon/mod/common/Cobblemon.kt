@@ -574,6 +574,7 @@ object Cobblemon {
         this.implementation.registerCommandArgument(cobblemonResource("mark"), MarkArgumentType::class, SingletonArgumentInfo.contextFree(MarkArgumentType::mark))
         this.implementation.registerCommandArgument(cobblemonResource("transform_type"), TransformTypeArgumentType::class, SingletonArgumentInfo.contextFree(TransformTypeArgumentType::transformType))
         this.implementation.registerCommandArgument(cobblemonResource("model_part"), ModelPartArgumentType::class, SingletonArgumentInfo.contextFree(ModelPartArgumentType::modelPart))
+        this.implementation.registerCommandArgument(cobblemonResource("tm"), TmArgumentType::class, SingletonArgumentInfo.contextFree(TmArgumentType::tm))
     }
 
 }

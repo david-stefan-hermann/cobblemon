@@ -11,7 +11,6 @@ package com.cobblemon.mod.common.api.tms
 import com.cobblemon.mod.common.CobblemonNetwork.sendPacket
 import com.cobblemon.mod.common.api.storage.player.PlayerInstancedDataStoreType
 import com.cobblemon.mod.common.api.storage.player.client.ClientInstancedPlayerData
-import com.cobblemon.mod.common.item.interactive.TechnicalMachineItem
 import com.cobblemon.mod.common.net.messages.client.SetClientPlayerDataPacket
 import com.cobblemon.mod.common.net.messages.client.toast.ToastPacket
 import com.cobblemon.mod.common.util.getPlayer
@@ -27,7 +26,7 @@ abstract class AbstractTMMoveManager {
     abstract fun toClientData(): ClientInstancedPlayerData
     abstract fun toClientDataFrom(set: Set<ResourceLocation>): ClientInstancedPlayerData
 
-    open fun learn(tmIds: List<ResourceLocation>): Boolean {
+    open fun learn(tmIds: Collection<ResourceLocation>): Boolean {
         val newLearnedTms = mutableListOf<ResourceLocation>()
         for (tmId in tmIds) {
             if (learnedTMs.add(tmId)) {
@@ -39,6 +38,23 @@ abstract class AbstractTMMoveManager {
 
         syncClient(newLearnedTms.toSet())
         sendTMToast(newLearnedTms)
+
+        return true
+    }
+
+    open fun unlearn(tmIds: Collection<ResourceLocation>): Boolean {
+        val removedTms = mutableListOf<ResourceLocation>()
+
+        for (tmId in tmIds) {
+            if (learnedTMs.remove(tmId)) {
+                removedTms.add(tmId)
+            }
+        }
+
+        if (removedTms.isEmpty()) return false
+
+        syncClient(learnedTMs, isIncremental = false)
+        markDirty()
 
         return true
     }
@@ -71,12 +87,12 @@ abstract class AbstractTMMoveManager {
         player.sendPacket(packet)
     }
 
-    protected fun syncClient(updateSet: Set<ResourceLocation> = learnedTMs) {
+    protected fun syncClient(updateSet: Set<ResourceLocation> = learnedTMs, isIncremental: Boolean = true) {
         uuid.getPlayer()?.sendPacket(
             SetClientPlayerDataPacket(
                 type = storeType,
                 playerData = toClientDataFrom(updateSet),
-                isIncremental = true
+                isIncremental = isIncremental
             )
         )
     }

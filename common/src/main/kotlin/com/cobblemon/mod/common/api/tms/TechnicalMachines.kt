@@ -60,6 +60,15 @@ object TechnicalMachines : JsonDataRegistry<TechnicalMachine> {
         }
     }
 
+    fun getByResourceLocation(resourceLocation: ResourceLocation): TechnicalMachine? {
+        return tmMap[resourceLocation]
+    }
+
+    fun getAllResourceLocations(): Set<ResourceLocation> {
+        return tmMap.keys.toSet()
+    }
+
+    // TODO we'll probably have to sync this
     override fun sync(player: ServerPlayer) { }
 
     // TODO delete this?
