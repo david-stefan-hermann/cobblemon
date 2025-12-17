@@ -8,13 +8,14 @@
 
 package com.cobblemon.mod.common.api.tms
 
+import com.cobblemon.mod.common.CobblemonNetwork.sendPacket
 import com.cobblemon.mod.common.api.storage.player.PlayerInstancedDataStoreType
 import com.cobblemon.mod.common.api.storage.player.client.ClientInstancedPlayerData
+import com.cobblemon.mod.common.item.interactive.TechnicalMachineItem
 import com.cobblemon.mod.common.net.messages.client.SetClientPlayerDataPacket
-import com.cobblemon.mod.common.CobblemonNetwork.sendPacket
 import com.cobblemon.mod.common.net.messages.client.toast.ToastPacket
-import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.getPlayer
+import com.cobblemon.mod.common.util.lang
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
 import java.util.*
@@ -26,27 +27,43 @@ abstract class AbstractTMMoveManager {
     abstract fun toClientData(): ClientInstancedPlayerData
     abstract fun toClientDataFrom(set: Set<ResourceLocation>): ClientInstancedPlayerData
 
-    open fun learn(tmId: ResourceLocation): Boolean {
-        if (learnedTMs.add(tmId)) {
-            syncClient(setOf(tmId))
-            sendTMToast(tmId)
-            return true
+    open fun learn(tmIds: List<ResourceLocation>): Boolean {
+        val newLearnedTms = mutableListOf<ResourceLocation>()
+        for (tmId in tmIds) {
+            if (learnedTMs.add(tmId)) {
+                newLearnedTms.add(tmId)
+            }
         }
-        return false
+
+        if (newLearnedTms.isEmpty()) return false
+
+        syncClient(newLearnedTms.toSet())
+        sendTMToast(newLearnedTms)
+
+        return true
     }
 
-    private fun sendTMToast(tmId: ResourceLocation) {
+    private fun sendTMToast(tmIds: List<ResourceLocation>) {
         val player = uuid.getPlayer() ?: return
-        val tm = TechnicalMachines.tmMap[tmId] ?: return
+        var moveName: Component = Component.empty()
+        val icons = tmIds.mapNotNull {
+            val tm = TechnicalMachines.tmMap[it] ?: return@mapNotNull null
+            moveName = tm.translatedMoveName()
+
+            return@mapNotNull tm.createItemStack()
+        }
+
+        val description = if (icons.size == 1) moveName else lang("tms.check_tmm")
 
         val packet = ToastPacket(
-                title = Component.literal("New TM Learned"), // TODO lang for this
-                description = tm.translatedMoveName(),
-                icon = tm.createItemStack(),
+                title = lang("tms.new_tms_learned"),
+                description = description,
+                icons = icons,
                 frameTexture = ResourceLocation.parse("minecraft:toast/advancement"),
                 progress = -1F,
                 progressColor = 0x00FF00,
-                uuid = UUID.nameUUIDFromBytes(("tm_toast:${tmId}").toByteArray()),
+                // Keeping it a fixed UUID makes it so the ToastTracker merges different toasts on the client
+                uuid = UUID.nameUUIDFromBytes(("tm_toast").toByteArray()),
                 behaviour = ToastPacket.Behaviour.SHOW_OR_UPDATE,
                 durationMs = 4000L
         )

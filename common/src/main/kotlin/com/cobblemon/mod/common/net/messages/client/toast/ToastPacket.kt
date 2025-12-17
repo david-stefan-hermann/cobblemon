@@ -19,7 +19,7 @@ import net.minecraft.resources.ResourceLocation
 class ToastPacket(
     val title: Component,
     val description: Component,
-    val icon: ItemStack,
+    val icons: List<ItemStack>,
     val frameTexture: ResourceLocation,
     val progress: Float,
     val progressColor: Int,
@@ -33,7 +33,9 @@ class ToastPacket(
     override fun encode(buffer: RegistryFriendlyByteBuf) {
         buffer.writeText(this.title)
         buffer.writeText(this.description)
-        buffer.writeItemStack(this.icon)
+        buffer.writeCollection(this.icons) { _, icon ->
+            buffer.writeItemStack(icon)
+        }
         buffer.writeIdentifier(this.frameTexture)
         buffer.writeFloat(this.progress)
         buffer.writeInt(this.progressColor)
@@ -49,7 +51,7 @@ class ToastPacket(
         fun decode(buffer: RegistryFriendlyByteBuf): ToastPacket = ToastPacket(
             buffer.readText(),
             buffer.readText(),
-            buffer.readItemStack(),
+            buffer.readList { _ -> buffer.readItemStack() },
             buffer.readIdentifier(),
             buffer.readFloat(),
             buffer.readInt(),

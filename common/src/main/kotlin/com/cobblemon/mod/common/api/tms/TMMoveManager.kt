@@ -40,10 +40,9 @@ class TMMoveManager(
     fun syncTMsFromPokemon(pokemon: Pokemon) {
         val learnableTMs = TechnicalMachines.tmMap.values
                 .filter { tm -> pokemon.allAccessibleMoves.contains(tm.moveName) }
+                .map { tm -> tm.id }
 
-        for (tm in learnableTMs) {
-            learn(tm.id)
-        }
+        learn(learnableTMs)
     }
 
     companion object {

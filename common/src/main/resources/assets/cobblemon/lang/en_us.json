@@ -1169,6 +1169,8 @@
   "cobblemon.tms.teach_move": "%1$s learned %2$s!",
   "cobblemon.tms.cannot_learn": "%1$s cannot learn %2$s!",
   "cobblemon.tms.unlock_tm": "You unlocked the %1$s TM!",
+  "cobblemon.tms.new_tms_learned": "New TMs Learned!",
+  "cobblemon.tms.check_tmm": "Check the TM Machine",
 
   "cobblemon.ui.stats": "Stats",
   "cobblemon.ui.stats.stat": "Stat",

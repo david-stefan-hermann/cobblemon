@@ -62,6 +62,7 @@ object TechnicalMachines : JsonDataRegistry<TechnicalMachine> {
 
     override fun sync(player: ServerPlayer) { }
 
+    // TODO delete this?
     fun checkPassives(player: ServerPlayer) {
         val playerTms = Cobblemon.playerDataManager.getGenericData(player).tmSet
         passiveTms.forEach { (id, tm) ->
