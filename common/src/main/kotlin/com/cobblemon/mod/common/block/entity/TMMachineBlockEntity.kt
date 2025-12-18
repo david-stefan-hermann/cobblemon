@@ -61,6 +61,10 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
 
         fun serverTick(level: Level, pos: BlockPos, state: BlockState, blockEntity: TMMachineBlockEntity) {
             if (level.isClientSide) return
+
+            // Pause TMM if powered by redstone (maybe players will want to halt the automation with a lever? idk)
+            if (level.hasNeighborSignal(pos)) return
+
             val containerData = blockEntity.containerData
 
             if (containerData.get(BURN_ACTIVE_INDEX) == 1) {
@@ -68,6 +72,18 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
                 if (currentProgress < TOTAL_PROCESS_TIME) {
                     val progressPerTick = if (currentProgress >= BURN_TOTAL_TIME) 1 else BURN_PROGRESS_PER_TICK
                     containerData.set(BURN_PROGRESS_INDEX, currentProgress + progressPerTick)
+
+                    // update the comparator signals
+                    level.updateNeighbourForOutputSignal(pos, state.block)
+                }
+            }
+
+            // Auto start when batch mode is armed and we are able to craft something
+            if (containerData.get(REPEAT_PROCESS_INDEX) == 1 && containerData.get(BURN_ACTIVE_INDEX) == 0) {
+                if (blockEntity.canCraftSelectedTM()) {
+                    containerData.set(BURN_ACTIVE_INDEX, 1)
+                    containerData.set(BURN_PROGRESS_INDEX, 0)
+                    blockEntity.setChanged()
                 }
             }
 
@@ -78,9 +94,16 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
                     blockEntity.craftTM()
                 }
                 if (postCraftTicks  >= (TMMachineScreen.CRAFT_TICKS + TMMachineScreen.RESET_DISC_TICKS)) {
-                    val shouldRepeatProcess = containerData.get(REPEAT_PROCESS_INDEX) == 1
-                    if (!shouldRepeatProcess) containerData.set(BURN_ACTIVE_INDEX, 0) // Set active to false if only running once
                     containerData.set(BURN_PROGRESS_INDEX, 0)
+
+                    val repeating = containerData.get(REPEAT_PROCESS_INDEX) == 1
+                    val keepRunning = repeating && blockEntity.canCraftSelectedTM()
+
+                    // If we can't craft another yet we need to pause burning but keep batch mode ON
+                    containerData.set(BURN_ACTIVE_INDEX, if (keepRunning) 1 else 0)
+
+                    level.updateNeighbourForOutputSignal(pos, state.block)
+
                     blockEntity.setChanged()
                 }
             }
@@ -119,6 +142,35 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
         override fun getCount(): Int {
             return 6
         }
+    }
+
+    private fun canCraftSelectedTM(): Boolean {
+        val level = level ?: return false
+        val move = Moves.getByName(activeMove) ?: return false
+        val tm = TechnicalMachines.moveToTM[move] ?: return false
+
+        // We must have the Output be empty or stackable and not full
+        val resultStack = getItem(TMMachineMenu.RESULT_SLOT)
+        val crafted = ItemStack(CobblemonItems.TECHNICAL_MACHINE).also { TMMoveComponent.setTMMove(it, tm.moveName) }
+        val outputOk = resultStack.isEmpty || (
+                resultStack.count < resultStack.maxStackSize &&
+                        ItemStack.isSameItemSameComponents(resultStack, crafted)
+                )
+        if (!outputOk) return false
+
+        // Blank disc slot
+        if (getItem(TMMachineMenu.BLANK_TM_SLOT).item != CobblemonItems.BLANK_TM) return false
+
+        // Ingredient slots
+        val recipe = tm.getClampedRecipe() ?: emptyList()
+        for ((index, ingredient) in recipe.withIndex()) {
+            val slot = TMMachineMenu.INGREDIENT_SLOTS.first + index
+            val provided = getItem(slot)
+            val expected = level.itemRegistry.get(ingredient.item) ?: return false
+            if (provided.item != expected || provided.count < ingredient.count) return false
+        }
+
+        return true
     }
 
     private fun craftTM() {
@@ -259,27 +311,47 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
         level?.playSound(null, worldPosition, soundEvent, SoundSource.BLOCKS, volume, pitch)
     }
 
+    fun isReadyToCraft(): Boolean = canCraftSelectedTM()
+
+    fun isOutputBlocked(): Boolean {
+        val level = level ?: return false
+        val move = Moves.getByName(activeMove) ?: return false
+        val tm = TechnicalMachines.moveToTM[move] ?: return false
+
+        val resultStack = getItem(TMMachineMenu.RESULT_SLOT)
+        if (resultStack.isEmpty) return false
+
+        val crafted = ItemStack(CobblemonItems.TECHNICAL_MACHINE)
+            .also { TMMoveComponent.setTMMove(it, tm.moveName) }
+
+        // If wrong TM in output OR output is full
+        if (!ItemStack.isSameItemSameComponents(resultStack, crafted)) return true
+        return resultStack.count >= resultStack.maxStackSize
+    }
+
     class TMMachineBlockInventory(val blockEntity: TMMachineBlockEntity) : SimpleContainer(6) {
         override fun canTakeItem(target: Container, slot: Int, stack: ItemStack): Boolean =
             if (slot == 0) true else false
 
         override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean {
-            if (blockEntity.containerData.get(BURN_ACTIVE_INDEX) == 1) {
-                Moves.getByName(blockEntity.activeMove)?.let {
-                    val tm = TechnicalMachines.moveToTM[it] ?: return false
-                    val item = stack.item
+            val allowAutomation = blockEntity.containerData.get(REPEAT_PROCESS_INDEX) == 1
 
-                    return when (slot) {
-                        1 -> item == CobblemonItems.BLANK_TM
-                        2, 3, 4 -> {
-                            val recipe = tm.getClampedRecipe() ?: return false
-                            val recipeIndex = slot - 2
-                            if (recipeIndex >= recipe.size) return false
-                            val expected = blockEntity.level?.itemRegistry?.get(recipe[recipeIndex].item) ?: return false
-                            item == expected
-                        }
-                        else -> false
+            if (!allowAutomation) return false
+
+            Moves.getByName(blockEntity.activeMove)?.let {
+                val tm = TechnicalMachines.moveToTM[it] ?: return false
+                val item = stack.item
+
+                return when (slot) {
+                    1 -> item == CobblemonItems.BLANK_TM
+                    2, 3, 4 -> {
+                        val recipe = tm.getClampedRecipe() ?: return false
+                        val recipeIndex = slot - 2
+                        if (recipeIndex >= recipe.size) return false
+                        val expected = blockEntity.level?.itemRegistry?.get(recipe[recipeIndex].item) ?: return false
+                        item == expected
                     }
+                    else -> false
                 }
             }
 
@@ -287,8 +359,15 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
         }
 
         override fun setChanged() {
-            blockEntity.level?.updateNeighborsAt(blockEntity.blockPos, blockEntity.blockState.block)
             super.setChanged()
+            blockEntity.setChanged()
+
+            val allowAutomation = blockEntity.containerData.get(BURN_ACTIVE_INDEX) == 1 || blockEntity.containerData.get(REPEAT_PROCESS_INDEX) == 1
+
+            // force comparators to refresh if inventory changes and batch mode is on
+            if (allowAutomation) {
+                blockEntity.level?.updateNeighbourForOutputSignal(blockEntity.blockPos, blockEntity.blockState.block)
+            }
         }
 
         override fun startOpen(player: Player) {

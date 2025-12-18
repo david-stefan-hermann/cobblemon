@@ -202,16 +202,39 @@ class TMMachineBlock(properties: Properties) : BaseEntityBlock(properties), Simp
         super.onRemove(state, level, pos, newState, movedByPiston)
     }
 
-    override fun isSignalSource(state: BlockState): Boolean = true
+    override fun isSignalSource(state: BlockState): Boolean = false
 
-    override fun getSignal(state: BlockState, level: BlockGetter, pos: BlockPos, direction: Direction): Int {
-        level.getBlockEntity(pos)?.let { blockEntity ->
-            if (blockEntity is TMMachineBlockEntity && blockEntity.burnActive) return 15
-        }
-        return super.getSignal(state, level, pos, direction)
-    }
+    override fun getSignal(state: BlockState, level: BlockGetter, pos: BlockPos, direction: Direction): Int = 0
 
     override fun hasAnalogOutputSignal(state: BlockState): Boolean = true
 
-    override fun getAnalogOutputSignal(state: BlockState, level: Level, pos: BlockPos): Int = getSignal(state, level, pos, Direction.UP)
+    /*override fun getAnalogOutputSignal(state: BlockState, level: Level, pos: BlockPos): Int {
+        val be = level.getBlockEntity(pos) as? TMMachineBlockEntity ?: return 0
+
+        // Have comparator output act like a progress bar when burning because that might be super dope to see without going into the menu
+        val scaled = (be.burnProgress.toFloat() / TMMachineBlockEntity.TOTAL_PROCESS_TIME.toFloat() * 15f).toInt()
+        return scaled.coerceIn(0, 15)
+    }*/
+
+    override fun getAnalogOutputSignal(state: BlockState, level: Level, pos: BlockPos): Int {
+        val be = level.getBlockEntity(pos) as? TMMachineBlockEntity ?: return 0
+
+        // Have comparator output act like a progress bar when burning because that might be super dope to see without going into the menu
+        if (be.burnActive) {
+            val scaled = (be.burnProgress.toFloat() / TMMachineBlockEntity.TOTAL_PROCESS_TIME.toFloat() * 15f).toInt()
+            return scaled.coerceIn(0, 15)
+        }
+
+        // if batch mode is off but it is ready to craft then show signal of 15
+        if (!be.repeatProcess) {
+            if (be.isReadyToCraft()) return 15
+            else return 0
+        }
+
+        // When not burning but idling in batch mode maybe show some cool states? Could be nice
+        return when {
+            be.isOutputBlocked() -> 8
+            else -> 4
+        }
+    }
 }
