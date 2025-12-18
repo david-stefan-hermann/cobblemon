@@ -8,17 +8,14 @@
 
 package com.cobblemon.mod.common.api.tms
 
-import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.api.storage.player.InstancedPlayerData
 import com.cobblemon.mod.common.api.storage.player.PlayerInstancedDataStoreTypes
-import com.cobblemon.mod.common.api.storage.player.client.ClientInstancedPlayerData
-import com.cobblemon.mod.common.api.tms.AbstractTMMoveManager
 import com.cobblemon.mod.common.api.storage.player.client.ClientTMMoveManager
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.resources.ResourceLocation
-import java.util.UUID
+import java.util.*
 
 class TMMoveManager(
     override val uuid: UUID,
@@ -38,11 +35,15 @@ class TMMoveManager(
     }
 
     fun syncTMsFromPokemon(pokemon: Pokemon) {
-        val learnableTMs = TechnicalMachines.tmMap.values
-                .filter { tm -> pokemon.allAccessibleMoves.contains(tm.moveName) }
-                .map { tm -> tm.id }
+        val learnableTMs = getLearnableTMsFromPokemon(pokemon)
 
         learn(learnableTMs)
+    }
+
+    fun getLearnableTMsFromPokemon(pokemon: Pokemon): Collection<ResourceLocation> {
+        return TechnicalMachines.tmMap.values
+            .filter { tm -> pokemon.allAccessibleMoves.contains(tm.moveName) }
+            .map { tm -> tm.id }
     }
 
     companion object {
