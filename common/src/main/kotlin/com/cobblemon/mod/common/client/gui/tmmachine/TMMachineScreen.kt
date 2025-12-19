@@ -94,7 +94,6 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
 
     lateinit var backButton: IconButton
     lateinit var startButton: StartButton
-    lateinit var batchButton: BatchButton
     lateinit var selectedMoveButton: MoveSlotButton
     lateinit var typesScrollList: TypesScrollingWidget
     lateinit var movesScrollingList: MovesScrollingWidget
@@ -220,26 +219,6 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         }
         if (!children().contains(startButton)) addRenderableWidget(startButton)
 
-        batchButton = BatchButton(
-            leftPos + 5F + StartButton.WIDTH + 2F,
-            topPos + 35F
-        ) {
-            val repeat = menu.containerData?.get(TMMachineBlockEntity.REPEAT_PROCESS_INDEX) ?: 0
-
-            if (repeat == 1) {
-                // turn off batch mode and cancel any TM creating
-                disableBatchAndStopProcessing()
-            } else {
-                // turn on batch mode
-                CobblemonNetwork.sendToServer(
-                    SetTMMachineContainerDataPacket(TMMachineBlockEntity.REPEAT_PROCESS_INDEX, 1)
-                )
-                // let server know what TM is selected
-                CobblemonNetwork.sendToServer(SetActiveTMPacket(selectedTM))
-            }
-        }
-        if (!children().contains(batchButton)) addRenderableWidget(batchButton)
-
         setScreenFromMode(mode)
         initScreen = false
     }
@@ -277,13 +256,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
 
                     startButton.disabled = !burning && (discResetting || !(validCost && validOutput))
                     startButton.processing = burning
-                    startButton.shouldRepeat = false // no longer used; repeat has its own button
-
-                    val repeatMode = (menu.containerData?.get(TMMachineBlockEntity.REPEAT_PROCESS_INDEX) ?: 0) == 1
-                    if (::batchButton.isInitialized) {
-                        batchButton.enabledState = repeatMode
-                        batchButton.active = true // always clickable
-                    }
+                    startButton.shouldRepeat = false
                 }
 
                 if (::selectedMoveButton.isInitialized) {
@@ -431,22 +404,6 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         if (!isVisible) setSelectedTM(null, false)
         if (::selectedMoveButton.isInitialized) selectedMoveButton.visible = isVisible
         if (::startButton.isInitialized) startButton.visible = isVisible
-        if (::batchButton.isInitialized) batchButton.visible = isVisible
-    }
-
-    private fun disableBatchAndStopProcessing() {
-        CobblemonNetwork.sendToServer(
-            SetTMMachineContainerDataPacket(TMMachineBlockEntity.REPEAT_PROCESS_INDEX, 0)
-        )
-        CobblemonNetwork.sendToServer(
-            SetTMMachineContainerDataPacket(TMMachineBlockEntity.BURN_ACTIVE_INDEX, 0)
-        )
-        CobblemonNetwork.sendToServer(
-            SetTMMachineContainerDataPacket(TMMachineBlockEntity.BURN_PROGRESS_INDEX, 0)
-        )
-
-        inventory.setChanged()
-        menu.broadcastChanges()
     }
 
     fun canLearnTMMove(move: MoveTemplate, pokemon: Pokemon): Int {
@@ -635,23 +592,6 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             height = DISC_DIAMETER,
             alpha = baseAlpha
         )
-    }
-
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        val handled = super.mouseClicked(mouseX, mouseY, button)
-
-        // we want to be able to stop batching when anything else is clicked (with left click so it doesn't stop when opening the menu)
-        if (handled && button == 0 && ::batchButton.isInitialized && batchButton.visible) {
-            val clickedBatch = batchButton.isMouseOver(mouseX, mouseY)
-            if (!clickedBatch) {
-                val repeat = menu.containerData?.get(TMMachineBlockEntity.REPEAT_PROCESS_INDEX) ?: 0
-                if (repeat == 1) {
-                    disableBatchAndStopProcessing()
-                }
-            }
-        }
-
-        return handled
     }
 
     fun renderMoveInfo(context: GuiGraphics, mouseX: Int, mouseY: Int) {

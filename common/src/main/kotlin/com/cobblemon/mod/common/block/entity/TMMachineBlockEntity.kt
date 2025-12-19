@@ -62,49 +62,50 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
         fun serverTick(level: Level, pos: BlockPos, state: BlockState, blockEntity: TMMachineBlockEntity) {
             if (level.isClientSide) return
 
-            // Pause TMM if powered by redstone (maybe players will want to halt the automation with a lever? idk)
-            if (level.hasNeighborSignal(pos)) return
+            // check if the TMM is powered by redstone. For toggling automation
+            val powered = level.hasNeighborSignal(pos)
+            val data = blockEntity.containerData
 
-            val containerData = blockEntity.containerData
-
-            if (containerData.get(BURN_ACTIVE_INDEX) == 1) {
-                val currentProgress = containerData.get(BURN_PROGRESS_INDEX)
+            // Progress while active
+            if (data.get(BURN_ACTIVE_INDEX) == 1) {
+                val currentProgress = data.get(BURN_PROGRESS_INDEX)
                 if (currentProgress < TOTAL_PROCESS_TIME) {
                     val progressPerTick = if (currentProgress >= BURN_TOTAL_TIME) 1 else BURN_PROGRESS_PER_TICK
-                    containerData.set(BURN_PROGRESS_INDEX, currentProgress + progressPerTick)
+                    data.set(BURN_PROGRESS_INDEX, currentProgress + progressPerTick)
 
-                    // update the comparator signals
+                    // comparator progress bar updates
                     level.updateNeighbourForOutputSignal(pos, state.block)
                 }
             }
 
-            // Auto start when batch mode is armed and we are able to craft something
-            if (containerData.get(REPEAT_PROCESS_INDEX) == 1 && containerData.get(BURN_ACTIVE_INDEX) == 0) {
+            // auto start with batching when powered
+            if (powered && data.get(BURN_ACTIVE_INDEX) == 0) {
                 if (blockEntity.canCraftSelectedTM()) {
-                    containerData.set(BURN_ACTIVE_INDEX, 1)
-                    containerData.set(BURN_PROGRESS_INDEX, 0)
+                    data.set(BURN_ACTIVE_INDEX, 1)
+                    data.set(BURN_PROGRESS_INDEX, 0)
                     blockEntity.setChanged()
+                    level.updateNeighbourForOutputSignal(pos, state.block)
                 }
             }
 
-            val burnProgressValue = containerData.get(BURN_PROGRESS_INDEX)
+            val burnProgressValue = data.get(BURN_PROGRESS_INDEX)
             val postCraftTicks = if (burnProgressValue >= BURN_TOTAL_TIME) (burnProgressValue - BURN_TOTAL_TIME) else 0
+
             if (postCraftTicks > 0) {
                 if (postCraftTicks == TMMachineScreen.CRAFT_TICKS) {
                     blockEntity.craftTM()
-                }
-                if (postCraftTicks  >= (TMMachineScreen.CRAFT_TICKS + TMMachineScreen.RESET_DISC_TICKS)) {
-                    containerData.set(BURN_PROGRESS_INDEX, 0)
-
-                    val repeating = containerData.get(REPEAT_PROCESS_INDEX) == 1
-                    val keepRunning = repeating && blockEntity.canCraftSelectedTM()
-
-                    // If we can't craft another yet we need to pause burning but keep batch mode ON
-                    containerData.set(BURN_ACTIVE_INDEX, if (keepRunning) 1 else 0)
-
                     level.updateNeighbourForOutputSignal(pos, state.block)
+                }
+
+                if (postCraftTicks >= (TMMachineScreen.CRAFT_TICKS + TMMachineScreen.RESET_DISC_TICKS)) {
+                    data.set(BURN_PROGRESS_INDEX, 0)
+
+                    // use batch processing while powered with redstone
+                    val keepRunning = powered && blockEntity.canCraftSelectedTM()
+                    data.set(BURN_ACTIVE_INDEX, if (keepRunning) 1 else 0)
 
                     blockEntity.setChanged()
+                    level.updateNeighbourForOutputSignal(pos, state.block)
                 }
             }
         }
@@ -334,7 +335,8 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
             if (slot == 0) true else false
 
         override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean {
-            val allowAutomation = blockEntity.containerData.get(REPEAT_PROCESS_INDEX) == 1
+            val powered = blockEntity.level?.hasNeighborSignal(blockEntity.blockPos) == true
+            val allowAutomation = blockEntity.containerData.get(BURN_ACTIVE_INDEX) == 1 || powered
 
             if (!allowAutomation) return false
 
