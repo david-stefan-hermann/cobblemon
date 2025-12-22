@@ -32,6 +32,7 @@
     "cobblemon:shiny_stone_block",
     "cobblemon:sun_stone_block",
     "cobblemon:thunder_stone_block",
-    "cobblemon:water_stone_block"
+    "cobblemon:water_stone_block",
+    "cobblemon:type_gem_core"
   ]
 }
