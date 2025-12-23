@@ -285,7 +285,7 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     @JvmField
     val TYPE_GEM_CORE = this.create("type_gem_core", TypeGemCoreBlock(BlockBehaviour.Properties.of().strength(4.0f, 10.0f).requiresCorrectToolForDrops()))
 
-    private val typeGemBlocks = mutableMapOf<ResourceLocation, Block>()
+    private val typeGemBlocks = mutableMapOf<ResourceLocation, TypeGemBlock>()
 
     @JvmField
     val TYPE_GEM_BLOCK_NORMAL = typeGemBlock("type_gem_block_normal")
@@ -896,7 +896,7 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
         return this.create(name, block)
     }
 
-    private fun typeGemBlock(name: String): Block {
+    private fun typeGemBlock(name: String): TypeGemBlock {
         val typeGemBlock = this.create(name, TypeGemBlock(BlockBehaviour.Properties.of().strength(3.0f, 6.0f)))
 
         val identifier = cobblemonResource(name)
