@@ -134,7 +134,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     var logoSlideRight: Boolean = true
     var logoSlideDown: Boolean = true
     var scanPosY: Int = 0
-    var scanLineOffsetY: Int = 0
+    var scanLineOffsetY: Double = 0.0
 
     var initScreen: Boolean = false
 
@@ -267,8 +267,8 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     override fun containerTick() {
         ticksElapsed++
         scanPosY++
-        scanLineOffsetY = (scanLineOffsetY + 1) % 3
-        if (scanPosY + 1 >= topPos + SCREEN_SAVER_HEIGHT) scanPosY = 0
+        scanLineOffsetY = (scanLineOffsetY + 0.5) % 6
+        if (scanPosY + 1 >= (topPos + SCREEN_SAVER_HEIGHT) * 2) scanPosY = 0
 
         if (mode == TM_BURN_MODE) {
             selectedTM?.let { tm ->
@@ -826,14 +826,14 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
                 red = logoTint.first,
                 green = logoTint.second,
                 blue = logoTint.third,
-                alpha = opacity
+                alpha = 0.8 * opacity
             )
 
             blitk(
                 matrixStack = poseStack,
                 texture = cobblemonResource("textures/white.png"),
                 x = leftPos + 1,
-                y = scanPosY,
+                y = scanPosY * 0.5,
                 width = SCREEN_SAVER_WIDTH,
                 height = 1,
                 red = 0,
@@ -851,11 +851,10 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             blitk(
                 matrixStack = poseStack,
                 texture = scanLines,
-                x = (leftPos + 1) / HALF_SCALE,
-                y = (topPos + 1 - scanLineOffsetY) / HALF_SCALE,
-                width = 236,
-                height = 228,
-                scale = HALF_SCALE,
+                x = leftPos + 1,
+                y = topPos + 1 - scanLineOffsetY,
+                width = 118,
+                height = 114,
                 alpha = opacity
             )
             context.disableScissor()
@@ -867,7 +866,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
                 y = topPos + 1,
                 width = SCREEN_SAVER_WIDTH,
                 height = SCREEN_SAVER_HEIGHT,
-                alpha = opacity
+                alpha = 0.5 * opacity
             )
 
             poseStack.popPose()
