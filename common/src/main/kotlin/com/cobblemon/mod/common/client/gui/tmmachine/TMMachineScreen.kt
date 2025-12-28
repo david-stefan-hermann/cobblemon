@@ -22,6 +22,7 @@ import com.cobblemon.mod.common.api.text.text
 import com.cobblemon.mod.common.api.tms.TechnicalMachine
 import com.cobblemon.mod.common.api.tms.TechnicalMachines
 import com.cobblemon.mod.common.api.types.ElementalType
+import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.block.entity.TMMachineBlockEntity
 import com.cobblemon.mod.common.block.tmmachine.TMMachineMenu
 import com.cobblemon.mod.common.client.CobblemonClient
@@ -49,6 +50,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.item.ItemStack
@@ -58,8 +60,12 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     companion object {
         const val HEIGHT = 226
         const val WIDTH = 191
+        const val HALF_SCALE = 0.5F
 
         const val DISC_DIAMETER = 56
+
+        const val LOGO_WIDTH = 86
+        const val LOGO_HEIGHT = 64
 
         const val TYPE_SELECT_MODE = 1
         const val MOVE_SELECT_MODE = 2
@@ -67,6 +73,10 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
 
         const val CRAFT_TICKS = 10 // Length for craft completion animation
         const val RESET_DISC_TICKS = 4 // Length for disc reset animation
+
+        const val SCREEN_SAVER_TIMEOUT_TICKS = 200 // 10 Seconds
+        const val SCREEN_SAVER_WIDTH = 118
+        const val SCREEN_SAVER_HEIGHT = 110
 
         val baseResource = cobblemonResource("textures/gui/tmmachine/base.png")
         val tmTray = cobblemonResource("textures/gui/tmmachine/tm_tray.png")
@@ -80,6 +90,19 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         val discReflective = cobblemonResource("textures/gui/tmmachine/tm_overlay_reflective.png")
         val discReflectiveRotating = cobblemonResource("textures/gui/tmmachine/tm_overlay_reflective_rotating.png")
         val discRotating = cobblemonResource("textures/gui/tmmachine/tm_overlay_rotating.png")
+
+        val logo = cobblemonResource("textures/gui/tmmachine/logo_tm.png")
+        val screenSaver = cobblemonResource("textures/gui/tmmachine/screen_saver_background.png")
+        val screenOverlay = cobblemonResource("textures/gui/tmmachine/screen_overlay.png")
+        val scanLines = cobblemonResource("textures/gui/tmmachine/scan_lines.png")
+
+        val logoResourceMap: Map<ResourceLocation, List<String>> = mapOf(
+            cobblemonResource("textures/gui/tmmachine/logo_ct.png") to listOf("fr"),
+            cobblemonResource("textures/gui/tmmachine/logo_mt.png") to listOf("es", "it", "pt")
+        )
+
+        fun getLogoResource(langCode: String?): ResourceLocation =
+            logoResourceMap.entries.find { it.value.contains(langCode?.substringBefore("_")) }?.key ?: logo
     }
 
     var selectedTM: TechnicalMachine? = null
@@ -102,12 +125,30 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     var discReflectionFrame: Int = 0
     var discRotationFrame: Int = 0
 
+    var ticksElapsed: Int = 0
+
+    var logoResource: ResourceLocation = logo
+    var logoTint: Triple<Double, Double, Double> = ElementalTypes.all().random().secondaryColor.toRGB()
+    var logoPosX: Int = 0
+    var logoPosY: Int = 0
+    var logoSlideRight: Boolean = true
+    var logoSlideDown: Boolean = true
+    var scanPosY: Int = 0
+    var scanLineOffsetY: Double = 0.0
+
     var initScreen: Boolean = false
 
     override fun init() {
         imageWidth = WIDTH
         imageHeight = HEIGHT
+
         super.init()
+
+        logoResource = getLogoResource(minecraft?.languageManager?.selected)
+
+        logoPosX = leftPos + 1
+        logoPosY = topPos + 1
+        scanPosY = topPos + 1
 
         partySlotList.clear()
         CobblemonClient.storage.party.forEachIndexed { index, pokemon ->
@@ -224,6 +265,11 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     }
 
     override fun containerTick() {
+        ticksElapsed++
+        scanPosY++
+        scanLineOffsetY = (scanLineOffsetY + 0.5) % 6
+        if (scanPosY + 1 >= (topPos + SCREEN_SAVER_HEIGHT) * 2) scanPosY = 0
+
         if (mode == TM_BURN_MODE) {
             selectedTM?.let { tm ->
                 val resultStack = menu.inventory!!.getItem(TMMachineMenu.RESULT_SLOT)
@@ -300,10 +346,46 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             } else if (mode == MOVE_SELECT_MODE) {
                 for (slot in partySlotList) slot.clickable = false
             }
+        }
 
+        // Screen saver
+        if (ticksElapsed > SCREEN_SAVER_TIMEOUT_TICKS) {
+            logoPosX = logoPosX + (if (logoSlideRight) 1 else -1)
+            logoPosY = logoPosY + (if (logoSlideDown) 1 else -1)
+            var borderHit = false
+
+            if (logoSlideRight && (logoPosX + (LOGO_WIDTH * HALF_SCALE).toInt()) >= (leftPos + SCREEN_SAVER_WIDTH + 1)) {
+                logoSlideRight = false
+                borderHit = true
+            }
+            if ((!logoSlideRight) && logoPosX <= (leftPos + 1)) {
+                logoSlideRight = true
+                borderHit = true
+            }
+
+            if (logoSlideDown && (logoPosY + (LOGO_HEIGHT * HALF_SCALE).toInt()) >= (topPos + SCREEN_SAVER_HEIGHT + 1)) {
+                logoSlideDown = false
+                borderHit = true
+            }
+            if ((!logoSlideDown) && logoPosY <= (topPos + 1)) {
+                logoSlideDown = true
+                borderHit = true
+            }
+
+            if (borderHit) {
+                logoTint = ElementalTypes.all().random().secondaryColor.toRGB()
+            }
         }
 
         super.containerTick()
+    }
+
+    private fun resetScreenSaver(): Boolean {
+        if (ticksElapsed >= SCREEN_SAVER_TIMEOUT_TICKS) {
+            ticksElapsed = 0
+            return true
+        }
+        return false
     }
 
     private fun loadBurnScreenData() {
@@ -597,7 +679,6 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     fun renderMoveInfo(context: GuiGraphics, mouseX: Int, mouseY: Int) {
         val currentTm = selectedTM
         val moveTemplate = currentTm?.moveName
-        val scale = 0.5F
 
         blitk(
             matrixStack = context.pose(),
@@ -632,7 +713,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             x = leftPos + 134.5,
             y = topPos + 8,
             shadow = true,
-            scale = scale
+            scale = HALF_SCALE
         )
 
         drawScaledText(
@@ -641,7 +722,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             x = leftPos + 134.5,
             y = topPos + 20,
             shadow = true,
-            scale = scale
+            scale = HALF_SCALE
         )
 
         drawScaledText(
@@ -650,7 +731,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             x = leftPos + 134.5,
             y = topPos + 32,
             shadow = true,
-            scale = scale
+            scale = HALF_SCALE
         )
 
         val movePower = if (moveTemplate != null && moveTemplate.power.toInt() > 0) moveTemplate.power.toInt().toString().text() else "—".text()
@@ -660,7 +741,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             x = leftPos + 183,
             y = topPos + 8,
             shadow = true,
-            scale = scale
+            scale = HALF_SCALE
         )
 
         val moveAccuracy = if (moveTemplate != null) MovesWidget.format(moveTemplate.accuracy).text() else "—".text()
@@ -670,7 +751,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             x = leftPos + 183,
             y = topPos + 20,
             shadow = true,
-            scale = scale
+            scale = HALF_SCALE
         )
 
         val moveEffect = if (moveTemplate != null) MovesWidget.format(moveTemplate.effectChances.firstOrNull() ?: 0.0).text() else "—".text()
@@ -680,21 +761,21 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             x = leftPos + 183,
             y = topPos + 32,
             shadow = true,
-            scale = scale
+            scale = HALF_SCALE
         )
 
         if (moveTemplate != null) {
             context.pose().pushPose()
-            context.pose().scale(scale, scale, 1F)
+            context.pose().scale(HALF_SCALE, HALF_SCALE, 1F)
             MultiLineLabelK.create(
                 component = moveTemplate.description,
-                width = 55 / scale,
+                width = 55 / HALF_SCALE,
                 maxLines = 5
             ).renderLeftAligned(
                 context = context,
-                x = (leftPos + 127.5) / scale,
-                y = (topPos + 44.5) / scale,
-                ySpacing = 6 / scale,
+                x = (leftPos + 127.5) / HALF_SCALE,
+                y = (topPos + 44.5) / HALF_SCALE,
+                ySpacing = 6 / HALF_SCALE,
                 colour = ColourLibrary.WHITE,
                 shadow = true
             )
@@ -717,7 +798,98 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         }
     }
 
+    fun renderScreenSaver(context: GuiGraphics) {
+        val poseStack = context.pose()
+        // Screen saver
+        if (ticksElapsed > SCREEN_SAVER_TIMEOUT_TICKS) {
+            val opacity = Math.max(0.0, Math.min(1.0, (ticksElapsed - SCREEN_SAVER_TIMEOUT_TICKS) * 0.2))
+            poseStack.pushPose()
+            poseStack.translate(0.0, 0.0, 100.0)
+            blitk(
+                matrixStack = poseStack,
+                texture = screenSaver,
+                x = leftPos + 1,
+                y = topPos + 1,
+                width = SCREEN_SAVER_WIDTH,
+                height = SCREEN_SAVER_HEIGHT,
+                alpha = opacity
+            )
+
+            blitk(
+                matrixStack = poseStack,
+                texture = logoResource,
+                x = logoPosX / HALF_SCALE,
+                y = logoPosY / HALF_SCALE,
+                width = LOGO_WIDTH,
+                height = LOGO_HEIGHT,
+                scale = HALF_SCALE,
+                red = logoTint.first,
+                green = logoTint.second,
+                blue = logoTint.third,
+                alpha = 0.8 * opacity
+            )
+
+            blitk(
+                matrixStack = poseStack,
+                texture = cobblemonResource("textures/white.png"),
+                x = leftPos + 1,
+                y = scanPosY * 0.5,
+                width = SCREEN_SAVER_WIDTH,
+                height = 1,
+                red = 0,
+                green = 0,
+                blue = 0,
+                alpha = 0.1 * opacity
+            )
+
+            context.enableScissor(
+                leftPos + 1,
+                topPos + 1,
+                leftPos + 1 + SCREEN_SAVER_WIDTH,
+                topPos + 1 + SCREEN_SAVER_HEIGHT
+            )
+            blitk(
+                matrixStack = poseStack,
+                texture = scanLines,
+                x = leftPos + 1,
+                y = topPos + 1 - scanLineOffsetY,
+                width = 118,
+                height = 114,
+                alpha = opacity
+            )
+            context.disableScissor()
+
+            blitk(
+                matrixStack = poseStack,
+                texture = screenOverlay,
+                x = leftPos + 1,
+                y = topPos + 1,
+                width = SCREEN_SAVER_WIDTH,
+                height = SCREEN_SAVER_HEIGHT,
+                alpha = 0.5 * opacity
+            )
+
+            poseStack.popPose()
+        }
+    }
+
+    override fun mouseMoved(mouseX: Double, mouseY: Double) {
+        ticksElapsed = 0
+        super.mouseMoved(mouseX, mouseY)
+    }
+
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        if (resetScreenSaver()) return false
+        return super.mouseClicked(mouseX, mouseY, button)
+    }
+
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, scrollX: Double, scrollY: Double): Boolean {
+        if (resetScreenSaver()) return false
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY)
+    }
+
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        if (resetScreenSaver()) return false
         val searchFocused = this::moveSearchWidget.isInitialized && moveSearchWidget.isFocused
 
         if (isInventoryKeyPressed(minecraft, keyCode, scanCode)) {
@@ -812,6 +984,8 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
                 renderDisc(matrices, (menu.getBurnProgressRatio() < 1F) && isBurnActive(), baseOpacity, overlayOpacity)
             }
         }
+
+        renderScreenSaver(graphics)
 
         super.render(graphics, mouseX, mouseY, delta)
 

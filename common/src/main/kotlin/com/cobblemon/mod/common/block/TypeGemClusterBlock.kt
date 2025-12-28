@@ -19,6 +19,7 @@ import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.util.RandomSource
+import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
@@ -46,6 +47,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams
 import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
 import javax.swing.text.html.HTML.Attribute.SHAPES
+import kotlin.io.path.Path
 
 class TypeGemClusterBlock(
         settings: Properties,
@@ -165,45 +167,21 @@ class TypeGemClusterBlock(
     }
 
     override fun getDrops(state: BlockState, params: LootParams.Builder): List<ItemStack> {
-        val item = BuiltInRegistries.ITEM.getOptional(dropItemId).orElse(Items.AIR)
+        val drops = super.getDrops(state, params)
 
-        // try to figure out Fortune level
-        val tool = params.getOptionalParameter(LootContextParams.TOOL)
-        var fortuneLevel = 0
-        var hasSilkTouch = false
+        for (stack in drops) {
+            val blockItem = stack.item as? BlockItem ?: continue
+            if (blockItem.block !is TypeGemClusterBlock) continue
 
-        if (tool != null && !tool.isEmpty) {
-            val enchantments = tool.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY)
-            for ((holder, level) in enchantments.entrySet()) {
-                if (holder.`is`(Enchantments.SILK_TOUCH)) {
-                    hasSilkTouch = true
-                }
-                if (holder.`is`(Enchantments.FORTUNE)) {
-                    fortuneLevel = level
-                }
-            }
-        }
-
-        // silk touch
-        if (hasSilkTouch) {
-            val stack = ItemStack(this)
-            val currentStage = state.getValue(STAGE)
-
-            stack.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY
-                .with(STAGE, currentStage)
-                .with(SHOULD_GROW, false) // we do not want these ones to grow
+            stack.set(
+                DataComponents.BLOCK_STATE,
+                BlockItemStateProperties.EMPTY
+                    .with(STAGE, state.getValue(STAGE))
+                    .with(SHOULD_GROW, false)
             )
-            return listOf(stack)
         }
 
-        // If stage is 3 drop 2-3 type gems otherwise drop 1.
-        var count = if (state.getValue(STAGE) == 3) (2..3).random() else 1
-
-        if (fortuneLevel > 0) {
-            count += (0..fortuneLevel).random()
-        }
-
-        return listOf(ItemStack(item, count))
+        return drops
     }
 
     override fun getShape(

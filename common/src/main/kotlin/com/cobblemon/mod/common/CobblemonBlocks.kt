@@ -283,49 +283,85 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     val BLACK_TUMBLESTONE_BLOCK = this.create("black_tumblestone_block", Block(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BLACK).strength(1.0F).sound(CobblemonSounds.TUMBLESTONE_BLOCK_SOUNDS).requiresCorrectToolForDrops().instrument(NoteBlockInstrument.BASEDRUM)))
 
     @JvmField
-    val TYPE_GEM_CORE = this.create("type_gem_core", TypeGemCoreBlock(BlockBehaviour.Properties.of().strength(4.0f, 10.0f)))
+    val TYPE_GEM_CORE = this.create("type_gem_core", TypeGemCoreBlock(BlockBehaviour.Properties.of().strength(4.0f, 10.0f).requiresCorrectToolForDrops()))
 
-    private val typeGemBlocks = mutableMapOf<ResourceLocation, Block>()
+    private val typeGemBlocks = mutableMapOf<ResourceLocation, TypeGemBlock>()
 
-    @JvmField val TYPE_GEM_BLOCK_NORMAL = typeGemBlock("type_gem_block_normal")
-    @JvmField val TYPE_GEM_BLOCK_FIRE = typeGemBlock("type_gem_block_fire")
-    @JvmField val TYPE_GEM_BLOCK_WATER = typeGemBlock("type_gem_block_water")
-    @JvmField val TYPE_GEM_BLOCK_ELECTRIC = typeGemBlock("type_gem_block_electric")
-    @JvmField val TYPE_GEM_BLOCK_GRASS = typeGemBlock("type_gem_block_grass")
-    @JvmField val TYPE_GEM_BLOCK_ICE = typeGemBlock("type_gem_block_ice")
-    @JvmField val TYPE_GEM_BLOCK_FIGHTING = typeGemBlock("type_gem_block_fighting")
-    @JvmField val TYPE_GEM_BLOCK_POISON = typeGemBlock("type_gem_block_poison")
-    @JvmField val TYPE_GEM_BLOCK_GROUND = typeGemBlock("type_gem_block_ground")
-    @JvmField val TYPE_GEM_BLOCK_FLYING = typeGemBlock("type_gem_block_flying")
-    @JvmField val TYPE_GEM_BLOCK_PSYCHIC = typeGemBlock("type_gem_block_psychic")
-    @JvmField val TYPE_GEM_BLOCK_BUG = typeGemBlock("type_gem_block_bug")
-    @JvmField val TYPE_GEM_BLOCK_ROCK = typeGemBlock("type_gem_block_rock")
-    @JvmField val TYPE_GEM_BLOCK_GHOST = typeGemBlock("type_gem_block_ghost")
-    @JvmField val TYPE_GEM_BLOCK_DRAGON = typeGemBlock("type_gem_block_dragon")
-    @JvmField val TYPE_GEM_BLOCK_DARK = typeGemBlock("type_gem_block_dark")
-    @JvmField val TYPE_GEM_BLOCK_STEEL = typeGemBlock("type_gem_block_steel")
-    @JvmField val TYPE_GEM_BLOCK_FAIRY = typeGemBlock("type_gem_block_fairy")
+    @JvmField
+    val TYPE_GEM_BLOCK_NORMAL = typeGemBlock("type_gem_block_normal")
+    @JvmField
+    val TYPE_GEM_BLOCK_FIRE = typeGemBlock("type_gem_block_fire")
+    @JvmField
+    val TYPE_GEM_BLOCK_WATER = typeGemBlock("type_gem_block_water")
+    @JvmField
+    val TYPE_GEM_BLOCK_ELECTRIC = typeGemBlock("type_gem_block_electric")
+    @JvmField
+    val TYPE_GEM_BLOCK_GRASS = typeGemBlock("type_gem_block_grass")
+    @JvmField
+    val TYPE_GEM_BLOCK_ICE = typeGemBlock("type_gem_block_ice")
+    @JvmField
+    val TYPE_GEM_BLOCK_FIGHTING = typeGemBlock("type_gem_block_fighting")
+    @JvmField
+    val TYPE_GEM_BLOCK_POISON = typeGemBlock("type_gem_block_poison")
+    @JvmField
+    val TYPE_GEM_BLOCK_GROUND = typeGemBlock("type_gem_block_ground")
+    @JvmField
+    val TYPE_GEM_BLOCK_FLYING = typeGemBlock("type_gem_block_flying")
+    @JvmField
+    val TYPE_GEM_BLOCK_PSYCHIC = typeGemBlock("type_gem_block_psychic")
+    @JvmField
+    val TYPE_GEM_BLOCK_BUG = typeGemBlock("type_gem_block_bug")
+    @JvmField
+    val TYPE_GEM_BLOCK_ROCK = typeGemBlock("type_gem_block_rock")
+    @JvmField
+    val TYPE_GEM_BLOCK_GHOST = typeGemBlock("type_gem_block_ghost")
+    @JvmField
+    val TYPE_GEM_BLOCK_DRAGON = typeGemBlock("type_gem_block_dragon")
+    @JvmField
+    val TYPE_GEM_BLOCK_DARK = typeGemBlock("type_gem_block_dark")
+    @JvmField
+    val TYPE_GEM_BLOCK_STEEL = typeGemBlock("type_gem_block_steel")
+    @JvmField
+    val TYPE_GEM_BLOCK_FAIRY = typeGemBlock("type_gem_block_fairy")
 
     private val typeGemClusters = mutableMapOf<ResourceLocation, TypeGemClusterBlock>()
 
-    @JvmField val TYPE_GEM_CLUSTER_NORMAL   = typeGemCluster("type_gem_cluster_normal",   TYPE_GEM_BLOCK_NORMAL,   cobblemonResource("normal_gem"))
-    @JvmField val TYPE_GEM_CLUSTER_FIRE     = typeGemCluster("type_gem_cluster_fire",     TYPE_GEM_BLOCK_FIRE,     cobblemonResource("fire_gem"))
-    @JvmField val TYPE_GEM_CLUSTER_WATER    = typeGemCluster("type_gem_cluster_water",    TYPE_GEM_BLOCK_WATER,    cobblemonResource("water_gem"))
-    @JvmField val TYPE_GEM_CLUSTER_ELECTRIC = typeGemCluster("type_gem_cluster_electric", TYPE_GEM_BLOCK_ELECTRIC, cobblemonResource("electric_gem"))
-    @JvmField val TYPE_GEM_CLUSTER_GRASS    = typeGemCluster("type_gem_cluster_grass",    TYPE_GEM_BLOCK_GRASS,    cobblemonResource("grass_gem"))
-    @JvmField val TYPE_GEM_CLUSTER_ICE      = typeGemCluster("type_gem_cluster_ice",      TYPE_GEM_BLOCK_ICE,      cobblemonResource("ice_gem"))
-    @JvmField val TYPE_GEM_CLUSTER_FIGHTING = typeGemCluster("type_gem_cluster_fighting", TYPE_GEM_BLOCK_FIGHTING, cobblemonResource("fighting_gem"))
-    @JvmField val TYPE_GEM_CLUSTER_POISON   = typeGemCluster("type_gem_cluster_poison",   TYPE_GEM_BLOCK_POISON,   cobblemonResource("poison_gem"))
-    @JvmField val TYPE_GEM_CLUSTER_GROUND   = typeGemCluster("type_gem_cluster_ground",   TYPE_GEM_BLOCK_GROUND,   cobblemonResource("ground_gem"))
-    @JvmField val TYPE_GEM_CLUSTER_FLYING   = typeGemCluster("type_gem_cluster_flying",   TYPE_GEM_BLOCK_FLYING,   cobblemonResource("flying_gem"))
-    @JvmField val TYPE_GEM_CLUSTER_PSYCHIC  = typeGemCluster("type_gem_cluster_psychic",  TYPE_GEM_BLOCK_PSYCHIC,  cobblemonResource("psychic_gem"))
-    @JvmField val TYPE_GEM_CLUSTER_BUG      = typeGemCluster("type_gem_cluster_bug",      TYPE_GEM_BLOCK_BUG,      cobblemonResource("bug_gem"))
-    @JvmField val TYPE_GEM_CLUSTER_ROCK     = typeGemCluster("type_gem_cluster_rock",     TYPE_GEM_BLOCK_ROCK,     cobblemonResource("rock_gem"))
-    @JvmField val TYPE_GEM_CLUSTER_GHOST    = typeGemCluster("type_gem_cluster_ghost",    TYPE_GEM_BLOCK_GHOST,    cobblemonResource("ghost_gem"))
-    @JvmField val TYPE_GEM_CLUSTER_DRAGON   = typeGemCluster("type_gem_cluster_dragon",   TYPE_GEM_BLOCK_DRAGON,   cobblemonResource("dragon_gem"))
-    @JvmField val TYPE_GEM_CLUSTER_DARK     = typeGemCluster("type_gem_cluster_dark",     TYPE_GEM_BLOCK_DARK,     cobblemonResource("dark_gem"))
-    @JvmField val TYPE_GEM_CLUSTER_STEEL    = typeGemCluster("type_gem_cluster_steel",    TYPE_GEM_BLOCK_STEEL,    cobblemonResource("steel_gem"))
-    @JvmField val TYPE_GEM_CLUSTER_FAIRY    = typeGemCluster("type_gem_cluster_fairy",    TYPE_GEM_BLOCK_FAIRY,    cobblemonResource("fairy_gem"))
+    @JvmField
+    val TYPE_GEM_CLUSTER_NORMAL = typeGemCluster("type_gem_cluster_normal", TYPE_GEM_BLOCK_NORMAL, cobblemonResource("normal_gem"))
+    @JvmField
+    val TYPE_GEM_CLUSTER_FIRE = typeGemCluster("type_gem_cluster_fire", TYPE_GEM_BLOCK_FIRE, cobblemonResource("fire_gem"))
+    @JvmField
+    val TYPE_GEM_CLUSTER_WATER = typeGemCluster("type_gem_cluster_water", TYPE_GEM_BLOCK_WATER, cobblemonResource("water_gem"))
+    @JvmField
+    val TYPE_GEM_CLUSTER_ELECTRIC = typeGemCluster("type_gem_cluster_electric", TYPE_GEM_BLOCK_ELECTRIC, cobblemonResource("electric_gem"))
+    @JvmField
+    val TYPE_GEM_CLUSTER_GRASS = typeGemCluster("type_gem_cluster_grass", TYPE_GEM_BLOCK_GRASS, cobblemonResource("grass_gem"))
+    @JvmField
+    val TYPE_GEM_CLUSTER_ICE = typeGemCluster("type_gem_cluster_ice", TYPE_GEM_BLOCK_ICE, cobblemonResource("ice_gem"))
+    @JvmField
+    val TYPE_GEM_CLUSTER_FIGHTING = typeGemCluster("type_gem_cluster_fighting", TYPE_GEM_BLOCK_FIGHTING, cobblemonResource("fighting_gem"))
+    @JvmField
+    val TYPE_GEM_CLUSTER_POISON = typeGemCluster("type_gem_cluster_poison", TYPE_GEM_BLOCK_POISON, cobblemonResource("poison_gem"))
+    @JvmField
+    val TYPE_GEM_CLUSTER_GROUND = typeGemCluster("type_gem_cluster_ground", TYPE_GEM_BLOCK_GROUND, cobblemonResource("ground_gem"))
+    @JvmField
+    val TYPE_GEM_CLUSTER_FLYING = typeGemCluster("type_gem_cluster_flying", TYPE_GEM_BLOCK_FLYING, cobblemonResource("flying_gem"))
+    @JvmField
+    val TYPE_GEM_CLUSTER_PSYCHIC = typeGemCluster("type_gem_cluster_psychic", TYPE_GEM_BLOCK_PSYCHIC, cobblemonResource("psychic_gem"))
+    @JvmField
+    val TYPE_GEM_CLUSTER_BUG = typeGemCluster("type_gem_cluster_bug", TYPE_GEM_BLOCK_BUG, cobblemonResource("bug_gem"))
+    @JvmField
+    val TYPE_GEM_CLUSTER_ROCK = typeGemCluster("type_gem_cluster_rock", TYPE_GEM_BLOCK_ROCK, cobblemonResource("rock_gem"))
+    @JvmField
+    val TYPE_GEM_CLUSTER_GHOST = typeGemCluster("type_gem_cluster_ghost", TYPE_GEM_BLOCK_GHOST, cobblemonResource("ghost_gem"))
+    @JvmField
+    val TYPE_GEM_CLUSTER_DRAGON = typeGemCluster("type_gem_cluster_dragon", TYPE_GEM_BLOCK_DRAGON, cobblemonResource("dragon_gem"))
+    @JvmField
+    val TYPE_GEM_CLUSTER_DARK = typeGemCluster("type_gem_cluster_dark", TYPE_GEM_BLOCK_DARK, cobblemonResource("dark_gem"))
+    @JvmField
+    val TYPE_GEM_CLUSTER_STEEL = typeGemCluster("type_gem_cluster_steel", TYPE_GEM_BLOCK_STEEL, cobblemonResource("steel_gem"))
+    @JvmField
+    val TYPE_GEM_CLUSTER_FAIRY = typeGemCluster("type_gem_cluster_fairy", TYPE_GEM_BLOCK_FAIRY, cobblemonResource("fairy_gem"))
 
     @JvmField
     val POLISHED_TUMBLESTONE = this.create("polished_tumblestone", Block(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_ORANGE).strength(1.0F).sound(CobblemonSounds.TUMBLESTONE_BLOCK_SOUNDS).requiresCorrectToolForDrops().instrument(NoteBlockInstrument.BASEDRUM)))
@@ -860,8 +896,8 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
         return this.create(name, block)
     }
 
-    private fun typeGemBlock(name: String): Block {
-        val typeGemBlock = this.create(name, Block(BlockBehaviour.Properties.of().strength(3.0f, 6.0f)))
+    private fun typeGemBlock(name: String): TypeGemBlock {
+        val typeGemBlock = this.create(name, TypeGemBlock(BlockBehaviour.Properties.of().strength(3.0f, 6.0f)))
 
         val identifier = cobblemonResource(name)
         typeGemBlocks[identifier] = typeGemBlock

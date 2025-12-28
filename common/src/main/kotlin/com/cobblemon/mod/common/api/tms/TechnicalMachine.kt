@@ -72,8 +72,11 @@ class TechnicalMachine(
             }
 
             player?.let {
-                val learnedTMs = CobblemonClient.clientTMMoveData?.learnedTMs ?: return@let
-                tms.retainAll { tm -> learnedTMs.contains(tm.id) }
+                val learnedTMs = CobblemonClient.clientTMMoveData?.learnedTMs ?: emptySet()
+
+                tms.retainAll { tm ->
+                    tm.obtainMethods.any { it is NoneObtainMethod } || learnedTMs.contains(tm.id)
+                }
             }
 
             return tms
