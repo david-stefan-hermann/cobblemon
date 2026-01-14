@@ -22,6 +22,8 @@ import com.google.gson.reflect.TypeToken
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.packs.PackType
+import java.io.BufferedReader
+import java.util.concurrent.ExecutionException
 
 object TechnicalMachines : JsonDataRegistry<TechnicalMachine> {
     override val gson = GsonBuilder()
@@ -40,6 +42,27 @@ object TechnicalMachines : JsonDataRegistry<TechnicalMachine> {
     val moveToTM = mutableMapOf<MoveTemplate, TechnicalMachine>()
     val tagMap = mutableMapOf<ItemTagCondition, TechnicalMachine>()
     val passiveTms = mutableMapOf<ResourceLocation, TechnicalMachine>()
+
+    /**
+     * Overridden to deserialize a DTO first and convert it to a runtime
+     * [TechnicalMachine], since Gson cannot deserialize Minecraft Ingredients
+     * directly.
+     */
+    override fun parse(
+        reader: BufferedReader,
+        identifier: ResourceLocation
+    ): TechnicalMachine {
+        try {
+            val technicalMachineDto = gson.fromJson(reader, TechnicalMachineDTO::class.java)
+            val technicalMachine = technicalMachineDto.toTechnicalMachine()
+            return technicalMachine
+        } catch (exception: Exception) {
+            throw ExecutionException(
+                "Error loading Technical Machine JSON: $identifier",
+                exception
+            )
+        }
+    }
 
     override fun reload(data: Map<ResourceLocation, TechnicalMachine>) {
         data.forEach { (id, tm) ->

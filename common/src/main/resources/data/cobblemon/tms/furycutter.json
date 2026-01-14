@@ -2,8 +2,7 @@
   "moveName": "furycutter",
   "obtainMethods": [
     {
-      "variant": "cobblemon:advancement",
-      "advancement": "cobblemon:craft_remedy"
+      "variant": "cobblemon:impossible"
     }
   ],
   "type": "bug",

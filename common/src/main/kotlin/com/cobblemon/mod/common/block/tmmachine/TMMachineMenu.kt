@@ -177,15 +177,13 @@ class TMMachineMenu(menuType: MenuType<*>, syncId: Int) : AbstractContainerMenu(
 
             if (validCost) {
                 Moves.getByName(tmMachineEntity?.activeMove ?: "")?.let { moveTemplate ->
-                    val serverLevel = level as ServerLevel
                     TechnicalMachines.moveToTM[moveTemplate]?.let { tm ->
-                        val recipe = tm.getClampedRecipe() ?: emptyList()
-                        for ((index, ingredient) in recipe.withIndex()) {
+                        val recipes = tm.getClampedRecipe() ?: emptyList()
+                        for ((index, recipe) in recipes.withIndex()) {
                             val slot = INGREDIENT_SLOTS.first + index
                             val provided = inventory?.getItem(slot) ?: ItemStack.EMPTY
-                            val expected = serverLevel.itemRegistry.get(ingredient.item) ?: ItemStack.EMPTY.item
 
-                            if (provided?.item != expected || provided.count < ingredient.count) {
+                            if (!recipe.ingredient.test(provided) || provided.count < recipe.count) {
                                 validCost = false
                                 break
                             }

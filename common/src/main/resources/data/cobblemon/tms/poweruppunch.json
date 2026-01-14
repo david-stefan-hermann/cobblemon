@@ -9,7 +9,11 @@
   "recipe": [
     {
       "item": "cobblemon:fighting_gem",
-      "count": 3
+      "count": 5
+    },
+    {
+      "item": "cobblemon:red_mint_leaf",
+      "count": 2
     }
   ]
 }

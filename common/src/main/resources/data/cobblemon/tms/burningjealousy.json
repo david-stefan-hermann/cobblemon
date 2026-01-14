@@ -9,10 +9,10 @@
   "recipe": [
     {
       "item": "cobblemon:fire_gem",
-      "count": 7
+      "count": 5
     },
     {
-      "item": "iron_ingot",
+      "item": "cobblemon:dark_gem",
       "count": 1
     }
   ]

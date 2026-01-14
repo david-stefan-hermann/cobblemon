@@ -9,10 +9,10 @@
   "recipe": [
     {
       "item": "cobblemon:ghost_gem",
-      "count": 9
+      "count": 6
     },
     {
-      "item": "diamond",
+      "item": "cobblemon:spell_tag",
       "count": 1
     }
   ]

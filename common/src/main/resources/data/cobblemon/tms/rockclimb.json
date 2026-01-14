@@ -9,10 +9,10 @@
   "recipe": [
     {
       "item": "cobblemon:normal_gem",
-      "count": 8
+      "count": 9
     },
     {
-      "item": "iron_ingot",
+      "item": "cobblemon:rock_gem",
       "count": 1
     }
   ]

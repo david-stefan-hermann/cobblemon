@@ -12,7 +12,11 @@
       "count": 10
     },
     {
-      "item": "diamond",
+      "item": "cobblemon:hard_stone",
+      "count": 1
+    },
+    {
+      "item": "cobblemon:pep_up_flower",
       "count": 1
     }
   ]

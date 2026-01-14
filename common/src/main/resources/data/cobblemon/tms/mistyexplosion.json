@@ -9,7 +9,11 @@
   "recipe": [
     {
       "item": "cobblemon:fairy_gem",
-      "count": 3
+      "count": 5
+    },
+    {
+      "item": "minecraft:tnt",
+      "count": 1
     }
   ]
 }

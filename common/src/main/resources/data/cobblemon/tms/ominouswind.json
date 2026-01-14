@@ -10,6 +10,10 @@
     {
       "item": "cobblemon:ghost_gem",
       "count": 3
+    },
+    {
+      "item": "cobblemon:flying_gem",
+      "count": 1
     }
   ]
 }

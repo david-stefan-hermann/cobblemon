@@ -9,10 +9,10 @@
   "recipe": [
     {
       "item": "cobblemon:psychic_gem",
-      "count": 8
+      "count": 6
     },
     {
-      "item": "gold",
+      "item": "minecraft:iron_helmet",
       "count": 1
     }
   ]

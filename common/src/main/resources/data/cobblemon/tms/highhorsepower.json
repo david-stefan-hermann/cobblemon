@@ -9,11 +9,11 @@
   "recipe": [
     {
       "item": "cobblemon:ground_gem",
-      "count": 10
+      "count": 8
     },
     {
-      "item": "gold_ingot",
-      "count": 1
+      "item": "minecraft:leather",
+      "count": 2
     }
   ]
 }

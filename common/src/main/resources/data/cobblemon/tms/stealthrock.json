@@ -12,7 +12,11 @@
       "count": 6
     },
     {
-      "item": "gold",
+      "item": "minecraft:dripstone",
+      "count": 3
+    },
+    {
+      "item": "cobblemon:black_augurite",
       "count": 1
     }
   ]

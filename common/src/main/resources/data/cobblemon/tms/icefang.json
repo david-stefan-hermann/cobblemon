@@ -9,7 +9,11 @@
   "recipe": [
     {
       "item": "cobblemon:ice_gem",
-      "count": 5
+      "count": 3
+    },
+    {
+      "item": "cobblemon:dark_gem",
+      "count": 1
     }
   ]
 }

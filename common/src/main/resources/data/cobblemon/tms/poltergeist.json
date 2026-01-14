@@ -12,7 +12,11 @@
       "count": 10
     },
     {
-      "item": "gold",
+      "item": "minecraft:ghast_tear",
+      "count": 1
+    },
+    {
+      "item": "cobblemon:spell_tag",
       "count": 1
     }
   ]

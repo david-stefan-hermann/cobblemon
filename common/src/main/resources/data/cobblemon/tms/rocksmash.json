@@ -10,6 +10,10 @@
     {
       "item": "cobblemon:fighting_gem",
       "count": 1
+    },
+    {
+      "item": "cobblemon:rock_gem",
+      "count": 1
     }
   ]
 }

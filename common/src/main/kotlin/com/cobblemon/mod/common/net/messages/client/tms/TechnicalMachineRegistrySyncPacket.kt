@@ -18,6 +18,7 @@ import com.cobblemon.mod.common.net.messages.client.data.DataRegistrySyncPacket
 import com.cobblemon.mod.common.util.cobblemonResource
 import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.item.crafting.Ingredient
 
 class TechnicalMachineRegistrySyncPacket(tms: List<TechnicalMachine>) : DataRegistrySyncPacket<TechnicalMachine, TechnicalMachineRegistrySyncPacket>(tms) {
 
@@ -38,7 +39,7 @@ class TechnicalMachineRegistrySyncPacket(tms: List<TechnicalMachine>) : DataRegi
             buffer.writeBoolean(true)
             buffer.writeVarInt(entry.recipe.size)
             entry.recipe.forEach {
-                buffer.writeResourceLocation(it.item)
+                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, it.ingredient)
                 buffer.writeVarInt(it.count)
             }
         } else {
@@ -56,9 +57,9 @@ class TechnicalMachineRegistrySyncPacket(tms: List<TechnicalMachine>) : DataRegi
         val recipe = if (buffer.readBoolean()) {
             val recipeCount = buffer.readVarInt()
             List(recipeCount) {
-                val item = buffer.readResourceLocation()
+                val ingredient = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer)
                 val count = buffer.readVarInt()
-                TechnicalMachineRecipe(item, count)
+                TechnicalMachineRecipe(ingredient, count)
             }
         } else null
 

@@ -9,10 +9,10 @@
   "recipe": [
     {
       "item": "cobblemon:bug_gem",
-      "count": 8
+      "count": 7
     },
     {
-      "item": "gold",
+      "item": "cobblemon:shed_shell",
       "count": 1
     }
   ]

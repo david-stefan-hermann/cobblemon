@@ -9,11 +9,7 @@
   "recipe": [
     {
       "item": "cobblemon:normal_gem",
-      "count": 10
-    },
-    {
-      "item": "gold",
-      "count": 1
+      "count": 12
     }
   ]
 }

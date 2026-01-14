@@ -12,7 +12,11 @@
       "count": 12
     },
     {
-      "item": "gold",
+      "item": "cobblemon:ice_stone",
+      "count": 1
+    },
+    {
+      "item": "cobblemon:pep_up_flower",
       "count": 1
     }
   ]

@@ -9,10 +9,10 @@
   "recipe": [
     {
       "item": "cobblemon:bug_gem",
-      "count": 7
+      "count": 6
     },
     {
-      "item": "iron_ingot",
+      "item": "minecraft:redstone_torch",
       "count": 1
     }
   ]

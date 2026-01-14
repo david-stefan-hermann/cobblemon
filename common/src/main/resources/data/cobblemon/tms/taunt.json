@@ -9,10 +9,10 @@
   "recipe": [
     {
       "item": "cobblemon:dark_gem",
-      "count": 5
+      "count": 4
     },
     {
-      "item": "iron_ingot",
+      "item": "cobblemon:mental_herb",
       "count": 1
     }
   ]

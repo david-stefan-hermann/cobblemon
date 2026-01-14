@@ -9,7 +9,11 @@
   "recipe": [
     {
       "item": "cobblemon:water_gem",
-      "count": 2
+      "count": 3
+    },
+    {
+      "item": "minecraft:string",
+      "count": 1
     }
   ]
 }

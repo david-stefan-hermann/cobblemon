@@ -284,12 +284,10 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
                 var validCost = !menu.inventory!!.getItem(TMMachineMenu.BLANK_TM_SLOT).isEmpty // Blank TM slot
 
                 if (validOutput && validCost) {
-                    val recipe = tm.getClampedRecipe() ?: listOf()
-                    recipe.forEachIndexed { index, ingredient ->
-                        val recipeStack = BuiltInRegistries.ITEM.get(ingredient.item).defaultInstance.also { it.count = ingredient.count }
+                    val recipes = tm.getClampedRecipe() ?: listOf()
+                    recipes.forEachIndexed { index, recipe ->
                         val slotStack = menu.inventory!!.getItem(index + TMMachineMenu.INGREDIENT_SLOTS.first)
-                        if (!(ItemStack.isSameItem(recipeStack, slotStack) && slotStack.count >= recipeStack.count)) {
-                            recipeStack.item
+                        if (!recipe.ingredient.test(slotStack) || slotStack.count < recipe.count) {
                             validCost = false
                             return@forEachIndexed
                         }
@@ -783,15 +781,25 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
 
             val recipe = selectedTM?.getClampedRecipe() ?: listOf()
             // Render material cost
-            recipe.forEachIndexed { index, ingredient ->
+            recipe.forEachIndexed { index, recipe ->
                 val itemX = (leftPos + 129 + (index * 18))
                 val itemY = (topPos + 90)
 
-                val itemStack = BuiltInRegistries.ITEM.get(ingredient.item).defaultInstance.also { it.count = ingredient.count }
+                val stacks = recipe.ingredient.items
+                if (stacks.isEmpty()) return@forEachIndexed
+
+                val level = Minecraft.getInstance().level ?: return@forEachIndexed
+                val index = ((level.gameTime / 20) % stacks.size).toInt()
+
+                val itemStack = stacks[index].copy().also { it.count = recipe.count }
+
                 context.renderItem(itemStack, itemX, itemY)
                 context.renderItemDecorations(Minecraft.getInstance().font, itemStack, itemX, itemY)
 
-                if (mouseX > itemX && mouseX < (itemX + 16) && mouseY > itemY && mouseY < (itemY + 16)) {
+                if (
+                    mouseX >= itemX && mouseX < itemX + 16 &&
+                    mouseY >= itemY && mouseY < itemY + 16
+                ) {
                     context.renderTooltip(Minecraft.getInstance().font, itemStack, mouseX, mouseY)
                 }
             }

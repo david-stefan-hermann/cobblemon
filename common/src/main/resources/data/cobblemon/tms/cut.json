@@ -10,6 +10,10 @@
     {
       "item": "cobblemon:normal_gem",
       "count": 1
+    },
+    {
+      "item": "cobblemon:grass_gem",
+      "count": 1
     }
   ]
 }

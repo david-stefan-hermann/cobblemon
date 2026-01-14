@@ -10,6 +10,10 @@
     {
       "item": "cobblemon:electric_gem",
       "count": 1
+    },
+    {
+      "item": "cobblemon:steel_gem",
+      "count": 1
     }
   ]
 }

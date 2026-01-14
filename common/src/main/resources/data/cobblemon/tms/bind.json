@@ -1,5 +1,5 @@
 {
-  "moveName": "terablast",
+  "moveName": "bind",
   "obtainMethods": [
     {
       "variant": "cobblemon:impossible"
@@ -9,10 +9,10 @@
   "recipe": [
     {
       "item": "cobblemon:normal_gem",
-      "count": 8
+      "count": 1
     },
     {
-      "item": "gold_ingot",
+      "item": "minecraft:string",
       "count": 1
     }
   ]

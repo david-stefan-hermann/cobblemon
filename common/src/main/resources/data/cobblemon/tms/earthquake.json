@@ -12,7 +12,11 @@
       "count": 12
     },
     {
-      "item": "diamond",
+      "item": "cobblemon:black_tumblestone",
+      "count": 5
+    },
+    {
+      "item": "minecraft:diamond",
       "count": 1
     }
   ]

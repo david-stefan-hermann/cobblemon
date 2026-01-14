@@ -10,6 +10,10 @@
     {
       "item": "cobblemon:normal_gem",
       "count": 3
+    },
+    {
+      "tag": "minecraft:saplings",
+      "count": 1
     }
   ]
 }

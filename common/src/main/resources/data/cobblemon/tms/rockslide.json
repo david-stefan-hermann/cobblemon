@@ -12,8 +12,12 @@
       "count": 8
     },
     {
-      "item": "gold_ingot",
+      "item": "cobblemon:hard_stone",
       "count": 1
+    },
+    {
+      "item": "cobblemon:tumblestone",
+      "count": 3
     }
   ]
 }

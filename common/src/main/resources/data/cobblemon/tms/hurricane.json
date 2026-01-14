@@ -12,7 +12,11 @@
       "count": 12
     },
     {
-      "item": "gold",
+      "item": "minecraft:wind_charge",
+      "count": 3
+    },
+    {
+      "item": "cobblemon:water_gem",
       "count": 1
     }
   ]

@@ -9,7 +9,11 @@
   "recipe": [
     {
       "item": "cobblemon:dark_gem",
-      "count": 2
+      "count": 4
+    },
+    {
+      "tag": "cobblemon:held_items",
+      "count": 1
     }
   ]
 }

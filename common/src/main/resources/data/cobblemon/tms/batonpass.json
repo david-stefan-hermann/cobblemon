@@ -12,7 +12,11 @@
       "count": 7
     },
     {
-      "item": "gold_ingot",
+      "item": "minecraft:breeze_rod",
+      "count": 1
+    },
+    {
+      "item": "cobblemon:shed_shell",
       "count": 1
     }
   ]

@@ -2,7 +2,7 @@
   "moveName": "hyperbeam",
   "obtainMethods": [
     {
-      "variant": "cobblemon:none"
+      "variant": "cobblemon:impossible"
     }
   ],
   "type": "normal",
@@ -12,7 +12,11 @@
       "count": 12
     },
     {
-      "item": "gold_ingot",
+      "item": "minecraft:diamond",
+      "count": 2
+    },
+    {
+      "item": "cobblemon:power_herb",
       "count": 1
     }
   ]

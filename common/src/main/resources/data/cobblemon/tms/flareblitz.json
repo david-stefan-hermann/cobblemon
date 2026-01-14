@@ -12,7 +12,11 @@
       "count": 10
     },
     {
-      "item": "diamond",
+      "item": "minecraft:fire_charge",
+      "count": 2
+    },
+    {
+      "item": "cobblemon:pep_up_flower",
       "count": 1
     }
   ]

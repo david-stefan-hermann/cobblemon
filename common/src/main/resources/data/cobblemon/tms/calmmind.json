@@ -12,7 +12,11 @@
       "count": 6
     },
     {
-      "item": "gold_ingot",
+      "item": "cobblemon:cyan_mint_leaf",
+      "count": 1
+    },
+    {
+      "item": "cobblemon:pink_mint_leaf",
       "count": 1
     }
   ]

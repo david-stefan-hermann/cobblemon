@@ -12,7 +12,11 @@
       "count": 7
     },
     {
-      "item": "iron_ingot",
+      "item": "cobblemon:big_root",
+      "count": 1
+    },
+    {
+      "item": "cobblemon:revival_herb",
       "count": 1
     }
   ]

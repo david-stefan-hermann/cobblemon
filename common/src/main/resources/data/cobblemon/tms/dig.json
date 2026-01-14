@@ -12,7 +12,11 @@
       "count": 6
     },
     {
-      "item": "iron_ingot",
+      "item": "minecraft:dirt",
+      "count": 1
+    },
+    {
+      "item": "minecraft:sand",
       "count": 1
     }
   ]

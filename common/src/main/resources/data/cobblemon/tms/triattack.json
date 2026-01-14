@@ -8,12 +8,16 @@
   "type": "normal",
   "recipe": [
     {
-      "item": "cobblemon:normal_gem",
-      "count": 8
+      "item": "cobblemon:ice_gem",
+      "count": 3
     },
     {
-      "item": "gold_ingot",
-      "count": 1
+      "item": "cobblemon:fire_gem",
+      "count": 3
+    },
+    {
+      "item": "cobblemon:electric_gem",
+      "count": 3
     }
   ]
 }

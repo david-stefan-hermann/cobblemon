@@ -9,10 +9,14 @@
   "recipe": [
     {
       "item": "cobblemon:psychic_gem",
-      "count": 8
+      "count": 10
     },
     {
-      "item": "gold",
+      "item": "cobblemon:psychic_seed",
+      "count": 1
+    },
+    {
+      "item": "cobblemon:wise_glasses",
       "count": 1
     }
   ]

@@ -8,12 +8,12 @@
 
 package com.cobblemon.mod.common.api.tms
 
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.item.crafting.Ingredient
 
 /**
  * Represents the ingredients necessary to craft a [TechnicalMachine] in the [TMBlock]
  */
 data class TechnicalMachineRecipe(
-        val item: ResourceLocation,
-        val count: Int
+    val ingredient: Ingredient,
+    val count: Int
 )

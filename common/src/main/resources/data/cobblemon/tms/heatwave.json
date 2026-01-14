@@ -12,7 +12,11 @@
       "count": 9
     },
     {
-      "item": "gold",
+      "item": "cobblemon:charcoal_stick",
+      "count": 1
+    },
+    {
+      "item": "minecraft:wind_charge",
       "count": 1
     }
   ]

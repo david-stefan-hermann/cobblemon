@@ -9,10 +9,14 @@
   "recipe": [
     {
       "item": "cobblemon:ice_gem",
-      "count": 4
+      "count": 3
     },
     {
-      "item": "iron_ingot",
+      "item": "cobblemon:fighting_gem",
+      "count": 2
+    },
+    {
+      "item": "cobblemon:never_melt_ice",
       "count": 1
     }
   ]

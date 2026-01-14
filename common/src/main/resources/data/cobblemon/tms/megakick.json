@@ -9,10 +9,10 @@
   "recipe": [
     {
       "item": "cobblemon:normal_gem",
-      "count": 10
+      "count": 7
     },
     {
-      "item": "gold_ingot",
+      "item": "cobblemon:fighting_gem",
       "count": 1
     }
   ]

@@ -163,12 +163,11 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
         if (getItem(TMMachineMenu.BLANK_TM_SLOT).item != CobblemonItems.BLANK_TM) return false
 
         // Ingredient slots
-        val recipe = tm.getClampedRecipe() ?: emptyList()
-        for ((index, ingredient) in recipe.withIndex()) {
+        val recipes = tm.getClampedRecipe() ?: emptyList()
+        for ((index, recipe) in recipes.withIndex()) {
             val slot = TMMachineMenu.INGREDIENT_SLOTS.first + index
             val provided = getItem(slot)
-            val expected = level.itemRegistry.get(ingredient.item) ?: return false
-            if (provided.item != expected || provided.count < ingredient.count) return false
+            if (!recipe.ingredient.test(provided) || provided.count < recipe.count) return false
         }
 
         return true
@@ -190,17 +189,16 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
                     val blankTmStack = getItem(TMMachineMenu.BLANK_TM_SLOT)
                     if (blankTmStack.item != CobblemonItems.BLANK_TM) return
 
-                    val recipe = tm.getClampedRecipe() ?: emptyList()
-                    for ((index, ingredient) in recipe.withIndex()) {
+                    val recipes = tm.getClampedRecipe() ?: emptyList()
+                    for ((index, recipe) in recipes.withIndex()) {
                         val slot = TMMachineMenu.INGREDIENT_SLOTS.first + index
                         val provided = getItem(slot)
-                        val expected = level?.itemRegistry?.get(ingredient.item) ?: return
-                        if (provided.item != expected || provided.count < ingredient.count) return
+                        if (!recipe.ingredient.test(provided) || provided.count < recipe.count) return
                     }
 
                     // Consume ingredients
                     blankTmStack.shrink(1)
-                    for ((index, ingredient) in recipe.withIndex()) {
+                    for ((index, ingredient) in recipes.withIndex()) {
                         getItem(TMMachineMenu.INGREDIENT_SLOTS.first + index).shrink(ingredient.count)
                     }
 
@@ -350,8 +348,7 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
                         val recipe = tm.getClampedRecipe() ?: return false
                         val recipeIndex = slot - 2
                         if (recipeIndex >= recipe.size) return false
-                        val expected = blockEntity.level?.itemRegistry?.get(recipe[recipeIndex].item) ?: return false
-                        item == expected
+                        recipe[recipeIndex].ingredient.test(stack)
                     }
                     else -> false
                 }

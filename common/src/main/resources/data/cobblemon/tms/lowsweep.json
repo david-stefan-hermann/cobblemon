@@ -10,6 +10,10 @@
     {
       "item": "cobblemon:fighting_gem",
       "count": 4
+    },
+    {
+      "item": "minecraft:string",
+      "count": 2
     }
   ]
 }

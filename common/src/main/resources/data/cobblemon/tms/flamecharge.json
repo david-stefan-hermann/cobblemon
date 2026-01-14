@@ -10,6 +10,10 @@
     {
       "item": "cobblemon:fire_gem",
       "count": 3
+    },
+    {
+      "item": "cobblemon:green_mint_leaf",
+      "count": 1
     }
   ]
 }

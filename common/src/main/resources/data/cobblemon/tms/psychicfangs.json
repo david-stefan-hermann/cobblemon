@@ -9,10 +9,10 @@
   "recipe": [
     {
       "item": "cobblemon:psychic_gem",
-      "count": 6
+      "count": 7
     },
     {
-      "item": "gold",
+      "item": "cobblemon:dark_gem",
       "count": 1
     }
   ]
