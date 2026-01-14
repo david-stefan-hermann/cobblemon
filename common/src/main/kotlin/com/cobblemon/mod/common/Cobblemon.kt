@@ -482,6 +482,7 @@ object Cobblemon {
         AdvancementHandler.registerListeners()
         PokedexHandler.registerListeners()
         StatHandler.registerListeners()
+        StorageHandler.registerListeners()
     }
 
     fun getLevel(dimension: ResourceKey<Level>): Level? {

@@ -35,7 +35,8 @@ data class ClientGeneralPlayerData(
     var starterUUID: UUID? = null,
     var showChallengeLabel: Boolean = true,
     val battleTheme: ResourceLocation? = null,
-    var partySelectTutorialDone: Boolean = false
+    var partySelectTutorialDone: Boolean = false,
+    val tradedUUIDs: Map<UUID, Int> = mutableMapOf()
 ) : ClientInstancedPlayerData {
 
     override fun encode(buf: RegistryFriendlyByteBuf) {
@@ -48,6 +49,7 @@ data class ClientGeneralPlayerData(
         buf.writeNullable(resetStarters) { pb, value -> pb.writeBoolean(value) }
         buf.writeNullable(battleTheme) {pb, value -> pb.writeIdentifier(value)}
         buf.writeBoolean(partySelectTutorialDone)
+        buf.writeMap(tradedUUIDs, { _, key -> buf.writeUUID(key) }, { _, value -> buf.writeInt(value) })
     }
     companion object {
         fun decode(buffer: RegistryFriendlyByteBuf): SetClientPlayerDataPacket {
@@ -60,6 +62,7 @@ data class ClientGeneralPlayerData(
             val resetStarterPrompt = buffer.readNullable { it.readBoolean() }
             val battleTheme = buffer.readNullable { it.readIdentifier() }
             val partySelectTutorialDone = buffer.readBoolean()
+            val tradedUUIDs = buffer.readMap({ buffer.readUUID() }, { buffer.readInt() })
             val data = ClientGeneralPlayerData(
                 resetStarterPrompt,
                 promptStarter,
@@ -68,7 +71,8 @@ data class ClientGeneralPlayerData(
                 starterUUID,
                 showChallengeLabel,
                 battleTheme,
-                partySelectTutorialDone
+                partySelectTutorialDone,
+                tradedUUIDs
             )
             //Weird to do this, but since the flag doesn't get passed to the decoded obj, do it here
             //Should be fine, as long as decode doesn't get run on the server for some reason

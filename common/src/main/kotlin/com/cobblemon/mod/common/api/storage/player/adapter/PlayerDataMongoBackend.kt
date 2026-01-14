@@ -38,7 +38,8 @@ class PlayerDataMongoBackend(mongoClient: MongoClient, databaseName: String, col
         keyItems = Cobblemon.config.defaultKeyItems,
         extraData = mutableMapOf(),
         battleTheme = CobblemonSounds.PVP_BATTLE.location,
-        partySelectTutorialDone = false
+        partySelectTutorialDone = false,
+        tradedUUIDs = mutableMapOf()
     )}
 
     override val gson = GsonBuilder()
