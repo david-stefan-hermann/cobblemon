@@ -194,6 +194,42 @@
 - Resolved the niche issue where Structures would spawn in an incorrect location, creating very funky world gen.
 - Fixed Galarian Ponyta missing its cry.
 - Fixed various log warnings caused by redundant files and sound events.
+ - Fixes https://gitlab.com/cable-mc/cobblemon/-/issues/1943
+ - Fix occasional crash on retrieving revived fossils
+- Fixed an issue in the OmniPathNodeMaker/Navigation that prevented Combees from pathing into and out of Saccharine leaves.
+- Fixed orientation not getting reset after crashing while flying and getting back on the Pokémon.
+- Fixed Furfrou not being trimmable on NeoForge.
+- Fixed shiny Pokémon not respecting the silent flag on spawn.
+- Fixed honey from Saccharine Leaves being harvestable at less than the max age.
+- Items given from interacting with Saccharine Leaves are placed in the active hotbar slot if possible.
+- Fix all Pokémon being saved to chunks and never despawning.
+- Fixed possible error on world generation when Combees are placed in naturally generated bee nests.
+- Fixed PokeSnacks crashing if there was no available spawn.
+- Fixed Pokémon spawn influences not being specific to regional forms
+- Fixed crashing when viewing another player in spectator mode
+- Fixed missing apricorn textures for Adorn blocks
+- Fixed crashing when riding due to malformed json file, instead resetting it
+- Fixed mochi items consuming two items at a time
+- Fix item interaction sometimes not working properly when playing on servers.
+- Fixed Soothe Bell not being properly tagged as a held item.
+- Fixed Mint Leaves not being usable for filling the Resurrection Machine.
+- Added Saccharine Boats and Saccharine Boat with Chests to relevant boat tags.
+- Fixed the `run_script` Molang function to not fail if the environment's context is null.
+- Fixed the movesets of certain Pokémon being incorrectly sanitized upon reload.
+- Fixed the ordering of Aprijuice's riding stat boosts to always have the same order.
+- Fixed the Molang functions `date_local_time`, `date_of`, `date_is_after` to use the correct date format.
+- Fixed the bottom half of pasture blocks having an incorrect hit-box when facing north or south.
+- Fixed Galarian Mr. Mime incorrectly being rideable.
+- Fixed gimmicks not being usable in double / triple battles
+- Fixed gimmick buttons showing when already used in the same turn in double / triple battles
+- Fixed Apricorn block model rotation for counters/sinks/cupboards/drawers to match that of most recent version of Adorn.
+- Fixed Fresh Start Mochi EV reset not syncing health changes properly.
+- Fixed requirements such as `biomeCondition` crashing the game when used to define Pokémon interactions.
+- Fixed Pokémon interactions not playing sound effects when the volume was not specified.
+- Fixed Pokémon interaction cooldowns taking longer than intended when the Pokémon was in the player’s party.
+- Fixed Pokémon interactions occasionally crashing the game when spamming an interaction with a 0 cooldown.
+- Fixed Pokémon fullness decreasing more than intended when the Pokémon was pastured.
+- Traded Pokémon will now retain the original friendship level when traded back to its OT
 
 ### Developer
 - Added `PokeSnackSpawnerFactory` which allows influence registration on PokeSnack encounters
