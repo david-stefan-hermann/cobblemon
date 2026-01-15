@@ -22,12 +22,11 @@ object StorageHandler : EventHandler {
     }
 
     fun onRelease(event: ReleasePokemonEvent.Post) {
-        val player = UUID.fromString(event.pokemon.originalTrainer).getPlayer()
-        if (player != null) {
-            val playerData = Cobblemon.playerDataManager.getGenericData(player)
+        val playerUUID = UUID.fromString(event.pokemon.originalTrainer)
+        Cobblemon.playerDataManager.getGenericData(playerUUID).let { playerData ->
             playerData.tradedUUIDs.remove(event.pokemon.uuid)
             Cobblemon.playerDataManager.saveSingle(playerData, PlayerInstancedDataStoreTypes.GENERAL)
-            playerData.sendToPlayer(player)
+            playerUUID.getPlayer()?.let { player -> playerData.sendToPlayer(player) }
         }
     }
 }
