@@ -31,7 +31,6 @@ import kotlin.collections.associateWith
 import kotlin.collections.partition
 import kotlin.math.absoluteValue
 
-
 /**
  * AI that tries to choose the best move for the given situations. Based off of the Pokemon Trainer Tournament Simulator Github
  * https://github.com/cRz-Shadows/Pokemon_Trainer_Tournament_Simulator/blob/main/pokemon-showdown/sim/examples/Simulation-test-1.ts#L330
@@ -221,16 +220,19 @@ class StrongBattleAI(skill: Int) : BattleAI {
         if (forceSwitch || activeBattlePokemon.isGone()) {
             if (battle.turn == 1) {
                 val switchTo = activeBattlePokemon.actor.pokemonList.filter { it.canBeSentOut() }.randomOrNull()
-                        ?: return DefaultActionResponse()
+                    ?: return DefaultActionResponse()
                 switchTo.willBeSwitchedIn = true
                 return SwitchActionResponse(switchTo.uuid)
             }
             else {
-                val bestEstimation = availableSwitches.maxByOrNull { estimateMatchup(activeBattlePokemon, aiSide, battle, it.first) }
+                // When forced to switch, pick the Pokemon with the best matchup estimation
+                val bestSwitchScore = availableSwitches.maxOfOrNull { estimateMatchup(activeBattlePokemon, aiSide, battle, it.first) }
+                    ?: return PassActionResponse
+                val bestSwitch = availableSwitches.firstOrNull { estimateMatchup(activeBattlePokemon, aiSide, battle, it.first) == bestSwitchScore }
                     ?: return PassActionResponse
 
-                bestEstimation.second.willBeSwitchedIn = true
-                return SwitchActionResponse(bestEstimation.second.uuid)
+                bestSwitch.second.willBeSwitchedIn = true
+                return SwitchActionResponse(bestSwitch.second.uuid)
             }
         }
         if (moveset == null) {
@@ -259,9 +261,9 @@ class StrongBattleAI(skill: Int) : BattleAI {
 
         if (!checkSkillLevel()){
             val move = availableMoves
-                    .filter { it.first.target.targetList(activeBattlePokemon)?.isEmpty() != true }
-                    .randomOrNull()
-                    ?: return MoveActionResponse("struggle")
+                .filter { it.first.target.targetList(activeBattlePokemon)?.isEmpty() != true }
+                .randomOrNull()
+                ?: return MoveActionResponse("struggle")
 
             return chooseMove(move.first, activeBattlePokemon)
         }
@@ -270,7 +272,6 @@ class StrongBattleAI(skill: Int) : BattleAI {
         if (checkSwitchOutSkill() && shouldSwitchOut(aiSide, battle, activeBattlePokemon, moveset)) {
             considerSwitching(activeBattlePokemon, activeTrackerPokemon, opponents, availableMoves, availableSwitches, battle, aiSide)
         }
-        activeTrackerPokemon.firstTurn = false
 
         // If HP is below 30% and not switching out, always use the most damaging move
         if (activeTrackerPokemon.currentHpPercent < 0.3 && !shouldSwitchOut(aiSide, battle, activeBattlePokemon, moveset)) {
@@ -296,8 +297,6 @@ class StrongBattleAI(skill: Int) : BattleAI {
                 return chooseMove(fakeOut.first, activeBattlePokemon, targets.firstOrNull { validTarget != null && validTarget.id == it.battlePokemon!!.uuid})
             }
 
-            activeTrackerPokemon.firstTurn = false
-
 
             // Explosion/Self destruct
             availableMoves.firstOrNull {
@@ -315,7 +314,7 @@ class StrongBattleAI(skill: Int) : BattleAI {
 
             // Deal with non-weather related field changing effects
             for (move in availableMoves) {
-                
+
                 // Tailwind
                 if (move.first.id == "tailwind" && move.first.id != activeTracker.alliedSide.tailwindCondition &&
                     availableSwitches.size > 2) {
@@ -324,21 +323,21 @@ class StrongBattleAI(skill: Int) : BattleAI {
 
                 // Trick room
                 if (move.first.id == "trickroom" && move.first.id != activeTracker.currentRoom
-                        && availableSwitches.count { statEstimationActive(it.first, Stats.SPEED) <= trickRoomThreshold } >= 2) {
+                    && availableSwitches.count { statEstimationActive(it.first, Stats.SPEED) <= trickRoomThreshold } >= 2) {
                     return chooseMove(move.first, activeBattlePokemon)
                 }
 
                 // todo find a way to get list of active screens
                 // Aurora veil
                 if (move.first.id == "auroraveil" && move.first.id != activeTracker.alliedSide.screenCondition
-                        && activeTracker.currentWeather in listOf("hail", "snow")) {
+                    && activeTracker.currentWeather in listOf("hail", "snow")) {
                     return chooseMove(move.first, activeBattlePokemon)
                 }
 
                 // todo find a way to get list of active screens
                 // Light Screen
                 if (move.first.id == "lightscreen" && move.first.id != activeTracker.alliedSide.screenCondition
-                    && opponents.any { (it.species?.baseStats?.get(Stats.SPECIAL_ATTACK) ?: 0) > (it.species?.baseStats?.get(Stats.ATTACK) ?: 0) } 
+                    && opponents.any { (it.species?.baseStats?.get(Stats.SPECIAL_ATTACK) ?: 0) > (it.species?.baseStats?.get(Stats.ATTACK) ?: 0) }
                     && availableSwitches.size > 1) {
                     return chooseMove(move.first, activeBattlePokemon)
                 }
@@ -356,13 +355,13 @@ class StrongBattleAI(skill: Int) : BattleAI {
             for (move in availableMoves) {
                 // Setup
                 if (nOppRemainingMons >= 3 && move.first.id in AIUtility.entryHazards
-                        && !activeTracker.opponentSide.sideHazards.contains(move.first.id)) {
+                    && !activeTracker.opponentSide.sideHazards.contains(move.first.id)) {
                     return chooseMove(move.first, activeBattlePokemon)
                 }
 
                 // Removal
                 if (nRemainingMons >= 2 && move.first.id in AIUtility.antiHazardsMoves
-                        && activeTracker.alliedSide.sideHazards.isNotEmpty()) {
+                    && activeTracker.alliedSide.sideHazards.isNotEmpty()) {
                     return chooseMove(move.first, activeBattlePokemon)
                 }
             }
@@ -372,10 +371,10 @@ class StrongBattleAI(skill: Int) : BattleAI {
             // Court Change
             for (move in availableMoves) {
                 if (move.first.id == "courtchange"
-                        && (!AIUtility.entryHazards.none { it in activeTracker.alliedSide.sideHazards }
-                                || setOf("tailwind", "lightscreen", "reflect").any { it in activeTracker.opponentSide.sideHazards })
-                        && setOf("tailwind", "lightscreen", "reflect").none { it in activeTracker.opponentSide.sideHazards }
-                        && AIUtility.entryHazards.none { it in activeTracker.opponentSide.sideHazards }) {
+                    && (!AIUtility.entryHazards.none { it in activeTracker.alliedSide.sideHazards }
+                            || setOf("tailwind", "lightscreen", "reflect").any { it in activeTracker.opponentSide.sideHazards })
+                    && setOf("tailwind", "lightscreen", "reflect").none { it in activeTracker.opponentSide.sideHazards }
+                    && AIUtility.entryHazards.none { it in activeTracker.opponentSide.sideHazards }) {
                     return chooseMove(move.first, activeBattlePokemon)
                 }
             }
@@ -383,7 +382,7 @@ class StrongBattleAI(skill: Int) : BattleAI {
             // Strength Sap
             for (move in availableMoves) {
                 if (move.first.id == "strengthsap" && activeTrackerPokemon.currentHpPercent < 0.5
-                        && activeTrackerPokemon.species!!.baseStats.getOrDefault(Stats.ATTACK, 0) > 80) {
+                    && activeTrackerPokemon.species!!.baseStats.getOrDefault(Stats.ATTACK, 0) > 80) {
                     return chooseMove(move.first, activeBattlePokemon)
                 }
             }
@@ -391,10 +390,10 @@ class StrongBattleAI(skill: Int) : BattleAI {
             // Belly Drum
             for (move in availableMoves) {
                 if (move.first.id == "bellydrum"
-                        && (activeTrackerPokemon.currentHpPercent > 0.6
-                                && activeTrackerPokemon.pokemon!!.heldItem().item == CobblemonItems.SITRUS_BERRY
-                        || activeTrackerPokemon.currentHpPercent > 0.8)
-                        && activeTrackerPokemon.boosts.getOrDefault(Stats.ATTACK, 0) < 1) {
+                    && (activeTrackerPokemon.currentHpPercent > 0.6
+                            && activeTrackerPokemon.pokemon!!.heldItem().item == CobblemonItems.SITRUS_BERRY
+                            || activeTrackerPokemon.currentHpPercent > 0.8)
+                    && activeTrackerPokemon.boosts.getOrDefault(Stats.ATTACK, 0) < 1) {
                     return chooseMove(move.first, activeBattlePokemon)
                 }
             }
@@ -404,8 +403,8 @@ class StrongBattleAI(skill: Int) : BattleAI {
             for (move in availableMoves) {
                 AIUtility.weatherSetupMoves[move.first.id]?.let { requiredWeather ->
                     if (activeTracker.currentWeather != requiredWeather.lowercase() &&
-                            !(activeTracker.currentWeather == "primordialsea" && requiredWeather == "raindance") &&
-                            !(activeTracker.currentWeather == "desolateland" && requiredWeather == "sunnyday")) {
+                        !(activeTracker.currentWeather == "primordialsea" && requiredWeather == "raindance") &&
+                        !(activeTracker.currentWeather == "desolateland" && requiredWeather == "sunnyday")) {
                         return chooseMove(move.first, activeBattlePokemon)
                     }
                 }
@@ -431,8 +430,8 @@ class StrongBattleAI(skill: Int) : BattleAI {
                     // Stall out side conditions
                     if ((activeTracker.opponentSide.screenCondition != null || activeTracker.opponentSide.tailwindCondition != null) &&
                         (activeTracker.alliedSide.screenCondition == null || activeTracker.alliedSide.tailwindCondition == null)  ||
-                            opponents.any { it.currentStatus == null } &&
-                            activeTrackerPokemon.protectCount == 0 && opponents.none { it.currentAbility?.name == "unseenfist"}) {
+                        opponents.any { it.currentStatus == null } &&
+                        activeTrackerPokemon.protectCount == 0 && opponents.none { it.currentAbility?.name == "unseenfist"}) {
                         activeTrackerPokemon.protectCount = 3
                         return chooseMove(move.first, activeBattlePokemon)
                     }
@@ -460,10 +459,10 @@ class StrongBattleAI(skill: Int) : BattleAI {
         activeTrackerPokemon.firstTurn = false
 
         val move = availableMoves
-                .filter { it.first.canBeUsed() }
-                .filter { it.first.mustBeUsed() || it.first.target.targetList(activeBattlePokemon)?.isEmpty() != true }
-                .randomOrNull()
-                ?: return MoveActionResponse("struggle")
+            .filter { it.first.canBeUsed() }
+            .filter { it.first.mustBeUsed() || it.first.target.targetList(activeBattlePokemon)?.isEmpty() != true }
+            .randomOrNull()
+            ?: return MoveActionResponse("struggle")
 
         return chooseMove(move.first, activeBattlePokemon)
     }
@@ -520,6 +519,10 @@ class StrongBattleAI(skill: Int) : BattleAI {
             return false
 
         val activeTrackerPokemon = activeTracker.alliedSide.activePokemon.first { it.id == activeBattlePokemon.battlePokemon!!.uuid }
+
+        // Don't switch out if we just switched in
+        if (activeTrackerPokemon.firstTurn)
+            return false
         val actorTracker = activeTracker.alliedSide.actors.first { activeTrackerPokemon in it.activePokemon }
         val availableSwitches = actorTracker.party.filter { it.currentHp!! > 0 }
         val currentAbility = activeTrackerPokemon.pokemon!!.ability
@@ -567,7 +570,7 @@ class StrongBattleAI(skill: Int) : BattleAI {
         if (availableSwitches.isEmpty() || availableSwitches.none { estimateMatchup(activeBattlePokemon, side, battle, it) > 0 })
             return false
 
-        
+
 
         // ...and a 'good' reason to switch out
         if (opponentActiveTracker.any { it.boosts.getOrDefault(Stats.ACCURACY, 0) <= accuracySwitchThreshold } ||
@@ -996,5 +999,3 @@ class StrongBattleAI(skill: Int) : BattleAI {
         }
     }
 }
-
-
