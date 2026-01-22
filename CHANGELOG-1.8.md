@@ -1,5 +1,5 @@
 # Changelog
-## [1.8.0 (MONTH Xth, 2026)](#1-8-2)
+## [1.8.0 (MONTH Xth, 2026)](#1-8-0)
 
 ### Additions
 
@@ -12,8 +12,6 @@
 - Tweaked the spawning selector interface to take a bucket function rather than a bucket directly.
 
 ### Molang & Datapacks
-- Ride sounds can now be set as exclusive to passengers
-- Ride sounds no longer play when submerged unless specified with a new setting
 
 ### Particles
 
