@@ -82,7 +82,6 @@
 - Added `display_name`, `description`, and `max_pp` functions to the `Movetemplate` struct.
 - Added `PokeSnackSpawnerFactory` which allows influence registration on PokeSnack encounters
 
-
 ### Molang & Datapacks
 - Ride sounds can now be set as exclusive to passengers
 - Ride sounds no longer play when submerged unless specified with a new setting
