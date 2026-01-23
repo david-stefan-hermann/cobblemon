@@ -82,7 +82,6 @@ open class PokeSnackBlockEntity(pos: BlockPos, state: BlockState) :
         }
     }
 
-
     // Only non-herd Pokémon can be spawned from a Poké Snack
     override fun affectSpawnable(detail: SpawnDetail, spawnablePosition: SpawnablePosition) = detail.type in SpawnDetail.pokemonTypes && detail !is PokemonHerdSpawnDetail
 
