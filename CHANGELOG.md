@@ -80,6 +80,8 @@
 - Changed callback operations in `BattlePokemon` to allow multiple callbacks and is now mutable.
 - Changed the `owner` parameter in the `OwnerQueryRequirement` interface from `ServerPlayer` to `Player`. This method is now also called on the client to verify whether a Pokémon interaction succeeded, so make sure to update your implementations to handle both server and client contexts. 
 - Added `display_name`, `description`, and `max_pp` functions to the `Movetemplate` struct.
+- Added `PokeSnackSpawnerFactory` which allows influence registration on PokeSnack encounters
+
 
 ### Molang & Datapacks
 - Ride sounds can now be set as exclusive to passengers
