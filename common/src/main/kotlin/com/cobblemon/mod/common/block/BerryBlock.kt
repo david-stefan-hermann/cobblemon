@@ -81,7 +81,24 @@ class BerryBlock(private val berryIdentifier: ResourceLocation, settings: Proper
 
     override fun isBonemealSuccess(world: Level, random: RandomSource, pos: BlockPos, state: BlockState) = !this.isMaxAge(state)
 
-    override fun <T : BlockEntity> getTicker(world: Level, blockState: BlockState, blockWithEntityType: BlockEntityType<T>): BlockEntityTicker<T>? = createTickerHelper(blockWithEntityType, CobblemonBlockEntities.BERRY, BerryBlockEntity.TICKER)
+    // Use Random Tick instead of BlockEntityTicker for performance optimization
+    override fun <T : BlockEntity> getTicker(world: Level, blockState: BlockState, blockWithEntityType: BlockEntityType<T>): BlockEntityTicker<T>? = null
+
+    // Enable Random Tick: only immature and non-rooted berries need to tick
+    override fun isRandomlyTicking(state: BlockState): Boolean {
+        return state.getValue(AGE) < FRUIT_AGE && !state.getValue(IS_ROOTED)
+    }
+
+    // Random Tick handler: uses time compensation to ensure correct growth speed
+    @Deprecated("Deprecated in Java")
+    override fun randomTick(state: BlockState, world: ServerLevel, pos: BlockPos, random: RandomSource) {
+        val blockEntity = world.getBlockEntity(pos) as? BerryBlockEntity ?: return
+        
+        // processTick calculates elapsed time and updates timer, returns whether growth is needed
+        if (blockEntity.processTick(world, pos, state)) {
+            growHelper(world, random, pos, state)
+        }
+    }
 
     init {
         registerDefaultState(stateDefinition.any()
