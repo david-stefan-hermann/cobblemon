@@ -13,10 +13,12 @@ import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.block.entity.TMMachineBlockEntity
 import com.cobblemon.mod.common.util.playSoundServer
 import com.cobblemon.mod.common.util.toVec3d
+import com.cobblemon.mod.common.util.cobblemonResource
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
+import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.Containers
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.Entity
@@ -156,6 +158,16 @@ class TMMachineBlock(properties: Properties) : BaseEntityBlock(properties), Simp
                     )
                 }
             } else {
+                val serverPlayer = player as? ServerPlayer
+                if (serverPlayer != null) {
+                    val recipeId = cobblemonResource("tm_machine")
+                    val recipeOpt = level.server?.recipeManager?.byKey(recipeId)
+                    recipeOpt?.ifPresent { recipe ->
+                        if (!serverPlayer.recipeBook.contains(recipe)) {
+                            serverPlayer.awardRecipes(listOf(recipe))
+                        }
+                    }
+                }
                 val blockEntity = level.getBlockEntity(pos)
                 if (blockEntity is TMMachineBlockEntity) {
                     player.openMenu(blockEntity)
