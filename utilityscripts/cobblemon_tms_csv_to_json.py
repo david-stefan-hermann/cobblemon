@@ -42,11 +42,18 @@ for row in reader:
         if parsed:
             recipe.append(parsed)
 
+    # Determine obtain method based on "Locked" column value
+    column_b_value = row.get("Locked", "").strip().lower()
+    if column_b_value == "locked":
+        obtain_variant = "cobblemon:impossible"
+    else:
+        obtain_variant = "cobblemon:none"
+
     tm = {
         "moveName": row["Showdown Move"].lower(),
         "obtainMethods": [
             {
-                "variant": "cobblemon:none"
+                "variant": obtain_variant
             }
         ],
         "type": row["Type"].lower(),
