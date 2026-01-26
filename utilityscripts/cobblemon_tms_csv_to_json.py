@@ -46,7 +46,7 @@ for row in reader:
         "moveName": row["Showdown Move"].lower(),
         "obtainMethods": [
             {
-                "variant": "cobblemon:impossible"
+                "variant": "cobblemon:none"
             }
         ],
         "type": row["Type"].lower(),
