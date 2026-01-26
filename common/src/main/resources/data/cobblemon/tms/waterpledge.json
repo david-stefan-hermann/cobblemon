@@ -2,7 +2,7 @@
   "moveName": "waterpledge",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:none"
     }
   ],
   "type": "water",

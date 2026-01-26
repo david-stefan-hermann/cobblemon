@@ -2,7 +2,7 @@
   "moveName": "thief",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:none"
     }
   ],
   "type": "dark",

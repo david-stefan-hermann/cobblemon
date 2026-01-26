@@ -2,7 +2,7 @@
   "moveName": "incinerate",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:none"
     }
   ],
   "type": "fire",

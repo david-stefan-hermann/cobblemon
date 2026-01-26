@@ -2,7 +2,7 @@
   "moveName": "grasspledge",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:none"
     }
   ],
   "type": "grass",

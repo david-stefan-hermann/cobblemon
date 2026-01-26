@@ -2,7 +2,7 @@
   "moveName": "rocksmash",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:none"
     }
   ],
   "type": "fighting",

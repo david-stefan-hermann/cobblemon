@@ -2,7 +2,7 @@
   "moveName": "superfang",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:none"
     }
   ],
   "type": "normal",

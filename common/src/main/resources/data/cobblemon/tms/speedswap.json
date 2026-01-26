@@ -2,7 +2,7 @@
   "moveName": "speedswap",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:none"
     }
   ],
   "type": "psychic",
