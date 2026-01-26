@@ -95,9 +95,17 @@ class BerryBlock(private val berryIdentifier: ResourceLocation, settings: Proper
         val blockEntity = world.getBlockEntity(pos) as? BerryBlockEntity ?: return
         
         // processTick calculates elapsed time and updates timer, returns whether growth is needed
-        if (blockEntity.processTick(world, pos, state)) {
-            growHelper(world, random, pos, state)
+        if (blockEntity.processTick(world, pos, state) && !world.getBlockTicks().hasScheduledTick(pos, this)) {
+            // Schedule growth for next tick to avoid tick scheduler conflicts during randomTick
+            world.scheduleTick(pos, this, 1)
         }
+    }
+
+    // Scheduled tick handler: performs the actual growth
+    @Deprecated("Deprecated in Java")
+    override fun tick(state: BlockState, world: ServerLevel, pos: BlockPos, random: RandomSource) {
+        if (state.getValue(IS_ROOTED)) return
+        growHelper(world, random, pos, state)
     }
 
     init {
