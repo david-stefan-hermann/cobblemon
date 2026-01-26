@@ -48,7 +48,7 @@ class StrongBattleAI(skill: Int) : BattleAI {
     private val hpWeightConsideration = 0.25 // how much HP difference is a consideration for switchins
     private val hpFractionCoefficient = 0.4 // how much HP differences should be taken into account for switch ins
     private val boostWeightCoefficient = 1 // the amount of boosts considered a baseline to be removed
-    private val switchOutMatchupThreshold = 0 // todo change this to get it feeling just right (-7 never switches)
+    private val switchOutMatchupThreshold = -2 // todo change this to get it feeling just right (-7 never switches)
     private val selfKoMoveMatchupThreshold = 0.3
     private val trickRoomThreshold = 85
     private val recoveryMoveThreshold = 0.50
@@ -535,7 +535,7 @@ class StrongBattleAI(skill: Int) : BattleAI {
         // Only switch if a switch-in is significantly better than the current Pokémon
         val currentScore = estimateMatchup(activeBattlePokemon, side, battle)
         val bestSwitchScore = availableSwitches.maxOfOrNull { estimateMatchup(activeBattlePokemon, side, battle, it) } ?: currentScore
-        val improvementThreshold = currentScore.absoluteValue * 0.25 + 2
+        val improvementThreshold = currentScore.absoluteValue * 0.5 + 3
         if (bestSwitchScore <= currentScore + improvementThreshold) {
             return false
         }
