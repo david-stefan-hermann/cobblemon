@@ -14,6 +14,7 @@
 ### Changes
 
 ### Fixes
+- Fixed Blitzle's base scale being `1` rather than the intended `0.8`
 
 ### Developer
 
