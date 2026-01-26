@@ -708,6 +708,14 @@
 					"position": [0, 0, "-q.anim_time*90*0.4"]
 				}
 			}
+		},
+		"animation.mantine.cry": {
+			"animation_length": 1.25,
+			"sound_effects": {
+				"0.0417": {
+					"effect": "pokemon.mantine.cry"
+				}
+			}
 		}
 	}
 }

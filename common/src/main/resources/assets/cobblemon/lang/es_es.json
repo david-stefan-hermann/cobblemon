@@ -8675,5 +8675,17 @@
     "cobblemon.ui.stats.blocks_traveled": "Pasos",
     "item.cobblemon.eggant_berry.tooltip": "El portador deja de andar enamorado",
     "cobblemon.config.ui.swap_x_and_y_axes": "Intercambiar los Ejes X e Y",
-    "cobblemon.config.ui.swap_x_and_y_axes.tooltip": "Invierte los ejes X e Y."
+    "cobblemon.config.ui.swap_x_and_y_axes.tooltip": "Invierte los ejes X e Y.",
+    "cobblemon.ui.ride_style.air.bird": "Ave",
+    "cobblemon.ui.ride_style.air.hover": "Ovni",
+    "cobblemon.ui.ride_style.air.jet": "Avión",
+    "cobblemon.ui.ride_style.air.rocket": "Cohete",
+    "cobblemon.ui.ride_style.land.horse": "Estándar",
+    "cobblemon.ui.ride_style.liquid.dolphin": "Delfín",
+    "cobblemon.ui.ride_style.liquid.submarine": "Submarino",
+    "cobblemon.ui.ride_style.liquid.boat": "Bote",
+    "cobblemon.ui.ride_style.land.cart": "Coche",
+    "effect.cobblemon.cleanse_all": "Limpieza de efectos",
+    "effect.cobblemon.cleanse_negative": "Limpieza de efectos negativos",
+    "effect.cobblemon.mental_restoration": "Descanso mental"
 }

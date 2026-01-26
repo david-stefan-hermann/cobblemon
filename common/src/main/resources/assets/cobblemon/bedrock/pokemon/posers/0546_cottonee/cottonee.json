@@ -9,7 +9,7 @@
   },
   "poses": {
     "standing": {
-      "poseTypes": ["STAND", "NONE", "PORTRAIT", "PROFILE"],
+      "poseTypes": ["STAND", "NONE", "PORTRAIT", "PROFILE", "HOVER", "FLOAT"],
       "animations": [
         "q.look('head_ai')",
         "q.bedrock('cottonee', 'ground_idle')"
@@ -19,7 +19,7 @@
       ]
     },
     "walking": {
-      "poseTypes": ["WALK"],
+      "poseTypes": ["WALK", "FLY", "SWIM"],
       "animations": [
         "q.look('head_ai')",
         "q.bedrock('cottonee', 'ground_idle')"

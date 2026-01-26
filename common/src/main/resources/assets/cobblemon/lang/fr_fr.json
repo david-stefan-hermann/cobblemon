@@ -9173,5 +9173,10 @@
     "stat.cobblemon.times_ridden": "Pokémon chevauchés",
     "stat.cobblemon.rod_casts": "Poké Canne lancées",
     "stat.cobblemon.reel_ins": "Captures via Poké Canne",
-    "tag.item.cobblemon.berries.filling": "Baies de remplissage"
+    "tag.item.cobblemon.berries.filling": "Baies de remplissage",
+    "effect.cobblemon.mental_restoration": "Rétablissement mental",
+    "cobblemon.ui.ride_style.air.bird": "Oiseau",
+    "cobblemon.ui.ride_style.air.hover": "Flotte",
+    "cobblemon.ui.ride_style.air.jet": "Avion",
+    "cobblemon.ui.ride_style.air.rocket": "Fusée"
 }

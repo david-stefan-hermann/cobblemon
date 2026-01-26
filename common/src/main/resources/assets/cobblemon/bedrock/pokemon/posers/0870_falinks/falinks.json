@@ -5,7 +5,6 @@
     "profileTranslation": [0.1, 0.9, 0],
     "rootBone": "falinks",
     "animations": {
-        "cry": "q.bedrock_stateful('falinks', 'cry')",
         "physical": "q.bedrock_primary('falinks', 'physical', q.curve('symmetrical_wide'))",
         "faint": "q.bedrock_primary('falinks', 'faint', q.curve('symmetrical_wide'))"
     },
