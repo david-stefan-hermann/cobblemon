@@ -24,6 +24,7 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.BlockItemStateProperties
+import net.minecraft.world.item.component.CustomModelData
 import net.minecraft.world.item.context.BlockPlaceContext
 import net.minecraft.world.item.enchantment.Enchantments
 import net.minecraft.world.item.enchantment.ItemEnchantments
@@ -178,6 +179,11 @@ class TypeGemClusterBlock(
                 BlockItemStateProperties.EMPTY
                     .with(STAGE, state.getValue(STAGE))
                     .with(SHOULD_GROW, false)
+                    .with(STUNTED, state.getValue(STUNTED))
+            )
+            stack.set(
+                DataComponents.CUSTOM_MODEL_DATA,
+                CustomModelData(state.getValue(STAGE))
             )
         }
 
