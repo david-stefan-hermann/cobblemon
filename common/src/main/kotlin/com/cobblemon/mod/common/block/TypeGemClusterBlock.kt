@@ -121,7 +121,7 @@ class TypeGemClusterBlock(
         val facing = state.getValue(FACING)
 
         if (isStunted) {
-            println("[TypeGemClusterBlock] Cluster at $pos is STUNTED at STAGE_3. Finalizing growth.")
+            // println("[TypeGemClusterBlock] Cluster at $pos is STUNTED at STAGE_3. Finalizing growth.")
             level.setBlockAndUpdate(pos, state.setValue(SHOULD_GROW, false))
             return
         }
@@ -132,8 +132,8 @@ class TypeGemClusterBlock(
                 .getKey(nextStage)
                 .toString()
 
-        println("[TypeGemClusterBlock] Attempting to grow into TypeGemBlock at $pos")
-        println("[TypeGemClusterBlock] Cluster type: $clusterType")
+        // println("[TypeGemClusterBlock] Attempting to grow into TypeGemBlock at $pos")
+        // println("[TypeGemClusterBlock] Cluster type: $clusterType")
 
         // Check neighboring gem blocks
         val hasConflict = Direction.entries
@@ -142,18 +142,18 @@ class TypeGemClusterBlock(
                     val neighborPos = pos.relative(dir)
                     val neighborState = level.getBlockState(neighborPos)
                     val neighborBlockId = BuiltInRegistries.BLOCK.getKey(neighborState.block)
-                    println("[TypeGemClusterBlock] Neighbor at $dir -> $neighborBlockId")
+                    // println("[TypeGemClusterBlock] Neighbor at $dir -> $neighborBlockId")
                     isGem(neighborState)
                 }
 
         if (hasConflict) {
-            println("[TypeGemClusterBlock] Found nearby TypeGemBlock(s). Stunting cluster at $pos.")
+            // println("[TypeGemClusterBlock] Found nearby TypeGemBlock(s). Stunting cluster at $pos.")
             level.setBlockAndUpdate(
                     pos,
                     state.setValue(STUNTED, true).setValue(SHOULD_GROW, false)
             )
         } else {
-            println("[TypeGemClusterBlock] No conflicts. Converting cluster to TypeGemBlock.")
+            // println("[TypeGemClusterBlock] No conflicts. Converting cluster to TypeGemBlock.")
             var nextState = nextStage.defaultBlockState()
             if (nextState.hasProperty(FACING)) {
                 nextState = nextState.setValue(FACING, facing)

@@ -55,7 +55,7 @@ class TypeGemFeature : Feature<BlockStateConfiguration>(BlockStateConfiguration.
         val coreBlock = coreState.block as TypeGemCoreBlock
         coreBlock.forceGrow(worldGenLevel, origin, random, 0.5f)
 
-        println("[TypeGemFeature] Placed ${gemId.path} at $chosenPos")
+        // println("[TypeGemFeature] Placed ${gemId.path} at $chosenPos")
         return true
     }
 

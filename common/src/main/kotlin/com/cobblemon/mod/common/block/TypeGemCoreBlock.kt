@@ -198,7 +198,7 @@ class TypeGemCoreBlock(properties: Properties) : Block(properties) {
             }
         }
 
-        println("[TypeGemCoreBlock] No valid spot found for gem placement.")
+        // println("[TypeGemCoreBlock] No valid spot found for gem placement.")
         return Pair(false, connectedGems.size)
     }
 
