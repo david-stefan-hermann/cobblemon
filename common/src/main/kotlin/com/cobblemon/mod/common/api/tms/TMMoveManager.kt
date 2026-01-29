@@ -11,6 +11,8 @@ package com.cobblemon.mod.common.api.tms
 import com.cobblemon.mod.common.api.storage.player.InstancedPlayerData
 import com.cobblemon.mod.common.api.storage.player.PlayerInstancedDataStoreTypes
 import com.cobblemon.mod.common.api.storage.player.client.ClientTMMoveManager
+import com.cobblemon.mod.common.api.scheduling.ScheduledTask
+import com.cobblemon.mod.common.api.scheduling.ServerTaskTracker
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
@@ -44,6 +46,46 @@ class TMMoveManager(
         return TechnicalMachines.tmMap.values
             .filter { tm -> pokemon.allAccessibleMoves.contains(tm.moveName) }
             .map { tm -> tm.id }
+    }
+
+    fun scheduleFullSyncFromStores(
+        party: Iterable<Pokemon?>,
+        pc: Iterable<Pokemon?>,
+        batchSize: Int = 25
+    ) {
+        val iterator = sequence {
+            for (pokemon in party) {
+                if (pokemon != null) yield(pokemon)
+            }
+            for (pokemon in pc) {
+                if (pokemon != null) yield(pokemon)
+            }
+        }.iterator()
+
+        if (!iterator.hasNext()) return
+
+        val tmIds = mutableSetOf<ResourceLocation>()
+
+        ScheduledTask.Builder()
+            .tracker(ServerTaskTracker)
+            .interval(0f)
+            .infiniteIterations()
+            .execute { task ->
+                var processed = 0
+                while (processed < batchSize && iterator.hasNext()) {
+                    val pokemon = iterator.next()
+                    for (move in pokemon.allAccessibleMoves) {
+                        TechnicalMachines.moveToTM[move]?.id?.let { tmIds.add(it) }
+                    }
+                    processed++
+                }
+
+                if (!iterator.hasNext()) {
+                    learn(tmIds)
+                    task.expire()
+                }
+            }
+            .build()
     }
 
     companion object {
