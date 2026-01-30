@@ -2,6 +2,7 @@
 ## [1.8.0 (MONTH Xth, 2026)](#1-8-0)
 
 ### Additions
+- Added a new `cobblemon:structure`, which is a feature without any restrictions allowing the Builders to place certain structures in much more specific manner.
 
 ### Changes
 
