@@ -8,6 +8,9 @@
 ### Pokémon Added
 
 ### Model updates for the following Pokémon
+- Goomy
+- Sliggoo
+- Goodra
 
 ### Animation updates for the following Pokémon
 
