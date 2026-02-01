@@ -11,6 +11,9 @@
 - Goomy
 - Sliggoo
 - Goodra
+- Porygon
+- Porygon2
+- Porygon-Z
 
 ### Animation updates for the following Pokémon
 
@@ -18,7 +21,7 @@
 
 ### Fixes
 - Fixed Blitzle's base scale being `1` rather than the intended `0.8`
-
+- Fixed Magnezone's emissive layer for the shiny having the wrong name, thus displaying wrongly
 ### Developer
 
 ### Molang & Datapacks
