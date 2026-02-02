@@ -2,6 +2,7 @@
 ## [1.7.4 (MONTH Xth, 2026)](#1-7-4)
 
 ### Additions
+- Added a toast to notify players of how they can scroll through their party. Did you know you can hold R and scroll instead of using arrow keys??!
 
 ### New rideable Pokémon
 
