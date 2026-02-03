@@ -218,22 +218,14 @@ class StrongBattleAI(skill: Int) : BattleAI {
             .filter { it.second.canBeSentOut() }
 
         if (forceSwitch || activeBattlePokemon.isGone()) {
-            if (battle.turn == 1) {
-                val switchTo = activeBattlePokemon.actor.pokemonList.filter { it.canBeSentOut() }.randomOrNull()
-                    ?: return DefaultActionResponse()
-                switchTo.willBeSwitchedIn = true
-                return SwitchActionResponse(switchTo.uuid)
-            }
-            else {
-                // When forced to switch, pick the Pokemon with the best matchup estimation
-                val bestSwitchScore = availableSwitches.maxOfOrNull { estimateMatchup(activeBattlePokemon, aiSide, battle, it.first) }
-                    ?: return PassActionResponse
-                val bestSwitch = availableSwitches.firstOrNull { estimateMatchup(activeBattlePokemon, aiSide, battle, it.first) == bestSwitchScore }
-                    ?: return PassActionResponse
+            // When forced to switch, pick the Pokemon with the best matchup estimation
+            val bestSwitchScore = availableSwitches.maxOfOrNull { estimateMatchup(activeBattlePokemon, aiSide, battle, it.first) }
+                ?: return PassActionResponse
+            val bestSwitch = availableSwitches.firstOrNull { estimateMatchup(activeBattlePokemon, aiSide, battle, it.first) == bestSwitchScore }
+                ?: return PassActionResponse
 
-                bestSwitch.second.willBeSwitchedIn = true
-                return SwitchActionResponse(bestSwitch.second.uuid)
-            }
+            bestSwitch.second.willBeSwitchedIn = true
+            return SwitchActionResponse(bestSwitch.second.uuid)
         }
         if (moveset == null) {
             return PassActionResponse
