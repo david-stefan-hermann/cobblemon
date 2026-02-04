@@ -86,7 +86,6 @@ object AdvancementHandler : EventHandler {
     fun onEvolve(event: EvolutionCompleteEvent) {
         val player = event.pokemon.getOwnerPlayer()
         if (player != null) {
-            player.tmList()?.syncTMsFromPokemon(event.pokemon)
             if (event.pokemon.preEvolution != null) {
                 val playerData = Cobblemon.playerDataManager.getGenericData(player)
                 val advancementData = playerData.advancementData
@@ -147,7 +146,6 @@ object AdvancementHandler : EventHandler {
     }
 
     fun onLevelUp(event : LevelUpEvent) {
-        event.pokemon.getOwnerPlayer()?.tmList()?.syncTMsFromPokemon(event.pokemon)
         event.pokemon.getOwnerPlayer()?.let { CobblemonCriteria.LEVEL_UP.trigger(it, LevelUpContext(event.newLevel, event.pokemon)) }
     }
 
