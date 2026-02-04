@@ -1470,8 +1470,7 @@ open class Pokemon : ShowdownIdentifiable {
 
     private fun onMoveAdded(moveTemplate: MoveTemplate) {
         if (isClient) return
-        val tmId = TechnicalMachines.moveToTM[moveTemplate]?.id ?: return
-        getOwnerPlayer()?.tmList()?.learn(listOf(tmId))
+        getOwnerPlayer()?.tmList()?.syncTMFromMove(moveTemplate)
     }
 
     fun getOwnerNPC(): NPCEntity? {

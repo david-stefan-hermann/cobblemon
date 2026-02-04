@@ -13,6 +13,7 @@ import com.cobblemon.mod.common.api.storage.player.PlayerInstancedDataStoreTypes
 import com.cobblemon.mod.common.api.storage.player.client.ClientTMMoveManager
 import com.cobblemon.mod.common.api.scheduling.ScheduledTask
 import com.cobblemon.mod.common.api.scheduling.ServerTaskTracker
+import com.cobblemon.mod.common.api.moves.MoveTemplate
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
@@ -40,6 +41,11 @@ class TMMoveManager(
         val learnableTMs = getLearnableTMsFromPokemon(pokemon)
 
         learn(learnableTMs)
+    }
+
+    fun syncTMFromMove(moveTemplate: MoveTemplate) {
+        val tmId = TechnicalMachines.moveToTM[moveTemplate]?.id ?: return
+        learn(listOf(tmId))
     }
 
     fun getLearnableTMsFromPokemon(pokemon: Pokemon): Collection<ResourceLocation> {
