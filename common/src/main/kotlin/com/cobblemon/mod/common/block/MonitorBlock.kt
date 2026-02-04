@@ -84,7 +84,15 @@ class MonitorBlock(settings: Properties) : MultiblockBlock(settings) {
     ): ItemInteractionResult {
         val entity = level.getBlockEntity(pos) as? FossilMultiblockEntity
             ?: return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION
-        return entity.handleUseItem(stack, state, level, pos, player)
+        val result = entity.handleUseItem(stack, state, level, pos, player)
+        if (result == ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION) {
+            return if (entity.handleUseWithoutItem(state, level, pos, player).consumesAction()) {
+                ItemInteractionResult.sidedSuccess(level.isClientSide)
+            } else {
+                ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
+            }
+        }
+        return result
     }
 
     override fun onRemove(state: BlockState, level: Level, pos: BlockPos, newState: BlockState, movedByPiston: Boolean) {
