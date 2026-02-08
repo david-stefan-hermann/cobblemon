@@ -16,6 +16,7 @@
 
 ### Fixes
  - Fixes https://gitlab.com/cable-mc/cobblemon/-/issues/1943
+ - Fix occasional crash on retrieving revived fossils
 
 ### Developer
 
