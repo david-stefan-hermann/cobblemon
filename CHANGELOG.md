@@ -21,6 +21,7 @@
 ### Developer
 
 ### Molang & Datapacks
+ - SpeciesAdditions append vs override now matches wiki documentation
 
 ### Localization
 - Updated translations for:
