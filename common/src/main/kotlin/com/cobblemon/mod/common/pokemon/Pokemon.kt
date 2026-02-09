@@ -580,8 +580,20 @@ open class Pokemon : ShowdownIdentifiable {
             } else {
                 1F
             }
-            return babyPokemonMultiplier * if (this.isAlpha) Cobblemon.config.alphaPokemonSizeMultiplier else scaleModifier
+            return babyPokemonMultiplier * if (this.isAlpha) getAlphaScaleMultiplier() else scaleModifier
         }
+
+    private fun getAlphaScaleMultiplier(): Float {
+        val config = Cobblemon.config
+        val hitbox = form.hitbox
+        val baseHitboxSize = max(hitbox.width, hitbox.height) * form.baseScale
+        return when {
+            baseHitboxSize < 0.5F -> config.alphaPokemonSizeSmallMultiplier
+            baseHitboxSize < 1.5F -> config.alphaPokemonSizeMediumMultiplier
+            baseHitboxSize < 10F -> config.alphaPokemonSizeLargeMultiplier
+            else -> config.alphaPokemonSizeExtraLargeMultiplier
+        }
+    }
 
     var caughtBall: PokeBall = PokeBalls.POKE_BALL
         set(value) {
