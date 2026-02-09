@@ -42,6 +42,7 @@ import com.cobblemon.mod.common.net.messages.server.storage.party.MovePartyPokem
 import com.cobblemon.mod.common.net.messages.server.storage.party.SwapPartyPokemonPacket
 import com.cobblemon.mod.common.pokemon.Gender
 import com.cobblemon.mod.common.pokemon.Pokemon
+import com.cobblemon.mod.common.pokemon.PokemonSizeCategory
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.isInventoryKeyPressed
 import com.cobblemon.mod.common.util.lang
@@ -609,7 +610,7 @@ class Summary private constructor(party: Collection<Pokemon?>, private val edita
             y = y + 32,
             font = CobblemonResources.DEFAULT_LARGE,
             context = context,
-            text = (if (isAlpha) "A".text() else sizeCategory.name.text()).bold(),
+            text = (if (isAlpha) "cobblemon.ui.pokedex.scan.alpha".text() else PokemonSizeCategory.translationKey(sizeCategory).text()).bold(),
             scale = 1F,
             shadow = true,
             centered = true

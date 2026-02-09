@@ -219,8 +219,11 @@ class CobblemonConfig {
     @CobblemonConfigField(Category.Pokemon, lang = "player_damage_pokemon", SERVER)
     var playerDamagePokemon = true
 
-    @CobblemonConfigField(Category.Pokemon, lang = "pokemon_size_variation", SERVER)
-    var pokemonSizeVariation = 0.05F
+    @CobblemonConfigField(Category.Pokemon, lang = "pokemon_intrinsic_size_min", SERVER)
+    var pokemonIntrinsicSizeMin = 0.95F
+
+    @CobblemonConfigField(Category.Pokemon, lang = "pokemon_intrinsic_size_max", SERVER)
+    var pokemonIntrinsicSizeMax = 1.05F
 
     @CobblemonConfigField(Category.Pokemon, lang = "alpha_pokemon_size_small_multiplier", SERVER)
     var alphaPokemonSizeSmallMultiplier = 1.4F

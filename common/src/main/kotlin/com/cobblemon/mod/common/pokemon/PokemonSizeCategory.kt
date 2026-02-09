@@ -19,14 +19,18 @@ enum class PokemonSizeCategory {
     
     companion object {
         // Find which size category corresponds to the given scale modifier.
-        // The scale modifier should be between 1 - Cobblemon.config.pokemonSizeVariation and 1 + Cobblemon.config.pokemonSizeVariation
-        // First 20% -> XS, etc.
+        // The scale modifier should be between the intrinsic min and max size.
         fun fromScale(scaleModifier: Float): PokemonSizeCategory {
-            val range = Cobblemon.config.pokemonSizeVariation * 2
+            val config = Cobblemon.config
+            val minScale = config.pokemonIntrinsicSizeMin
+            val maxScale = config.pokemonIntrinsicSizeMax
+            val range = (maxScale - minScale).coerceAtLeast(0.0001F)
             val segmentSize = range / PokemonSizeCategory.entries.size
-            val adjustedScale = scaleModifier - (1 - Cobblemon.config.pokemonSizeVariation)
+            val adjustedScale = (scaleModifier - minScale).coerceIn(0F, range)
             val index = (adjustedScale / segmentSize).toInt().coerceIn(0, PokemonSizeCategory.entries.size - 1)
             return PokemonSizeCategory.entries[index]
         }
+
+        fun translationKey(category: PokemonSizeCategory) = "cobblemon.ui.size_category.${category.name.lowercase()}"
     }
 }

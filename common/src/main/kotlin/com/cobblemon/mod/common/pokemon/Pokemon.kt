@@ -243,6 +243,9 @@ open class Pokemon : ShowdownIdentifiable {
         set(value) {
             if (field != value) {
                 field = value
+                if (value) {
+                    scaleModifier = 1F
+                }
                 updateAspects()
                 onChange(AlphaUpdatePacket({ this }, value))
             }
@@ -257,8 +260,12 @@ open class Pokemon : ShowdownIdentifiable {
     }
 
     fun initializeScale() {
-        val variation = Cobblemon.config.pokemonSizeVariation
-        scaleModifier = Random.nextBetween(1 - variation, 1 + variation)
+        if (isAlpha) {
+            scaleModifier = 1F
+            return
+        }
+        val config = Cobblemon.config
+        setIntrinsicScale(Random.nextBetween(config.pokemonIntrinsicSizeMin, config.pokemonIntrinsicSizeMax))
     }
 
     fun hyperTrainIV(stat: Stat, value: Int) {
@@ -593,6 +600,12 @@ open class Pokemon : ShowdownIdentifiable {
             baseHitboxSize < 10F -> config.alphaPokemonSizeLargeMultiplier
             else -> config.alphaPokemonSizeExtraLargeMultiplier
         }
+    }
+
+    private fun setIntrinsicScale(value: Float) {
+        val deltaPercent = (value - 1F) * 100F
+        val roundedPercent = (deltaPercent * 10F).roundToInt() / 10F
+        scaleModifier = 1F + (roundedPercent / 100F)
     }
 
     var caughtBall: PokeBall = PokeBalls.POKE_BALL
