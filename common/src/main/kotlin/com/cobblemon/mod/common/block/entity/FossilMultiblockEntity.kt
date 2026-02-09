@@ -30,6 +30,7 @@ import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.Containers
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.ItemInteractionResult
+import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
@@ -145,8 +146,11 @@ open class FossilMultiblockEntity(
 
         val oldStack = diskStack
         if (!oldStack.isEmpty) {
+            if (player is ServerPlayer) {
+                unlockTmForPlayer(player, oldStack)
+            }
             if (!player.addItem(oldStack)) {
-                Containers.dropItemStack(level, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, oldStack)
+                ejectDiskStack(level, pos, state, oldStack)
             }
         }
 
@@ -174,8 +178,11 @@ open class FossilMultiblockEntity(
         if (diskStack.isEmpty) return InteractionResult.PASS
         if (multiblockStructure != null) return InteractionResult.PASS
 
+        if (player is ServerPlayer) {
+            unlockTmForPlayer(player, diskStack)
+        }
         if (!player.addItem(diskStack)) {
-            Containers.dropItemStack(level, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, diskStack)
+            ejectDiskStack(level, pos, state, diskStack)
         }
         diskStack = ItemStack.EMPTY
         updateMonitorScreen()
@@ -186,20 +193,27 @@ open class FossilMultiblockEntity(
 
     fun dropDisk(level: Level, pos: BlockPos, state: BlockState) {
         if (diskStack.isEmpty) return
+        ejectDiskStack(level, pos, state, diskStack)
+        diskStack = ItemStack.EMPTY
+    }
+
+    private fun ejectDiskStack(level: Level, pos: BlockPos, state: BlockState, stack: ItemStack) {
         val facing = if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
             state.getValue(HorizontalDirectionalBlock.FACING)
         } else {
             null
         }
-        if (facing != null) {
-            val x = pos.x + 0.5 + facing.stepX * 0.6
-            val y = pos.y + 0.5
-            val z = pos.z + 0.5 + facing.stepZ * 0.6
-            Containers.dropItemStack(level, x, y, z, diskStack)
-        } else {
-            Containers.dropItemStack(level, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, diskStack)
+        if (facing == null) {
+            Containers.dropItemStack(level, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, stack)
+            return
         }
-        diskStack = ItemStack.EMPTY
+
+        val x = pos.x + 0.5 + facing.stepX * 0.6
+        val y = pos.y + 0.5
+        val z = pos.z + 0.5 + facing.stepZ * 0.6
+        val itemEntity = ItemEntity(level, x, y, z, stack)
+        itemEntity.setDeltaMovement(facing.stepX * 0.15, 0.05, facing.stepZ * 0.15)
+        level.addFreshEntity(itemEntity)
     }
 
     private fun isValidDisk(stack: ItemStack): Boolean {
