@@ -149,9 +149,7 @@ open class FossilMultiblockEntity(
             if (player is ServerPlayer) {
                 unlockTmForPlayer(player, oldStack)
             }
-            if (!player.addItem(oldStack)) {
-                ejectDiskStack(level, pos, state, oldStack)
-            }
+            ejectDiskStack(level, pos, state, oldStack)
         }
 
         diskStack = stack.copyWithCount(1)
@@ -181,9 +179,7 @@ open class FossilMultiblockEntity(
         if (player is ServerPlayer) {
             unlockTmForPlayer(player, diskStack)
         }
-        if (!player.addItem(diskStack)) {
-            ejectDiskStack(level, pos, state, diskStack)
-        }
+        ejectDiskStack(level, pos, state, diskStack)
         diskStack = ItemStack.EMPTY
         updateMonitorScreen()
         markUpdated(level, pos, state)
@@ -208,11 +204,12 @@ open class FossilMultiblockEntity(
             return
         }
 
-        val x = pos.x + 0.5 + facing.stepX * 0.6
+        val ejectFacing = facing.opposite
+        val x = pos.x + 0.5 + ejectFacing.stepX * 0.6
         val y = pos.y + 0.5
-        val z = pos.z + 0.5 + facing.stepZ * 0.6
+        val z = pos.z + 0.5 + ejectFacing.stepZ * 0.6
         val itemEntity = ItemEntity(level, x, y, z, stack)
-        itemEntity.setDeltaMovement(facing.stepX * 0.15, 0.05, facing.stepZ * 0.15)
+        itemEntity.setDeltaMovement(ejectFacing.stepX * 0.15, 0.05, ejectFacing.stepZ * 0.15)
         level.addFreshEntity(itemEntity)
     }
 
