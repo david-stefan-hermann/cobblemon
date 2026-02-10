@@ -1528,7 +1528,7 @@ open class PokemonEntity(
     }
 
     fun tryMountingShoulder(player: ServerPlayer): Boolean {
-        if (this.pokemon.belongsTo(player) && this.hasRoomToMount(player)) {
+        if (this.pokemon.belongsTo(player) && this.hasRoomToMount(player) && this.canSitOnShoulder()) {
             CobblemonEvents.SHOULDER_MOUNT.postThen(
                 ShoulderMountEvent(
                     player,
