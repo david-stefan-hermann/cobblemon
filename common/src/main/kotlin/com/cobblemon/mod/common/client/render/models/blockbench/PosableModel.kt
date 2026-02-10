@@ -454,13 +454,14 @@ open class PosableModel(@Transient override val rootPart: Bone) : ModelFrame {
         if (provider != null) {
             for (layer in currentLayers) {
                 var renderLayer : RenderType
-                if (layer.texture is AnimatedModelTextureSupplier && layer.texture.interpolation) {
+                val layerTexture = layer.texture
+                if (layerTexture is AnimatedModelTextureSupplier && layerTexture.interpolation) {
                     //Handle Interpolation
-                    val texture = layer.texture.interpolatedTexture(currentState ?: FloatingState()) ?: continue
+                    val texture = layerTexture.interpolatedTexture(currentState ?: FloatingState()) ?: continue
                     renderLayer = makeLayer(DynamicStateShard(texture), layer.emissive, layer.translucent, layer.translucent_cull)
                 }
                 else {
-                    val texture = layer.texture?.invoke(currentState ?: FloatingState()) ?: continue
+                    val texture = layerTexture?.invoke(currentState ?: FloatingState()) ?: continue
                     renderLayer = getLayer(texture, layer.emissive, layer.translucent, layer.translucent_cull)
                 }
                 val consumer = provider.getBuffer(renderLayer)

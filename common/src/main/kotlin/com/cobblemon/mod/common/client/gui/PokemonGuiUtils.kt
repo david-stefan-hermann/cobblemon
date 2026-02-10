@@ -11,11 +11,14 @@ package com.cobblemon.mod.common.client.gui
 import com.cobblemon.mod.common.api.gui.renderSprite
 import com.cobblemon.mod.common.api.pokemon.PokemonSpecies
 import com.cobblemon.mod.common.client.render.SpriteType
+import com.cobblemon.mod.common.client.render.ModelLayer
+import com.cobblemon.mod.common.client.render.StaticModelTextureSupplier
 import com.cobblemon.mod.common.client.render.models.blockbench.PosableState
 import com.cobblemon.mod.common.client.render.models.blockbench.repository.RenderContext
 import com.cobblemon.mod.common.client.render.models.blockbench.repository.VaryingModelRepository
 import com.cobblemon.mod.common.entity.PoseType
 import com.cobblemon.mod.common.pokemon.RenderablePokemon
+import com.cobblemon.mod.common.client.util.exists
 import com.cobblemon.mod.common.util.math.toEulerXYZDegrees
 import com.cobblemon.mod.common.util.toHex
 import com.mojang.blaze3d.platform.Lighting
@@ -141,7 +144,9 @@ fun drawProfilePokemon(
         val packedLight = LightTexture.pack(11, 7)
 
         val colour = toHex(r, g, b, a)
-        model.withLayerContext(bufferSource, state, VaryingModelRepository.getLayers(species, state)) {
+        val baseLayers = VaryingModelRepository.getLayers(species, state)
+        val layers = applyAlphaOverlayLayer(state, texture, baseLayers)
+        model.withLayerContext(bufferSource, state, layers) {
             model.render(context, matrixStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, colour)
             bufferSource.endBatch()
         }
@@ -151,6 +156,35 @@ fun drawProfilePokemon(
     } else {
         renderSprite(matrixStack, sprite)
     }
+}
+
+private fun applyAlphaOverlayLayer(
+    state: PosableState,
+    baseTexture: ResourceLocation,
+    baseLayers: Iterable<ModelLayer>
+): Iterable<ModelLayer> {
+    if (!state.currentAspects.contains("alpha")) {
+        return baseLayers
+    }
+
+    val overlayTexture = resolveAlphaOverlayTexture(baseTexture) ?: return baseLayers
+    val alphaLayer = ModelLayer().also {
+        it.name = "alpha_overlay"
+        it.texture = StaticModelTextureSupplier(overlayTexture)
+        it.emissive = true
+    }
+
+    return baseLayers.toMutableList().also { it.add(alphaLayer) }
+}
+
+private fun resolveAlphaOverlayTexture(baseTexture: ResourceLocation): ResourceLocation? {
+    val overlayPath = if (baseTexture.path.endsWith(".png")) {
+        baseTexture.path.removeSuffix(".png") + "_alpha.png"
+    } else {
+        baseTexture.path + "_alpha"
+    }
+    val overlayTexture = ResourceLocation.fromNamespaceAndPath(baseTexture.namespace, overlayPath)
+    return overlayTexture.takeIf { it.exists() }
 }
 
 const val HEAD_YAW_FACTOR = 40f

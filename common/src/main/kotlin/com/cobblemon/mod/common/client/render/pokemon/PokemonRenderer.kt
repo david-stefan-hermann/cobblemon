@@ -19,6 +19,8 @@ import com.cobblemon.mod.common.client.entity.PokemonClientDelegate.Companion.BE
 import com.cobblemon.mod.common.client.entity.PokemonClientDelegate.Companion.BEAM_SHRINK_TIME
 import com.cobblemon.mod.common.client.keybind.boundKey
 import com.cobblemon.mod.common.client.keybind.keybinds.PartySendBinding
+import com.cobblemon.mod.common.client.render.ModelLayer
+import com.cobblemon.mod.common.client.render.StaticModelTextureSupplier
 import com.cobblemon.mod.common.client.render.item.HeldItemRenderer
 import com.cobblemon.mod.common.client.render.models.blockbench.PosableModel
 import com.cobblemon.mod.common.client.render.models.blockbench.PosableState
@@ -29,6 +31,7 @@ import com.cobblemon.mod.common.client.render.models.blockbench.repository.Varyi
 import com.cobblemon.mod.common.client.render.pokeball.PokeBallPosableState
 import com.cobblemon.mod.common.client.render.renderBeaconBeam
 import com.cobblemon.mod.common.client.settings.ServerSettings
+import com.cobblemon.mod.common.client.util.exists
 import com.cobblemon.mod.common.entity.PlatformType
 import com.cobblemon.mod.common.entity.PosableEntity
 import com.cobblemon.mod.common.entity.npc.NPCEntity
@@ -90,7 +93,6 @@ class PokemonRenderer(
     }
 
     private val heldItemRenderer = HeldItemRenderer()
-
     override fun getTextureLocation(entity: PokemonEntity): ResourceLocation {
         return VaryingModelRepository.getTexture(entity.pokemon.species.resourceIdentifier, entity.delegate as PokemonClientDelegate)
     }
@@ -142,7 +144,9 @@ class PokemonRenderer(
             poseMatrix.translate(0.0, 0.25 * (entity.delegate as PokemonClientDelegate).entityScaleModifier, 0.0)
         }
 
-        modelNow.setLayerContext(buffer, clientDelegate, VaryingModelRepository.getLayers(entity.pokemon.species.resourceIdentifier, clientDelegate))
+        val baseLayers = VaryingModelRepository.getLayers(entity.pokemon.species.resourceIdentifier, clientDelegate)
+        val layers = applyAlphaOverlayLayer(entity, baseLayers)
+        modelNow.setLayerContext(buffer, clientDelegate, layers)
 
 
         if (entity.passengers.isNotEmpty()) {
@@ -169,6 +173,39 @@ class PokemonRenderer(
             false,
             entity
         )
+    }
+
+    private fun applyAlphaOverlayLayer(entity: PokemonEntity, baseLayers: Iterable<ModelLayer>): Iterable<ModelLayer> {
+        if (!shouldRenderAlphaOverlay(entity)) {
+            return baseLayers
+        }
+
+        val overlayTexture = resolveAlphaOverlayTexture(getTextureLocation(entity)) ?: return baseLayers
+        val alphaLayer = ModelLayer().also {
+            it.name = "alpha_overlay"
+            it.texture = StaticModelTextureSupplier(overlayTexture)
+            it.emissive = true
+        }
+
+        return baseLayers.toMutableList().also { it.add(alphaLayer) }
+    }
+
+    private fun shouldRenderAlphaOverlay(entity: PokemonEntity): Boolean {
+        val isAlpha = entity.entityData.get(PokemonEntity.IS_ALPHA) || entity.pokemon.isAlpha
+        if (!isAlpha) {
+            return false
+        }
+        return true
+    }
+
+    private fun resolveAlphaOverlayTexture(baseTexture: ResourceLocation): ResourceLocation? {
+        val overlayPath = if (baseTexture.path.endsWith(".png")) {
+            baseTexture.path.removeSuffix(".png") + "_alpha.png"
+        } else {
+            baseTexture.path + "_alpha"
+        }
+        val overlayTexture = ResourceLocation.fromNamespaceAndPath(baseTexture.namespace, overlayPath)
+        return overlayTexture.takeIf { it.exists() }
     }
 
     fun renderRiding(

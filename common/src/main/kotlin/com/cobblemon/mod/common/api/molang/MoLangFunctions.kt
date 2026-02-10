@@ -1711,6 +1711,7 @@ object MoLangFunctions {
             }
             map.put("nature") { StringValue(pokemon.nature.toString()) }
             map.put("is_wild") { DoubleValue(pokemon.entity?.let { it.ownerUUID == null } == true) }
+            map.put("is_alpha") { DoubleValue(pokemon.isAlpha) }
             map.put("is_shiny") { DoubleValue(pokemon.shiny) }
             map.put("is_in_party") { DoubleValue(pokemon.storeCoordinates.get()?.store is PartyStore) }
             map.put("species") { pokemon.species.struct }

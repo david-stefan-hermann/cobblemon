@@ -1821,8 +1821,8 @@
   "cobblemon.mark.ribbon_training.desc": "A Ribbon that can be given to a Pokémon that has overcome rigorous trials and training.",
 
   "cobblemon.mark.mark_alpha": "Alpha Mark",
-  "cobblemon.mark.mark_alpha.title": "%1$s the Former Alpha",
-  "cobblemon.mark.mark_alpha.desc": "A mark for a Pokémon that was an alpha.",
+  "cobblemon.mark.mark_alpha.title": "%1$s the Alpha",
+  "cobblemon.mark.mark_alpha.desc": "A mark for an alpha Pokémon.",
 
   "cobblemon.mark.mark_curry": "Curry Mark",
   "cobblemon.mark.mark_curry.title": "%1$s the Curry Connoisseur",
@@ -9470,3 +9470,6 @@
   "stat.cobblemon.rod_casts": "PokéRod Casts",
   "stat.cobblemon.reel_ins": "PokéRod Catches"
 }
+
+
+
