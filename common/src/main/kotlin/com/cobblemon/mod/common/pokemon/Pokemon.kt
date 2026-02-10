@@ -582,10 +582,15 @@ open class Pokemon : ShowdownIdentifiable {
 
     val effectiveScale: Float
         get() {
-            val babyPokemonMultiplier = if (level - Cobblemon.config.babyPokemonLevelDuration < 1) {
+            val babyPokemonMultiplier = if (level <= 1) {
                 Cobblemon.config.babyPokemonSizeMultiplier
-            } else {
+            } else if (Cobblemon.config.babyPokemonLevelDuration <= 1 || level >= Cobblemon.config.babyPokemonLevelDuration) {
                 1F
+            } else {
+                val minMultiplier = Cobblemon.config.babyPokemonSizeMultiplier
+                val maxLevel = Cobblemon.config.babyPokemonLevelDuration
+                val t = (level - 1).toFloat() / (maxLevel - 1).toFloat()
+                minMultiplier + (1F - minMultiplier) * t
             }
             return babyPokemonMultiplier * if (this.isAlpha) getAlphaScaleMultiplier() else scaleModifier
         }
