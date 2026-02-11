@@ -39,6 +39,7 @@ import com.cobblemon.mod.common.entity.pokeball.EmptyPokeBallEntity
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity.Companion.SPAWN_DIRECTION
 import com.cobblemon.mod.common.pokeball.PokeBall
+import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.effectiveName
 import com.cobblemon.mod.common.util.isLookingAt
 import com.cobblemon.mod.common.util.lang
@@ -191,11 +192,8 @@ class PokemonRenderer(
     }
 
     private fun shouldRenderAlphaOverlay(entity: PokemonEntity): Boolean {
-        val isAlpha = entity.entityData.get(PokemonEntity.IS_ALPHA) || entity.pokemon.isAlpha
-        if (!isAlpha) {
-            return false
-        }
-        return true
+        // todo change to be based off of if the mon has the Alpha Mark
+        return entity.pokemon.isAlpha
     }
 
     private fun resolveAlphaOverlayTexture(baseTexture: ResourceLocation): ResourceLocation? {
