@@ -111,8 +111,10 @@ import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.ifDedicatedServer
 import com.cobblemon.mod.common.util.isLaterVersion
 import com.cobblemon.mod.common.util.party
+import com.cobblemon.mod.common.util.pc
 import com.cobblemon.mod.common.util.requestWallpapers
 import com.cobblemon.mod.common.util.server
+import com.cobblemon.mod.common.util.tmList
 import com.cobblemon.mod.common.world.feature.CobblemonPlacedFeatures
 import com.cobblemon.mod.common.world.feature.ore.CobblemonOrePlacedFeatures
 import com.cobblemon.mod.common.world.gamerules.CobblemonGameRules
