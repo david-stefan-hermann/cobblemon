@@ -2928,6 +2928,8 @@
   "cobblemon.battle.start.typechange": "%1$s transformed into the %2$s type!",
   "cobblemon.battle.start.uproar": "%1$s caused an uproar!",
   "cobblemon.battle.start.yawn": "%1$s grew drowsy!",
+  "cobblemon.battle.start.alphaboost": "The alpha %1$s is filled with wild might! Its power was boosted!",
+
 
   "cobblemon.battle.activate.afteryou": "%1$s took the kind offer!",
   "cobblemon.battle.activate.allyswitch": "%1$s and %2$s switched places!",
@@ -2999,7 +3001,6 @@
   "cobblemon.battle.activate.wideguard": "Wide Guard protected %1$s!",
   "cobblemon.battle.activate.wrap": "%1$s was wrapped by %2$s!",
   "cobblemon.battle.activate.confusion": "%1$s is confused!",
-  "cobblemon.battle.activate.alphaboost": "The alpha %1$s is filled with wild might! Its power was boosted!",
 
   "cobblemon.battle.fieldactivate.fairylock": "No one will be able to run away during the next turn!",
   "cobblemon.battle.fieldactivate.iondeluge": "A deluge of ions showers the battlefield!",
@@ -3228,8 +3229,6 @@
   "cobblemon.battle.fail.grassknot": "%1$s shook its head. It seems like it can't use this move...",
   "cobblemon.battle.fail.unboost.single": "%1$s's %2$s was not lowered!",
   "cobblemon.battle.fail.unboost": "%1$s's stats did not get lowered!",
-  "cobblemon.battle.fail.alphaboost": "But %1$s's wild might prevented it!",
-  "cobblemon.battle.fail.alphaboost2": "%1$s's wild might was unaffected!",
 
   "cobblemon.battle.sethp.painsplit": "The battlers shared their pain!",
 
