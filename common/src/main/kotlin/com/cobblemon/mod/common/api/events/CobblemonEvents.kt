@@ -195,6 +195,9 @@ object CobblemonEvents {
         )
 
     @JvmField
+    val POKEMON_ENTITY_SPAWN_POST = EventObservable<SpawnEvent<PokemonEntity>>()
+
+    @JvmField
     val EXPERIENCE_GAINED_EVENT_PRE = CancelableObservable<ExperienceGainedEvent.Pre>()
 
     @JvmField

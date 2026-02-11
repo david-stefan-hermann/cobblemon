@@ -10,9 +10,11 @@ package com.cobblemon.mod.common.events
 
 import com.bedrockk.molang.runtime.value.MoValue
 import com.cobblemon.mod.common.CobblemonCallbacks
+import com.cobblemon.mod.common.api.mark.Marks
 import com.cobblemon.mod.common.api.Priority
 import com.cobblemon.mod.common.api.events.CobblemonEvents
 import com.cobblemon.mod.common.api.molang.MoLangFunctions.asMoLangValue
+import com.cobblemon.mod.common.api.molang.MoLangFunctions.asStruct
 import com.cobblemon.mod.common.platform.events.PlatformEvents
 import com.cobblemon.mod.common.util.cobblemonResource
 
@@ -22,8 +24,28 @@ import com.cobblemon.mod.common.util.cobblemonResource
 object CallbackHandler {
     fun setup() {
         CobblemonEvents.STARTER_CHOSEN.subscribe { CobblemonCallbacks.run(cobblemonResource("starter_chosen"), it.getContext(), it.functions) }
-        CobblemonEvents.POKEMON_CAPTURED.subscribe { CobblemonCallbacks.run(cobblemonResource("pokemon_captured"), it.context) }
         CobblemonEvents.POKEMON_ENTITY_SPAWN.subscribe { CobblemonCallbacks.run(cobblemonResource("pokemon_entity_spawn"), mutableMapOf<String, MoValue>("pokemon_entity" to it.entity.asMoLangValue())) }
+        CobblemonEvents.POKEMON_ENTITY_SPAWN_POST.subscribe {
+            val entity = it.entity
+            CobblemonCallbacks.run(
+                cobblemonResource("pokemon_entity_spawn_post"),
+                mutableMapOf<String, MoValue>(
+                    "pokemon_entity" to entity.asMoLangValue(),
+                    "pokemon" to entity.pokemon.asStruct()
+                )
+            )
+            if (entity.pokemon.isAlpha) {
+                val alphaMarkId = cobblemonResource("mark_alpha")
+                val alphaMark = Marks.getByIdentifier(alphaMarkId)
+                if (alphaMark != null) {
+                    if (!entity.pokemon.marks.contains(alphaMark)) {
+                        entity.pokemon.exchangeMark(alphaMark, true)
+                    }
+                    entity.pokemon.activeMark = alphaMark
+                    entity.entityData.set(com.cobblemon.mod.common.entity.pokemon.PokemonEntity.MARK, alphaMarkId.toString())
+                }
+            }
+        }
         CobblemonEvents.BATTLE_VICTORY.subscribe { CobblemonCallbacks.run(cobblemonResource("battle_victory"), it.context) }
         CobblemonEvents.POKEDEX_DATA_CHANGED_PRE.subscribe { CobblemonCallbacks.run(cobblemonResource("pokedex_data_changed_pre"), it.getContext(), it.functions) }
         CobblemonEvents.POKEDEX_DATA_CHANGED_POST.subscribe { CobblemonCallbacks.run(cobblemonResource("pokedex_data_changed_post"), it.getContext()) }

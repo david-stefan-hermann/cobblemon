@@ -14,6 +14,7 @@ import com.cobblemon.mod.common.api.reactive.SimpleObservable
 import com.cobblemon.mod.common.api.spawning.SpawnBucket
 import com.cobblemon.mod.common.api.spawning.position.SpawnablePosition
 import com.cobblemon.mod.common.util.toVec3d
+import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.Mob
 import net.minecraft.world.entity.MobSpawnType
@@ -41,6 +42,9 @@ abstract class SingleEntitySpawnAction<T : Entity>(
                 e.finalizeSpawn(spawnablePosition.world, spawnablePosition.world.getCurrentDifficultyAt(spawnablePosition.position), MobSpawnType.NATURAL, null)
             }
             spawnablePosition.world.addFreshEntity(e)
+            if (e is PokemonEntity) {
+                CobblemonEvents.POKEMON_ENTITY_SPAWN_POST.post(SpawnEvent(e, spawnablePosition))
+            }
             shouldSpawn = true
         })
 
