@@ -29,6 +29,7 @@ import com.cobblemon.mod.common.client.gui.RideControlsOverlay
 import com.cobblemon.mod.common.client.gui.battle.BattleOverlay
 import com.cobblemon.mod.common.client.gui.cookingpot.CookingPotScreen
 import com.cobblemon.mod.common.client.gui.tmmachine.TMMachineScreen
+import com.cobblemon.mod.common.client.gui.party.PartyTutorialToasts
 import com.cobblemon.mod.common.client.particle.BedrockParticleOptionsRepository
 import com.cobblemon.mod.common.client.render.ClientPlayerIcon
 import com.cobblemon.mod.common.client.render.DeferredRenderer
@@ -136,6 +137,8 @@ object CobblemonClient {
         battleOverlay.onLogout()
         ClientTaskTracker.clear()
         checkedStarterScreen = false
+        overlay.resetAttachedToast()
+        PartyTutorialToasts.reset()
 //        CobblemonDataProvider.canReload = true
         DeferredRenderer.clearAll()
         ClientPlayerIcon.clear()
@@ -173,13 +176,12 @@ object CobblemonClient {
         PlatformEvents.CLIENT_TICK_POST.subscribe { event ->
             val player = event.client.player
             if (player != null) {
-                var selectedItem = player.inventory.getItem(player.inventory.selected)
+                val selectedItem = player.inventory.getItem(player.inventory.selected)
                 if (pokedexUsageContext.scanningGuiOpen &&
                     !(selectedItem.`is`(CobblemonItemTags.POKEDEX)) &&
                     !(player.offhandItem.`is`(CobblemonItemTags.POKEDEX) &&
-                            player.isUsingItem == true &&
-                            player.usedItemHand == InteractionHand.OFF_HAND
-                            )
+                            player.isUsingItem &&
+                            player.usedItemHand == InteractionHand.OFF_HAND)
                 ) {
                     // Stop using Pokédex in main hand if player switches to a different slot in hotbar
                     pokedexUsageContext.stopUsing(PokedexUsageContext.OPEN_SCANNER_BUFFER_TICKS + 1)
@@ -225,7 +227,7 @@ object CobblemonClient {
     }
 
     fun registerColors() {
-        this.implementation.registerBlockColors(BlockColor { blockState, view, blockPos, tintIndex ->
+        this.implementation.registerBlockColors(BlockColor { _, view, blockPos, _ ->
             blockPos?.let { pos ->
                 view?.getBlockEntity(pos)?.let { blockEntity ->
                     if (blockEntity is TintBlockEntity) return@BlockColor blockEntity.getTint()
@@ -453,7 +455,7 @@ object CobblemonClient {
         this.implementation.registerEntityRenderer(CobblemonEntities.BOAT) { ctx ->
             CobblemonBoatRenderer(
                 ctx,
-                false
+                true
             )
         }
         LOGGER.info("Registering Boat with Chest renderer")
