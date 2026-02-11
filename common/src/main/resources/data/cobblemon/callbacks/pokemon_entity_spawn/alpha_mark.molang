@@ -1,3 +1,0 @@
-q.pokemon_entity.is_alpha == 1 ? {
-    q.pokemon_entity.add_marks('cobblemon:mark_alpha');
-};

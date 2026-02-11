@@ -74,6 +74,7 @@ class PokemonRenderer(
 ) : MobRenderer<PokemonEntity, PosablePokemonEntityModel>(context, PosablePokemonEntityModel(), 0.5f) {
     companion object {
         val recallBeamColour = Vector4f(1F, 0.1F, 0.1F, 1F)
+        private val ALPHA_MARK_ID = cobblemonResource("mark_alpha").toString()
         fun ease(x: Double): Double {
             return 1 - (1 - x).pow(3)
         }
@@ -192,8 +193,7 @@ class PokemonRenderer(
     }
 
     private fun shouldRenderAlphaOverlay(entity: PokemonEntity): Boolean {
-        // todo change to be based off of if the mon has the Alpha Mark
-        return entity.pokemon.isAlpha
+        return entity.entityData.get(PokemonEntity.MARK) == ALPHA_MARK_ID
     }
 
     private fun resolveAlphaOverlayTexture(baseTexture: ResourceLocation): ResourceLocation? {

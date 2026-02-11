@@ -61,6 +61,7 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
         const val POKEBALL_AIR_TIME = 0.5F
         const val SHINY_PARTICLE_COOLDOWN = 3.5F
         private const val ALPHA_EYE_PARTICLE_COOLDOWN_MS = 1000L
+        private val ALPHA_MARK_ID = cobblemonResource("mark_alpha").toString()
     }
 
     override val schedulingTracker: SchedulingTracker
@@ -482,8 +483,7 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
     }
 
     private fun spawnAlphaEyeParticles() {
-        // todo check to see if it has an alpha mark instead of isAlpha
-        if (!currentEntity.pokemon.isAlpha) {
+        if (currentEntity.entityData.get(PokemonEntity.MARK) != ALPHA_MARK_ID) {
             return
         }
 

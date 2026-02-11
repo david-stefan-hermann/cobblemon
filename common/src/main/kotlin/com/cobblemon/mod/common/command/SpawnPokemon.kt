@@ -8,7 +8,12 @@
 
 package com.cobblemon.mod.common.command
 
+import com.cobblemon.mod.common.Cobblemon
+import com.cobblemon.mod.common.api.events.CobblemonEvents
+import com.cobblemon.mod.common.api.events.entity.SpawnEvent
 import com.cobblemon.mod.common.api.permission.CobblemonPermissions
+import com.cobblemon.mod.common.api.spawning.SpawnCause
+import com.cobblemon.mod.common.api.spawning.position.BasicSpawnablePosition
 import com.cobblemon.mod.common.api.text.red
 import com.cobblemon.mod.common.command.argument.PokemonPropertiesArgumentType
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
@@ -77,6 +82,16 @@ object SpawnPokemon {
             pokemonEntity.entityData.set(PokemonEntity.SPAWN_DIRECTION, pokemonEntity.random.nextFloat() * 360F)
             pokemonEntity.finalizeSpawn(world, world.getCurrentDifficultyAt(blockPos), MobSpawnType.COMMAND, null)
             if (world.addFreshEntity(pokemonEntity)) {
+                val spawnablePosition = BasicSpawnablePosition(
+                    cause = SpawnCause(Cobblemon.bestSpawner.fishingSpawner, context.source.entity),
+                    world = world,
+                    position = blockPos,
+                    light = world.getMaxLocalRawBrightness(blockPos),
+                    skyLight = world.getMaxLocalRawBrightness(blockPos.above()),
+                    canSeeSky = world.canSeeSkyFromBelowWater(blockPos),
+                    influences = mutableListOf()
+                )
+                CobblemonEvents.POKEMON_ENTITY_SPAWN_POST.post(SpawnEvent(pokemonEntity, spawnablePosition))
                 return Command.SINGLE_SUCCESS
             }
             throw FAILED_SPAWN_EXCEPTION.create()
