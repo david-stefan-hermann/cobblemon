@@ -21,17 +21,10 @@ import com.cobblemon.mod.common.client.net.callback.partymove.OpenPartyMoveCallb
 import com.cobblemon.mod.common.client.net.cooking.ToggleCookingPotLidHandler
 import com.cobblemon.mod.common.client.net.data.CobblemonMechanicsSyncHandler
 import com.cobblemon.mod.common.client.net.data.DataRegistrySyncPacketHandler
-import com.cobblemon.mod.common.client.net.data.PokemonInteractionsSyncHandler
 import com.cobblemon.mod.common.client.net.data.RideSettingsSyncHandler
 import com.cobblemon.mod.common.client.net.debug.OpenRidingStatsDebugGUIHandler
 import com.cobblemon.mod.common.client.net.dialogue.DialogueClosedHandler
 import com.cobblemon.mod.common.client.net.dialogue.DialogueOpenedHandler
-import com.cobblemon.mod.common.client.net.effect.*
-import com.cobblemon.mod.common.client.net.effect.PokeSnackBlockParticlesHandler
-import com.cobblemon.mod.common.client.net.effect.RunPosableMoLangHandler
-import com.cobblemon.mod.common.client.net.effect.SaccharineLogBlockParticlesHandler
-import com.cobblemon.mod.common.client.net.effect.SpawnSnowstormEntityParticleHandler
-import com.cobblemon.mod.common.client.net.effect.SpawnSnowstormParticleHandler
 import com.cobblemon.mod.common.client.net.effect.*
 import com.cobblemon.mod.common.client.net.gui.*
 import com.cobblemon.mod.common.client.net.effect.PokeSnackBlockParticlesHandler

@@ -39,6 +39,7 @@ import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.TAB_ABILI
 import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.TAB_DESCRIPTION
 import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.TAB_DROPS
 import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.TAB_ICON_SIZE
+import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.TAB_MOVES
 import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.TAB_SIZE
 import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.TAB_STATS
 import com.cobblemon.mod.common.client.gui.pokedex.widgets.*
@@ -88,7 +89,8 @@ class PokedexGUI private constructor(
             cobblemonResource("textures/gui/pokedex/tab_abilities.png"),
             cobblemonResource("textures/gui/pokedex/tab_size.png"),
             cobblemonResource("textures/gui/pokedex/tab_stats.png"),
-            cobblemonResource("textures/gui/pokedex/tab_drops.png")
+            cobblemonResource("textures/gui/pokedex/tab_drops.png"),
+            cobblemonResource("textures/gui/pokedex/tab_moves.png")
         )
 
         /**
@@ -344,6 +346,7 @@ class PokedexGUI private constructor(
         val canDisplayEntry = true //selectedForm?.unlockForms
 
         if (::pokemonInfoWidget.isInitialized
+            && !pokemonInfoWidget.isSuppressed
             && pokemonInfoWidget.isWithinPortraitSpace(mouseX, mouseY)
             && canDisplayEntry == true
         ) {
@@ -375,7 +378,7 @@ class PokedexGUI private constructor(
     }
 
     override fun tick() {
-        if (::pokemonInfoWidget.isInitialized) pokemonInfoWidget.tick()
+        if (::pokemonInfoWidget.isInitialized && !pokemonInfoWidget.isSuppressed) pokemonInfoWidget.tick()
     }
 
     fun updatePokedexRegion(nextIndex: Boolean) {
@@ -497,6 +500,9 @@ class PokedexGUI private constructor(
         }
 
         tabInfoIndex = tabIndex
+        if (::pokemonInfoWidget.isInitialized) {
+            pokemonInfoWidget.isSuppressed = tabInfoIndex == TAB_MOVES
+        }
         if (::tabInfoElement.isInitialized) removeWidget(tabInfoElement)
 
         val x = (width - BASE_WIDTH) / 2
@@ -519,6 +525,9 @@ class PokedexGUI private constructor(
             }
             TAB_DROPS -> {
                 tabInfoElement = DropsScrollingWidget(x + 189, y + 135)
+            }
+            TAB_MOVES -> {
+                tabInfoElement = MovesLearnsetWidget(x + 180, y + 28)
             }
         }
         val element = tabInfoElement
@@ -577,6 +586,13 @@ class PokedexGUI private constructor(
                 TAB_DROPS -> {
                     (tabInfoElement as DropsScrollingWidget).dropTable = form.drops
                     (tabInfoElement as DropsScrollingWidget).setEntries()
+                }
+                TAB_MOVES -> {
+                    (tabInfoElement as MovesLearnsetWidget).setLearnset(
+                        species = species,
+                        form = form,
+                        tmUnlocked = canDisplay
+                    )
                 }
 //                TAB_MOVES -> {
 //                    form.moves.getLevelUpMovesUpTo(100)
