@@ -59,7 +59,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         private const val DATA_ICON_SIZE = 10
         private const val DATA_INFO_TOP_OFFSET = 7
 
-        private const val DESCRIPTION_TOP_OFFSET = -10
+        private const val DESCRIPTION_TOP_OFFSET = 75
         private const val DESCRIPTION_HEIGHT = 38
 
         private val overlayResource = cobblemonResource("textures/gui/pokedex/pokedex_screen_info_overlay.png")
@@ -77,9 +77,9 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
     ) { entry -> selectMove(entry) }
 
     private val descriptionWidget = MoveDescriptionWidget(
-        pX + LIST_SIDE_PADDING,
+        pX + LIST_SIDE_PADDING + 65,
         pY + DESCRIPTION_TOP_OFFSET,
-        HALF_OVERLAY_WIDTH - (LIST_SIDE_PADDING * 2),
+        HALF_OVERLAY_WIDTH - (LIST_SIDE_PADDING * 2) - 50,
         DESCRIPTION_HEIGHT
     )
 
@@ -167,7 +167,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
 
     private fun renderDataSection(context: GuiGraphics) {
         val dataTop = pY + DATA_TOP_OFFSET
-        val dataRight = pX + HALF_OVERLAY_WIDTH - 6
+        val dataRight = pX + HALF_OVERLAY_WIDTH - 70
         val entry = selectedEntry
         val move = entry?.move
         val showMoveInfo = entry?.isDiscovered == true
@@ -267,14 +267,6 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             scale = SCALE,
             shadow = true
         )
-
-        if (showMoveInfo && move != null) {
-            MoveCategoryIcon(
-                x = pX + 6,
-                y = dataTop + 2 + (DATA_ROW_HEIGHT * 2) + DATA_INFO_TOP_OFFSET,
-                category = move.damageCategory
-            ).render(context)
-        }
     }
 
     private fun formatAccuracy(input: Double): String {
