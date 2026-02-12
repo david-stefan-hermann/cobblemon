@@ -246,9 +246,12 @@ open class Pokemon : ShowdownIdentifiable {
         set(value) {
             if (field != value) {
                 field = value
-                if (value) {
-                    scaleModifier = 1F
-                }
+                val alphaMark = Marks.getByIdentifier(cobblemonResource("mark_alpha"))!!
+
+                if (value) { activeMark = alphaMark }
+                else { scaleModifier = 1F }
+
+                exchangeMark(alphaMark, value)
                 updateAspects()
                 onChange(AlphaUpdatePacket({ this }, value))
             }

@@ -8,15 +8,10 @@
 
 package com.cobblemon.mod.common.command
 
-import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.Cobblemon.LOGGER
-import com.cobblemon.mod.common.api.events.CobblemonEvents
-import com.cobblemon.mod.common.api.events.entity.SpawnEvent
 import com.cobblemon.mod.common.api.permission.CobblemonPermissions
 import com.cobblemon.mod.common.api.pokemon.PokemonProperties
 import com.cobblemon.mod.common.api.pokemon.PokemonSpecies
-import com.cobblemon.mod.common.api.spawning.SpawnCause
-import com.cobblemon.mod.common.api.spawning.position.BasicSpawnablePosition
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
 import com.cobblemon.mod.common.util.requiresWithPermission
 import com.mojang.brigadier.Command
@@ -25,7 +20,6 @@ import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.context.CommandContext
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
-import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.MobSpawnType
 
 object SpawnAllPokemon {
@@ -58,18 +52,7 @@ object SpawnAllPokemon {
                 pokemonEntity.moveTo(player.x, player.y, player.z, pokemonEntity.yRot, pokemonEntity.xRot)
                 pokemonEntity.entityData.set(PokemonEntity.SPAWN_DIRECTION, pokemonEntity.random.nextFloat() * 360F)
                 pokemonEntity.finalizeSpawn(world, world.getCurrentDifficultyAt(blockPos), MobSpawnType.COMMAND, null)
-                if (context.source.level.addFreshEntity(pokemonEntity)) {
-                    val spawnablePosition = BasicSpawnablePosition(
-                        cause = SpawnCause(Cobblemon.bestSpawner.fishingSpawner, context.source.entity),
-                        world = world,
-                        position = blockPos,
-                        light = world.getMaxLocalRawBrightness(blockPos),
-                        skyLight = world.getMaxLocalRawBrightness(blockPos.above()),
-                        canSeeSky = world.canSeeSkyFromBelowWater(blockPos),
-                        influences = mutableListOf()
-                    )
-                    CobblemonEvents.POKEMON_ENTITY_SPAWN_POST.post(SpawnEvent(pokemonEntity, spawnablePosition))
-                }
+                context.source.level.addFreshEntity(pokemonEntity)
             }
         }
 

@@ -230,7 +230,6 @@ class PokemonServerDelegate : PokemonSideDelegate {
     fun updateTrackedValues() {
         val trackedSpecies = mock?.species ?: entity.pokemon.species.resourceIdentifier.toString()
         val trackedNickname =  mock?.nickname ?: entity.pokemon.nickname ?: Component.empty()
-        val trackedMark = entity.pokemon.activeMark?.identifier.toString()
         val trackedAspects = mock?.aspects ?: entity.pokemon.aspects
         val trackedBall = mock?.pokeball ?: entity.pokemon.caughtBall.name.toString()
         val trackedScaleModifier = mock?.scaleModifier ?: entity.pokemon.scaleModifier
@@ -239,9 +238,6 @@ class PokemonServerDelegate : PokemonSideDelegate {
         entity.entityData.set(PokemonEntity.SPECIES, trackedSpecies)
         if (entity.entityData.get(PokemonEntity.NICKNAME) != trackedNickname) {
             entity.entityData.set(PokemonEntity.NICKNAME, trackedNickname)
-        }
-        if (entity.entityData.get(PokemonEntity.MARK) !=trackedMark) {
-            entity.entityData.set(PokemonEntity.MARK, trackedMark)
         }
         if (entity.entityData.get(PokemonEntity.IS_ALPHA) != entity.pokemon.isAlpha) {
             entity.entityData.set(PokemonEntity.IS_ALPHA, entity.pokemon.isAlpha)
@@ -267,6 +263,11 @@ class PokemonServerDelegate : PokemonSideDelegate {
         val newRideBoosts = entity.pokemon.getRideBoosts()
         if (currentRideBoosts.size != newRideBoosts.size || currentRideBoosts.any { (key, value) -> newRideBoosts[key] != value }) {
             entity.entityData.set(PokemonEntity.RIDE_BOOSTS, newRideBoosts)
+        }
+
+        val trackedMark = entity.pokemon.activeMark?.identifier.toString()
+        if (entity.entityData.get(PokemonEntity.MARK) != trackedMark) {
+            entity.entityData.set(PokemonEntity.MARK, trackedMark)
         }
 
         updateShownItem()
