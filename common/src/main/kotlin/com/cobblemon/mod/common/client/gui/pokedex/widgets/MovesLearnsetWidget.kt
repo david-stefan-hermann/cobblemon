@@ -22,9 +22,12 @@ import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.HALF_OVER
 import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.POKEMON_DESCRIPTION_PADDING
 import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.SCALE
 import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.SCROLL_BAR_WIDTH
+import com.cobblemon.mod.common.client.gui.pokedex.ScaledButton
 import com.cobblemon.mod.common.client.gui.summary.widgets.SoundlessWidget
 import com.cobblemon.mod.common.client.render.drawScaledText
 import com.cobblemon.mod.common.client.render.drawScaledTextJustifiedRight
+import com.cobblemon.mod.common.api.pokedex.entry.PokedexForm
+import com.cobblemon.mod.common.api.types.ElementalType
 import com.cobblemon.mod.common.pokemon.FormData
 import com.cobblemon.mod.common.pokemon.Species
 import com.cobblemon.mod.common.util.cobblemonResource
@@ -63,10 +66,38 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         private const val DESCRIPTION_HEIGHT = 38
 
         private val overlayResource = cobblemonResource("textures/gui/pokedex/pokedex_screen_info_overlay.png")
+        private val arrowFormLeft = cobblemonResource("textures/gui/pokedex/forms_arrow_left.png")
+        private val arrowFormRight = cobblemonResource("textures/gui/pokedex/forms_arrow_right.png")
+        private val typeBar = cobblemonResource("textures/gui/pokedex/type_bar.png")
+        private val typeBarDouble = cobblemonResource("textures/gui/pokedex/type_bar_double.png")
+        private val filterArrowLeft = cobblemonResource("textures/gui/pokedex/info_arrow_left.png")
+        private val filterArrowRight = cobblemonResource("textures/gui/pokedex/info_arrow_right.png")
         private val tmLockedIcon = cobblemonResource("textures/gui/trade/trade_slot_icon_locked.png")
         private val movesPowerIconResource = cobblemonResource("textures/gui/summary/summary_moves_icon_power.png")
         private val movesAccuracyIconResource = cobblemonResource("textures/gui/summary/summary_moves_icon_accuracy.png")
         private val movesCategoryIconResource = cobblemonResource("textures/gui/summary/summary_moves_icon_category.png")
+
+        // Match PokemonInfoWidget placement
+        private const val TYPE_BAR_Y = 14
+        private const val TYPE_BAR_HEIGHT = 25
+        private const val TYPE_ICON_X = 3
+        private const val TYPE_ICON_Y = 17
+        private const val FORM_LABEL_X = 90
+        private const val FORM_LABEL_Y = 15
+        private const val FORM_ARROW_LEFT_X = 50F
+        private const val FORM_ARROW_RIGHT_X = 95F
+        private const val FORM_ARROW_Y = 15F
+        private const val FORM_ARROW_WIDTH = 10
+        private const val FORM_ARROW_HEIGHT = 16
+
+        // Adjustable filter arrow placement
+        private const val FILTER_ARROW_LEFT_X = 50F
+        private const val FILTER_ARROW_RIGHT_X = 100F
+        private const val FILTER_ARROW_Y = 28F
+        private const val FILTER_ARROW_WIDTH = 7
+        private const val FILTER_ARROW_HEIGHT = 10
+        private const val FILTER_LABEL_X = 60
+        private const val FILTER_LABEL_Y = 26
     }
 
     private val listWidget = LearnsetMovesScrollingWidget(
@@ -84,23 +115,79 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
     )
 
     private var moveEntries: List<LearnsetMoveEntry> = emptyList()
+    private var filteredEntries: List<LearnsetMoveEntry> = emptyList()
     private var selectedEntry: LearnsetMoveEntry? = null
     private var speciesName: MutableComponent = Component.literal("")
     private var speciesNumber: MutableComponent = "0000".text()
+    private var formLabel: MutableComponent = Component.literal("")
+    private var primaryType: ElementalType? = null
+    private var secondaryType: ElementalType? = null
+    private var availableForms: List<PokedexForm> = emptyList()
+    private var onFormChange: ((Boolean) -> Unit)? = null
+    private var filterIndex = 0
 
     private val decimalFormat = DecimalFormat("#.##").also { it.roundingMode = RoundingMode.CEILING }
+
+    private val formLeftButton: ScaledButton = ScaledButton(
+        pX + FORM_ARROW_LEFT_X,
+        pY + FORM_ARROW_Y,
+        FORM_ARROW_WIDTH,
+        FORM_ARROW_HEIGHT,
+        arrowFormLeft,
+        clickAction = { onFormChange?.invoke(false) }
+    ).apply { addWidget(this) }
+
+    private val formRightButton: ScaledButton = ScaledButton(
+        pX + FORM_ARROW_RIGHT_X,
+        pY + FORM_ARROW_Y,
+        FORM_ARROW_WIDTH,
+        FORM_ARROW_HEIGHT,
+        arrowFormRight,
+        clickAction = { onFormChange?.invoke(true) }
+    ).apply { addWidget(this) }
+
+    private val filterLeftButton: ScaledButton = ScaledButton(
+        pX + FILTER_ARROW_LEFT_X,
+        pY + FILTER_ARROW_Y,
+        FILTER_ARROW_WIDTH,
+        FILTER_ARROW_HEIGHT,
+        filterArrowLeft,
+        clickAction = { cycleFilter(false) }
+    ).apply { addWidget(this) }
+
+    private val filterRightButton: ScaledButton = ScaledButton(
+        pX + FILTER_ARROW_RIGHT_X,
+        pY + FILTER_ARROW_Y,
+        FILTER_ARROW_WIDTH,
+        FILTER_ARROW_HEIGHT,
+        filterArrowRight,
+        clickAction = { cycleFilter(true) }
+    ).apply { addWidget(this) }
 
     init {
         addWidget(listWidget)
         addWidget(descriptionWidget)
     }
 
-    fun setLearnset(species: Species, form: FormData, tmUnlocked: Boolean) {
+    fun setLearnset(
+        species: Species,
+        form: FormData,
+        tmUnlocked: Boolean,
+        availableForms: List<PokedexForm>,
+        selectedForm: PokedexForm,
+        onFormChange: (Boolean) -> Unit
+    ) {
         speciesName = species.translatedName
         speciesNumber = species.nationalPokedexNumber.toString().padStart(4, '0').text()
+        primaryType = form.primaryType
+        secondaryType = form.secondaryType
+        this.availableForms = availableForms
+        this.onFormChange = onFormChange
+        updateFormLabel(species, selectedForm)
+        updateFormButtons()
 
         moveEntries = buildLearnsetEntries(form, tmUnlocked)
-        listWidget.setEntries(moveEntries)
+        applyFilter()
         selectMove(null)
     }
 
@@ -136,6 +223,48 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             )
         }
 
+        blitk(
+            matrixStack = context.pose(),
+            texture = if (secondaryType != null) typeBarDouble else typeBar,
+            x = pX,
+            y = pY + TYPE_BAR_Y,
+            width = HALF_OVERLAY_WIDTH,
+            height = TYPE_BAR_HEIGHT
+        )
+
+        if (primaryType != null) {
+            TypeIcon(
+                x = pX + TYPE_ICON_X,
+                y = pY + TYPE_ICON_Y,
+                type = primaryType!!,
+                secondaryType = secondaryType
+            ).render(context)
+        }
+
+        drawScaledTextJustifiedRight(
+            context = context,
+            font = CobblemonResources.DEFAULT_LARGE,
+            text = formLabel.bold(),
+            x = pX + FORM_LABEL_X,
+            y = pY + FORM_LABEL_Y,
+            shadow = true
+        )
+
+        formLeftButton.render(context, mouseX, mouseY, delta)
+        formRightButton.render(context, mouseX, mouseY, delta)
+
+        drawScaledText(
+            context = context,
+            font = CobblemonResources.DEFAULT_LARGE,
+            text = currentFilter().label.bold(),
+            x = pX + FILTER_LABEL_X,
+            y = pY + FILTER_LABEL_Y,
+            shadow = true
+        )
+
+        filterLeftButton.render(context, mouseX, mouseY, delta)
+        filterRightButton.render(context, mouseX, mouseY, delta)
+
         drawScaledText(
             context = context,
             font = CobblemonResources.DEFAULT_LARGE,
@@ -145,7 +274,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             shadow = true
         )
 
-        if (moveEntries.isEmpty()) {
+        if (filteredEntries.isEmpty()) {
             drawScaledText(
                 context = context,
                 text = Component.literal("No moves available."),
@@ -274,6 +403,59 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         return "${decimalFormat.format(input)}%"
     }
 
+    private fun applyFilter() {
+        val filtered = when (currentFilter()) {
+            LearnsetFilter.ALL -> moveEntries
+            LearnsetFilter.LEVEL_UP -> moveEntries.filter { it.source == LearnsetSource.LEVEL_UP }
+            LearnsetFilter.TM -> moveEntries.filter { it.source == LearnsetSource.TM }
+            LearnsetFilter.EGG -> moveEntries.filter { it.source == LearnsetSource.EGG }
+            LearnsetFilter.LEGACY -> moveEntries.filter { it.source == LearnsetSource.LEGACY }
+        }
+        filteredEntries = filtered
+        listWidget.setEntries(filtered)
+        if (selectedEntry !in filtered) {
+            selectMove(null)
+        } else {
+            listWidget.setSelectedEntry(selectedEntry)
+        }
+    }
+
+    private fun cycleFilter(next: Boolean) {
+        val total = LearnsetFilter.entries.size
+        filterIndex = if (next) {
+            (filterIndex + 1) % total
+        } else {
+            (filterIndex - 1 + total) % total
+        }
+        applyFilter()
+    }
+
+    private fun currentFilter(): LearnsetFilter {
+        return LearnsetFilter.entries[filterIndex.coerceIn(0, LearnsetFilter.entries.lastIndex)]
+    }
+
+    private fun updateFormButtons() {
+        val hasForms = availableForms.size > 1
+        formLeftButton.isVisible = hasForms
+        formRightButton.isVisible = hasForms
+        formLeftButton.active = hasForms
+        formRightButton.active = hasForms
+    }
+
+    private fun updateFormLabel(species: Species, form: PokedexForm) {
+        val formName = if (form.displayForm.equals("normal", ignoreCase = true)) {
+            ""
+        } else {
+            "-${form.displayForm.lowercase().replace("-", "")}"
+        }
+        val label = lang("ui.pokedex.info.form.${species}${formName}")
+        formLabel = if (label.string.isBlank() || label.string.startsWith("cobblemon.ui.pokedex.info.form.")) {
+            Component.literal(form.displayForm)
+        } else {
+            label
+        }
+    }
+
     private fun selectMove(entry: LearnsetMoveEntry?) {
         selectedEntry = if (selectedEntry == entry || entry == null) null else entry
         listWidget.setSelectedEntry(selectedEntry)
@@ -342,6 +524,14 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         FORM_CHANGE("Form"),
         SPECIAL("Spec"),
         LEGACY("Legacy")
+    }
+
+    private enum class LearnsetFilter(val label: MutableComponent) {
+        ALL(Component.literal("All")),
+        LEVEL_UP(Component.literal("Level-Up")),
+        TM(Component.literal("TM")),
+        EGG(Component.literal("Egg")),
+        LEGACY(Component.literal("Legacy"))
     }
 
     private data class LearnsetMoveEntry(

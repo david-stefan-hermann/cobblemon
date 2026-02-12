@@ -588,11 +588,16 @@ class PokedexGUI private constructor(
                     (tabInfoElement as DropsScrollingWidget).setEntries()
                 }
                 TAB_MOVES -> {
+                    val availableForms = selectedEntry?.let { CobblemonClient.clientPokedexData.getEncounteredForms(it) } ?: emptyList()
+                    val activeForm = this.selectedForm ?: availableForms.firstOrNull()
+                    val fallbackForm = activeForm ?: PokedexForm().apply { displayForm = form.name }
                     (tabInfoElement as MovesLearnsetWidget).setLearnset(
                         species = species,
                         form = form,
-                        tmUnlocked = canDisplay
-                    )
+                        tmUnlocked = canDisplay,
+                        availableForms = availableForms,
+                        selectedForm = fallbackForm
+                    ) { next -> cycleSelectedForm(next) }
                 }
 //                TAB_MOVES -> {
 //                    form.moves.getLevelUpMovesUpTo(100)
@@ -614,6 +619,29 @@ class PokedexGUI private constructor(
     fun updateSelectedForm(newForm: PokedexForm) {
         selectedForm = newForm
         displaytabInfoElement(tabInfoIndex)
+    }
+
+    fun cycleSelectedForm(next: Boolean) {
+        val entry = selectedEntry ?: return
+        val forms = CobblemonClient.clientPokedexData.getEncounteredForms(entry)
+        if (forms.isEmpty()) return
+
+        val current = selectedForm ?: forms.first()
+        val currentIndex = forms.indexOfFirst { it.displayForm.equals(current.displayForm, ignoreCase = true) }
+            .let { if (it == -1) 0 else it }
+
+        val nextIndex = if (next) {
+            (currentIndex + 1) % forms.size
+        } else {
+            (currentIndex - 1 + forms.size) % forms.size
+        }
+
+        val newForm = forms[nextIndex]
+        selectedForm = newForm
+        if (::pokemonInfoWidget.isInitialized) {
+            pokemonInfoWidget.setSelectedForm(newForm)
+        }
+        updateTabInfoElement()
     }
 
     fun canSelectTab(tabIndex: Int): Boolean {
