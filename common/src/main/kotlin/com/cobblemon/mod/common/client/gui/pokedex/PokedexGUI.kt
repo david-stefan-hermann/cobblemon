@@ -594,7 +594,6 @@ class PokedexGUI private constructor(
                     (tabInfoElement as MovesLearnsetWidget).setLearnset(
                         species = species,
                         form = form,
-                        tmUnlocked = canDisplay,
                         availableForms = availableForms,
                         selectedForm = fallbackForm
                     ) { next -> cycleSelectedForm(next) }

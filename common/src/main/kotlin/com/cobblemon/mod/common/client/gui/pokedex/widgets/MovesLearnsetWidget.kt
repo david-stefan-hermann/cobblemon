@@ -12,9 +12,13 @@ import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.api.gui.blitk
 import com.cobblemon.mod.common.api.moves.MoveTemplate
 import com.cobblemon.mod.common.api.pokedex.entry.PokedexForm
+import com.cobblemon.mod.common.api.pokemon.PokemonSpecies
+import com.cobblemon.mod.common.api.pokemon.evolution.Evolution
 import com.cobblemon.mod.common.api.text.bold
 import com.cobblemon.mod.common.api.text.text
+import com.cobblemon.mod.common.api.tms.TechnicalMachines
 import com.cobblemon.mod.common.api.types.ElementalType
+import com.cobblemon.mod.common.client.CobblemonClient
 import com.cobblemon.mod.common.client.CobblemonResources
 import com.cobblemon.mod.common.client.gui.MoveCategoryIcon
 import com.cobblemon.mod.common.client.gui.ScrollingWidget
@@ -30,6 +34,7 @@ import com.cobblemon.mod.common.client.render.drawScaledText
 import com.cobblemon.mod.common.client.render.drawScaledTextJustifiedRight
 import com.cobblemon.mod.common.pokemon.FormData
 import com.cobblemon.mod.common.pokemon.Species
+import com.cobblemon.mod.common.util.asIdentifierDefaultingNamespace
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
 import java.math.RoundingMode
@@ -40,6 +45,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Style
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.util.FastColor
 import net.minecraft.util.Mth
 
@@ -55,6 +61,9 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         private const val LIST_HEIGHT = 54
         private const val LIST_SLOT_HEIGHT = 10
         private const val LIST_SIDE_PADDING = 4
+        private const val LIST_TM_ICON_RENDER_SIZE = 8
+        private const val LIST_TM_ICON_OFFSET = LIST_TM_ICON_RENDER_SIZE + 1
+        private const val LIST_TM_ICON_TEXTURE_SIZE = 16
 
         private const val DATA_TOP_OFFSET = 108
         private const val DATA_ROW_HEIGHT = 10
@@ -76,6 +85,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         private val sortTypeIcon = cobblemonResource("textures/gui/pokedex/moves_sort_type.png")
         private val sortSourceIcon = cobblemonResource("textures/gui/pokedex/moves_sort_source.png")
         private val tmLockedIcon = cobblemonResource("textures/gui/trade/trade_slot_icon_locked.png")
+        private val tmDiscIcon = cobblemonResource("textures/item/tms/tm.png")
         private val movesPowerIconResource = cobblemonResource("textures/gui/summary/summary_moves_icon_power.png")
         private val movesAccuracyIconResource = cobblemonResource("textures/gui/summary/summary_moves_icon_accuracy.png")
         private val movesCategoryIconResource = cobblemonResource("textures/gui/summary/summary_moves_icon_category.png")
@@ -134,7 +144,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
     private var availableForms: List<PokedexForm> = emptyList()
     private var onFormChange: ((Boolean) -> Unit)? = null
     private var filterIndex = 0
-    private var sortMode = LearnsetSort.ALPHABETICAL
+    private var sortMode = LearnsetSort.SOURCE
 
     private val decimalFormat = DecimalFormat("#.##").also { it.roundingMode = RoundingMode.CEILING }
 
@@ -179,7 +189,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         pY + SORT_BUTTON_Y,
         SORT_BUTTON_WIDTH,
         SORT_BUTTON_HEIGHT,
-        sortAlphaIcon,
+        sortSourceIcon,
         clickAction = { toggleSort() }
     ).apply { addWidget(this) }
 
@@ -191,7 +201,6 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
     fun setLearnset(
         species: Species,
         form: FormData,
-        tmUnlocked: Boolean,
         availableForms: List<PokedexForm>,
         selectedForm: PokedexForm,
         onFormChange: (Boolean) -> Unit
@@ -205,7 +214,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         updateFormLabel(species, selectedForm)
         updateFormButtons()
 
-        moveEntries = buildLearnsetEntries(form, tmUnlocked)
+        moveEntries = buildLearnsetEntries(form)
         applyFilter()
         selectMove(null)
     }
@@ -553,22 +562,127 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         }
     }
 
-    private fun buildLearnsetEntries(form: FormData, tmUnlocked: Boolean): List<LearnsetMoveEntry> {
-        val entries = linkedMapOf<String, LearnsetMoveEntry>()
+    private fun buildEvolutionMoveLevelIndex(form: FormData): Map<ResourceLocation, Map<String, Int>> {
+        val evolutionForms = collectEvolutionForms(form)
+        val levelsBySpecies = mutableMapOf<ResourceLocation, MutableMap<String, Int>>()
 
-        fun addEntry(move: MoveTemplate, source: LearnsetSource, level: Int? = null, tmLocked: Boolean = false) {
+        for (evolutionForm in evolutionForms) {
+            val speciesId = evolutionForm.species.resourceIdentifier
+            val moveLevels = levelsBySpecies.getOrPut(speciesId) { mutableMapOf() }
+            buildMoveLevelIndex(evolutionForm).forEach { (moveName, level) ->
+                val current = moveLevels[moveName]
+                if (current == null || level < current) {
+                    moveLevels[moveName] = level
+                }
+            }
+        }
+
+        return levelsBySpecies
+    }
+
+    private fun buildMoveLevelIndex(form: FormData): Map<String, Int> {
+        val levels = mutableMapOf<String, Int>()
+        form.moves.levelUpMoves.forEach { (level, moves) ->
+            moves.forEach { move ->
+                val current = levels[move.name]
+                if (current == null || level < current) {
+                    levels[move.name] = level
+                }
+            }
+        }
+        return levels
+    }
+
+    private fun collectEvolutionForms(rootForm: FormData): List<FormData> {
+        val results = mutableListOf<FormData>()
+        val visited = mutableSetOf<String>()
+
+        fun key(form: FormData): String {
+            return "${form.species.resourceIdentifier}|${form.name.lowercase()}"
+        }
+
+        fun nextEvolutions(current: FormData): Set<Evolution> {
+            return if (current.evolutions.isNotEmpty()) {
+                current.evolutions
+            } else {
+                current.species.evolutions
+            }
+        }
+
+        fun traverse(current: FormData) {
+            for (evolution in nextEvolutions(current)) {
+                val evolutionForm = resolveEvolutionForm(evolution) ?: continue
+                val evolutionKey = key(evolutionForm)
+                if (!visited.add(evolutionKey)) continue
+                results.add(evolutionForm)
+                traverse(evolutionForm)
+            }
+        }
+
+        traverse(rootForm)
+        return results
+    }
+
+    private fun resolveEvolutionForm(evolution: Evolution): FormData? {
+        val speciesId = evolution.result.species?.asIdentifierDefaultingNamespace() ?: return null
+        val species = PokemonSpecies.getByIdentifier(speciesId) ?: return null
+        val formId = evolution.result.form
+        return if (formId == null) {
+            species.standardForm
+        } else {
+            species.forms.firstOrNull {
+                it.formOnlyShowdownId().equals(formId, ignoreCase = true) || it.name.equals(formId, ignoreCase = true)
+            } ?: species.standardForm
+        }
+    }
+
+    private fun buildLearnsetEntries(form: FormData): List<LearnsetMoveEntry> {
+        val entries = linkedMapOf<String, LearnsetMoveEntry>()
+        val speciesId = form.species.resourceIdentifier
+        val speciesLevels = CobblemonClient.clientSpeciesLevelData.speciesLevels
+        val evolutionMoveLevels = buildEvolutionMoveLevelIndex(form)
+        val learnedTMs = CobblemonClient.clientTMMoveData.learnedTMs
+
+        fun isLevelUpDiscovered(move: MoveTemplate, level: Int): Boolean {
+            val currentLevel = speciesLevels[speciesId] ?: 0
+            if (currentLevel >= level) return true
+
+            for ((evolutionSpeciesId, moveLevels) in evolutionMoveLevels) {
+                val evolutionLevel = moveLevels[move.name] ?: continue
+                val evolutionHighest = speciesLevels[evolutionSpeciesId] ?: 0
+                if (evolutionHighest >= evolutionLevel) return true
+            }
+
+            return false
+        }
+
+        fun addEntry(
+            move: MoveTemplate,
+            source: LearnsetSource,
+            level: Int? = null,
+            tmLocked: Boolean = false,
+            isDiscovered: Boolean = true
+        ) {
             val key = move.name
             if (!entries.containsKey(key)) {
-                entries[key] = LearnsetMoveEntry(move, source, level, tmLocked)
+                val tmId = TechnicalMachines.moveToTM[move]?.id
+                val tmUnlocked = tmId != null && tmId in learnedTMs
+                val resolvedTmLocked = if (source == LearnsetSource.TM) !tmUnlocked else tmLocked
+                entries[key] = LearnsetMoveEntry(move, source, level, resolvedTmLocked, isDiscovered, tmId, tmUnlocked)
             }
         }
 
         form.moves.levelUpMoves.toSortedMap().forEach { (level, moves) ->
-            moves.forEach { move -> addEntry(move, LearnsetSource.LEVEL_UP, level = level) }
+            moves.forEach { move ->
+                val discovered = isLevelUpDiscovered(move, level)
+                addEntry(move, LearnsetSource.LEVEL_UP, level = level, isDiscovered = discovered)
+            }
         }
 
         form.moves.tmMoves.sortedBy { it.displayName.string }.forEach { move ->
-            addEntry(move, LearnsetSource.TM, tmLocked = !tmUnlocked)
+            val tmId = TechnicalMachines.moveToTM[move]?.id
+            val tmLocked = tmId != null && tmId !in learnedTMs
+            addEntry(move, LearnsetSource.TM, tmLocked = tmLocked, isDiscovered = !tmLocked)
         }
 
         form.moves.tutorMoves.sortedBy { it.displayName.string }.forEach { move ->
@@ -627,10 +741,11 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         val move: MoveTemplate,
         val source: LearnsetSource,
         val level: Int? = null,
-        val tmLocked: Boolean = false
-    ) {
-        val isDiscovered: Boolean = !tmLocked
-    }
+        val tmLocked: Boolean = false,
+        val isDiscovered: Boolean = true,
+        val tmId: ResourceLocation? = null,
+        val tmUnlocked: Boolean = false
+    )
 
     // todo fix the scrolling area height
     private class LearnsetMovesScrollingWidget(
@@ -714,21 +829,51 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
                     context.fill(x, y, x + entryWidth - 3, y + entryHeight, color)
                 }
 
-                TypeIcon(
-                    x = x + 1,
-                    y = y + 1,
-                    type = entry.move.elementalType,
-                    small = true
-                ).render(context)
+                val leftOffset = LIST_TM_ICON_OFFSET
+                if (entry.tmId != null) {
+                    val (red, green, blue) = if (entry.tmUnlocked) {
+                        Triple(0.32F, 0.82F, 0.46F)
+                    } else {
+                        Triple(0.6F, 0.6F, 0.6F)
+                    }
+                    blitk(
+                        matrixStack = context.pose(),
+                        texture = tmDiscIcon,
+                        x = (x + 1) / SCALE,
+                        y = (y + 1) / SCALE,
+                        width = LIST_TM_ICON_TEXTURE_SIZE,
+                        height = LIST_TM_ICON_TEXTURE_SIZE,
+                        red = red,
+                        green = green,
+                        blue = blue,
+                        alpha = 1F,
+                        scale = SCALE
+                    )
+                }
+
+                if (entry.isDiscovered) {
+                    TypeIcon(
+                        x = x + 1 + leftOffset,
+                        y = y + 1,
+                        type = entry.move.elementalType,
+                        small = true
+                    ).render(context)
+                }
+
+                val displayName = if (entry.isDiscovered) {
+                    entry.move.displayName
+                } else {
+                    Component.literal("?????")
+                }
 
                 drawScaledText(
                     context = context,
-                    text = entry.move.displayName,
-                    x = x + 12,
+                    text = displayName,
+                    x = x + 12 + leftOffset,
                     y = y + 2,
                     scale = SCALE,
                     shadow = false,
-                    colour = 0x606B6E
+                    colour = if (entry.isDiscovered) 0x606B6E else 0x8A8F91
                 )
 
                 val rightLabel = when {
@@ -744,7 +889,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
                     y = y + 2,
                     scale = SCALE,
                     shadow = false,
-                    colour = if (entry.tmLocked) 0x8A8F91 else 0x606B6E
+                    colour = if (entry.tmLocked || !entry.isDiscovered) 0x8A8F91 else 0x606B6E
                 )
 
                 if (entry.source == LearnsetSource.TM && entry.tmLocked) {
@@ -770,7 +915,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             }
 
             override fun getNarration(): Component {
-                return entry.move.displayName
+                return if (entry.isDiscovered) entry.move.displayName else Component.literal("?????")
             }
         }
     }

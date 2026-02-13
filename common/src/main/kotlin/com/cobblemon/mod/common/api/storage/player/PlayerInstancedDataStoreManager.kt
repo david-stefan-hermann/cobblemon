@@ -13,6 +13,7 @@ import com.cobblemon.mod.common.Cobblemon.MODID
 import com.cobblemon.mod.common.api.pokedex.PokedexManager
 import com.cobblemon.mod.common.api.scheduling.ScheduledTask
 import com.cobblemon.mod.common.api.scheduling.ServerTaskTracker
+import com.cobblemon.mod.common.api.storage.player.SpeciesLevelManager
 import com.cobblemon.mod.common.api.tms.TMMoveManager
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import java.util.UUID
@@ -76,6 +77,14 @@ open class PlayerInstancedDataStoreManager {
                 .infiniteIterations()
                 .tracker(ServerTaskTracker)
                 .build()
+
+        saveTasks[PlayerInstancedDataStoreTypes.SPECIES_LEVELS] = ScheduledTask.Builder()
+            .execute { saveAllOfOneType(PlayerInstancedDataStoreTypes.SPECIES_LEVELS) }
+            .delay(30f)
+            .interval(120f)
+            .infiniteIterations()
+            .tracker(ServerTaskTracker)
+            .build()
     }
 
     open fun get(playerId: UUID, dataType: PlayerInstancedDataStoreType): InstancedPlayerData {
@@ -147,5 +156,17 @@ open class PlayerInstancedDataStoreManager {
             Cobblemon.LOGGER.warn("getTMData: No TMMoveManager found for $playerId (got ${data?.javaClass?.name})")
         }
         return data as TMMoveManager
+    }
+
+    fun getSpeciesLevelData(player: ServerPlayer): SpeciesLevelManager {
+        return getSpeciesLevelData(player.uuid)
+    }
+
+    fun getSpeciesLevelData(playerId: UUID): SpeciesLevelManager {
+        val data = get(playerId, PlayerInstancedDataStoreTypes.SPECIES_LEVELS)
+        if (data !is SpeciesLevelManager) {
+            Cobblemon.LOGGER.warn("getSpeciesLevelData: No SpeciesLevelManager found for $playerId (got ${data?.javaClass?.name})")
+        }
+        return data as SpeciesLevelManager
     }
 }

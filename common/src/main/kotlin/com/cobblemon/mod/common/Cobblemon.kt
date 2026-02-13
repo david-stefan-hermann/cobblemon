@@ -81,6 +81,7 @@ import com.cobblemon.mod.common.events.AdvancementHandler
 import com.cobblemon.mod.common.events.CallbackHandler
 import com.cobblemon.mod.common.events.EntityCallbackHandler
 import com.cobblemon.mod.common.events.PokedexHandler
+import com.cobblemon.mod.common.events.SpeciesLevelHandler
 import com.cobblemon.mod.common.events.ServerTickHandler
 import com.cobblemon.mod.common.events.StatHandler
 import com.cobblemon.mod.common.net.messages.client.settings.ServerSettingsPacket
@@ -114,6 +115,7 @@ import com.cobblemon.mod.common.util.party
 import com.cobblemon.mod.common.util.pc
 import com.cobblemon.mod.common.util.requestWallpapers
 import com.cobblemon.mod.common.util.server
+import com.cobblemon.mod.common.util.speciesLevels
 import com.cobblemon.mod.common.util.tmList
 import com.cobblemon.mod.common.world.feature.CobblemonPlacedFeatures
 import com.cobblemon.mod.common.world.feature.ore.CobblemonOrePlacedFeatures
@@ -248,6 +250,7 @@ object Cobblemon {
             it.requestWallpapers()
             sendServerSettingsPacketToPlayer(it)
             it.tmList()?.scheduleFullSyncFromStores(it.party(), it.pc())
+            it.speciesLevels()?.scheduleFullSyncFromStores(it.party(), it.pc())
         }
         PlatformEvents.SERVER_PLAYER_LOGOUT.subscribe {
             PCLinkManager.removeLink(it.player.uuid)
@@ -378,9 +381,13 @@ object Cobblemon {
                     val tmMoveFactory = CachedPlayerDataStoreFactory(TMMoveNbtBackend())
                     tmMoveFactory.setup(server)
 
+                    val speciesLevelFactory = CachedPlayerDataStoreFactory(SpeciesLevelNbtBackend())
+                    speciesLevelFactory.setup(server)
+
                     playerDataManager.setFactory(generalJsonFactory, PlayerInstancedDataStoreTypes.GENERAL)
                     playerDataManager.setFactory(pokedexNbtFactory, PlayerInstancedDataStoreTypes.POKEDEX)
                     playerDataManager.setFactory(tmMoveFactory, PlayerInstancedDataStoreTypes.TM_MOVES)
+                    playerDataManager.setFactory(speciesLevelFactory, PlayerInstancedDataStoreTypes.SPECIES_LEVELS)
 
                     if (config.storageFormat == "nbt") {
                         NBTStoreAdapter(pokemonStoreRoot.absolutePath, useNestedFolders = true, folderPerClass = true)
@@ -412,9 +419,15 @@ object Cobblemon {
                         )
                         tmMovesMongoFactory.setup(server)
 
+                        val speciesLevelMongoFactory = CachedPlayerDataStoreFactory(
+                            SpeciesLevelMongoBackend(mongoClient, config.mongoDBDatabaseName, "SpeciesLevelsCollection")
+                        )
+                        speciesLevelMongoFactory.setup(server)
+
                         playerDataManager.setFactory(generalMongoFactory, PlayerInstancedDataStoreTypes.GENERAL)
                         playerDataManager.setFactory(pokedexMongoFactory, PlayerInstancedDataStoreTypes.POKEDEX)
                         playerDataManager.setFactory(tmMovesMongoFactory, PlayerInstancedDataStoreTypes.TM_MOVES)
+                        playerDataManager.setFactory(speciesLevelMongoFactory, PlayerInstancedDataStoreTypes.SPECIES_LEVELS)
                         MongoDBStoreAdapter(mongoClient, config.mongoDBDatabaseName)
                     } catch (e: ClassNotFoundException) {
                         LOGGER.error("MongoDB driver not found.")
@@ -474,6 +487,7 @@ object Cobblemon {
     fun registerEventHandlers() {
         AdvancementHandler.registerListeners()
         PokedexHandler.registerListeners()
+        SpeciesLevelHandler.registerListeners()
         StatHandler.registerListeners()
     }
 

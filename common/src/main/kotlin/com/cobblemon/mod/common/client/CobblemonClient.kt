@@ -19,6 +19,7 @@ import com.cobblemon.mod.common.api.berry.Berries
 import com.cobblemon.mod.common.api.scheduling.ClientTaskTracker
 import com.cobblemon.mod.common.api.storage.player.client.ClientGeneralPlayerData
 import com.cobblemon.mod.common.api.storage.player.client.ClientPokedexManager
+import com.cobblemon.mod.common.api.storage.player.client.ClientSpeciesLevelManager
 import com.cobblemon.mod.common.api.storage.player.client.ClientTMMoveManager
 import com.cobblemon.mod.common.api.tags.CobblemonItemTags
 import com.cobblemon.mod.common.block.entity.TintBlockEntity
@@ -110,6 +111,7 @@ object CobblemonClient {
     var clientPlayerData = ClientGeneralPlayerData()
     var clientPokedexData = ClientPokedexManager(mutableMapOf())
     var clientTMMoveData = ClientTMMoveManager(mutableSetOf())
+    var clientSpeciesLevelData = ClientSpeciesLevelManager(mutableMapOf())
 
     /** If true then we won't bother them anymore about choosing a starter even if it's a thing they can do. */
     var checkedStarterScreen = false
@@ -127,6 +129,7 @@ object CobblemonClient {
         teamData = ClientPlayerTeamData()
         clientPokedexData = ClientPokedexManager(mutableMapOf())
         clientTMMoveData = ClientTMMoveManager(mutableSetOf())
+        clientSpeciesLevelData = ClientSpeciesLevelManager(mutableMapOf())
         storage.onLogin()
 //        CobblemonDataProvider.canReload = false
     }
