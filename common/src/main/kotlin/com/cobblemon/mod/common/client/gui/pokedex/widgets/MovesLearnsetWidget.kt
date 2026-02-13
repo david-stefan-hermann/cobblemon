@@ -11,8 +11,10 @@ package com.cobblemon.mod.common.client.gui.pokedex.widgets
 import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.api.gui.blitk
 import com.cobblemon.mod.common.api.moves.MoveTemplate
+import com.cobblemon.mod.common.api.pokedex.entry.PokedexForm
 import com.cobblemon.mod.common.api.text.bold
 import com.cobblemon.mod.common.api.text.text
+import com.cobblemon.mod.common.api.types.ElementalType
 import com.cobblemon.mod.common.client.CobblemonResources
 import com.cobblemon.mod.common.client.gui.MoveCategoryIcon
 import com.cobblemon.mod.common.client.gui.ScrollingWidget
@@ -26,8 +28,6 @@ import com.cobblemon.mod.common.client.gui.pokedex.ScaledButton
 import com.cobblemon.mod.common.client.gui.summary.widgets.SoundlessWidget
 import com.cobblemon.mod.common.client.render.drawScaledText
 import com.cobblemon.mod.common.client.render.drawScaledTextJustifiedRight
-import com.cobblemon.mod.common.api.pokedex.entry.PokedexForm
-import com.cobblemon.mod.common.api.types.ElementalType
 import com.cobblemon.mod.common.pokemon.FormData
 import com.cobblemon.mod.common.pokemon.Species
 import com.cobblemon.mod.common.util.cobblemonResource
@@ -72,6 +72,9 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         private val typeBarDouble = cobblemonResource("textures/gui/pokedex/type_bar_double.png")
         private val filterArrowLeft = cobblemonResource("textures/gui/pokedex/info_arrow_left.png")
         private val filterArrowRight = cobblemonResource("textures/gui/pokedex/info_arrow_right.png")
+        private val sortAlphaIcon = cobblemonResource("textures/gui/pokedex/moves_sort_alpha.png")
+        private val sortTypeIcon = cobblemonResource("textures/gui/pokedex/moves_sort_type.png")
+        private val sortSourceIcon = cobblemonResource("textures/gui/pokedex/moves_sort_source.png")
         private val tmLockedIcon = cobblemonResource("textures/gui/trade/trade_slot_icon_locked.png")
         private val movesPowerIconResource = cobblemonResource("textures/gui/summary/summary_moves_icon_power.png")
         private val movesAccuracyIconResource = cobblemonResource("textures/gui/summary/summary_moves_icon_accuracy.png")
@@ -98,6 +101,12 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         private const val FILTER_ARROW_HEIGHT = 10
         private const val FILTER_LABEL_X = 84
         private const val FILTER_LABEL_Y = 26
+
+        // Sort button placement
+        private const val SORT_BUTTON_X = 125F
+        private const val SORT_BUTTON_Y = 27.5F
+        private const val SORT_BUTTON_WIDTH = 20
+        private const val SORT_BUTTON_HEIGHT = 20
     }
 
     private val listWidget = LearnsetMovesScrollingWidget(
@@ -125,6 +134,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
     private var availableForms: List<PokedexForm> = emptyList()
     private var onFormChange: ((Boolean) -> Unit)? = null
     private var filterIndex = 0
+    private var sortMode = LearnsetSort.ALPHABETICAL
 
     private val decimalFormat = DecimalFormat("#.##").also { it.roundingMode = RoundingMode.CEILING }
 
@@ -162,6 +172,15 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         FILTER_ARROW_HEIGHT,
         filterArrowRight,
         clickAction = { cycleFilter(true) }
+    ).apply { addWidget(this) }
+
+    private val sortButton: ScaledButton = ScaledButton(
+        pX + SORT_BUTTON_X,
+        pY + SORT_BUTTON_Y,
+        SORT_BUTTON_WIDTH,
+        SORT_BUTTON_HEIGHT,
+        sortAlphaIcon,
+        clickAction = { toggleSort() }
     ).apply { addWidget(this) }
 
     init {
@@ -266,6 +285,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
 
         filterLeftButton.render(context, mouseX, mouseY, delta)
         filterRightButton.render(context, mouseX, mouseY, delta)
+        sortButton.render(context, mouseX, mouseY, delta)
 
         drawScaledText(
             context = context,
@@ -398,6 +418,14 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             scale = SCALE,
             shadow = true
         )
+
+        if (showMoveInfo && move != null) {
+            MoveCategoryIcon(
+                x = pX + 6,
+                y = dataTop + 2 + (DATA_ROW_HEIGHT * 2) + DATA_INFO_TOP_OFFSET,
+                category = move.damageCategory
+            ).render(context)
+        }
     }
 
     private fun formatAccuracy(input: Double): String {
@@ -413,12 +441,38 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             LearnsetFilter.EGG -> moveEntries.filter { it.source == LearnsetSource.EGG }
             LearnsetFilter.LEGACY -> moveEntries.filter { it.source == LearnsetSource.LEGACY }
         }
-        filteredEntries = filtered
-        listWidget.setEntries(filtered)
-        if (selectedEntry !in filtered) {
+        val sorted = sortEntries(filtered)
+        filteredEntries = sorted
+        listWidget.setEntries(sorted)
+        if (selectedEntry !in sorted) {
             selectMove(null)
         } else {
             listWidget.setSelectedEntry(selectedEntry)
+        }
+    }
+
+    private fun sortEntries(entries: List<LearnsetMoveEntry>): List<LearnsetMoveEntry> {
+        return when (sortMode) {
+            LearnsetSort.ALPHABETICAL -> entries.sortedWith(
+                compareBy(
+                    { it.move.displayName.string.lowercase() },
+                    { it.level ?: Int.MAX_VALUE }
+                )
+            )
+            LearnsetSort.TYPE -> entries.sortedWith(
+                compareBy(
+                    { it.move.elementalType.displayName.string.lowercase() },
+                    { it.move.displayName.string.lowercase() },
+                    { it.level ?: Int.MAX_VALUE }
+                )
+            )
+            LearnsetSort.SOURCE -> entries.sortedWith(
+                compareBy(
+                    { sourceOrder(it.source) },
+                    { it.level ?: Int.MAX_VALUE },
+                    { it.move.displayName.string.lowercase() }
+                )
+            )
         }
     }
 
@@ -430,6 +484,33 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             (filterIndex - 1 + total) % total
         }
         applyFilter()
+    }
+
+    private fun toggleSort() {
+        sortMode = when (sortMode) {
+            LearnsetSort.ALPHABETICAL -> LearnsetSort.TYPE
+            LearnsetSort.TYPE -> LearnsetSort.SOURCE
+            LearnsetSort.SOURCE -> LearnsetSort.ALPHABETICAL
+        }
+        sortButton.resource = when (sortMode) {
+            LearnsetSort.ALPHABETICAL -> sortAlphaIcon
+            LearnsetSort.TYPE -> sortTypeIcon
+            LearnsetSort.SOURCE -> sortSourceIcon
+        }
+        applyFilter()
+    }
+
+    private fun sourceOrder(source: LearnsetSource): Int {
+        return when (source) {
+            LearnsetSource.LEVEL_UP -> 0
+            LearnsetSource.TM -> 1
+            LearnsetSource.TUTOR -> 2
+            LearnsetSource.EGG -> 3
+            LearnsetSource.EVOLUTION -> 4
+            LearnsetSource.FORM_CHANGE -> 5
+            LearnsetSource.SPECIAL -> 6
+            LearnsetSource.LEGACY -> 7
+        }
     }
 
     private fun currentFilter(): LearnsetFilter {
@@ -534,6 +615,12 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         TM(Component.literal("TM")),
         EGG(Component.literal("Egg")),
         LEGACY(Component.literal("Legacy"))
+    }
+
+    private enum class LearnsetSort {
+        ALPHABETICAL,
+        TYPE,
+        SOURCE
     }
 
     private data class LearnsetMoveEntry(
