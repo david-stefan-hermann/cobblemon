@@ -311,8 +311,7 @@ class PokedexGUI private constructor(
             blitk(
                 matrixStack = matrices,
                 texture = tabSelectArrow,
-                x = (x + 198 + (25 * tabInfoIndex)) / SCALE,
-                // (x + 191.5 + (22 * tabInfoIndex)) / SCALE for 6 tabs
+                x = (x + 191.5F + (22F * tabInfoIndex)) / SCALE,
                 y = (y + 177) / SCALE,
                 width = 12,
                 height = 6,
@@ -465,7 +464,7 @@ class PokedexGUI private constructor(
 
         for (i in tabIcons.indices) {
             tabButtons.add(ScaledButton(
-                x + 197F + (i * 25F), // x + 190.5F + (i * 22F) for 6 tabs
+                x + 190.5F + (i * 22F),
                 y + 181.5F,
                 TAB_ICON_SIZE,
                 TAB_ICON_SIZE,
@@ -533,6 +532,11 @@ class PokedexGUI private constructor(
         val element = tabInfoElement
         if (element is Renderable && element is NarratableEntry) {
             addRenderableWidget(element)
+        }
+        // Keep tab icons above the moves overlay.
+        if (tabButtons.isNotEmpty()) {
+            tabButtons.forEach { removeWidget(it) }
+            tabButtons.forEach { addRenderableWidget(it) }
         }
         if (update) updateTabInfoElement()
     }

@@ -1165,6 +1165,7 @@
   "cobblemon.ui.moves.switch": "Switch Move",
   "cobblemon.ui.moves.pp": "%1$sPP",
   "cobblemon.ui.moves.forget": "Forget Move",
+  "cobblemon.ui.moves.learnset.tm.discovered": "Discovered",
 
   "cobblemon.ui.tm_machine.can_learn": "Can Learn",
   "cobblemon.ui.tm_machine.cannot_learn": "Cannot Learn",

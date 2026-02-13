@@ -29,6 +29,7 @@ import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.POKEMON_D
 import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.SCALE
 import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.SCROLL_BAR_WIDTH
 import com.cobblemon.mod.common.client.gui.pokedex.ScaledButton
+import com.cobblemon.mod.common.client.gui.pokedex.renderTooltip
 import com.cobblemon.mod.common.client.gui.summary.widgets.SoundlessWidget
 import com.cobblemon.mod.common.client.render.drawScaledText
 import com.cobblemon.mod.common.client.render.drawScaledTextJustifiedRight
@@ -84,7 +85,6 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         private val sortAlphaIcon = cobblemonResource("textures/gui/pokedex/moves_sort_alpha.png")
         private val sortTypeIcon = cobblemonResource("textures/gui/pokedex/moves_sort_type.png")
         private val sortSourceIcon = cobblemonResource("textures/gui/pokedex/moves_sort_source.png")
-        private val tmLockedIcon = cobblemonResource("textures/gui/trade/trade_slot_icon_locked.png")
         private val tmDiscIcon = cobblemonResource("textures/item/tms/tm.png")
         private val movesPowerIconResource = cobblemonResource("textures/gui/summary/summary_moves_icon_power.png")
         private val movesAccuracyIconResource = cobblemonResource("textures/gui/summary/summary_moves_icon_accuracy.png")
@@ -309,8 +309,8 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             drawScaledText(
                 context = context,
                 text = Component.literal("No moves available."),
-                x = pX + (HALF_OVERLAY_WIDTH / 2),
-                y = pY + LIST_TOP_OFFSET + (LIST_HEIGHT / 2) - 3,
+                x = pX + (HALF_OVERLAY_WIDTH / 2) - 20,
+                y = pY + LIST_TOP_OFFSET + (LIST_HEIGHT / 2) + 30,
                 shadow = false,
                 colour = 0x606B6E,
                 scale = SCALE,
@@ -445,6 +445,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
     private fun applyFilter() {
         val filtered = when (currentFilter()) {
             LearnsetFilter.ALL -> moveEntries
+            LearnsetFilter.DISCOVERED -> moveEntries.filter { it.isDiscovered }
             LearnsetFilter.LEVEL_UP -> moveEntries.filter { it.source == LearnsetSource.LEVEL_UP }
             LearnsetFilter.TM -> moveEntries.filter { it.source == LearnsetSource.TM }
             LearnsetFilter.EGG -> moveEntries.filter { it.source == LearnsetSource.EGG }
@@ -725,6 +726,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
 
     private enum class LearnsetFilter(val label: MutableComponent) {
         ALL(Component.literal("All")),
+        DISCOVERED(lang("ui.moves.learnset.tm.discovered")),
         LEVEL_UP(Component.literal("Level-Up")),
         TM(Component.literal("TM")),
         EGG(Component.literal("Egg")),
@@ -836,11 +838,13 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
                     } else {
                         Triple(0.6F, 0.6F, 0.6F)
                     }
+                    val iconX = x + 1
+                    val iconY = y + 1
                     blitk(
                         matrixStack = context.pose(),
                         texture = tmDiscIcon,
-                        x = (x + 1) / SCALE,
-                        y = (y + 1) / SCALE,
+                        x = iconX / SCALE,
+                        y = iconY / SCALE,
                         width = LIST_TM_ICON_TEXTURE_SIZE,
                         height = LIST_TM_ICON_TEXTURE_SIZE,
                         red = red,
@@ -849,16 +853,24 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
                         alpha = 1F,
                         scale = SCALE
                     )
+                    val hoveringIcon = mouseX in iconX..(iconX + LIST_TM_ICON_RENDER_SIZE) &&
+                        mouseY in iconY..(iconY + LIST_TM_ICON_RENDER_SIZE)
+                    if (hoveringIcon) {
+                        val tooltipKey = if (entry.tmUnlocked) {
+                            "ui.moves.learnset.tm.discovered"
+                        } else {
+                            "egg_group.undiscovered"
+                        }
+                        renderTooltip(context, lang(tooltipKey), mouseX, mouseY, tickDelta, -14)
+                    }
                 }
 
-                if (entry.isDiscovered) {
-                    TypeIcon(
-                        x = x + 1 + leftOffset,
-                        y = y + 1,
-                        type = entry.move.elementalType,
-                        small = true
-                    ).render(context)
-                }
+                TypeIcon(
+                    x = x + 1 + leftOffset,
+                    y = y + 1,
+                    type = entry.move.elementalType,
+                    small = true
+                ).render(context)
 
                 val displayName = if (entry.isDiscovered) {
                     entry.move.displayName
@@ -892,17 +904,6 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
                     colour = if (entry.tmLocked || !entry.isDiscovered) 0x8A8F91 else 0x606B6E
                 )
 
-                if (entry.source == LearnsetSource.TM && entry.tmLocked) {
-                    blitk(
-                        matrixStack = context.pose(),
-                        texture = tmLockedIcon,
-                        x = (x + entryWidth - 12) / SCALE,
-                        y = (y + 2) / SCALE,
-                        width = 8,
-                        height = 8,
-                        scale = SCALE
-                    )
-                }
             }
 
             override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
