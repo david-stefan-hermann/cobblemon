@@ -296,14 +296,14 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         filterRightButton.render(context, mouseX, mouseY, delta)
         sortButton.render(context, mouseX, mouseY, delta)
 
-        drawScaledText(
+        /*drawScaledText(
             context = context,
             font = CobblemonResources.DEFAULT_LARGE,
             text = lang("ui.moves").bold(),
             x = pX + 4,
             y = pY + 11,
             shadow = true
-        )
+        )*/
 
         if (filteredEntries.isEmpty()) {
             drawScaledText(
@@ -391,7 +391,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
 
         drawScaledText(
             context = context,
-            text = Component.literal("Category"),
+            text = Component.literal("ui.category"),
             x = pX + DATA_LABEL_OFFSET_X,
             y = dataTop + 1 + (DATA_ROW_HEIGHT * 2) + DATA_INFO_TOP_OFFSET,
             scale = SCALE,
@@ -428,13 +428,13 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             shadow = true
         )
 
-        if (showMoveInfo && move != null) {
+        /*if (showMoveInfo && move != null) {
             MoveCategoryIcon(
                 x = pX + 6,
                 y = dataTop + 2 + (DATA_ROW_HEIGHT * 2) + DATA_INFO_TOP_OFFSET,
                 category = move.damageCategory
             ).render(context)
-        }
+        }*/
     }
 
     private fun formatAccuracy(input: Double): String {
@@ -936,7 +936,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
 
         override fun renderWidget(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
             if (showPlaceholder) {
-                drawScaledText(
+                /*drawScaledText(
                     context = context,
                     text = Component.literal("Select a move."),
                     x = pX + (width / 2),
@@ -945,7 +945,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
                     colour = 0x606B6E,
                     scale = SCALE,
                     centered = true
-                )
+                )*/
                 return
             }
             super.renderWidget(context, mouseX, mouseY, delta)
