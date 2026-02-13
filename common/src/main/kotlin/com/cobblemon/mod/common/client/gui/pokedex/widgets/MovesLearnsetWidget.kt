@@ -15,6 +15,7 @@ import com.cobblemon.mod.common.api.pokedex.entry.PokedexForm
 import com.cobblemon.mod.common.api.pokemon.PokemonSpecies
 import com.cobblemon.mod.common.api.pokemon.evolution.Evolution
 import com.cobblemon.mod.common.api.text.bold
+import com.cobblemon.mod.common.api.text.font
 import com.cobblemon.mod.common.api.text.text
 import com.cobblemon.mod.common.api.tms.TechnicalMachines
 import com.cobblemon.mod.common.api.types.ElementalType
@@ -65,6 +66,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         private const val LIST_TM_ICON_RENDER_SIZE = 8
         private const val LIST_TM_ICON_OFFSET = LIST_TM_ICON_RENDER_SIZE + 1
         private const val LIST_TM_ICON_TEXTURE_SIZE = 16
+        private const val LIST_TYPE_ICON_SIZE = 18
 
         private const val DATA_TOP_OFFSET = 108
         private const val DATA_ROW_HEIGHT = 10
@@ -72,8 +74,12 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         private const val DATA_ICON_SIZE = 10
         private const val DATA_INFO_TOP_OFFSET = 7
 
-        private const val DESCRIPTION_TOP_OFFSET = 75
+        private const val DESCRIPTION_TOP_OFFSET = 71
         private const val DESCRIPTION_HEIGHT = 38
+        private const val DESCRIPTION_SCROLLBAR_WIDTH = 3
+        private const val DESCRIPTION_SCROLLBAR_OFFSET = 13
+        private const val DESCRIPTION_LEFT_OFFSET = 62
+        private const val DESCRIPTION_DIVIDER_OFFSET = 6
 
         private val overlayResource = cobblemonResource("textures/gui/pokedex/pokedex_screen_info_overlay.png")
         private val arrowFormLeft = cobblemonResource("textures/gui/pokedex/forms_arrow_left.png")
@@ -86,6 +92,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         private val sortTypeIcon = cobblemonResource("textures/gui/pokedex/moves_sort_type.png")
         private val sortSourceIcon = cobblemonResource("textures/gui/pokedex/moves_sort_source.png")
         private val sortDiscoveredIcon = cobblemonResource("textures/gui/pokedex/moves_sort_discovered.png")
+        private val moveDexTypeIcons = cobblemonResource("textures/gui/pokedex/types_small_dex.png")
         private val tmDiscIcon = cobblemonResource("textures/item/tms/tm.png")
         private val movesPowerIconResource = cobblemonResource("textures/gui/summary/summary_moves_icon_power.png")
         private val movesAccuracyIconResource = cobblemonResource("textures/gui/summary/summary_moves_icon_accuracy.png")
@@ -128,7 +135,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
     ) { entry -> selectMove(entry) }
 
     private val descriptionWidget = MoveDescriptionWidget(
-        pX + LIST_SIDE_PADDING + 65,
+        pX + LIST_SIDE_PADDING + DESCRIPTION_LEFT_OFFSET,
         pY + DESCRIPTION_TOP_OFFSET,
         HALF_OVERLAY_WIDTH - (LIST_SIDE_PADDING * 2) - 50,
         DESCRIPTION_HEIGHT
@@ -321,9 +328,17 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             listWidget.renderWidget(context, mouseX, mouseY, delta)
         }
 
+        renderDescriptionDivider(context)
         renderDataSection(context)
 
         descriptionWidget.renderWidget(context, mouseX, mouseY, delta)
+    }
+
+    private fun renderDescriptionDivider(context: GuiGraphics) {
+        val dividerX = pX + LIST_SIDE_PADDING + DESCRIPTION_LEFT_OFFSET + DESCRIPTION_DIVIDER_OFFSET
+        val dividerTop = pY + DESCRIPTION_TOP_OFFSET + 39
+        val dividerBottom = pY + DESCRIPTION_TOP_OFFSET + DESCRIPTION_HEIGHT + 37
+        context.fill(dividerX, dividerTop, dividerX + 1, dividerBottom, FastColor.ARGB32.color(255, 126, 231, 229))
     }
 
     private fun renderDataSection(context: GuiGraphics) {
@@ -869,16 +884,34 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
                         } else {
                             "egg_group.undiscovered"
                         }
-                        renderTooltip(context, lang(tooltipKey), mouseX, mouseY, tickDelta, -14)
+                        val tooltipText = lang(tooltipKey)
+                        val textWidth = Minecraft.getInstance().font.width(tooltipText.font(CobblemonResources.DEFAULT_LARGE))
+                        val tooltipWidth = textWidth + 6
+                        val listLeft = parentList.left + 2
+                        val listRight = parentList.left + parentList.width - 6
+                        val minCenter = listLeft + (tooltipWidth / 2)
+                        val maxCenter = listRight - (tooltipWidth / 2)
+                        val tooltipX = if (minCenter <= maxCenter) {
+                            Mth.clamp(mouseX, minCenter, maxCenter)
+                        } else {
+                            mouseX
+                        }
+                        renderTooltip(context, tooltipText, tooltipX, mouseY, tickDelta, -14)
                     }
                 }
 
-                TypeIcon(
-                    x = x + 1 + leftOffset,
-                    y = y + 1,
-                    type = entry.move.elementalType,
-                    small = true
-                ).render(context)
+                blitk(
+                    matrixStack = context.pose(),
+                    texture = moveDexTypeIcons,
+                    x = (x + 1 + leftOffset) / SCALE,
+                    y = (y + 1) / SCALE,
+                    width = LIST_TYPE_ICON_SIZE,
+                    height = LIST_TYPE_ICON_SIZE,
+                    uOffset = LIST_TYPE_ICON_SIZE * entry.move.elementalType.textureXMultiplier.toFloat() + 0.1,
+                    textureWidth = LIST_TYPE_ICON_SIZE * 18,
+                    textureHeight = LIST_TYPE_ICON_SIZE,
+                    scale = SCALE
+                )
 
                 val displayName = if (entry.isDiscovered) {
                     entry.move.displayName
@@ -939,7 +972,8 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         top = pY,
         width = width,
         height = height,
-        slotHeight = LIST_SLOT_HEIGHT
+        slotHeight = LIST_SLOT_HEIGHT,
+        scrollBarWidth = DESCRIPTION_SCROLLBAR_WIDTH
     ) {
         var showPlaceholder = true
 
@@ -965,7 +999,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             text.forEach { line ->
                 Minecraft.getInstance().font.splitter.splitLines(
                     Component.literal(line),
-                    ((width - SCROLL_BAR_WIDTH - (POKEMON_DESCRIPTION_PADDING * 2)) / SCALE).toInt(),
+                    ((width - DESCRIPTION_SCROLLBAR_OFFSET - (POKEMON_DESCRIPTION_PADDING * 2)) / SCALE).toInt(),
                     Style.EMPTY
                 ).stream()
                     .map { it.string }
@@ -976,7 +1010,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
 
         override fun renderScrollbar(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
             val xLeft = this.scrollbarPosition
-            val xRight = xLeft + 3
+            val xRight = xLeft + scrollBarWidth
             val yStart = y + 1
 
             val barHeight = this.bottom - yStart
@@ -991,7 +1025,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         }
 
         override fun getScrollbarPosition(): Int {
-            return left + width - 3
+            return left + width - DESCRIPTION_SCROLLBAR_OFFSET
         }
 
         class TextSlot(val text: String) : Slot<TextSlot>() {
