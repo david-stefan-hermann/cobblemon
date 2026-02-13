@@ -1294,7 +1294,13 @@
   "cobblemon.ui.pokedex.search.search_by": "Search by %1$s",
   "cobblemon.ui.pokedex.search.type.species": "Species Name",
   "cobblemon.ui.pokedex.search.type.abilities": "Ability",
+  "cobblemon.ui.pokedex.search.type.moves": "Move Name",
   "cobblemon.ui.pokedex.search.type.drops": "Drops",
+  "cobblemon.ui.pokedex.filter.all": "All",
+  "cobblemon.ui.pokedex.filter.caught": "Caught",
+  "cobblemon.ui.pokedex.filter.seen": "Seen",
+  "cobblemon.ui.pokedex.filter.undiscovered": "Undiscovered",
+  "cobblemon.ui.pokedex.filter.level_up_tm_undiscovered": "Undiscovered TM (Level-Up)",
 
   "cobblemon.ui.pokedex.info.ability": "Ability: %1$s",
   "cobblemon.ui.pokedex.info.entry": "Entry",

@@ -85,6 +85,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         private val sortAlphaIcon = cobblemonResource("textures/gui/pokedex/moves_sort_alpha.png")
         private val sortTypeIcon = cobblemonResource("textures/gui/pokedex/moves_sort_type.png")
         private val sortSourceIcon = cobblemonResource("textures/gui/pokedex/moves_sort_source.png")
+        private val sortDiscoveredIcon = cobblemonResource("textures/gui/pokedex/moves_sort_discovered.png")
         private val tmDiscIcon = cobblemonResource("textures/item/tms/tm.png")
         private val movesPowerIconResource = cobblemonResource("textures/gui/summary/summary_moves_icon_power.png")
         private val movesAccuracyIconResource = cobblemonResource("textures/gui/summary/summary_moves_icon_accuracy.png")
@@ -445,7 +446,6 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
     private fun applyFilter() {
         val filtered = when (currentFilter()) {
             LearnsetFilter.ALL -> moveEntries
-            LearnsetFilter.DISCOVERED -> moveEntries.filter { it.isDiscovered }
             LearnsetFilter.LEVEL_UP -> moveEntries.filter { it.source == LearnsetSource.LEVEL_UP }
             LearnsetFilter.TM -> moveEntries.filter { it.source == LearnsetSource.TM }
             LearnsetFilter.EGG -> moveEntries.filter { it.source == LearnsetSource.EGG }
@@ -462,21 +462,27 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
     }
 
     private fun sortEntries(entries: List<LearnsetMoveEntry>): List<LearnsetMoveEntry> {
+        val baseEntries = if (sortMode == LearnsetSort.DISCOVERED) {
+            entries.filter { it.isDiscovered }
+        } else {
+            entries
+        }
         return when (sortMode) {
-            LearnsetSort.ALPHABETICAL -> entries.sortedWith(
+            LearnsetSort.ALPHABETICAL -> baseEntries.sortedWith(
                 compareBy(
                     { it.move.displayName.string.lowercase() },
                     { it.level ?: Int.MAX_VALUE }
                 )
             )
-            LearnsetSort.TYPE -> entries.sortedWith(
+            LearnsetSort.TYPE -> baseEntries.sortedWith(
                 compareBy(
                     { it.move.elementalType.displayName.string.lowercase() },
                     { it.move.displayName.string.lowercase() },
                     { it.level ?: Int.MAX_VALUE }
                 )
             )
-            LearnsetSort.SOURCE -> entries.sortedWith(
+            LearnsetSort.SOURCE,
+            LearnsetSort.DISCOVERED -> baseEntries.sortedWith(
                 compareBy(
                     { sourceOrder(it.source) },
                     { it.level ?: Int.MAX_VALUE },
@@ -500,12 +506,14 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         sortMode = when (sortMode) {
             LearnsetSort.ALPHABETICAL -> LearnsetSort.TYPE
             LearnsetSort.TYPE -> LearnsetSort.SOURCE
-            LearnsetSort.SOURCE -> LearnsetSort.ALPHABETICAL
+            LearnsetSort.SOURCE -> LearnsetSort.DISCOVERED
+            LearnsetSort.DISCOVERED -> LearnsetSort.ALPHABETICAL
         }
         sortButton.resource = when (sortMode) {
             LearnsetSort.ALPHABETICAL -> sortAlphaIcon
             LearnsetSort.TYPE -> sortTypeIcon
             LearnsetSort.SOURCE -> sortSourceIcon
+            LearnsetSort.DISCOVERED -> sortDiscoveredIcon
         }
         applyFilter()
     }
@@ -726,7 +734,6 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
 
     private enum class LearnsetFilter(val label: MutableComponent) {
         ALL(Component.literal("All")),
-        DISCOVERED(lang("ui.moves.learnset.tm.discovered")),
         LEVEL_UP(Component.literal("Level-Up")),
         TM(Component.literal("TM")),
         EGG(Component.literal("Egg")),
@@ -736,7 +743,8 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
     private enum class LearnsetSort {
         ALPHABETICAL,
         TYPE,
-        SOURCE
+        SOURCE,
+        DISCOVERED
     }
 
     private data class LearnsetMoveEntry(

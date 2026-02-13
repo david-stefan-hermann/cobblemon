@@ -8,7 +8,6 @@
 
 package com.cobblemon.mod.common.api.pokedex.filter
 
-import com.cobblemon.mod.common.api.drop.ItemDropEntry
 import com.cobblemon.mod.common.api.moves.MoveTemplate
 import com.cobblemon.mod.common.api.pokedex.AbstractPokedexManager
 import com.cobblemon.mod.common.api.pokedex.PokedexEntryProgress
@@ -17,92 +16,56 @@ import com.cobblemon.mod.common.api.pokemon.PokemonSpecies
 import com.cobblemon.mod.common.api.pokemon.evolution.Evolution
 import com.cobblemon.mod.common.api.tms.TechnicalMachines
 import com.cobblemon.mod.common.client.CobblemonClient
-import com.cobblemon.mod.common.pokemon.abilities.HiddenAbility
 import com.cobblemon.mod.common.pokemon.FormData
 import com.cobblemon.mod.common.util.asIdentifierDefaultingNamespace
-import com.cobblemon.mod.common.util.asTranslated
-import com.cobblemon.mod.common.util.itemRegistry
-import net.minecraft.client.Minecraft
 import net.minecraft.resources.ResourceLocation
-import net.minecraft.world.item.ItemStack
 
-/**
- * A Pokedex [EntryFilter] that filters out entries that do not contain the current search.
- *
- * @author whatsy
- * @since September 4th, 2024
- * @param searchString The string to use when checking.
- */
-class SearchFilter(val pokedexManager: AbstractPokedexManager, val searchString: String, val searchByType: SearchByType = SearchByType.SPECIES) : EntryFilter() {
+enum class SecondaryPokedexFilterType {
+    ALL,
+    CAUGHT,
+    SEEN,
+    UNDISCOVERED,
+    LEVEL_UP_TM_UNDISCOVERED
+}
+
+class SecondaryPokedexFilter(
+    private val pokedexManager: AbstractPokedexManager,
+    private val filterType: SecondaryPokedexFilterType
+) : EntryFilter() {
 
     override fun test(entry: PokedexEntry): Boolean {
-        if (searchString == "") return true
-
-        val species = PokemonSpecies.getByIdentifier(entry.speciesId) ?: return false
-        val highestKnowledgeForEntry = pokedexManager.getHighestKnowledgeFor(entry)
-        if (highestKnowledgeForEntry == PokedexEntryProgress.NONE) return false
-
-        when (searchByType) {
-            SearchByType.ABILITIES -> {
-                if (pokedexManager.getHighestKnowledgeFor(entry) !== PokedexEntryProgress.CAUGHT) return false
-                val abilityList = mutableListOf<String>()
-                val formsList = if (species.forms.isEmpty()) mutableListOf(species.standardForm) else species.forms
-                formsList.forEach {
-                    it.abilities.sortedBy { it is HiddenAbility }.map { ability -> ability.template }.forEach {
-                        abilityList.add(it.displayName.asTranslated().string.lowercase())
-                    }
-                }
-                return abilityList.any { it.contains(searchString.trim().lowercase()) }
-            }
-            SearchByType.MOVES -> {
-                if (pokedexManager.getHighestKnowledgeFor(entry) !== PokedexEntryProgress.CAUGHT) return false
-                val search = searchString.trim().lowercase()
-                val learnedTMs = CobblemonClient.clientTMMoveData.learnedTMs
-                val speciesLevels = CobblemonClient.clientSpeciesLevelData.speciesLevels
-                val forms = pokedexManager.getCaughtForms(entry)
-                val formData = if (forms.isEmpty()) {
-                    listOf(species.standardForm)
-                } else {
-                    forms.map { form ->
-                        species.forms.find { it.name.equals(form.displayForm, ignoreCase = true) } ?: species.standardForm
-                    }
-                }
-                return formData.any { form ->
-                    hasDiscoveredMove(form, search, speciesLevels, learnedTMs)
-                }
-            }
-            SearchByType.DROPS -> {
-                if (pokedexManager.getHighestKnowledgeFor(entry) !== PokedexEntryProgress.CAUGHT) return false
-                val dropsList = mutableListOf<String>()
-                val formsList = if (species.forms.isEmpty()) mutableListOf(species.standardForm) else species.forms
-                formsList.forEach {
-                    it.drops.entries.forEach {
-                        if (it is ItemDropEntry) {
-                            val itemStack = Minecraft.getInstance().player?.level()?.itemRegistry?.get(it.item)?.defaultInstance ?: ItemStack.EMPTY
-                            if (!itemStack.isEmpty) dropsList.add(itemStack.displayName.string.lowercase())
-                        }
-                    }
-                }
-                return dropsList.any { it.contains(searchString.trim().lowercase()) }
-            }
-            // Search by species name
-            else -> {
-                return species.translatedName.string.contains(searchString.trim(), true)
-            }
+        return when (filterType) {
+            SecondaryPokedexFilterType.ALL -> true
+            SecondaryPokedexFilterType.CAUGHT -> pokedexManager.getHighestKnowledgeFor(entry) >= PokedexEntryProgress.CAUGHT
+            SecondaryPokedexFilterType.SEEN -> pokedexManager.getHighestKnowledgeFor(entry) == PokedexEntryProgress.ENCOUNTERED
+            SecondaryPokedexFilterType.UNDISCOVERED -> pokedexManager.getHighestKnowledgeFor(entry) == PokedexEntryProgress.NONE
+            SecondaryPokedexFilterType.LEVEL_UP_TM_UNDISCOVERED -> hasUndiscoveredLevelUpTM(entry)
         }
     }
 
-    private fun hasDiscoveredMove(
+    private fun hasUndiscoveredLevelUpTM(entry: PokedexEntry): Boolean {
+        if (pokedexManager.getHighestKnowledgeFor(entry) != PokedexEntryProgress.CAUGHT) return false
+        val species = PokemonSpecies.getByIdentifier(entry.speciesId) ?: return false
+        val speciesLevels = CobblemonClient.clientSpeciesLevelData.speciesLevels
+        val forms = pokedexManager.getCaughtForms(entry)
+        val formData = if (forms.isEmpty()) {
+            listOf(species.standardForm)
+        } else {
+            forms.map { form ->
+                species.forms.find { it.name.equals(form.displayForm, ignoreCase = true) } ?: species.standardForm
+            }
+        }
+
+        return formData.any { form ->
+            hasUndiscoveredLevelUpTM(form, speciesLevels)
+        }
+    }
+
+    private fun hasUndiscoveredLevelUpTM(
         form: FormData,
-        search: String,
-        speciesLevels: Map<ResourceLocation, Int>,
-        learnedTMs: Set<ResourceLocation>
+        speciesLevels: Map<ResourceLocation, Int>
     ): Boolean {
         val evolutionMoveLevels = buildEvolutionMoveLevelIndex(form)
-
-        fun matches(move: MoveTemplate): Boolean {
-            return move.displayName.string.lowercase().contains(search)
-        }
 
         fun isLevelUpDiscovered(move: MoveTemplate, level: Int): Boolean {
             val currentLevel = speciesLevels[form.species.resourceIdentifier] ?: 0
@@ -113,33 +76,15 @@ class SearchFilter(val pokedexManager: AbstractPokedexManager, val searchString:
                 val evolutionHighest = speciesLevels[evolutionSpeciesId] ?: 0
                 if (evolutionHighest >= evolutionLevel) return true
             }
+
             return false
         }
 
         form.moves.levelUpMoves.forEach { (level, moves) ->
             for (move in moves) {
-                if (matches(move) && isLevelUpDiscovered(move, level)) return true
-            }
-        }
-
-        form.moves.tmMoves.forEach { move ->
-            val tmId = TechnicalMachines.moveToTM[move]?.id
-            val discovered = tmId == null || tmId in learnedTMs
-            if (discovered && matches(move)) return true
-        }
-
-        val alwaysDiscovered = sequenceOf(
-            form.moves.tutorMoves,
-            form.moves.eggMoves,
-            form.moves.evolutionMoves,
-            form.moves.formChangeMoves,
-            form.moves.specialMoves,
-            form.moves.legacyMoves
-        )
-
-        for (moves in alwaysDiscovered) {
-            for (move in moves) {
-                if (matches(move)) return true
+                if (TechnicalMachines.moveToTM[move] != null && !isLevelUpDiscovered(move, level)) {
+                    return true
+                }
             }
         }
 
@@ -219,5 +164,4 @@ class SearchFilter(val pokedexManager: AbstractPokedexManager, val searchString:
             } ?: species.standardForm
         }
     }
-
 }

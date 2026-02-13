@@ -22,6 +22,8 @@ import com.cobblemon.mod.common.api.pokedex.entry.PokedexForm
 import com.cobblemon.mod.common.api.pokedex.filter.EntryFilter
 import com.cobblemon.mod.common.api.pokedex.filter.SearchByType
 import com.cobblemon.mod.common.api.pokedex.filter.SearchFilter
+import com.cobblemon.mod.common.api.pokedex.filter.SecondaryPokedexFilter
+import com.cobblemon.mod.common.api.pokedex.filter.SecondaryPokedexFilterType
 import com.cobblemon.mod.common.api.pokemon.PokemonSpecies
 import com.cobblemon.mod.common.api.storage.player.client.ClientPokedexManager
 import com.cobblemon.mod.common.api.text.bold
@@ -84,6 +86,7 @@ class PokedexGUI private constructor(
         private val arrowDownIcon = cobblemonResource("textures/gui/pokedex/arrow_down.png")
 
         private val tabSelectArrow = cobblemonResource("textures/gui/pokedex/select_arrow.png")
+        private val secondaryFilterIcon = cobblemonResource("textures/gui/pokedex/filter_icon_button.png")
         private val tabIcons = arrayOf(
             cobblemonResource("textures/gui/pokedex/tab_info.png"),
             cobblemonResource("textures/gui/pokedex/tab_abilities.png"),
@@ -129,11 +132,13 @@ class PokedexGUI private constructor(
     private lateinit var regionSelectWidgetUp: ScaledButton
     private lateinit var regionSelectWidgetDown: ScaledButton
     private lateinit var searchByTypeButton: ScaledButton
+    private lateinit var secondaryFilterButton: ScaledButton
     private lateinit var scrollScreen: EntriesScrollingWidget
     private lateinit var pokemonInfoWidget: PokemonInfoWidget
     private lateinit var searchWidget: SearchWidget
 
     private var selectedSearchByType: SearchByType = SearchByType.SPECIES
+    private var selectedSecondaryFilter: SecondaryPokedexFilterType = SecondaryPokedexFilterType.ALL
     private val tabButtons: MutableList<ScaledButton> = mutableListOf()
 
     lateinit var tabInfoElement: GuiEventListener
@@ -165,7 +170,7 @@ class PokedexGUI private constructor(
         displaytabInfoElement(tabInfoIndex, false)
 
         if (::searchWidget.isInitialized) removeWidget(searchWidget)
-        searchWidget = SearchWidget(x + 26, y + 28, 128, HEADER_BAR_HEIGHT, update = ::updateFilters)
+        searchWidget = SearchWidget(x + 26, y + 28, 120, HEADER_BAR_HEIGHT, update = ::updateFilters)
         addRenderableWidget(searchWidget)
 
         if (::regionSelectWidgetUp.isInitialized) removeWidget(regionSelectWidgetUp)
@@ -209,6 +214,23 @@ class PokedexGUI private constructor(
             }
         )
         addRenderableWidget(searchByTypeButton)
+
+        if (::secondaryFilterButton.isInitialized) removeWidget(secondaryFilterButton)
+        secondaryFilterButton = ScaledButton(
+            buttonX = (x + 146.5).toFloat(),
+            buttonY = (y + 29.5).toFloat(),
+            buttonWidth = 16,
+            buttonHeight = 16,
+            scale = SCALE,
+            resource = secondaryFilterIcon,
+            clickAction = {
+                val filters = SecondaryPokedexFilterType.entries.toList()
+                val selectedIndex = filters.indexOf(selectedSecondaryFilter)
+                selectedSecondaryFilter = filters[if (selectedIndex == filters.lastIndex) 0 else (selectedIndex + 1)]
+                updateFilters()
+            }
+        )
+        addRenderableWidget(secondaryFilterButton)
 
         updateFilters(true)
     }
@@ -333,6 +355,18 @@ class PokedexGUI private constructor(
                 -14
             )
         }
+
+        if (secondaryFilterButton.isButtonHovered(mouseX, mouseY)) {
+            val filterText = lang("ui.pokedex.filter.${selectedSecondaryFilter.name.lowercase()}").bold()
+            renderTooltip(
+                context,
+                filterText,
+                mouseX,
+                mouseY,
+                delta,
+                -14
+            )
+        }
     }
 
     override fun onClose() {
@@ -443,6 +477,7 @@ class PokedexGUI private constructor(
     fun getFilters(): Collection<EntryFilter> {
         val filters: MutableList<EntryFilter> = mutableListOf()
 
+        filters.add(SecondaryPokedexFilter(CobblemonClient.clientPokedexData, selectedSecondaryFilter))
         filters.add(SearchFilter(CobblemonClient.clientPokedexData, searchWidget.value, selectedSearchByType))
 
         return filters
