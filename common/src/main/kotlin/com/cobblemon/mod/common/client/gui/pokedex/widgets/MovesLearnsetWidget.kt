@@ -51,12 +51,12 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
     Component.literal("MovesLearnset")
 ) {
     companion object {
-        private const val LIST_TOP_OFFSET = -17
-        private const val LIST_HEIGHT = 55
+        private const val LIST_TOP_OFFSET = -15
+        private const val LIST_HEIGHT = 54
         private const val LIST_SLOT_HEIGHT = 10
         private const val LIST_SIDE_PADDING = 4
 
-        private const val DATA_TOP_OFFSET = 107
+        private const val DATA_TOP_OFFSET = 108
         private const val DATA_ROW_HEIGHT = 10
         private const val DATA_LABEL_OFFSET_X = 14
         private const val DATA_ICON_SIZE = 10
@@ -82,21 +82,21 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         private const val TYPE_BAR_HEIGHT = 25
         private const val TYPE_ICON_X = 3
         private const val TYPE_ICON_Y = 17
-        private const val FORM_LABEL_X = 90
-        private const val FORM_LABEL_Y = 15
-        private const val FORM_ARROW_LEFT_X = 50F
-        private const val FORM_ARROW_RIGHT_X = 95F
+        private const val FORM_LABEL_X = 85
+        private const val FORM_LABEL_Y = 14
+        private const val FORM_ARROW_LEFT_X = 56F
+        private const val FORM_ARROW_RIGHT_X = 107F
         private const val FORM_ARROW_Y = 15F
         private const val FORM_ARROW_WIDTH = 10
         private const val FORM_ARROW_HEIGHT = 16
 
         // Adjustable filter arrow placement
-        private const val FILTER_ARROW_LEFT_X = 50F
-        private const val FILTER_ARROW_RIGHT_X = 100F
+        private const val FILTER_ARROW_LEFT_X = 56F
+        private const val FILTER_ARROW_RIGHT_X = 107F
         private const val FILTER_ARROW_Y = 28F
         private const val FILTER_ARROW_WIDTH = 7
         private const val FILTER_ARROW_HEIGHT = 10
-        private const val FILTER_LABEL_X = 60
+        private const val FILTER_LABEL_X = 84
         private const val FILTER_LABEL_Y = 26
     }
 
@@ -241,13 +241,14 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             ).render(context)
         }
 
-        drawScaledTextJustifiedRight(
+        drawScaledText(
             context = context,
             font = CobblemonResources.DEFAULT_LARGE,
             text = formLabel.bold(),
             x = pX + FORM_LABEL_X,
             y = pY + FORM_LABEL_Y,
-            shadow = true
+            shadow = true,
+            centered = true
         )
 
         formLeftButton.render(context, mouseX, mouseY, delta)
@@ -259,7 +260,8 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             text = currentFilter().label.bold(),
             x = pX + FILTER_LABEL_X,
             y = pY + FILTER_LABEL_Y,
-            shadow = true
+            shadow = true,
+            centered = true
         )
 
         filterLeftButton.render(context, mouseX, mouseY, delta)
@@ -543,6 +545,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         val isDiscovered: Boolean = !tmLocked
     }
 
+    // todo fix the scrolling area height
     private class LearnsetMovesScrollingWidget(
         val pX: Int,
         val pY: Int,
