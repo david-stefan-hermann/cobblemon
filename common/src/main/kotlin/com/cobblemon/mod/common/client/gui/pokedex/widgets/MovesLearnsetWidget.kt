@@ -479,7 +479,6 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             LearnsetFilter.LEVEL_UP -> moveEntries.filter { it.source == LearnsetSource.LEVEL_UP }
             LearnsetFilter.TM -> moveEntries.filter { it.source == LearnsetSource.TM }
             LearnsetFilter.EGG -> moveEntries.filter { it.source == LearnsetSource.EGG }
-            LearnsetFilter.LEGACY -> moveEntries.filter { it.source == LearnsetSource.LEGACY }
         }
         val sorted = sortEntries(filtered)
         filteredEntries = sorted
@@ -552,12 +551,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         return when (source) {
             LearnsetSource.LEVEL_UP -> 0
             LearnsetSource.TM -> 1
-            LearnsetSource.TUTOR -> 2
-            LearnsetSource.EGG -> 3
-            LearnsetSource.EVOLUTION -> 4
-            LearnsetSource.FORM_CHANGE -> 5
-            LearnsetSource.SPECIAL -> 6
-            LearnsetSource.LEGACY -> 7
+            LearnsetSource.EGG -> 2
         }
     }
 
@@ -724,28 +718,8 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             addEntry(move, LearnsetSource.TM, tmLocked = tmLocked, isDiscovered = !tmLocked)
         }
 
-        form.moves.tutorMoves.sortedBy { it.displayName.string }.forEach { move ->
-            addEntry(move, LearnsetSource.TUTOR)
-        }
-
         form.moves.eggMoves.sortedBy { it.displayName.string }.forEach { move ->
             addEntry(move, LearnsetSource.EGG)
-        }
-
-        form.moves.evolutionMoves.sortedBy { it.displayName.string }.forEach { move ->
-            addEntry(move, LearnsetSource.EVOLUTION)
-        }
-
-        form.moves.formChangeMoves.sortedBy { it.displayName.string }.forEach { move ->
-            addEntry(move, LearnsetSource.FORM_CHANGE)
-        }
-
-        form.moves.specialMoves.sortedBy { it.displayName.string }.forEach { move ->
-            addEntry(move, LearnsetSource.SPECIAL)
-        }
-
-        form.moves.legacyMoves.sortedBy { it.displayName.string }.forEach { move ->
-            addEntry(move, LearnsetSource.LEGACY)
         }
 
         return entries.values.toList()
@@ -754,20 +728,14 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
     private enum class LearnsetSource(val label: String) {
         LEVEL_UP("Lv"),
         TM("TM"),
-        TUTOR("Tutor"),
-        EGG("Egg"),
-        EVOLUTION("Evo"),
-        FORM_CHANGE("Form"),
-        SPECIAL("Spec"),
-        LEGACY("Legacy")
+        EGG("Egg")
     }
 
     private enum class LearnsetFilter(val label: MutableComponent) {
         ALL(Component.literal("All")),
         LEVEL_UP(Component.literal("Level-Up")),
         TM(Component.literal("TM")),
-        EGG(Component.literal("Egg")),
-        LEGACY(Component.literal("Legacy"))
+        EGG(Component.literal("Egg"))
     }
 
     private enum class LearnsetSort {
