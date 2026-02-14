@@ -67,6 +67,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         private const val LIST_TM_ICON_OFFSET = LIST_TM_ICON_RENDER_SIZE + 1
         private const val LIST_TM_ICON_TEXTURE_SIZE = 16
         private const val LIST_TYPE_ICON_SIZE = 18
+        private val LIST_BACKGROUND_COLOR = FastColor.ARGB32.color(255, 239, 253, 255)
 
         private const val DATA_TOP_OFFSET = 108
         private const val DATA_ROW_HEIGHT = 10
@@ -304,6 +305,11 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         filterRightButton.render(context, mouseX, mouseY, delta)
         sortButton.render(context, mouseX, mouseY, delta)
 
+        if (sortButton.isButtonHovered(mouseX, mouseY)) {
+            val sortKey = "ui.moves.learnset.sort.${sortMode.name.lowercase()}"
+            renderTooltip(context, lang(sortKey).bold(), mouseX, mouseY, delta, -14)
+        }
+
         /*drawScaledText(
             context = context,
             font = CobblemonResources.DEFAULT_LARGE,
@@ -313,6 +319,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             shadow = true
         )*/
 
+        renderListBackground(context)
         if (filteredEntries.isEmpty()) {
             drawScaledText(
                 context = context,
@@ -332,6 +339,14 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         renderDataSection(context)
 
         descriptionWidget.renderWidget(context, mouseX, mouseY, delta)
+    }
+
+    private fun renderListBackground(context: GuiGraphics) {
+        val left = pX + LIST_SIDE_PADDING - 3
+        val top = pY + LIST_TOP_OFFSET + 54
+        val right = left + listWidget.width + 6
+        val bottom = top + LIST_HEIGHT
+        context.fill(left, top, right, bottom, LIST_BACKGROUND_COLOR)
     }
 
     private fun renderDescriptionDivider(context: GuiGraphics) {
@@ -793,6 +808,8 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             entries.forEach { entry -> addEntry(MoveEntrySlot(entry, this)) }
             scrollAmount = 0.0
         }
+
+
 
         fun setSelectedEntry(entry: LearnsetMoveEntry?) {
             selectedEntry = entry
