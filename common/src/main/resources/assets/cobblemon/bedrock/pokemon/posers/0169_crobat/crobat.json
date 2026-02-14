@@ -75,7 +75,10 @@
     },
       "sleep": {
         "poseTypes": ["SLEEP"],
-        "animations": ["q.bedrock('crobat', 'sleep')"]
+        "animations": ["q.bedrock('crobat', 'sleep')"],
+        "namedAnimations": {
+          "cry": "q.bedrock_stateful('dummy', 'cry')"
       }
+    }
   }
 }
