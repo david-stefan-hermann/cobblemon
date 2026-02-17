@@ -1,11 +1,13 @@
 # Changelog
-## [1.7.3 (MONTH Nth, 2026)](#1-7-3)
+## [1.7.4 (MONTH Nth, 2026)](#1-7-4)
 
 ### Additions
 
 ### New rideable Pokémon
 
 ### Pokémon Added
+- Pancham (+ Cosmetic with Black Glasses)
+- Pangoro (+ Cosmetic with Black Glasses)
 
 ### Model updates for the following Pokémon
 - Goomy
@@ -14,12 +16,16 @@
 - Porygon
 - Porygon2
 - Porygon-Z
+- Zubat
+- Golbat
+- Crobat
 
 ### Animation updates for the following Pokémon
 
 ### Changes
 
 ### Fixes
+- Adjusted Croagunk's walkspeed
 - Fixed Blitzle's base scale being `1` rather than the intended `0.8`
 - Fixed Magnezone's emissive layer for the shiny having the wrong name, thus displaying wrongly
 ### Developer
