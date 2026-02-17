@@ -23,6 +23,7 @@
 ### Animation updates for the following Pokémon
 
 ### Changes
+- Dragonite's mailbag cosmetic can now also be obtained with a chest in the cosmetic slot
 
 ### Fixes
 - Adjusted Croagunk's walkspeed
