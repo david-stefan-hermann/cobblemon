@@ -23,6 +23,7 @@
 ### Developer
 
 ### Molang & Datapacks
+- Added `has_chosen_starter` & `get_starter_uuid` as available Molang functions
 
 ### Localization
 - Updated translations for:

@@ -871,6 +871,8 @@ object MoLangFunctions {
 
                     DoubleValue(value)
                 }
+                map.put("get_starter_uuid") { _ -> Cobblemon.playerDataManager.getGenericData(player).starterUUID?.let{ StringValue(it.toString()) } ?: DoubleValue.ZERO }
+                map.put("has_chosen_starter") { _ -> DoubleValue(Cobblemon.playerDataManager.getGenericData(player).starterSelected) }
             }
             map
         }
@@ -2815,8 +2817,8 @@ object MoLangFunctions {
                 }
                 variable
             }
-            else -> VariableStruct()
-        }
+            else -> null
+        } ?: throw IllegalArgumentException("Invalid NBT element type: ${nbt.type}")
     }
 }
 
