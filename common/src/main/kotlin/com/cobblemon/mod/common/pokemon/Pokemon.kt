@@ -544,6 +544,12 @@ open class Pokemon : ShowdownIdentifiable {
         }
 
     /**
+     * Cache friendship on trade for OT
+     */
+    var originalTrainerFriendship: Int? = null
+        internal set
+
+    /**
      * All moves that the Pokémon has, at some point, known. This is to allow players to
      * swap in moves they've used before at any time, while holding onto the remaining PP
      * that they had last.
@@ -2261,6 +2267,18 @@ open class Pokemon : ShowdownIdentifiable {
             null
         }
         onChange(packet)
+    }
+
+    fun cacheFriendship(playerID: String) {
+        if (originalTrainer == playerID) originalTrainerFriendship = friendship
+    }
+
+    fun restoreFriendship(playerID: String) : Boolean {
+        if (originalTrainer == playerID) {
+            originalTrainerFriendship?.let { friendship = it }
+            return true
+        }
+        return false
     }
 
     /**

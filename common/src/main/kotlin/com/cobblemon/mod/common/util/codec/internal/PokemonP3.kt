@@ -30,6 +30,7 @@ import java.util.*
 internal data class PokemonP3(
     val originalTrainerType: OriginalTrainerType,
     val originalTrainer: Optional<String>,
+    val originalTrainerFriendship: Optional<Int>,
     val forcedAspects: Set<String>,
     val features: List<CompoundTag>,
     val heldItemVisible: Optional<Boolean>,
@@ -49,6 +50,7 @@ internal data class PokemonP3(
     override fun into(other: Pokemon): Pokemon {
         other.originalTrainerType = this.originalTrainerType
         this.originalTrainer.ifPresent { other.originalTrainer = it }
+        this.originalTrainerFriendship.ifPresent { other.originalTrainerFriendship = it }
         other.refreshOriginalTrainer()
         other.forcedAspects = this.forcedAspects
         this.features.forEach { featureNbt ->
@@ -91,6 +93,7 @@ internal data class PokemonP3(
             instance.group(
                 OriginalTrainerType.CODEC.optionalFieldOfWithDefault(DataKeys.POKEMON_ORIGINAL_TRAINER_TYPE, OriginalTrainerType.NONE).forGetter(PokemonP3::originalTrainerType),
                 Codec.STRING.optionalFieldOf(DataKeys.POKEMON_ORIGINAL_TRAINER).forGetter(PokemonP3::originalTrainer),
+                Codec.INT.optionalFieldOf(DataKeys.POKEMON_ORIGINAL_TRAINER_FRIENDSHIP).forGetter(PokemonP3::originalTrainerFriendship),
                 Codec.list(Codec.STRING).optionalFieldOf(DataKeys.POKEMON_FORCED_ASPECTS, emptyList()).forGetter { it.forcedAspects.toMutableList() },
                 Codec.list(CompoundTag.CODEC).optionalFieldOf(FEATURES, emptyList()).forGetter(PokemonP3::features),
                 Codec.BOOL.optionalFieldOf(DataKeys.HELD_ITEM_VISIBLE).forGetter(PokemonP3::heldItemVisible),
@@ -108,6 +111,7 @@ internal data class PokemonP3(
             ).apply(instance) {
               originalTrainerType,
               originalTrainer,
+              originalTrainerFriendship,
               forcedAspects,
               features,
               heldItemVisible,
@@ -124,6 +128,7 @@ internal data class PokemonP3(
               isAlpha -> PokemonP3(
                 originalTrainerType,
                 originalTrainer,
+                originalTrainerFriendship,
                 forcedAspects.toSet(),
                 features,
                 heldItemVisible,
@@ -145,6 +150,7 @@ internal data class PokemonP3(
         internal fun from(pokemon: Pokemon): PokemonP3 = PokemonP3(
             pokemon.originalTrainerType,
             Optional.ofNullable(pokemon.originalTrainer),
+            Optional.ofNullable(pokemon.originalTrainerFriendship),
             pokemon.forcedAspects,
             pokemon.features.map { feature ->
                 val nbt = CompoundTag()

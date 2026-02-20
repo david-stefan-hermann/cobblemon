@@ -29,8 +29,7 @@ data class GeneralPlayerData(
     var keyItems: MutableSet<ResourceLocation>,
     var battleTheme: ResourceLocation?,
     var partySelectTutorialDone: Boolean = false,
-    val extraData: MutableMap<String, PlayerDataExtension>,
-    var tradedUUIDs: MutableMap<UUID, Int> = mutableMapOf()
+    val extraData: MutableMap<String, PlayerDataExtension>
 ) : InstancedPlayerData {
     var advancementData: PlayerAdvancementData = PlayerAdvancementData()
 
@@ -56,8 +55,7 @@ data class GeneralPlayerData(
             starterUUID,
             advancementData.totalBattleVictoryCount == 0,
             battleTheme,
-            partySelectTutorialDone,
-            tradedUUIDs
+            partySelectTutorialDone
         )
     }
 

@@ -14,7 +14,6 @@ import com.cobblemon.mod.common.api.events.CobblemonEvents
 import com.cobblemon.mod.common.api.events.pokemon.TradeEvent
 import com.cobblemon.mod.common.api.interaction.ServerPlayerActionRequest
 import com.cobblemon.mod.common.api.net.NetworkPacket
-import com.cobblemon.mod.common.api.storage.player.PlayerInstancedDataStoreTypes
 import com.cobblemon.mod.common.api.text.aqua
 import com.cobblemon.mod.common.net.messages.client.trade.TradeOfferExpiredPacket
 import com.cobblemon.mod.common.net.messages.client.trade.TradeOfferNotificationPacket
@@ -109,15 +108,6 @@ object TradeManager : RequestManager<TradeManager.TradeRequest>() {
         val party1 = player1.party
         val party2 = player2.party
 
-        val player1Data = when(player1) {
-            is PlayerTradeParticipant -> Cobblemon.playerDataManager.getGenericData(player1.player)
-            else -> null
-        }
-        val player2Data = when(player2) {
-            is PlayerTradeParticipant -> Cobblemon.playerDataManager.getGenericData(player2.player)
-            else -> null
-        }
-
         if (pokemon1 !in party1 || pokemon2 !in party2) {
             Cobblemon.LOGGER.warn("Attempted to perform a trade with Pokémon that aren't in the party anymore. Could be attempted duping between ${player1.name} and ${player2.name}")
             activeTrade.cancelTrade()
@@ -129,37 +119,19 @@ object TradeManager : RequestManager<TradeManager.TradeRequest>() {
             party2.remove(pokemon2)
 
             // If player1 is the OT, keep track of the friendship
-            if (pokemon1.originalTrainer == player1Data?.uuid.toString()) {
-                player1Data?.tradedUUIDs[pokemon1.uuid] = pokemon1.friendship
-            }
+            pokemon1.cacheFriendship(player1.uuid.toString())
             // If player2 is the OT, keep track of the friendship
-            if (pokemon2.originalTrainer == player2Data?.uuid.toString()) {
-                player2Data?.tradedUUIDs[pokemon2.uuid] = pokemon2.friendship
-            }
+            pokemon2.cacheFriendship(player2.uuid.toString())
 
             // If pokemon2 was originally player1's, set the friendship back to what it was at point of trading
-            if ( (player1Data != null) && (pokemon2.originalTrainer == player1Data.uuid.toString()) && (pokemon2.uuid in player1Data.tradedUUIDs) ) {
-                val friendship = player1Data.tradedUUIDs.remove(pokemon2.uuid)!!
-                pokemon2.setFriendship(friendship)
-            } else { // Otherwise, reset the friendship
+            if ( !pokemon2.restoreFriendship(player1.uuid.toString()) ) {
+                // Otherwise, reset the friendship
                 pokemon2.setFriendship(pokemon2.form.baseFriendship)
             }
             // If pokemon1 was originally player2's, set the friendship back to what it was at point of trading
-            if ( (player2Data != null) && (pokemon1.originalTrainer == player2Data.uuid.toString()) && (pokemon1.uuid in player2Data.tradedUUIDs) ) {
-                val friendship = player2Data.tradedUUIDs.remove(pokemon1.uuid)!!
-                pokemon1.setFriendship(friendship)
-            } else { // Otherwise, reset the friendship
+            if ( !pokemon1.restoreFriendship(player2.uuid.toString()) ) {
+                // Otherwise, reset the friendship
                 pokemon1.setFriendship(pokemon1.form.baseFriendship)
-            }
-
-            // Save & update
-            if (player1Data != null) {
-                Cobblemon.playerDataManager.saveSingle(player1Data, PlayerInstancedDataStoreTypes.GENERAL)
-                player1Data.sendToPlayer((player1 as PlayerTradeParticipant).player)
-            }
-            if (player2Data != null) {
-                Cobblemon.playerDataManager.saveSingle(player2Data, PlayerInstancedDataStoreTypes.GENERAL)
-                player2Data.sendToPlayer((player2 as PlayerTradeParticipant).player)
             }
 
             party2.add(pokemon1)
