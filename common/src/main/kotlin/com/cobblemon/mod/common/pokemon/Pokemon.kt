@@ -2276,6 +2276,7 @@ open class Pokemon : ShowdownIdentifiable {
     fun restoreFriendship(playerID: String) : Boolean {
         if (originalTrainer == playerID) {
             originalTrainerFriendship?.let { friendship = it }
+            originalTrainerFriendship = null
             return true
         }
         return false
