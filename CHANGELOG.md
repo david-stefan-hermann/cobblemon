@@ -8,6 +8,8 @@
 ### Pokémon Added
 - Pancham (+ Cosmetic with Black Glasses)
 - Pangoro (+ Cosmetic with Black Glasses)
+- Skitty
+- Delcatty
 
 ### Model updates for the following Pokémon
 - Goomy
