@@ -31,6 +31,8 @@
 - Adjusted Croagunk's walkspeed
 - Fixed Blitzle's base scale being `1` rather than the intended `0.8`
 - Fixed Magnezone's emissive layer for the shiny having the wrong name, thus displaying wrongly
+- Fixed Litleo not blinking
+
 ### Developer
 
 ### Molang & Datapacks
