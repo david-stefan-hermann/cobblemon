@@ -23,6 +23,8 @@
 ### Developer
 
 ### Molang & Datapacks
+- q.item.is_enchanted()
+- q.item.has_enchantment(minecraft:sharpness, 3)
 
 ### Localization
 - Updated translations for:
