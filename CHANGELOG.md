@@ -13,6 +13,7 @@
 ### Animation updates for the following Pokémon
 
 ### Changes
+- Factor in the weight of pokemon when calculating pushing forces between hitboxes.
 
 ### Fixes
 - Fixes https://gitlab.com/cable-mc/cobblemon/-/issues/1943
