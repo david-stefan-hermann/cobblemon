@@ -18,7 +18,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "cobblemon:apricorn_log",
+          "name": "cobblemon:saccharine_log",
           "functions": [
             {
               "add": false,
@@ -30,6 +30,38 @@
               "function": "minecraft:set_count"
             }
           ]
+        }
+      ],
+      "rolls": 1.0
+    },
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "conditions": [
+            {
+              "condition": "minecraft:random_chance",
+              "chance": 0.05
+            }
+          ],
+          "name": "cobblemon:saccharine_sapling"
+        }
+      ],
+      "rolls": 1.0
+    },
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "conditions": [
+            {
+              "condition": "minecraft:random_chance",
+              "chance": 0.05
+            }
+          ],
+          "name": "minecraft:apple"
         }
       ],
       "rolls": 1.0
@@ -58,11 +90,11 @@
               "function": "minecraft:set_count"
             }
           ],
-          "name": "cobblemon:apricorn_leaves"
+          "name": "cobblemon:saccharine_leaves"
         }
       ],
       "rolls": 1.0
     }
   ],
-  "random_sequence": "botanypots:cobblemon/apricorn_log"
+  "random_sequence": "botanypots:cobblemon/saccharine_log"
 }
