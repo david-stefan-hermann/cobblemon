@@ -16,6 +16,7 @@
 
 ### Changes
 - Restructured Botany Pots integration folder structure
+- Decrease default pastured mon wander radius to 32.
 
 ### Fixes
 - Fixes https://gitlab.com/cable-mc/cobblemon/-/issues/1943
@@ -26,6 +27,7 @@
  - Fixes https://gitlab.com/cable-mc/cobblemon/-/issues/1943
  - Fix occasional crash on retrieving revived fossils
  - [Various Submarine Ride Fixes](https://gitlab.com/cable-mc/cobblemon/-/merge_requests/2157)
+ - Fix Pastured mons despawning and running away.
 
 ### Developer
 
