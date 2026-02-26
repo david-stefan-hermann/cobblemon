@@ -3,10 +3,6 @@
   "values": [
     "minecraft:bamboo_jungle",
     {
-      "id": "byg:bamboo_forest",
-      "required": false
-    },
-    {
       "id": "wythers:bamboo_jungle_canyon",
       "required": false
     },

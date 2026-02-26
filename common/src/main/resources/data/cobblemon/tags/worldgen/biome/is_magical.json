@@ -3,10 +3,6 @@
   "values": [
     "minecraft:dark_forest",
     {
-      "id": "#byg:is_magical",
-      "required": false
-    },
-    {
       "id": "#c:is_magical",
       "required": false
     },
@@ -23,7 +19,7 @@
       "required": false
     },
     {
-      "id": "byg:skyris_vale",
+      "id": "biomeswevegone:skyris_vale",
       "required": false
     },
     {

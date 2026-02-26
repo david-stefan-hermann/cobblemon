@@ -55,14 +55,6 @@
       "required": false
     },
     {
-      "id": "byg:autumnal_forest",
-      "required": false
-    },
-    {
-      "id": "byg:autumnal_taiga",
-      "required": false
-    },
-    {
       "id": "terralith:skylands_autumn",
       "required": false
     },
