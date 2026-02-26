@@ -3,10 +3,6 @@
   "values": [
     "minecraft:dark_forest",
     {
-      "id": "#byg:is_spooky",
-      "required": false
-    },
-    {
       "id": "#c:is_spooky",
       "required": false
     },
@@ -19,7 +15,7 @@
       "required": false
     },
     {
-      "id": "byg:ebony_woods",
+      "id": "biomeswevegone:ebony_woods",
       "required": false
     },
     {
