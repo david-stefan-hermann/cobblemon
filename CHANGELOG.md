@@ -19,6 +19,7 @@
 - Fix occasional crash on retrieving revived fossils
 - Fixed a compatibility issue with World Game Rules which caused some log spam in specific cases.
 - Fixed improper validation of Pokémon when performing a trade.
+- Fixed issue where particle like beam can disappear when you don't see the beginning of the beam or you look away
 
 ### Developer
 
