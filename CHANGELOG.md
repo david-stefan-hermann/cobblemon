@@ -30,6 +30,7 @@
 - Fixed issue where particle like beam can disappear when you don't see the beginning of the beam or you look away
  - Fixes https://gitlab.com/cable-mc/cobblemon/-/issues/1943
  - Fix occasional crash on retrieving revived fossils
+ - Fix brushing not working on Neoforge
  - [Various Submarine Ride Fixes](https://gitlab.com/cable-mc/cobblemon/-/merge_requests/2157)
  - Fix Pastured mons despawning and running away.
  - Fix Apricorn trees crashing when other mods bonemeal it
