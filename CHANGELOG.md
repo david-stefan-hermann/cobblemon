@@ -19,7 +19,8 @@
 - Restructured Botany Pots integration folder structure
 - Decrease default pastured mon wander radius to 32.
 - Factor in the weight of pokemon when calculating pushing forces between hitboxes.
--  Remade the Starter Selection Screen with new assets
+- Remade the Starter Selection Screen with new assets
+- Refactored berry trees to be less impactful on TPS (more performant)
 
 ### Fixes
 - Fixes https://gitlab.com/cable-mc/cobblemon/-/issues/1943
@@ -31,6 +32,7 @@
  - Fix occasional crash on retrieving revived fossils
  - [Various Submarine Ride Fixes](https://gitlab.com/cable-mc/cobblemon/-/merge_requests/2157)
  - Fix Pastured mons despawning and running away.
+ - Fix Apricorn trees crashing when other mods bonemeal it
 
 ### Developer
 
