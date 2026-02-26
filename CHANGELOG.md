@@ -18,6 +18,7 @@
 - Restructured Botany Pots integration folder structure
 - Decrease default pastured mon wander radius to 32.
 - Factor in the weight of pokemon when calculating pushing forces between hitboxes.
+-  Remade the Starter Selection Screen with new assets
 
 ### Fixes
 - Fixes https://gitlab.com/cable-mc/cobblemon/-/issues/1943
