@@ -3,6 +3,7 @@
 
 ### Additions
 - Added a toast to notify players of how they can scroll through their party. Did you know you can hold R and scroll instead of using arrow keys??!
+- Added new layer property that makes a layer scroll in a direction. "scrolling": {"speedU": 0.1, "speedV": 0.1}
 
 ### New rideable Pokémon
 
