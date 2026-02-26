@@ -33,6 +33,7 @@
  - [Various Submarine Ride Fixes](https://gitlab.com/cable-mc/cobblemon/-/merge_requests/2157)
  - Fix Pastured mons despawning and running away.
  - Fix Apricorn trees crashing when other mods bonemeal it
+ - [Various UFO Ride Improvements](https://gitlab.com/cable-mc/cobblemon/-/merge_requests/2156)
 
 ### Developer
 
