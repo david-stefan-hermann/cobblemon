@@ -3,6 +3,7 @@
 
 ### Additions
 - Added a toast to notify players of how they can scroll through their party. Did you know you can hold R and scroll instead of using arrow keys??!
+- Added missing crops to Botany Pots integration
 
 ### New rideable Pokémon
 
@@ -13,6 +14,7 @@
 ### Animation updates for the following Pokémon
 
 ### Changes
+- Restructured Botany Pots integration folder structure
 
 ### Fixes
 - Fixes https://gitlab.com/cable-mc/cobblemon/-/issues/1943
