@@ -20,6 +20,9 @@
 - Fixed a compatibility issue with World Game Rules which caused some log spam in specific cases.
 - Fixed improper validation of Pokémon when performing a trade.
 - Fixed issue where particle like beam can disappear when you don't see the beginning of the beam or you look away
+ - Fixes https://gitlab.com/cable-mc/cobblemon/-/issues/1943
+ - Fix occasional crash on retrieving revived fossils
+ - [Various UFO Ride Improvements](https://gitlab.com/cable-mc/cobblemon/-/merge_requests/2156)
 
 ### Developer
 
