@@ -2122,6 +2122,7 @@
   "cobblemon.ui.status.psn": "PSN",
   "cobblemon.ui.status.slp": "SLP",
   "cobblemon.ui.status.tox": "PSN",
+  "cobblemon.ui.exp.number": "+%1$s §oEXP",
   "cobblemon.battle.ui.fight": "Fight",
   "cobblemon.battle.ui.switch": "Switch",
   "cobblemon.battle.ui.capture": "Catch",
