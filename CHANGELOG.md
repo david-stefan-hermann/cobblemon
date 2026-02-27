@@ -38,6 +38,8 @@
 - Fixed NeoForge brewing stand unexpectedly crashing users when shift clicking items within it's menu
 
 ### Developer
+- Added `PokeSnackSpawnerFactory` which allows influence registration on PokeSnack encounters
+- Added `FishingSpawnerFactory` which allows influence registration on fishing encounters
 
 ### Molang & Datapacks
 - q.item.is_enchanted()
