@@ -35,6 +35,7 @@
  - Fix Pastured mons despawning and running away.
  - Fix Apricorn trees crashing when other mods bonemeal it
  - [Various UFO Ride Improvements](https://gitlab.com/cable-mc/cobblemon/-/merge_requests/2156)
+- Fixed NeoForge brewing stand unexpectedly crashing users when shift clicking items within it's menu
 
 ### Developer
 
