@@ -74,12 +74,6 @@
 - Fixed PokeSnack/Bait effects so EV Yield, Type, and Egg Group filters now all apply together when weighting spawns
 
 ### Developer
-- Changed the `owner` parameter in the `OwnerQueryRequirement` interface from `ServerPlayer` to `Player`. This method is now also called on the client to verify whether a Pokémon interaction succeeded, so make sure to update your implementations to handle both server and client contexts.
-- Added `pnx` to the `BattleFaintedEvent` and `FormeChangeEvent`.
-- Added register methods for custom instructions to `ShowdownInterpreter`.
-- Changed callback operations in `BattlePokemon` to allow multiple callbacks and is now mutable.
-- Changed the `owner` parameter in the `OwnerQueryRequirement` interface from `ServerPlayer` to `Player`. This method is now also called on the client to verify whether a Pokémon interaction succeeded, so make sure to update your implementations to handle both server and client contexts. 
-- Added `display_name`, `description`, and `max_pp` functions to the `Movetemplate` struct.
 - Added `FishingSpawnerFactory` which allows influence registration on fishing encounters
 - Added `PokeSnackSpawnerFactory` which allows influence registration on PokeSnack encounters
 
