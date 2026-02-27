@@ -36,6 +36,7 @@
  - Fix Apricorn trees crashing when other mods bonemeal it
  - [Various UFO Ride Improvements](https://gitlab.com/cable-mc/cobblemon/-/merge_requests/2156)
 - Fixed NeoForge brewing stand unexpectedly crashing users when shift clicking items within it's menu
+- Fixed NPCs switching pokemon very often during battles
 
 ### Developer
 - Added `PokeSnackSpawnerFactory` which allows influence registration on PokeSnack encounters
