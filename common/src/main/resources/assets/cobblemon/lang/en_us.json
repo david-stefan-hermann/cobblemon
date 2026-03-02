@@ -2928,6 +2928,8 @@
   "cobblemon.battle.start.typechange": "%1$s transformed into the %2$s type!",
   "cobblemon.battle.start.uproar": "%1$s caused an uproar!",
   "cobblemon.battle.start.yawn": "%1$s grew drowsy!",
+  "cobblemon.battle.start.alphaboost": "The alpha %1$s is filled with wild might! Its power was boosted!",
+
 
   "cobblemon.battle.activate.afteryou": "%1$s took the kind offer!",
   "cobblemon.battle.activate.allyswitch": "%1$s and %2$s switched places!",
