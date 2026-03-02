@@ -43,23 +43,11 @@
       "required": false
     },
     {
-      "id": "biomeswevegone:amaranth_fields",
-      "required": false
-    },
-    {
-      "id": "biomeswevegone:allium_fields",
-      "required": false
-    },
-    {
       "id": "biomeswevegone:rose_fields",
       "required": false
     },
     {
       "id": "biomeswevegone:skyris_vale",
-      "required": false
-    },
-    {
-      "id": "biomeswevegone:orchard",
       "required": false
     },
     {

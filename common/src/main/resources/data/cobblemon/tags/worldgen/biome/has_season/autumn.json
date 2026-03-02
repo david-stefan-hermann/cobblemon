@@ -51,6 +51,10 @@
       "required": false
     },
     {
+      "id": "biomeswevegone:pumpkin_valley",
+      "required": false
+    },
+    {
       "id": "blooming_biosphere:autumnal_forest",
       "required": false
     },

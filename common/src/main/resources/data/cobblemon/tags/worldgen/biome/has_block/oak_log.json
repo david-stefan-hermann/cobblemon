@@ -79,6 +79,10 @@
       "required": false
     },
     {
+      "id": "biomeswevegone:forgotten_forest",
+      "required": false
+    },
+    {
       "id": "biomeswevegone:mojave_desert",
       "required": false
     },
@@ -91,7 +95,7 @@
       "required": false
     },
     {
-      "id": "biomeswevegone:white_mangrove_marshes",
+      "id": "biomeswevegone:temperate_grove",
       "required": false
     },
     {

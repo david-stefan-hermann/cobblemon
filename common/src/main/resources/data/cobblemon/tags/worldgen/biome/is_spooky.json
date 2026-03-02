@@ -19,6 +19,18 @@
       "required": false
     },
     {
+      "id": "biomeswevegone:overgrowth_woodlands",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:pale_bog",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:weeping_witch_forest",
+      "required": false
+    },
+    {
       "id": "wythers:ancient_taiga",
       "required": false
     },

@@ -32,6 +32,10 @@
       "required": false
     },
     {
+      "id": "biomeswevegone:forgotten_forest",
+      "required": false
+    },
+    {
       "id": "biomeswevegone:tropical_rainforest",
       "required": false
     },
