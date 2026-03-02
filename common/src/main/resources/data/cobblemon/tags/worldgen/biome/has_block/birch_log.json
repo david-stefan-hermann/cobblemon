@@ -38,11 +38,15 @@
       "required": false
     },
     {
-      "id": "biomeswevegone:aspen_boreal",
+      "id": "biomeswevegone:howling_peaks",
       "required": false
     },
     {
-      "id": "biomeswevegone:howling_peaks",
+      "id": "biomeswevegone:overgrowth_woodlands",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:temperate_grove",
       "required": false
     },
     {

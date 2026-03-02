@@ -60,6 +60,14 @@
       "required": false
     },
     {
+      "id": "biomeswevegone:crimson_tundra",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:eroded_borealis",
+      "required": false
+    },
+    {
       "id": "biomeswevegone:frosted_coniferous_forest",
       "required": false
     },
@@ -72,11 +80,15 @@
       "required": false
     },
     {
-      "id": "biomeswevegone:rose_fields",
+      "id": "biomeswevegone:maple_taiga",
       "required": false
     },
     {
-      "id": "biomeswevegone:weeping_witch_forest",
+      "id": "biomeswevegone:redwood_thicket",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:rose_fields",
       "required": false
     },
     {
