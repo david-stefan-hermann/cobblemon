@@ -4,6 +4,8 @@
 ### Additions
 
 ### New rideable Pokémon
+- Drampa
+- Archeops
 
 ### Pokémon Added
 - Pancham (+ Cosmetic with Black Glasses)
@@ -23,6 +25,8 @@
 - Crobat
 
 ### Animation updates for the following Pokémon
+- Drampa
+- Archeops
 
 ### Changes
 - Dragonite's mailbag cosmetic can now also be obtained with a chest in the cosmetic slot

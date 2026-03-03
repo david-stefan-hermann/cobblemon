@@ -541,7 +541,6 @@ object VaryingModelRepository {
         inbuilt("anorith", ::AnorithModel)
         inbuilt("armaldo", ::ArmaldoModel)
         inbuilt("archen", ::ArchenModel)
-        inbuilt("archeops", ::ArcheopsModel)
         inbuilt("aron", ::AronModel)
         inbuilt("lairon", ::LaironModel)
         inbuilt("aggron", ::AggronModel)
