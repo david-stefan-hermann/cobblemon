@@ -99,8 +99,7 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
             else -> return OptionalInt.empty()
         }
 
-        // Match renderer slot layout exactly:
-        // left/right margins = 1px, slot width = 6px, top/bottom margins = 1px, slot height = 2px on a 16px face.
+        // Have interaction segments match the renderer areas visually
         val leftSlotMinX = 1.0 / 16.0
         val leftSlotMaxX = 7.0 / 16.0
         val rightSlotMinX = 9.0 / 16.0
@@ -110,8 +109,8 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
         val slotHeight = 2.0 / 16.0
 
         val col = when {
-            x in leftSlotMinX..leftSlotMaxX -> 0
-            x in rightSlotMinX..rightSlotMaxX -> 1
+            x in leftSlotMinX..leftSlotMaxX -> if (facing == Direction.NORTH || facing == Direction.SOUTH) 1 else 0
+            x in rightSlotMinX..rightSlotMaxX -> if (facing == Direction.NORTH || facing == Direction.SOUTH) 0 else 1
             else -> return OptionalInt.empty()
         }
 
