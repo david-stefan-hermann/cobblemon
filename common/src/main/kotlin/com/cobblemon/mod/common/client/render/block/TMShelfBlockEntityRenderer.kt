@@ -9,8 +9,8 @@
 package com.cobblemon.mod.common.client.render.block
 
 import com.cobblemon.mod.common.block.entity.TMShelfBlockEntity
-import com.cobblemon.mod.common.item.interactive.TechnicalMachineItem
-import com.cobblemon.mod.common.item.components.TMMoveComponent
+import com.cobblemon.mod.common.CobblemonItems
+import com.cobblemon.mod.common.client.render.color.TechnicalMachineItemColorProvider
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
@@ -41,6 +41,10 @@ class TMShelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) :
     private val topMargin = 1f
     private val bottomMargin = 1f
     private val interRowSpacing = 0f
+    private val tmOverlayDepthOffset = -0.0002f
+
+    private val tmBaseTexture = cobblemonResource("textures/block/tm_shelf/technical_machine_base.png")
+    private val tmOverlayTexture = cobblemonResource("textures/block/tm_shelf/technical_machine_overlay.png")
 
     override fun render(
             entity: TMShelfBlockEntity,
@@ -60,7 +64,9 @@ class TMShelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) :
         }
 
         val lightGetter = entity.level as? BlockAndTintGetter
-        val packedLight = lightGetter?.let { LevelRenderer.getLightColor(it, entity.blockPos) } ?: 0xF000F0
+        val packedLight = lightGetter?.let {
+            LevelRenderer.getLightColor(it, entity.blockPos.relative(facing))
+        } ?: if (light != 0) light else 0x000000
 
         poseStack.pushPose()
         poseStack.translate(0.5, 0.5, 0.5)
@@ -89,13 +95,29 @@ class TMShelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) :
                 poseStack.pushPose()
                 poseStack.translate(posX, posY, -0.001f)
 
-                val tex = getItemTexture(item)
-                val colorize = item.item is TechnicalMachineItem
-                val color = if (colorize) {
-                    TMMoveComponent.getTMMove(item)?.elementalType?.primaryColor ?: 0xAAAAAA
-                } else 0xFFFFFF
+                if (item.item == CobblemonItems.TECHNICAL_MACHINE) {
+                    val baseColor = TechnicalMachineItemColorProvider.getColor(item, 0)
+                    val overlayColor = TechnicalMachineItemColorProvider.getColor(item, 1)
 
-                renderSlotQuad(poseStack, buffer, tex, color, packedLight, slotWidth, slotHeight, tint = colorize)
+                    renderSlotQuad(poseStack, buffer, tmBaseTexture, baseColor, packedLight, slotWidth, slotHeight, tint = true)
+
+                    poseStack.pushPose()
+                    poseStack.translate(0.0, 0.0, tmOverlayDepthOffset.toDouble())
+                    renderSlotQuad(
+                            poseStack,
+                            buffer,
+                            tmOverlayTexture,
+                            overlayColor,
+                            packedLight,
+                            slotWidth,
+                            slotHeight,
+                            tint = true
+                    )
+                    poseStack.popPose()
+                } else {
+                    val tex = getItemTexture(item)
+                    renderSlotQuad(poseStack, buffer, tex, 0xFFFFFF, packedLight, slotWidth, slotHeight, tint = false)
+                }
 
                 poseStack.popPose()
             }
@@ -114,7 +136,7 @@ class TMShelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) :
             height: Float,
             tint: Boolean
     ) {
-        val consumer: VertexConsumer = buffer.getBuffer(RenderType.text(texture))
+        val consumer: VertexConsumer = buffer.getBuffer(RenderType.entityCutout(texture))
         val matrix: Matrix4f = poseStack.last().pose()
 
         val (r, g, b, a) = if (tint) {
@@ -126,13 +148,13 @@ class TMShelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) :
             )
         } else listOf(1f, 1f, 1f, 1f)
 
-        consumer.addVertex(matrix, 0f, 0f, 0f).setColor(r, g, b, a).setUv(0f, 0f)
+        consumer.addVertex(matrix, 0f, 0f, 0f).setColor(r, g, b, a).setUv(0f, 1f)
                 .setUv1(0, 0).setUv2(light and 0xFFFF, light shr 16).setNormal(0f, 0f, -1f)
-        consumer.addVertex(matrix, 0f, height, 0f).setColor(r, g, b, a).setUv(0f, 1f)
+        consumer.addVertex(matrix, 0f, height, 0f).setColor(r, g, b, a).setUv(0f, 0f)
                 .setUv1(0, 0).setUv2(light and 0xFFFF, light shr 16).setNormal(0f, 0f, -1f)
-        consumer.addVertex(matrix, width, height, 0f).setColor(r, g, b, a).setUv(1f, 1f)
+        consumer.addVertex(matrix, width, height, 0f).setColor(r, g, b, a).setUv(1f, 0f)
                 .setUv1(0, 0).setUv2(light and 0xFFFF, light shr 16).setNormal(0f, 0f, -1f)
-        consumer.addVertex(matrix, width, 0f, 0f).setColor(r, g, b, a).setUv(1f, 0f)
+        consumer.addVertex(matrix, width, 0f, 0f).setColor(r, g, b, a).setUv(1f, 1f)
                 .setUv1(0, 0).setUv2(light and 0xFFFF, light shr 16).setNormal(0f, 0f, -1f)
     }
 
