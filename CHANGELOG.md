@@ -46,6 +46,7 @@
 - q.item.is_enchanted()
 - q.item.has_enchantment(minecraft:sharpness, 3)
 - Added `has_chosen_starter` & `get_starter_uuid` as available Molang functions
+- Added `marks`, `has_mark`, & `remove_marks` as available Molang functions for pokemon
 
 ### Localization
 - Updated translations for:
