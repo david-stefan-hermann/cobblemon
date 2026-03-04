@@ -66,7 +66,7 @@ class TMShelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) :
         val lightGetter = entity.level as? BlockAndTintGetter
         val packedLight = lightGetter?.let {
             LevelRenderer.getLightColor(it, entity.blockPos.relative(facing))
-        } ?: if (light != 0) light else 0x000000
+        } ?: if (light != 0) light else 0xF000F0
 
         poseStack.pushPose()
         poseStack.translate(0.5, 0.5, 0.5)
@@ -99,7 +99,17 @@ class TMShelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) :
                     val baseColor = TechnicalMachineItemColorProvider.getColor(item, 0)
                     val overlayColor = TechnicalMachineItemColorProvider.getColor(item, 1)
 
-                    renderSlotQuad(poseStack, buffer, tmBaseTexture, baseColor, packedLight, slotWidth, slotHeight, tint = true)
+                    renderSlotQuad(
+                            poseStack,
+                            buffer,
+                            tmBaseTexture,
+                            baseColor,
+                            packedLight,
+                            slotWidth,
+                            slotHeight,
+                            tint = true,
+                            useTextRenderType = true
+                    )
 
                     poseStack.pushPose()
                     poseStack.translate(0.0, 0.0, tmOverlayDepthOffset.toDouble())
@@ -111,12 +121,23 @@ class TMShelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) :
                             packedLight,
                             slotWidth,
                             slotHeight,
-                            tint = true
+                            tint = true,
+                            useTextRenderType = true
                     )
                     poseStack.popPose()
                 } else {
                     val tex = getItemTexture(item)
-                    renderSlotQuad(poseStack, buffer, tex, 0xFFFFFF, packedLight, slotWidth, slotHeight, tint = false)
+                    renderSlotQuad(
+                            poseStack,
+                            buffer,
+                            tex,
+                            0xFFFFFF,
+                            packedLight,
+                            slotWidth,
+                            slotHeight,
+                            tint = false,
+                            useTextRenderType = true
+                    )
                 }
 
                 poseStack.popPose()
@@ -134,9 +155,11 @@ class TMShelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) :
             light: Int,
             width: Float,
             height: Float,
-            tint: Boolean
+            tint: Boolean,
+            useTextRenderType: Boolean
     ) {
-        val consumer: VertexConsumer = buffer.getBuffer(RenderType.entityCutout(texture))
+        val renderType = if (useTextRenderType) RenderType.text(texture) else RenderType.entityCutout(texture)
+        val consumer: VertexConsumer = buffer.getBuffer(renderType)
         val matrix: Matrix4f = poseStack.last().pose()
 
         val (r, g, b, a) = if (tint) {

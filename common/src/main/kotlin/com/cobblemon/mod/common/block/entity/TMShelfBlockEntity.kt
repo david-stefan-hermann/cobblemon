@@ -110,8 +110,8 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
         val slotHeight = 2.0 / 16.0
 
         val col = when {
-            x in leftSlotMinX..leftSlotMaxX -> 1
-            x in rightSlotMinX..rightSlotMaxX -> 0
+            x in leftSlotMinX..leftSlotMaxX -> 0
+            x in rightSlotMinX..rightSlotMaxX -> 1
             else -> return OptionalInt.empty()
         }
 
