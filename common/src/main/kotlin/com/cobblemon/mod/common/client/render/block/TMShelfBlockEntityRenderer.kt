@@ -42,6 +42,7 @@ class TMShelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) :
     private val bottomMargin = 1f
     private val interRowSpacing = 0f
     private val tmOverlayDepthOffset = -0.0002f
+    private val slotBrightnessMultiplier = 0.65f
 
     private val tmBaseTexture = cobblemonResource("textures/block/tm_shelf/technical_machine_base.png")
     private val tmOverlayTexture = cobblemonResource("textures/block/tm_shelf/technical_machine_overlay.png")
@@ -162,7 +163,7 @@ class TMShelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) :
         val consumer: VertexConsumer = buffer.getBuffer(renderType)
         val matrix: Matrix4f = poseStack.last().pose()
 
-        val (r, g, b, a) = if (tint) {
+        val (rBase, gBase, bBase, a) = if (tint) {
             listOf(
                     FastColor.ARGB32.red(color) / 255f,
                     FastColor.ARGB32.green(color) / 255f,
@@ -170,6 +171,9 @@ class TMShelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) :
                     1.0f
             )
         } else listOf(1f, 1f, 1f, 1f)
+        val r = (rBase * slotBrightnessMultiplier).coerceIn(0f, 1f)
+        val g = (gBase * slotBrightnessMultiplier).coerceIn(0f, 1f)
+        val b = (bBase * slotBrightnessMultiplier).coerceIn(0f, 1f)
 
         consumer.addVertex(matrix, 0f, 0f, 0f).setColor(r, g, b, a).setUv(0f, 1f)
                 .setUv1(0, 0).setUv2(light and 0xFFFF, light shr 16).setNormal(0f, 0f, -1f)
