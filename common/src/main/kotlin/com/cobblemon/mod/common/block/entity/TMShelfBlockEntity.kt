@@ -85,6 +85,10 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
 
     private fun getHitSlot(hit: BlockHitResult, state: BlockState): OptionalInt {
         val facing = state.getValue(TMShelfBlock.FACING)
+        if (hit.direction != facing) {
+            return OptionalInt.empty()
+        }
+
         val relative = hit.location.subtract(hit.blockPos.x.toDouble(), hit.blockPos.y.toDouble(), hit.blockPos.z.toDouble())
 
         val (x, y) = when (facing) {
@@ -95,8 +99,28 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
             else -> return OptionalInt.empty()
         }
 
-        val col = if (x < 0.5) 1 else 0
-        val row = ((1.0 - y) * 7).toInt().coerceIn(0, 6)
+        // Match renderer slot layout exactly:
+        // left/right margins = 1px, slot width = 6px, top/bottom margins = 1px, slot height = 2px on a 16px face.
+        val leftSlotMinX = 1.0 / 16.0
+        val leftSlotMaxX = 7.0 / 16.0
+        val rightSlotMinX = 9.0 / 16.0
+        val rightSlotMaxX = 15.0 / 16.0
+        val slotMinY = 1.0 / 16.0
+        val slotMaxY = 15.0 / 16.0
+        val slotHeight = 2.0 / 16.0
+
+        val col = when {
+            x in leftSlotMinX..leftSlotMaxX -> 1
+            x in rightSlotMinX..rightSlotMaxX -> 0
+            else -> return OptionalInt.empty()
+        }
+
+        if (y < slotMinY || y > slotMaxY) {
+            return OptionalInt.empty()
+        }
+
+        val rowFromBottom = ((y - slotMinY) / slotHeight).toInt().coerceIn(0, 6)
+        val row = 6 - rowFromBottom
 
         return OptionalInt.of(row * 2 + col)
     }
