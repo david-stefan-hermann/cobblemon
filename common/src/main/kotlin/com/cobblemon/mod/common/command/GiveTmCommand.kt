@@ -16,6 +16,7 @@ import com.cobblemon.mod.common.util.permission
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.context.CommandContext
+import com.mojang.brigadier.arguments.IntegerArgumentType
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
 import net.minecraft.commands.arguments.EntityArgument
@@ -28,34 +29,59 @@ object GiveTmCommand {
     private const val ALIAS = "giveTM"
     private const val PLAYER = "player"
     private const val MOVE = "move"
+    private const val QUANTITY = "quantity"
 
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>) {
         val command = Commands.literal(NAME)
             .permission(CobblemonPermissions.TECHNICAL_MACHINE)
-            .then(Commands.argument(MOVE, MoveArgumentType.move())
-                .executes { ctx ->
-                    execute(ctx, ctx.source.playerOrException)
-                }
-                .then(Commands.argument(PLAYER, EntityArgument.player())
+            .then(
+                Commands.argument(MOVE, MoveArgumentType.move())
                     .executes { ctx ->
-                        execute(ctx, EntityArgument.getPlayer(ctx, PLAYER))
+                        execute(ctx, ctx.source.playerOrException, 1)
                     }
-                )
+                    .then(
+                        Commands.argument(QUANTITY, IntegerArgumentType.integer(1, 2304))
+                            .executes { ctx ->
+                                execute(ctx, ctx.source.playerOrException, IntegerArgumentType.getInteger(ctx, QUANTITY))
+                            }
+                    )
+                    .then(
+                        Commands.argument(PLAYER, EntityArgument.player())
+                            .executes { ctx ->
+                                execute(ctx, EntityArgument.getPlayer(ctx, PLAYER), 1)
+                            }
+                            .then(
+                                Commands.argument(QUANTITY, IntegerArgumentType.integer(1, 2304))
+                                    .executes { ctx ->
+                                        execute(
+                                            ctx,
+                                            EntityArgument.getPlayer(ctx, PLAYER),
+                                            IntegerArgumentType.getInteger(ctx, QUANTITY)
+                                        )
+                                    }
+                            )
+                    )
             )
 
         val node = dispatcher.register(command)
         dispatcher.register(node.alias(ALIAS))
     }
 
-    private fun execute(context: CommandContext<CommandSourceStack>, player: ServerPlayer): Int {
+    private fun execute(context: CommandContext<CommandSourceStack>, player: ServerPlayer, quantity: Int): Int {
         val move = MoveArgumentType.getMove(context, MOVE)
-        val stack = TMMoveComponent.createStack(move)
-        if (!player.addItem(stack)) {
-            player.drop(stack, false)
+
+        var remaining = quantity
+        while (remaining > 0) {
+            val stackSize = remaining.coerceAtMost(64)
+            val stack = TMMoveComponent.createStack(move).copyWithCount(stackSize)
+            if (!player.addItem(stack)) {
+                player.drop(stack, false)
+            }
+            remaining -= stackSize
         }
 
         context.source.sendSuccess(
-            { Component.literal("Gave TM ${move.displayName.string} to ${player.name.string}") },
+            { Component.literal("Gave $quantity TM ${move.displayName.string} to ${player.name.string}") },
             true
         )
         return Command.SINGLE_SUCCESS
