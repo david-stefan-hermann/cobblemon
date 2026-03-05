@@ -30,6 +30,7 @@ import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.Containers
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.ItemInteractionResult
+import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
@@ -137,12 +138,20 @@ open class FossilMultiblockEntity(
         state: BlockState,
         level: Level,
         pos: BlockPos,
-        player: Player
+        player: Player,
+        hand: InteractionHand
     ): ItemInteractionResult {
-        if (!isValidDisk(stack)) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
+        val handStack = player.getItemInHand(hand)
+        if (!isValidDisk(handStack)) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
         if (multiblockStructure != null) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
 
         if (level.isClientSide) return ItemInteractionResult.SUCCESS
+
+        val newDisk = handStack.copyWithCount(1)
+        // In creative, prevent duplicate ejection spam when repeatedly inserting the same disk.
+        if (player.isCreative && !diskStack.isEmpty && ItemStack.isSameItemSameComponents(diskStack, newDisk)) {
+            return ItemInteractionResult.sidedSuccess(level.isClientSide)
+        }
 
         val oldStack = diskStack
         if (!oldStack.isEmpty) {
@@ -152,9 +161,9 @@ open class FossilMultiblockEntity(
             ejectDiskStack(level, pos, state, oldStack)
         }
 
-        diskStack = stack.copyWithCount(1)
+        diskStack = newDisk
         if (!player.isCreative) {
-            stack.shrink(1)
+            handStack.shrink(1)
         }
 
         if (player is ServerPlayer) {
