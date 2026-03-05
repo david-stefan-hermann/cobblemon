@@ -22,6 +22,7 @@ import net.minecraft.world.ContainerHelper
 import net.minecraft.world.Containers
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.ItemInteractionResult
+import net.minecraft.world.WorldlyContainer
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
@@ -32,9 +33,10 @@ import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.level.gameevent.GameEvent
 import java.util.OptionalInt
 
-class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(CobblemonBlockEntities.TM_SHELF, pos, state) {
+class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(CobblemonBlockEntities.TM_SHELF, pos, state), WorldlyContainer {
     val items: NonNullList<ItemStack> = NonNullList.withSize(14, ItemStack.EMPTY)
     var lastInteractedSlot: Int = -1
+    private val accessibleSlots = IntArray(14) { it }
 
     fun handleUseItem(stack: ItemStack, state: BlockState, level: Level, pos: BlockPos, player: Player, hit: BlockHitResult): ItemInteractionResult {
         if (stack.isEmpty) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
@@ -153,6 +155,81 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
         level?.setBlock(blockPos, blockState, 3)
         level?.sendBlockUpdated(blockPos, blockState, blockState, 3)
         setChanged()
+    }
+
+    override fun clearContent() {
+        var changed = false
+        for (index in items.indices) {
+            if (!items[index].isEmpty) {
+                items[index] = ItemStack.EMPTY
+                changed = true
+            }
+        }
+        if (changed) {
+            level?.let { updateBlockState(it, blockPos) }
+            markUpdated()
+        }
+    }
+
+    override fun getContainerSize(): Int = items.size
+
+    override fun isEmpty(): Boolean = items.all { it.isEmpty }
+
+    override fun getItem(slot: Int): ItemStack {
+        if (slot !in items.indices) return ItemStack.EMPTY
+        return items[slot]
+    }
+
+    override fun removeItem(slot: Int, amount: Int): ItemStack {
+        val removed = ContainerHelper.removeItem(items, slot, amount)
+        if (!removed.isEmpty) {
+            if (items[slot].isEmpty) {
+                lastInteractedSlot = slot
+            }
+            level?.let { updateBlockState(it, blockPos) }
+            markUpdated()
+        }
+        return removed
+    }
+
+    override fun removeItemNoUpdate(slot: Int): ItemStack {
+        val removed = ContainerHelper.takeItem(items, slot)
+        if (!removed.isEmpty) {
+            level?.let { updateBlockState(it, blockPos) }
+            markUpdated()
+        }
+        return removed
+    }
+
+    override fun setItem(slot: Int, stack: ItemStack) {
+        if (slot !in items.indices) return
+        if (!stack.isEmpty && !isValidItem(stack)) return
+
+        items[slot] = if (stack.isEmpty) ItemStack.EMPTY else stack.copyWithCount(1)
+        lastInteractedSlot = slot
+        level?.let { updateBlockState(it, blockPos) }
+        markUpdated()
+    }
+
+    override fun stillValid(player: Player): Boolean {
+        return level?.getBlockEntity(blockPos) === this &&
+                player.distanceToSqr(blockPos.x + 0.5, blockPos.y + 0.5, blockPos.z + 0.5) <= 64.0
+    }
+
+    override fun getMaxStackSize(): Int = 1
+
+    override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean {
+        return slot in items.indices && items[slot].isEmpty && isValidItem(stack)
+    }
+
+    override fun getSlotsForFace(side: Direction): IntArray = accessibleSlots
+
+    override fun canPlaceItemThroughFace(slot: Int, stack: ItemStack, direction: Direction?): Boolean {
+        return canPlaceItem(slot, stack)
+    }
+
+    override fun canTakeItemThroughFace(slot: Int, stack: ItemStack, direction: Direction): Boolean {
+        return slot in items.indices
     }
 
     override fun getUpdateTag(registries: HolderLookup.Provider): CompoundTag {
