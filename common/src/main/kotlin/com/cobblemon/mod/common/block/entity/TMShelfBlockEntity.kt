@@ -82,6 +82,7 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
             acc.setValue(prop, !items[index].isEmpty)
         }
         level.setBlock(pos, newState, 3)
+        level.updateNeighbourForOutputSignal(pos, newState.block)
         level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(newState))
     }
 

@@ -83,7 +83,7 @@ class TMShelfBlock(properties: Properties) : BaseEntityBlock(properties) {
 
     override fun getAnalogOutputSignal(state: BlockState, level: Level, pos: BlockPos): Int {
         val entity = level.getBlockEntity(pos) as? TMShelfBlockEntity
-        return entity?.lastInteractedSlot?.plus(1) ?: 0
+        return entity?.items?.count { !it.isEmpty }?.coerceIn(0, 14) ?: 0
     }
 
     override fun onRemove(state: BlockState, level: Level, pos: BlockPos, newState: BlockState, movedByPiston: Boolean) {
