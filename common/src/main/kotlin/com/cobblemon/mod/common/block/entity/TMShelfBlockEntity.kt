@@ -18,6 +18,8 @@ import net.minecraft.core.HolderLookup
 import net.minecraft.core.NonNullList
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.sounds.SoundSource
 import net.minecraft.world.ContainerHelper
 import net.minecraft.world.Containers
 import net.minecraft.world.InteractionResult
@@ -32,11 +34,13 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.level.gameevent.GameEvent
 import java.util.OptionalInt
+import kotlin.math.pow
 
 class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(CobblemonBlockEntities.TM_SHELF, pos, state), WorldlyContainer {
     val items: NonNullList<ItemStack> = NonNullList.withSize(14, ItemStack.EMPTY)
     var lastInteractedSlot: Int = -1
     private val accessibleSlots = IntArray(14) { it }
+    private var lastNotePulseTick: Long = Long.MIN_VALUE
 
     fun handleUseItem(stack: ItemStack, state: BlockState, level: Level, pos: BlockPos, player: Player, hit: BlockHitResult): ItemInteractionResult {
         if (stack.isEmpty) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
@@ -153,6 +157,28 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
                 || stack.item == Items.MUSIC_DISC_PIGSTEP
     }
 
+    fun onNoteBlockPulse(level: Level, noteBlockPos: BlockPos, soundEvent: SoundEvent) {
+        val gameTime = level.gameTime
+        if (lastNotePulseTick == gameTime) {
+            return
+        }
+        lastNotePulseTick = gameTime
+
+        val octaveUp = !items[1].isEmpty
+        val octaveDown = !items[12].isEmpty
+        val octaveShift = when {
+            octaveUp && !octaveDown -> 12
+            octaveDown && !octaveUp -> -12
+            else -> 0
+        }
+
+        NOTE_SLOT_TO_SEMITONE.forEach { (slot, semitone) ->
+            if (items[slot].isEmpty) return@forEach
+            val pitch = 2.0.pow((semitone + octaveShift) / 12.0).toFloat()
+            level.playSound(null, noteBlockPos, soundEvent, SoundSource.BLOCKS, 3.0f, pitch)
+        }
+    }
+
     fun markUpdated() {
         level?.setBlock(blockPos, blockState, 3)
         level?.sendBlockUpdated(blockPos, blockState, blockState, 3)
@@ -253,6 +279,24 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
         items.clear()
         ContainerHelper.loadAllItems(tag, items, registries)
         lastInteractedSlot = tag.getInt("LastInteractedSlot")
+    }
+
+    companion object {
+        // C=0 chromatic semitone mapping.
+        private val NOTE_SLOT_TO_SEMITONE = linkedMapOf(
+            0 to 5,   // F
+            2 to 4,   // E
+            4 to 3,   // D#
+            6 to 2,   // D
+            8 to 1,   // C#
+            10 to 0,  // C
+            3 to 11,  // B
+            5 to 10,  // A#
+            7 to 9,   // A
+            9 to 8,   // G#
+            11 to 7,  // G
+            13 to 6   // F#
+        )
     }
 
 }
