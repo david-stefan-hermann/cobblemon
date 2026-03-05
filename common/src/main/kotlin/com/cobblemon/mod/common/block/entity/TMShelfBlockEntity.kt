@@ -36,7 +36,13 @@ import java.util.OptionalInt
 class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(CobblemonBlockEntities.TM_SHELF, pos, state), WorldlyContainer {
     val items: NonNullList<ItemStack> = NonNullList.withSize(14, ItemStack.EMPTY)
     var lastInteractedSlot: Int = -1
-    private val accessibleSlots = IntArray(14) { it }
+    // Hopper traversal order: top-left, top-right, then next row.
+    // With the current face interaction mapping, left-column slots are odd indices.
+    private val accessibleSlots = IntArray(14) { index ->
+        val row = index / 2
+        val col = index % 2
+        row * 2 + (1 - col)
+    }
 
     fun handleUseItem(stack: ItemStack, state: BlockState, level: Level, pos: BlockPos, player: Player, hit: BlockHitResult): ItemInteractionResult {
         if (stack.isEmpty) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
@@ -94,10 +100,11 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
         val relative = hit.location.subtract(hit.blockPos.x.toDouble(), hit.blockPos.y.toDouble(), hit.blockPos.z.toDouble())
 
         val (x, y) = when (facing) {
+            // Face-local X where 0 = visual left and 1 = visual right.
             Direction.NORTH -> 1.0 - relative.x to relative.y
             Direction.SOUTH -> relative.x to relative.y
-            Direction.WEST  ->  1.0 - relative.z to relative.y
-            Direction.EAST  -> relative.z to relative.y
+            Direction.WEST  -> relative.z to relative.y
+            Direction.EAST  -> 1.0 - relative.z to relative.y
             else -> return OptionalInt.empty()
         }
 
@@ -111,8 +118,8 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
         val slotHeight = 2.0 / 16.0
 
         val col = when {
-            x in leftSlotMinX..leftSlotMaxX -> if (facing == Direction.NORTH || facing == Direction.SOUTH) 1 else 0
-            x in rightSlotMinX..rightSlotMaxX -> if (facing == Direction.NORTH || facing == Direction.SOUTH) 0 else 1
+            x in leftSlotMinX..leftSlotMaxX -> 1
+            x in rightSlotMinX..rightSlotMaxX -> 0
             else -> return OptionalInt.empty()
         }
 
