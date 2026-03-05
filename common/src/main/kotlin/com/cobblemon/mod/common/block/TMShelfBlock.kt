@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.StateDefinition
 import net.minecraft.world.level.block.state.properties.BooleanProperty
 import net.minecraft.world.level.block.state.properties.DirectionProperty
+import net.minecraft.world.Containers
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.shapes.VoxelShape
 
@@ -83,6 +84,27 @@ class TMShelfBlock(properties: Properties) : BaseEntityBlock(properties) {
     override fun getAnalogOutputSignal(state: BlockState, level: Level, pos: BlockPos): Int {
         val entity = level.getBlockEntity(pos) as? TMShelfBlockEntity
         return entity?.lastInteractedSlot?.plus(1) ?: 0
+    }
+
+    override fun onRemove(state: BlockState, level: Level, pos: BlockPos, newState: BlockState, movedByPiston: Boolean) {
+        if (!state.`is`(newState.block)) {
+            if (!level.isClientSide && !movedByPiston) {
+                val entity = level.getBlockEntity(pos) as? TMShelfBlockEntity
+                if (entity != null) {
+                    for (index in entity.items.indices) {
+                        val stack = entity.items[index]
+                        if (!stack.isEmpty) {
+                            Containers.dropItemStack(level, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, stack)
+                            entity.items[index] = ItemStack.EMPTY
+                        }
+                    }
+                    level.updateNeighbourForOutputSignal(pos, this)
+                }
+            }
+            super.onRemove(state, level, pos, newState, movedByPiston)
+        } else {
+            super.onRemove(state, level, pos, newState, movedByPiston)
+        }
     }
 
     override fun getShape(
