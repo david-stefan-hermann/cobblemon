@@ -96,7 +96,7 @@ class MonitorBlock(settings: Properties) : MultiblockBlock(settings) {
     }
 
     override fun onRemove(state: BlockState, level: Level, pos: BlockPos, newState: BlockState, movedByPiston: Boolean) {
-        if (state.block != newState.block) {
+        if (state.block != newState.block && !level.isClientSide && !movedByPiston) {
             val entity = level.getBlockEntity(pos) as? FossilMultiblockEntity
             entity?.dropDisk(level, pos, state)
         }
