@@ -36,13 +36,7 @@ import java.util.OptionalInt
 class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(CobblemonBlockEntities.TM_SHELF, pos, state), WorldlyContainer {
     val items: NonNullList<ItemStack> = NonNullList.withSize(14, ItemStack.EMPTY)
     var lastInteractedSlot: Int = -1
-    // Hopper traversal order: top-left, top-right, then next row.
-    // With the current face interaction mapping, left-column slots are odd indices.
-    private val accessibleSlots = IntArray(14) { index ->
-        val row = index / 2
-        val col = index % 2
-        row * 2 + (1 - col)
-    }
+    private val accessibleSlots = IntArray(14) { it }
 
     fun handleUseItem(stack: ItemStack, state: BlockState, level: Level, pos: BlockPos, player: Player, hit: BlockHitResult): ItemInteractionResult {
         if (stack.isEmpty) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
@@ -118,8 +112,8 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
         val slotHeight = 2.0 / 16.0
 
         val col = when {
-            x in leftSlotMinX..leftSlotMaxX -> 1
-            x in rightSlotMinX..rightSlotMaxX -> 0
+            x in leftSlotMinX..leftSlotMaxX -> 0
+            x in rightSlotMinX..rightSlotMaxX -> 1
             else -> return OptionalInt.empty()
         }
 

@@ -84,8 +84,9 @@ class TMShelfBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) :
             if (!item.isEmpty) {
                 val row = index / 2
                 val col = index % 2
+                val visualCol = if (facing == Direction.NORTH || facing == Direction.SOUTH) 1 - col else col
 
-                val isLeftColumn = col == 0
+                val isLeftColumn = visualCol == 0
                 val posX = if (isLeftColumn)
                     leftMargin / textureSize
                 else
