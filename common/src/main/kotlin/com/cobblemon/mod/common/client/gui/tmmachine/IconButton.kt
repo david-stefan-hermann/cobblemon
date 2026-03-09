@@ -12,6 +12,7 @@ import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.api.gui.blitk
 import com.cobblemon.mod.common.api.text.text
 import com.cobblemon.mod.common.client.gui.CobblemonRenderable
+import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.narration.NarrationElementOutput
@@ -26,6 +27,7 @@ class IconButton(
     val buttonHeight: Number,
     var resource: ResourceLocation? = null,
     val scale: Float = 0.5F,
+    val hoverExtendRight: Int = 0,
     val silent: Boolean = false,
     val clickAction: OnPress
 ): Button(buttonX.toInt(), buttonY.toInt(), buttonWidth.toInt(), buttonHeight.toInt(), "".text(), clickAction, DEFAULT_NARRATION), CobblemonRenderable {
@@ -50,8 +52,20 @@ class IconButton(
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if (visible && isMouseOver(mouseX, mouseY)) super.mouseClicked(mouseX, mouseY, button)
+        if (active && visible && button == 0 && isMouseOver(mouseX, mouseY)) {
+            playDownSound(Minecraft.getInstance().soundManager)
+            onClick(mouseX, mouseY)
+            return true
+        }
         return false
+    }
+
+    override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
+        val minX = x.toDouble()
+        val maxX = minX + width + hoverExtendRight
+        val minY = y.toDouble()
+        val maxY = minY + (height * scale)
+        return active && visible && mouseX >= minX && mouseX < maxX && mouseY >= minY && mouseY < maxY
     }
 
     override fun playDownSound(soundManager: SoundManager) {

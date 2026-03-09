@@ -29,6 +29,7 @@ import com.cobblemon.mod.common.client.CobblemonClient
 import com.cobblemon.mod.common.client.CobblemonResources
 import com.cobblemon.mod.common.client.gui.interact.moveselect.MoveSlotButton
 import com.cobblemon.mod.common.client.gui.summary.widgets.screens.moves.MovesWidget
+import com.cobblemon.mod.common.client.settings.ServerSettings
 import com.cobblemon.mod.common.client.render.drawScaledText
 import com.cobblemon.mod.common.client.render.drawScaledTextJustifiedRight
 import com.cobblemon.mod.common.item.components.TMMoveComponent
@@ -209,11 +210,12 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         if (!children().contains(moveSearchWidget)) addRenderableWidget(moveSearchWidget)
 
         backButton = IconButton(
-            leftPos + 110F,
+            leftPos + 90F,
             topPos + 1F,
             18,
             18,
-            iconArrowLeft
+            iconArrowLeft,
+            hoverExtendRight = 11
         ) { setScreenFromMode(TYPE_SELECT_MODE) }
         if (!children().contains(backButton)) addRenderableWidget(backButton)
 
@@ -436,7 +438,13 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     }
 
     private fun setMoveList(filter: String? = null, pokemon: Pokemon? = null) {
-        val filteredList = TechnicalMachine.filterTms(filter, sortType, pokemon, player = inventory.player).toMutableList()
+        val filteredList = TechnicalMachine.filterTms(
+            search = filter,
+            type = sortType,
+            pokemon = pokemon,
+            player = inventory.player,
+            includeUnlearned = ServerSettings.unlockAllMoveDexMovesByDefault
+        ).toMutableList()
         if (sortType == null) filteredList.sortBy { it.type }
         tmList.set(filteredList)
     }
@@ -959,6 +967,17 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             x = leftPos + 5,
             y = topPos + 1
         )
+
+        if (mode == MOVE_SELECT_MODE && ::backButton.isInitialized) {
+            drawScaledText(
+                context = graphics,
+                font = CobblemonResources.DEFAULT_LARGE,
+                text = lang("ui.back").bold(),
+                x = backButton.x + backButton.width + - 8.0,
+                y = backButton.y,
+                shadow = true
+            )
+        }
 
         if (mode == TM_BURN_MODE) {
             blitk(
