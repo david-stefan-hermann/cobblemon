@@ -78,8 +78,10 @@ abstract class PokemonStore<T : StorePosition> : Iterable<Pokemon> {
         val position = getFirstAvailablePosition() ?: return false // Couldn't fit, shrug emoji
         set(position, pokemon)
         
-        // sync TM moves here
-        Cobblemon.playerDataManager.getTMData(uuid)?.syncTMsFromPokemon(pokemon)
+        // Skip TM discovery sync when all Move Dex moves are globally unlocked.
+        if (!Cobblemon.config.unlockAllMoveDexMovesByDefault) {
+            Cobblemon.playerDataManager.getTMData(uuid)?.syncTMsFromPokemon(pokemon)
+        }
 
         return true
     }

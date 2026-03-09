@@ -38,7 +38,13 @@ class TechnicalMachine(
          * @param pokemon A [Pokemon] to check the [Learnset] of
          * @return A [MutableSet] of [TechnicalMachine] that passed the filter
          */
-        fun filterTms(search: String?, type: ElementalType?, pokemon: Pokemon?, player: Player? = null): MutableSet<TechnicalMachine> {
+        fun filterTms(
+            search: String?,
+            type: ElementalType?,
+            pokemon: Pokemon?,
+            player: Player? = null,
+            includeUnlearned: Boolean = false
+        ): MutableSet<TechnicalMachine> {
             val tms = TechnicalMachines.tmMap.values.toMutableSet()
 
             type?.let {
@@ -71,9 +77,8 @@ class TechnicalMachine(
                 }
             }
 
-            player?.let {
+            if (player != null && !includeUnlearned) {
                 val learnedTMs = CobblemonClient.clientTMMoveData?.learnedTMs ?: emptySet()
-
                 tms.retainAll { tm ->
                     tm.obtainMethods.any { it is NoneObtainMethod } || learnedTMs.contains(tm.id)
                 }

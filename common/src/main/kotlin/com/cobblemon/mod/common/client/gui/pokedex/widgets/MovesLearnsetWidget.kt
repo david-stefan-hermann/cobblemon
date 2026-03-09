@@ -31,6 +31,7 @@ import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.SCALE
 import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.SCROLL_BAR_WIDTH
 import com.cobblemon.mod.common.client.gui.pokedex.ScaledButton
 import com.cobblemon.mod.common.client.gui.pokedex.renderTooltip
+import com.cobblemon.mod.common.client.settings.ServerSettings
 import com.cobblemon.mod.common.client.gui.summary.widgets.SoundlessWidget
 import com.cobblemon.mod.common.client.render.drawScaledText
 import com.cobblemon.mod.common.client.render.drawScaledTextJustifiedRight
@@ -675,8 +676,10 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         val speciesLevels = CobblemonClient.clientSpeciesLevelData.speciesLevels
         val evolutionMoveLevels = buildEvolutionMoveLevelIndex(form)
         val learnedTMs = CobblemonClient.clientTMMoveData.learnedTMs
+        val unlockAllMoveDexMovesByDefault = ServerSettings.unlockAllMoveDexMovesByDefault
 
         fun isLevelUpDiscovered(move: MoveTemplate, level: Int): Boolean {
+            if (unlockAllMoveDexMovesByDefault) return true
             val currentLevel = speciesLevels[speciesId] ?: 0
             if (currentLevel >= level) return true
 
@@ -699,7 +702,11 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             val key = move.name
             if (!entries.containsKey(key)) {
                 val tmId = TechnicalMachines.moveToTM[move]?.id
-                val tmUnlocked = tmId != null && tmId in learnedTMs
+                val tmUnlocked = when {
+                    source != LearnsetSource.TM -> false
+                    unlockAllMoveDexMovesByDefault -> true
+                    else -> tmId != null && tmId in learnedTMs
+                }
                 val resolvedTmLocked = if (source == LearnsetSource.TM) !tmUnlocked else tmLocked
                 entries[key] = LearnsetMoveEntry(move, source, level, resolvedTmLocked, isDiscovered, tmId, tmUnlocked)
             }
@@ -713,8 +720,10 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         }
 
         form.moves.tmMoves.sortedBy { it.displayName.string }.forEach { move ->
-            val tmId = TechnicalMachines.moveToTM[move]?.id
-            val tmLocked = tmId != null && tmId !in learnedTMs
+            val tmLocked = if (unlockAllMoveDexMovesByDefault) false else {
+                val tmId = TechnicalMachines.moveToTM[move]?.id
+                tmId != null && tmId !in learnedTMs
+            }
             addEntry(move, LearnsetSource.TM, tmLocked = tmLocked, isDiscovered = !tmLocked)
         }
 
