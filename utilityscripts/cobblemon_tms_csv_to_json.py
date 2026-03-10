@@ -45,9 +45,9 @@ for row in reader:
     # Determine obtain method based on "Locked" column value
     column_b_value = row.get("Locked", "").strip().lower()
     if column_b_value == "locked":
-        obtain_variant = "cobblemon:impossible"
+        obtain_variant = "cobblemon:unlockable"
     else:
-        obtain_variant = "cobblemon:none"
+        obtain_variant = "cobblemon:default"
 
     tm = {
         "moveName": row["Showdown Move"].lower(),
