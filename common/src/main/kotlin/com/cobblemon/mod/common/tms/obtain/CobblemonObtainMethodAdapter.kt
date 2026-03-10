@@ -24,8 +24,7 @@ object CobblemonObtainMethodAdapter : ObtainMethodAdapter {
     private val types = hashMapOf<String, KClass<out ObtainMethod>>()
 
     init {
-        this.register(PokemonHasMoveObtainMethod::class, PokemonHasMoveObtainMethod.ID)
-        this.register(ImpossibleObtainMethod::class, ImpossibleObtainMethod.ID)
+        this.register(UnlockableObtainMethod::class, UnlockableObtainMethod.ID)
         this.register(PlayerHasAdvancementObtainMethod::class, PlayerHasAdvancementObtainMethod.ID)
         this.register(NoneObtainMethod::class, NoneObtainMethod.ID)
         this.register(PlayerYObtainMethod::class, PlayerYObtainMethod.ID)

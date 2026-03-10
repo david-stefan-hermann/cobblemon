@@ -8,11 +8,10 @@
 
 package com.cobblemon.mod.common.api.tms
 
-import com.cobblemon.mod.common.tms.obtain.ImpossibleObtainMethod
-import com.cobblemon.mod.common.tms.obtain.NoneObtainMethod
+import com.cobblemon.mod.common.tms.obtain.DefaultObtainMethod
 import com.cobblemon.mod.common.tms.obtain.PlayerHasAdvancementObtainMethod
 import com.cobblemon.mod.common.tms.obtain.PlayerYObtainMethod
-import com.cobblemon.mod.common.tms.obtain.PokemonHasMoveObtainMethod
+import com.cobblemon.mod.common.tms.obtain.UnlockableObtainMethod
 import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.server.level.ServerPlayer
 
@@ -36,8 +35,8 @@ interface ObtainMethod {
         fun readFromBuffer(buffer: RegistryFriendlyByteBuf): ObtainMethod {
             val variant = buffer.readUtf()
             return when (variant) {
-                "cobblemon:impossible" -> ImpossibleObtainMethod()
-                "cobblemon:none" -> NoneObtainMethod()
+                "cobblemon:unlockable" -> UnlockableObtainMethod()
+                "cobblemon:default" -> DefaultObtainMethod()
                 "cobblemon:advancement" -> {
                     val advancement = buffer.readResourceLocation()
                     PlayerHasAdvancementObtainMethod(advancement)
@@ -46,10 +45,6 @@ interface ObtainMethod {
                     val yLevel = buffer.readVarInt()
                     val operator = buffer.readUtf()
                     PlayerYObtainMethod(yLevel, operator)
-                }
-                "cobblemon:pokemon_knows" -> {
-                    val moveId = buffer.readUtf()
-                    PokemonHasMoveObtainMethod(moveId)
                 }
                 else -> throw IllegalArgumentException("Unknown ObtainMethod variant: $variant")
             }

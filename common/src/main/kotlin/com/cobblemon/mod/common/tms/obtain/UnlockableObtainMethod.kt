@@ -14,25 +14,23 @@ import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.server.level.ServerPlayer
 
 /**
- * An [ObtainMethod] that never triggers.
- * Useful since the obtainMethods field in TM JSONs cannot be blank.
- *
- * @author whatsy
+ * An [ObtainMethod] that triggers when you get the move on a Pokemon you own or insert into a Data Monitor
+ * @author Plastered_Crab
  */
-class ImpossibleObtainMethod : ObtainMethod {
+class UnlockableObtainMethod : ObtainMethod {
     override val passive = false
 
     companion object {
-        val ID = cobblemonResource("impossible")
+        val ID = cobblemonResource("unlockable")
 
-        fun readFromBuffer(buffer: RegistryFriendlyByteBuf): ImpossibleObtainMethod {
-            return ImpossibleObtainMethod()
+        fun readFromBuffer(buffer: RegistryFriendlyByteBuf): UnlockableObtainMethod {
+            return UnlockableObtainMethod()
         }
     }
 
     override fun matches(player: ServerPlayer) = false
 
     override fun writeToBuffer(buffer: RegistryFriendlyByteBuf) {
-        buffer.writeUtf("cobblemon:impossible")
+        buffer.writeUtf("cobblemon:unlockable")
     }
 }

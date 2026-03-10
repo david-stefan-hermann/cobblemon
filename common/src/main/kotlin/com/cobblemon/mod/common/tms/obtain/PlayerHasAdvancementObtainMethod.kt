@@ -19,7 +19,7 @@ import net.minecraft.resources.ResourceLocation
  */
 class PlayerHasAdvancementObtainMethod(val advancement: ResourceLocation? = null) : ObtainMethod {
 
-
+    // todo we can leave this here in case we want to use it later.... or addons?
     companion object {
         val ID = cobblemonResource("advancement")
 
