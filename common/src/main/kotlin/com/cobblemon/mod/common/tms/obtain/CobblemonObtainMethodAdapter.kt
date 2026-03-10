@@ -26,7 +26,7 @@ object CobblemonObtainMethodAdapter : ObtainMethodAdapter {
     init {
         this.register(UnlockableObtainMethod::class, UnlockableObtainMethod.ID)
         this.register(PlayerHasAdvancementObtainMethod::class, PlayerHasAdvancementObtainMethod.ID)
-        this.register(NoneObtainMethod::class, NoneObtainMethod.ID)
+        this.register(DefaultObtainMethod::class, DefaultObtainMethod.ID)
         this.register(PlayerYObtainMethod::class, PlayerYObtainMethod.ID)
     }
 

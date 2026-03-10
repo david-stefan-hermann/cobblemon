@@ -15,7 +15,7 @@ import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.client.CobblemonClient
 import com.cobblemon.mod.common.item.components.TMMoveComponent
 import com.cobblemon.mod.common.pokemon.Pokemon
-import com.cobblemon.mod.common.tms.obtain.NoneObtainMethod
+import com.cobblemon.mod.common.tms.obtain.DefaultObtainMethod
 import com.cobblemon.mod.common.util.lang
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerPlayer
@@ -80,7 +80,7 @@ class TechnicalMachine(
             if (player != null && !includeUnlearned) {
                 val learnedTMs = CobblemonClient.clientTMMoveData?.learnedTMs ?: emptySet()
                 tms.retainAll { tm ->
-                    tm.obtainMethods.any { it is NoneObtainMethod } || learnedTMs.contains(tm.id)
+                    tm.obtainMethods.any { it is DefaultObtainMethod } || learnedTMs.contains(tm.id)
                 }
             }
 
@@ -105,7 +105,7 @@ class TechnicalMachine(
      * @return Whether the player was successfully granted the [TechnicalMachine]
      */
     fun unlock(player: ServerPlayer): Boolean {
-        if (!obtainMethods.any { it is NoneObtainMethod }) {
+        if (!obtainMethods.any { it is DefaultObtainMethod }) {
             player.sendSystemMessage(lang("tms.unlock_tm", moveName.displayName))
         }
         return true
