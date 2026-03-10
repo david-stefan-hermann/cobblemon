@@ -2,7 +2,7 @@
   "moveName": "bodypress",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "fighting",

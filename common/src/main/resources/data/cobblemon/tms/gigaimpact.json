@@ -2,7 +2,7 @@
   "moveName": "gigaimpact",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "normal",

@@ -2,7 +2,7 @@
   "moveName": "rockslide",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "rock",

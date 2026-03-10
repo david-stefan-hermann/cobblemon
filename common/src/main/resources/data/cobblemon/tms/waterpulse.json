@@ -2,7 +2,7 @@
   "moveName": "waterpulse",
   "obtainMethods": [
     {
-      "variant": "cobblemon:none"
+      "variant": "cobblemon:default"
     }
   ],
   "type": "water",

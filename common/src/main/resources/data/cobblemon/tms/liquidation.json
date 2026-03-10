@@ -2,7 +2,7 @@
   "moveName": "liquidation",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "water",

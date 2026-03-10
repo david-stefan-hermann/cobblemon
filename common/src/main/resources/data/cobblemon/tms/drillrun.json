@@ -2,7 +2,7 @@
   "moveName": "drillrun",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "ground",

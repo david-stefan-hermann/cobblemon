@@ -2,7 +2,7 @@
   "moveName": "expandingforce",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "psychic",

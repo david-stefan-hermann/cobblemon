@@ -2,7 +2,7 @@
   "moveName": "metalsound",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "steel",

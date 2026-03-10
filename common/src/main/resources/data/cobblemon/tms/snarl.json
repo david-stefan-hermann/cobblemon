@@ -2,7 +2,7 @@
   "moveName": "snarl",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "dark",

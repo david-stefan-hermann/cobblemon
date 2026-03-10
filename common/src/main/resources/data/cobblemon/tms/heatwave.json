@@ -2,7 +2,7 @@
   "moveName": "heatwave",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "fire",

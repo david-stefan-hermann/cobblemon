@@ -2,7 +2,7 @@
   "moveName": "solarbeam",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "grass",

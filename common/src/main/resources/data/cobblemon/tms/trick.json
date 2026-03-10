@@ -2,7 +2,7 @@
   "moveName": "trick",
   "obtainMethods": [
     {
-      "variant": "cobblemon:none"
+      "variant": "cobblemon:default"
     }
   ],
   "type": "psychic",

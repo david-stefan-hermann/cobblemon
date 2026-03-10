@@ -2,7 +2,7 @@
   "moveName": "acidspray",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "poison",

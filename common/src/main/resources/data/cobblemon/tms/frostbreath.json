@@ -2,7 +2,7 @@
   "moveName": "frostbreath",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "ice",

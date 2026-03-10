@@ -2,7 +2,7 @@
   "moveName": "thunderbolt",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "electric",

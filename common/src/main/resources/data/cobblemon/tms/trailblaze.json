@@ -2,7 +2,7 @@
   "moveName": "trailblaze",
   "obtainMethods": [
     {
-      "variant": "cobblemon:none"
+      "variant": "cobblemon:default"
     }
   ],
   "type": "grass",

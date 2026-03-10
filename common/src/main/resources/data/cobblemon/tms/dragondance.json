@@ -2,7 +2,7 @@
   "moveName": "dragondance",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "dragon",

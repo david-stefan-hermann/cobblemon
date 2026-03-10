@@ -2,7 +2,7 @@
   "moveName": "phantomforce",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "ghost",

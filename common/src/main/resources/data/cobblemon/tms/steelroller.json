@@ -2,7 +2,7 @@
   "moveName": "steelroller",
   "obtainMethods": [
     {
-      "variant": "cobblemon:none"
+      "variant": "cobblemon:default"
     }
   ],
   "type": "steel",

@@ -2,7 +2,7 @@
   "moveName": "chargebeam",
   "obtainMethods": [
     {
-      "variant": "cobblemon:none"
+      "variant": "cobblemon:default"
     }
   ],
   "type": "electric",

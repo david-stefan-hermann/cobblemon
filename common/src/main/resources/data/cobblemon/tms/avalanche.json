@@ -2,7 +2,7 @@
   "moveName": "avalanche",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "ice",

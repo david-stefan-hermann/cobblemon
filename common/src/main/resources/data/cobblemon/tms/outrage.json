@@ -2,7 +2,7 @@
   "moveName": "outrage",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "dragon",

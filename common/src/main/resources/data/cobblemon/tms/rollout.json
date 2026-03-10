@@ -2,7 +2,7 @@
   "moveName": "rollout",
   "obtainMethods": [
     {
-      "variant": "cobblemon:none"
+      "variant": "cobblemon:default"
     }
   ],
   "type": "rock",

@@ -2,7 +2,7 @@
   "moveName": "lunge",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "bug",

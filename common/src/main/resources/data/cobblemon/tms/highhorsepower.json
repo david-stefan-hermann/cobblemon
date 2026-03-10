@@ -2,7 +2,7 @@
   "moveName": "highhorsepower",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "ground",

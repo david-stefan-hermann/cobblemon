@@ -2,7 +2,7 @@
   "moveName": "hyperbeam",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "normal",

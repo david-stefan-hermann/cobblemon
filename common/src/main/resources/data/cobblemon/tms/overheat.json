@@ -2,7 +2,7 @@
   "moveName": "overheat",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "fire",

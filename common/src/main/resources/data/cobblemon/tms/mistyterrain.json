@@ -2,7 +2,7 @@
   "moveName": "mistyterrain",
   "obtainMethods": [
     {
-      "variant": "cobblemon:none"
+      "variant": "cobblemon:default"
     }
   ],
   "type": "fairy",

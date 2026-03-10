@@ -1,18 +1,18 @@
 {
-  "moveName": "superfang",
+  "moveName": "terablast",
   "obtainMethods": [
     {
-      "variant": "cobblemon:default"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "normal",
   "recipe": [
     {
       "item": "cobblemon:normal_gem",
-      "count": 4
+      "count": 8
     },
     {
-      "item": "cobblemon:razor_fang",
+      "item": "Crab Don't Worry About This One Yet",
       "count": 1
     }
   ]

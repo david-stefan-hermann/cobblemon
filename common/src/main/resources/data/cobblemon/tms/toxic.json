@@ -2,7 +2,7 @@
   "moveName": "toxic",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "poison",

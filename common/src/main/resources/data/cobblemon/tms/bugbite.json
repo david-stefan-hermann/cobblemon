@@ -2,7 +2,7 @@
   "moveName": "bugbite",
   "obtainMethods": [
     {
-      "variant": "cobblemon:none"
+      "variant": "cobblemon:default"
     }
   ],
   "type": "bug",

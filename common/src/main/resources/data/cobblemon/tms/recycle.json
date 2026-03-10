@@ -2,7 +2,7 @@
   "moveName": "recycle",
   "obtainMethods": [
     {
-      "variant": "cobblemon:none"
+      "variant": "cobblemon:default"
     }
   ],
   "type": "normal",

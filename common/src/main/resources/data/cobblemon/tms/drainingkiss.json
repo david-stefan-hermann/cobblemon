@@ -2,7 +2,7 @@
   "moveName": "drainingkiss",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "fairy",

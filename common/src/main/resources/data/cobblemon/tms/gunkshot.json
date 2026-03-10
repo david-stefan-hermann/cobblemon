@@ -2,7 +2,7 @@
   "moveName": "gunkshot",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "poison",

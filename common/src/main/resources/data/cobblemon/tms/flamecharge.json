@@ -2,7 +2,7 @@
   "moveName": "flamecharge",
   "obtainMethods": [
     {
-      "variant": "cobblemon:none"
+      "variant": "cobblemon:default"
     }
   ],
   "type": "fire",

@@ -2,7 +2,7 @@
   "moveName": "echoedvoice",
   "obtainMethods": [
     {
-      "variant": "cobblemon:none"
+      "variant": "cobblemon:default"
     }
   ],
   "type": "normal",

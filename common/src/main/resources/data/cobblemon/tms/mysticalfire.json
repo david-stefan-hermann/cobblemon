@@ -2,7 +2,7 @@
   "moveName": "mysticalfire",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "fire",

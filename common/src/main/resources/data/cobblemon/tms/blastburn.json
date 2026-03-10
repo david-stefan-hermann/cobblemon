@@ -2,7 +2,7 @@
   "moveName": "blastburn",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "fire",

@@ -2,7 +2,7 @@
   "moveName": "whirlpool",
   "obtainMethods": [
     {
-      "variant": "cobblemon:none"
+      "variant": "cobblemon:default"
     }
   ],
   "type": "water",

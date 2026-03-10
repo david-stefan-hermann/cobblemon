@@ -2,7 +2,7 @@
   "moveName": "quash",
   "obtainMethods": [
     {
-      "variant": "cobblemon:none"
+      "variant": "cobblemon:default"
     }
   ],
   "type": "dark",

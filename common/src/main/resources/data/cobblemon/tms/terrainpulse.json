@@ -2,7 +2,7 @@
   "moveName": "terrainpulse",
   "obtainMethods": [
     {
-      "variant": "cobblemon:none"
+      "variant": "cobblemon:default"
     }
   ],
   "type": "normal",

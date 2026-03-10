@@ -2,7 +2,7 @@
   "moveName": "powergem",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "rock",

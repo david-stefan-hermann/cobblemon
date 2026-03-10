@@ -2,7 +2,7 @@
   "moveName": "psychic",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "psychic",

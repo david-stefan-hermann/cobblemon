@@ -2,7 +2,7 @@
   "moveName": "thunderpunch",
   "obtainMethods": [
     {
-      "variant": "cobblemon:impossible"
+      "variant": "cobblemon:unlockable"
     }
   ],
   "type": "electric",
