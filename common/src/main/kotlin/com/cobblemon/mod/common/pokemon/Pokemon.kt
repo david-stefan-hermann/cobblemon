@@ -1469,7 +1469,7 @@ open class Pokemon : ShowdownIdentifiable {
     }
 
     private fun onMoveAdded(moveTemplate: MoveTemplate) {
-        if (isClient || Cobblemon.config.unlockAllMoveDexMovesByDefault) return
+        if (isClient) return
         getOwnerPlayer()?.tmList()?.syncTMFromMove(moveTemplate)
     }
 

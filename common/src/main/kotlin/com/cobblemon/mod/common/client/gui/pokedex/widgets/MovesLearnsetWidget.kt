@@ -702,12 +702,8 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             val key = move.name
             if (!entries.containsKey(key)) {
                 val tmId = TechnicalMachines.moveToTM[move]?.id
-                val tmUnlocked = when {
-                    source != LearnsetSource.TM -> false
-                    unlockAllMoveDexMovesByDefault -> true
-                    else -> tmId != null && tmId in learnedTMs
-                }
-                val resolvedTmLocked = if (source == LearnsetSource.TM) !tmUnlocked else tmLocked
+                val tmUnlocked = source == LearnsetSource.TM && tmId != null && tmId in learnedTMs
+                val resolvedTmLocked = if (source == LearnsetSource.TM) tmLocked else false
                 entries[key] = LearnsetMoveEntry(move, source, level, resolvedTmLocked, isDiscovered, tmId, tmUnlocked)
             }
         }
