@@ -54,6 +54,8 @@ import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.world.entity.player.Inventory
+import net.minecraft.world.inventory.ClickType
+import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
 import kotlin.math.ceil
 
@@ -323,28 +325,29 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             if (!initScreen) loadBurnScreenData()
         }
 
-        if (mode != MOVE_SELECT_MODE) {
-            val heldStack = menu.carried
-            if (heldStack.item == CobblemonItems.TECHNICAL_MACHINE) {
-                // Store move of TM item picked up by player cursor
-                TMMoveComponent.getTMMove(heldStack)?.let { move ->
-                    if (heldStackMove != move) heldStackMove = move
-                    if (mode == TYPE_SELECT_MODE) updatePartySlotStatus(heldStackMove)
-                }
-
-            } else {
-                if (heldStackMove != null) {
-                    heldStackMove = null
-                    updatePartySlotStatus(null)
-                }
+        val heldStack = menu.carried
+        if (heldStack.item == CobblemonItems.TECHNICAL_MACHINE) {
+            // Store move of TM item picked up by player cursor.
+            TMMoveComponent.getTMMove(heldStack)?.let { move ->
+                if (heldStackMove != move) heldStackMove = move
+                if (mode == TYPE_SELECT_MODE) updatePartySlotStatus(heldStackMove)
             }
+        } else if (heldStackMove != null) {
+            heldStackMove = null
+            updatePartySlotStatus(null)
+        }
 
-            // Allow slots to be clicked if player holding TM item
-            if ((mode == TM_BURN_MODE)) {
-                for (slot in partySlotList) slot.clickable = (heldStackMove == selectedTM?.moveName)
-                updatePartySlotStatus(selectedTM?.moveName)
-            } else if (mode == MOVE_SELECT_MODE) {
-                for (slot in partySlotList) slot.clickable = false
+        // Allow dragging held TMs onto party slots in both move list and burn views.
+        when (mode) {
+            TM_BURN_MODE -> {
+                for (slot in partySlotList) {
+                    slot.clickable = heldStackMove != null && (selectedTM == null || heldStackMove == selectedTM?.moveName)
+                }
+                updatePartySlotStatus(selectedTM?.moveName ?: heldStackMove)
+            }
+            MOVE_SELECT_MODE -> {
+                for (slot in partySlotList) slot.clickable = heldStackMove != null
+                updatePartySlotStatus(heldStackMove)
             }
         }
 
@@ -897,6 +900,13 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         if (resetScreenSaver()) return false
         return super.mouseClicked(mouseX, mouseY, button)
+    }
+
+    override fun slotClicked(slot: Slot?, slotId: Int, mouseButton: Int, type: ClickType) {
+        super.slotClicked(slot, slotId, mouseButton, type)
+        if (slot != null && slotId in 0 until Inventory.INVENTORY_SIZE && selectedTM != null) {
+            setSelectedTM(null, false)
+        }
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, scrollX: Double, scrollY: Double): Boolean {
