@@ -8,6 +8,7 @@
 
 package com.cobblemon.mod.common.net.serverhandling.block
 
+import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.api.moves.BenchedMove
 import com.cobblemon.mod.common.api.net.ServerNetworkPacketHandler
@@ -36,7 +37,7 @@ object TMMachineTeachMoveHandler : ServerNetworkPacketHandler<TMMachineTeachMove
             !pokemon.moveSet.getMoveTemplates().contains(moveTemplate) &&
             !pokemon.allAccessibleMoves.contains(moveTemplate)
         ) {
-            if (!player.isCreative) menu.carried.shrink(1)
+            if (!player.isCreative && !Cobblemon.config.infiniteTmUses) menu.carried.shrink(1)
 
             if (pokemon.moveSet.hasSpace()) {
                 pokemon.moveSet.add(moveTemplate.create())

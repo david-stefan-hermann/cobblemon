@@ -8,6 +8,7 @@
 
 package com.cobblemon.mod.common.item.interactive
 
+import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.api.interaction.PokemonEntityInteraction
 import com.cobblemon.mod.common.api.moves.BenchedMove
@@ -41,7 +42,7 @@ class TechnicalMachineItem(properties: Properties) : CobblemonItem(properties), 
             return false
         }
 
-        if (!player.isCreative) stack.shrink(1)
+        if (!player.isCreative && !Cobblemon.config.infiniteTmUses) stack.shrink(1)
 
         if (pokemon.moveSet.hasSpace()) {
             pokemon.moveSet.add(moveTemplate.create())
