@@ -2,6 +2,6 @@
   "replace": false,
   "values": [
     "#cobblemon:berries",
-    "cobblemon:type_gems"
+    "#cobblemon:type_gems"
   ]
 }
