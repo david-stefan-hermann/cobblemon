@@ -38,6 +38,8 @@
 - Fixed NeoForge brewing stand unexpectedly crashing users when shift clicking items within it's menu
 - Fixed NPCs switching pokemon very often during battles
 - Fixed Campfire pot causing crashes under certain circumstances
+- Fixed Type Gems not being consumed upon use
+- Fixed Ancient Pokeball's to their respective modifiers
 
 ### Developer
 - Added `PokeSnackSpawnerFactory` which allows influence registration on PokeSnack encounters
