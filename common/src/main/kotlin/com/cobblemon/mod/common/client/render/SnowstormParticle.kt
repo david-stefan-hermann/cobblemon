@@ -397,7 +397,7 @@ class SnowstormParticle(
         val collision = storm.effect.particle.collision
         var box = boundingBox
         val bounciness = runtime.resolveDouble(collision.bounciness)
-        val friction = 0.01// runtime.resolveDouble(collision.friction)
+        val friction = runtime.resolveDouble(collision.friction)
         val expiresOnContact = collision.expiresOnContact
 
         // Handle easy collision cases
