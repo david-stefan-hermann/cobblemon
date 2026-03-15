@@ -64,6 +64,14 @@ dependencies {
 //    modImplementation(libs.flywheelFabric)
 //    include(libs.flywheelFabric)
 
+    listOf(
+        libs.fabric.kotlin,
+        libs.graal,
+        libs.bundles.mongo
+    ).forEach {
+        include(it)
+    }
+
     include(libs.fabric.kotlin)
 
     listOf(

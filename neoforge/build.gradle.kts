@@ -33,7 +33,7 @@ repositories {
 }
 
 dependencies {
-    neoForge(libs.neoforge)
+    neoForge(libs.neoforge.api)
     //shadowCommon group: 'commons-io', name: 'commons-io', version: '2.6'
     //modImplementation(libs.flywheelForge)
     //include(libs.flywheelForge)
@@ -50,6 +50,13 @@ dependencies {
         isTransitive = false
     }
     testImplementation(project(":common", configuration = "namedElements"))
+
+    listOf(
+        libs.graal,
+        libs.bundles.mongo
+    ).forEach {
+        include(it)
+    }
 
     listOf(
         libs.graal,
