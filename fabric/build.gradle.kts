@@ -59,14 +59,13 @@ dependencies {
     modImplementation(libs.bundles.fabric.integrations.implementation)
     modRuntimeOnly(libs.bundles.fabric.integrations.runtimeOnly)
     modRuntimeOnly(libs.bundles.mongo)
-    bundle(libs.bundles.mongo)
 
 //    modImplementation(libs.flywheelFabric)
 //    include(libs.flywheelFabric)
 
     listOf(
         libs.fabric.kotlin,
-        libs.graal,
+        libs.bundles.graal,
         libs.bundles.mongo
     ).forEach {
         include(it)
@@ -75,7 +74,6 @@ dependencies {
     include(libs.fabric.kotlin)
 
     listOf(
-        libs.graal,
         libs.molang
     ).forEach {
         bundle(it)

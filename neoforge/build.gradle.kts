@@ -40,6 +40,7 @@ dependencies {
     modLocalRuntime(libs.neoforge.debugutils)
     modRuntimeOnly(libs.bundles.neoforge.integrations.runtimeOnly)
     modRuntimeOnly(libs.bundles.mongo)
+    forgeRuntimeLibrary(libs.bundles.mongo)
 
     implementation(libs.neo.kotlin.forge)
 
@@ -52,22 +53,19 @@ dependencies {
     testImplementation(project(":common", configuration = "namedElements"))
 
     listOf(
-        libs.graal,
+        libs.bundles.graal,
         libs.bundles.mongo
     ).forEach {
         include(it)
     }
 
     listOf(
-        libs.graal,
         libs.molang
     ).forEach {
         forgeRuntimeLibrary(it)
         bundle(it)
     }
 
-    forgeRuntimeLibrary(libs.bundles.mongo)
-    bundle(libs.bundles.mongo)
 }
 
 tasks {
