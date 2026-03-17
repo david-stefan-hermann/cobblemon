@@ -24,7 +24,6 @@ import kotlin.math.min
 
 class MoveSet : Iterable<Move> {
     var changeFunction: (MoveSet) -> Unit = {}
-    var moveAddedFunction: (Move) -> Unit = {}
     private var emit = true
 
     private val moves = arrayOfNulls<Move>(MOVE_COUNT)
@@ -65,12 +64,8 @@ class MoveSet : Iterable<Move> {
         if (pos !in 0 until MOVE_COUNT) {
             return
         }
-        val oldMove = moves[pos]
         moves[pos] = move
         move?.observable?.subscribe { this.update() }
-        if (emit && move != null && (oldMove == null || oldMove.template != move.template)) {
-            moveAddedFunction(move)
-        }
         update()
     }
 
@@ -148,9 +143,6 @@ class MoveSet : Iterable<Move> {
             if (moves[i] == null) {
                 moves[i] = move
                 move.observable.subscribe { this.update() }
-                if (emit) {
-                    moveAddedFunction(move)
-                }
                 update()
                 return true
             }

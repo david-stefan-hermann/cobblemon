@@ -474,7 +474,6 @@ open class Pokemon : ShowdownIdentifiable {
 
     val moveSet = MoveSet().also {
         it.changeFunction = { onChange(MoveSetUpdatePacket({ this }, it)) }
-        it.moveAddedFunction = { move -> onMoveAdded(move.template) }
     }
 
     val experienceGroup: ExperienceGroup
@@ -524,16 +523,16 @@ open class Pokemon : ShowdownIdentifiable {
      * swap in moves they've used before at any time, while holding onto the remaining PP
      * that they had last.
      */
-    var benchedMoves = BenchedMoves().also {
-        it.changeFunction = { onChange(BenchedMovesUpdatePacket({ this }, it)) }
-        it.moveAddedFunction = { move -> onMoveAdded(move.moveTemplate) }
+    var benchedMoves = BenchedMoves().also { it.changeFunction = {
+            onChange(BenchedMovesUpdatePacket({ this }, it))
+            this.getOwnerUUID()?.let { it1 -> Cobblemon.playerDataManager.getTMData(it1)?.syncTMsFromPokemon(this) } // we want to make sure to update the players TM Data store when any moves are learned
+        }
     }
         internal set(value) {
             val oldChangeFunction = field.changeFunction
             field.changeFunction = {}
             field = value
             value.changeFunction = oldChangeFunction
-            value.moveAddedFunction = { move -> onMoveAdded(move.moveTemplate) }
         }
 
     var ability: Ability = Abilities.DUMMY.create(false)
@@ -1466,11 +1465,6 @@ open class Pokemon : ShowdownIdentifiable {
 
     fun getOwnerPlayer(): ServerPlayer? {
         return getOwnerEntity() as? ServerPlayer
-    }
-
-    private fun onMoveAdded(moveTemplate: MoveTemplate) {
-        if (isClient) return
-        getOwnerPlayer()?.tmList()?.syncTMFromMove(moveTemplate)
     }
 
     fun getOwnerNPC(): NPCEntity? {
