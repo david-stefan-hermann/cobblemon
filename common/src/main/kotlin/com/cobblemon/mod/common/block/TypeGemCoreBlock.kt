@@ -167,39 +167,25 @@ class TypeGemCoreBlock(properties: Properties) : Block(properties) {
                     level.setBlock(targetPos, placeState, UPDATE_ALL)
                 }
 
-                // if forced immediately surround with clusters
                 if (forced && clusterBlock != null) {
-                    for (clusterDir in Direction.entries) {
-                        val clusterPos = targetPos.relative(clusterDir)
-                        if (!level.getBlockState(clusterPos).isAir) continue
-
-                        var clusterState = clusterBlock.defaultBlockState()
-
-                        if (clusterState.hasProperty(DirectionalBlock.FACING)) {
-                            clusterState = clusterState.setValue(DirectionalBlock.FACING, clusterDir)
-                        }
-                        if (clusterState.hasProperty(SHOULD_GROW)) {
-                            clusterState = clusterState.setValue(SHOULD_GROW, true)
-                        }
-                        if (clusterState.hasProperty(STUNTED)) {
-                            clusterState = clusterState.setValue(STUNTED, overLimit)
-                        }
-                        if (clusterState.hasProperty(TypeGemClusterBlock.STAGE)) {
-                            val randomStage = random.nextInt(0, 4)
-                            clusterState = clusterState.setValue(TypeGemClusterBlock.STAGE, randomStage)
-                        }
-
-                        //println("[TypeGemCoreBlock] Placing ${if (isOverLimit) "STUNTED" else "normal"} cluster at $clusterPos facing ${clusterDir.opposite}")
-                        level.setBlock(clusterPos, clusterState, UPDATE_ALL)
-                    }
+                    forceAdvanceClusterGrowth(level, targetPos)
                 }
 
-                return Pair(true, connectedGems.size)
+                val updatedGemCount = if (forced) getConnectedGemBlocks(level, pos).size else connectedGems.size
+                return Pair(true, updatedGemCount)
             }
         }
 
         // println("[TypeGemCoreBlock] No valid spot found for gem placement.")
         return Pair(false, connectedGems.size)
+    }
+
+    private fun forceAdvanceClusterGrowth(level: WorldGenLevel, clusterPos: BlockPos) {
+        repeat(5) {
+            val clusterState = level.getBlockState(clusterPos)
+            val clusterBlock = clusterState.block as? TypeGemClusterBlock ?: return
+            clusterBlock.advanceGrowth(clusterState, level, clusterPos)
+        }
     }
 
     private fun hasBreathingRoom(level: WorldGenLevel, gems: List<Pair<BlockState, BlockPos>>): Boolean {

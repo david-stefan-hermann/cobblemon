@@ -106,13 +106,17 @@ class TypeGemClusterBlock(
     override fun isRandomlyTicking(state: BlockState): Boolean = state.getValue(SHOULD_GROW)
 
     override fun randomTick(state: BlockState, level: ServerLevel, pos: BlockPos, random: RandomSource) {
+        advanceGrowth(state, level, pos)
+    }
+
+    fun advanceGrowth(state: BlockState, level: LevelAccessor, pos: BlockPos) {
         if (!state.getValue(SHOULD_GROW)) return
 
         val currentStage = state.getValue(STAGE)
 
         if (currentStage < 3) {
             // Progress through stages regardless of STUNTED
-            level.setBlockAndUpdate(pos, state.setValue(STAGE, currentStage + 1))
+            level.setBlock(pos, state.setValue(STAGE, currentStage + 1), Block.UPDATE_ALL)
             return
         }
 
@@ -122,7 +126,7 @@ class TypeGemClusterBlock(
 
         if (isStunted) {
             // println("[TypeGemClusterBlock] Cluster at $pos is STUNTED at STAGE_3. Finalizing growth.")
-            level.setBlockAndUpdate(pos, state.setValue(SHOULD_GROW, false))
+            level.setBlock(pos, state.setValue(SHOULD_GROW, false), Block.UPDATE_ALL)
             return
         }
 
@@ -148,9 +152,10 @@ class TypeGemClusterBlock(
 
         if (hasConflict) {
             // println("[TypeGemClusterBlock] Found nearby TypeGemBlock(s). Stunting cluster at $pos.")
-            level.setBlockAndUpdate(
+            level.setBlock(
                     pos,
-                    state.setValue(STUNTED, true).setValue(SHOULD_GROW, false)
+                    state.setValue(STUNTED, true).setValue(SHOULD_GROW, false),
+                    Block.UPDATE_ALL
             )
         } else {
             // println("[TypeGemClusterBlock] No conflicts. Converting cluster to TypeGemBlock.")
@@ -158,7 +163,7 @@ class TypeGemClusterBlock(
             if (nextState.hasProperty(FACING)) {
                 nextState = nextState.setValue(FACING, facing)
             }
-            level.setBlockAndUpdate(pos, nextState)
+            level.setBlock(pos, nextState, Block.UPDATE_ALL)
         }
     }
 
