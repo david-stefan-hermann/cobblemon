@@ -168,7 +168,7 @@ class TypeGemCoreBlock(properties: Properties) : Block(properties) {
                 }
 
                 if (forced && clusterBlock != null) {
-                    forceAdvanceClusterGrowth(level, targetPos)
+                    forceAdvanceClusterGrowth(level, targetPos, random)
                 }
 
                 val updatedGemCount = if (forced) getConnectedGemBlocks(level, pos).size else connectedGems.size
@@ -180,11 +180,11 @@ class TypeGemCoreBlock(properties: Properties) : Block(properties) {
         return Pair(false, connectedGems.size)
     }
 
-    private fun forceAdvanceClusterGrowth(level: WorldGenLevel, clusterPos: BlockPos) {
+    private fun forceAdvanceClusterGrowth(level: WorldGenLevel, clusterPos: BlockPos, random: RandomSource) {
         repeat(5) {
             val clusterState = level.getBlockState(clusterPos)
             val clusterBlock = clusterState.block as? TypeGemClusterBlock ?: return
-            clusterBlock.advanceGrowth(clusterState, level, clusterPos)
+            clusterBlock.advanceGrowth(clusterState, level, clusterPos, random)
         }
     }
 

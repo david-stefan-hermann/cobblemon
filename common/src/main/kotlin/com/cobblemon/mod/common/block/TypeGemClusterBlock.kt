@@ -106,10 +106,10 @@ class TypeGemClusterBlock(
     override fun isRandomlyTicking(state: BlockState): Boolean = state.getValue(SHOULD_GROW)
 
     override fun randomTick(state: BlockState, level: ServerLevel, pos: BlockPos, random: RandomSource) {
-        advanceGrowth(state, level, pos)
+        advanceGrowth(state, level, pos, random)
     }
 
-    fun advanceGrowth(state: BlockState, level: LevelAccessor, pos: BlockPos) {
+    fun advanceGrowth(state: BlockState, level: LevelAccessor, pos: BlockPos, random: RandomSource) {
         if (!state.getValue(SHOULD_GROW)) return
 
         val currentStage = state.getValue(STAGE)
@@ -164,12 +164,43 @@ class TypeGemClusterBlock(
                 nextState = nextState.setValue(FACING, facing)
             }
             level.setBlock(pos, nextState, Block.UPDATE_ALL)
+            attachDecorativeClusters(level, pos, random)
         }
     }
 
 
     private fun isGem(state: BlockState): Boolean {
         return state.`is`(CobblemonBlockTags.TYPE_GEM_BLOCKS)
+    }
+
+    private fun attachDecorativeClusters(level: LevelAccessor, gemPos: BlockPos, random: RandomSource) {
+        val openDirections = Direction.entries.filter { direction ->
+            level.getBlockState(gemPos.relative(direction)).isAir
+        }.toMutableList()
+
+        if (openDirections.isEmpty()) {
+            return
+        }
+
+        val minClusters = maxOf(1, (openDirections.size * 0.75f).toInt())
+        val clusterCount = random.nextInt(minClusters, openDirections.size + 1)
+
+        repeat(clusterCount) {
+            if (openDirections.isEmpty()) return@repeat
+
+            val index = random.nextInt(openDirections.size)
+            val direction = openDirections.removeAt(index)
+            val clusterPos = gemPos.relative(direction)
+            val stage = random.nextInt(0, 4)
+
+            val clusterState = defaultBlockState()
+                .setValue(FACING, direction)
+                .setValue(STAGE, stage)
+                .setValue(SHOULD_GROW, false) // so we can reduce lag... hopefully
+                .setValue(STUNTED, false)
+
+            level.setBlock(clusterPos, clusterState, Block.UPDATE_ALL)
+        }
     }
 
     override fun getDrops(state: BlockState, params: LootParams.Builder): List<ItemStack> {
