@@ -13,6 +13,7 @@ import com.cobblemon.mod.common.api.ai.config.task.PollinateFlowerTaskConfig
 import com.cobblemon.mod.common.api.spawning.influence.SaccharineLogSlatheredInfluence
 import com.cobblemon.mod.common.block.entity.PokeSnackBlockEntity
 import com.cobblemon.mod.common.client.entity.PokemonClientDelegate
+import com.cobblemon.mod.common.util.cobblemonResource
 import net.minecraft.core.particles.BlockParticleOption
 import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.core.particles.ParticleTypes
@@ -28,7 +29,14 @@ val aspectParticleMap: Map<String, ParticleData> = mapOf(
             ParticleTypes.BLOCK,
             CobblemonBlocks.POKE_SNACK.defaultBlockState()
         ), 0.05, 3),
-    PollinateFlowerTaskConfig.HAS_NECTAR_ASPECT to ParticleData.MinecraftParticle(ParticleTypes.FALLING_NECTAR, 0.075, 1)
+    PollinateFlowerTaskConfig.HAS_NECTAR_ASPECT to ParticleData.MinecraftParticle(ParticleTypes.FALLING_NECTAR, 0.075, 1),
+//    "alpha" to ParticleData.SnowstormParticle(
+//        particle = cobblemonResource("alpha_eyes"),
+//        chance = 1.0,
+//        amount = 1,
+//        locators = listOf("eye1", "eye2", "eye_left", "eye_right", "eye", "locator_eye_left", "locator_eye_right"),
+//        cooldownMs = 1000L
+//    )
 )
 
 sealed class ParticleData {

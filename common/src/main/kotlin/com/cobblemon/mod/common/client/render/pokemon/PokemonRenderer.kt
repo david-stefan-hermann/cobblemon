@@ -19,8 +19,6 @@ import com.cobblemon.mod.common.client.entity.PokemonClientDelegate.Companion.BE
 import com.cobblemon.mod.common.client.entity.PokemonClientDelegate.Companion.BEAM_SHRINK_TIME
 import com.cobblemon.mod.common.client.keybind.boundKey
 import com.cobblemon.mod.common.client.keybind.keybinds.PartySendBinding
-import com.cobblemon.mod.common.client.render.ModelLayer
-import com.cobblemon.mod.common.client.render.StaticModelTextureSupplier
 import com.cobblemon.mod.common.client.render.item.HeldItemRenderer
 import com.cobblemon.mod.common.client.render.models.blockbench.PosableModel
 import com.cobblemon.mod.common.client.render.models.blockbench.PosableState
@@ -31,7 +29,6 @@ import com.cobblemon.mod.common.client.render.models.blockbench.repository.Varyi
 import com.cobblemon.mod.common.client.render.pokeball.PokeBallPosableState
 import com.cobblemon.mod.common.client.render.renderBeaconBeam
 import com.cobblemon.mod.common.client.settings.ServerSettings
-import com.cobblemon.mod.common.client.util.exists
 import com.cobblemon.mod.common.entity.PlatformType
 import com.cobblemon.mod.common.entity.PosableEntity
 import com.cobblemon.mod.common.entity.npc.NPCEntity
@@ -39,7 +36,6 @@ import com.cobblemon.mod.common.entity.pokeball.EmptyPokeBallEntity
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity.Companion.SPAWN_DIRECTION
 import com.cobblemon.mod.common.pokeball.PokeBall
-import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.effectiveName
 import com.cobblemon.mod.common.util.isLookingAt
 import com.cobblemon.mod.common.util.lang
@@ -74,7 +70,6 @@ class PokemonRenderer(
 ) : MobRenderer<PokemonEntity, PosablePokemonEntityModel>(context, PosablePokemonEntityModel(), 0.5f) {
     companion object {
         val recallBeamColour = Vector4f(1F, 0.1F, 0.1F, 1F)
-        private val ALPHA_MARK_ID = cobblemonResource("mark_alpha").toString()
         fun ease(x: Double): Double {
             return 1 - (1 - x).pow(3)
         }
@@ -95,6 +90,7 @@ class PokemonRenderer(
     }
 
     private val heldItemRenderer = HeldItemRenderer()
+
     override fun getTextureLocation(entity: PokemonEntity): ResourceLocation {
         return VaryingModelRepository.getTexture(entity.pokemon.species.resourceIdentifier, entity.delegate as PokemonClientDelegate)
     }
@@ -146,9 +142,7 @@ class PokemonRenderer(
             poseMatrix.translate(0.0, 0.25 * (entity.delegate as PokemonClientDelegate).entityScaleModifier, 0.0)
         }
 
-        val baseLayers = VaryingModelRepository.getLayers(entity.pokemon.species.resourceIdentifier, clientDelegate)
-        val layers = applyAlphaOverlayLayer(entity, baseLayers)
-        modelNow.setLayerContext(buffer, clientDelegate, layers)
+        modelNow.setLayerContext(buffer, clientDelegate, VaryingModelRepository.getLayers(entity.pokemon.species.resourceIdentifier, clientDelegate))
 
 
         if (entity.passengers.isNotEmpty()) {
@@ -175,35 +169,6 @@ class PokemonRenderer(
             false,
             entity
         )
-    }
-
-    private fun applyAlphaOverlayLayer(entity: PokemonEntity, baseLayers: Iterable<ModelLayer>): Iterable<ModelLayer> {
-        if (!shouldRenderAlphaOverlay(entity)) {
-            return baseLayers
-        }
-
-        val overlayTexture = resolveAlphaOverlayTexture(getTextureLocation(entity)) ?: return baseLayers
-        val alphaLayer = ModelLayer().also {
-            it.name = "alpha_overlay"
-            it.texture = StaticModelTextureSupplier(overlayTexture)
-            it.emissive = true
-        }
-
-        return baseLayers.toMutableList().also { it.add(alphaLayer) }
-    }
-
-    private fun shouldRenderAlphaOverlay(entity: PokemonEntity): Boolean {
-        return entity.entityData.get(PokemonEntity.MARK) == ALPHA_MARK_ID
-    }
-
-    private fun resolveAlphaOverlayTexture(baseTexture: ResourceLocation): ResourceLocation? {
-        val overlayPath = if (baseTexture.path.endsWith(".png")) {
-            baseTexture.path.removeSuffix(".png") + "_alpha.png"
-        } else {
-            baseTexture.path + "_alpha"
-        }
-        val overlayTexture = ResourceLocation.fromNamespaceAndPath(baseTexture.namespace, overlayPath)
-        return overlayTexture.takeIf { it.exists() }
     }
 
     fun renderRiding(

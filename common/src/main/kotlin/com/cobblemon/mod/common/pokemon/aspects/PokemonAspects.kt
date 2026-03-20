@@ -53,6 +53,17 @@ val COSMETIC_SLOT_ASPECT = object : AspectProvider {
     override fun provide(properties: PokemonProperties) = emptySet<String>()
 }
 
+/**
+ * Provides the aspect of the active mark, if any.
+ */
+val MARK_ASPECT = object : AspectProvider {
+    override fun provide(pokemon: Pokemon): Set<String> {
+        return pokemon.activeMark?.aspect?.let { setOf(it) } ?: emptySet()
+    }
+
+    override fun provide(properties: PokemonProperties): Set<String> = emptySet()
+}
+
 val ALPHA_ASPECT = object : AspectProvider {
     val ASPECT = "alpha"
 

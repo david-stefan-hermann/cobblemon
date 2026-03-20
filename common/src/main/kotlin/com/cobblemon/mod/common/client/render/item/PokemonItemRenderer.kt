@@ -11,9 +11,6 @@ package com.cobblemon.mod.common.client.render.item
 import com.cobblemon.mod.common.client.render.models.blockbench.FloatingState
 import com.cobblemon.mod.common.client.render.models.blockbench.repository.RenderContext
 import com.cobblemon.mod.common.client.render.models.blockbench.repository.VaryingModelRepository
-import com.cobblemon.mod.common.client.render.ModelLayer
-import com.cobblemon.mod.common.client.render.StaticModelTextureSupplier
-import com.cobblemon.mod.common.client.util.exists
 import com.cobblemon.mod.common.entity.PoseType
 import com.cobblemon.mod.common.item.PokemonItem
 import com.cobblemon.mod.common.util.math.fromEulerXYZDegrees
@@ -89,10 +86,7 @@ class PokemonItemRenderer : CobblemonBuiltinItemRenderer {
 
         // x = red, y = green, z = blue, w = alpha
         val tint = pokemonItem.tint(stack)
-        val baseLayers = VaryingModelRepository.getLayers(species.resourceIdentifier, state)
-        val baseTexture = VaryingModelRepository.getTexture(species.resourceIdentifier, state)
-        val layers = applyAlphaOverlayLayer(state, baseTexture, baseLayers)
-        model.withLayerContext(vertexConsumers, state, layers) {
+        model.withLayerContext(vertexConsumers, state, VaryingModelRepository.getLayers(species.resourceIdentifier, state)) {
             val tintRed = (tint.x * 255).toInt()
             val tintGreen = (tint.y * 255).toInt()
             val tintBlue = (tint.z * 255).toInt()
@@ -108,35 +102,6 @@ class PokemonItemRenderer : CobblemonBuiltinItemRenderer {
         if (mode == ItemDisplayContext.GUI) {
             Lighting.setupFor3DItems()
         }
-    }
-
-    private fun applyAlphaOverlayLayer(
-        state: FloatingState,
-        baseTexture: net.minecraft.resources.ResourceLocation,
-        baseLayers: Iterable<ModelLayer>
-    ): Iterable<ModelLayer> {
-        if (!state.currentAspects.contains("alpha")) {
-            return baseLayers
-        }
-
-        val overlayTexture = resolveAlphaOverlayTexture(baseTexture) ?: return baseLayers
-        val alphaLayer = ModelLayer().also {
-            it.name = "alpha_overlay"
-            it.texture = StaticModelTextureSupplier(overlayTexture)
-            it.emissive = true
-        }
-
-        return baseLayers.toMutableList().also { it.add(alphaLayer) }
-    }
-
-    private fun resolveAlphaOverlayTexture(baseTexture: net.minecraft.resources.ResourceLocation): net.minecraft.resources.ResourceLocation? {
-        val overlayPath = if (baseTexture.path.endsWith(".png")) {
-            baseTexture.path.removeSuffix(".png") + "_alpha.png"
-        } else {
-            baseTexture.path + "_alpha"
-        }
-        val overlayTexture = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(baseTexture.namespace, overlayPath)
-        return overlayTexture.takeIf { it.exists() }
     }
 
     companion object {

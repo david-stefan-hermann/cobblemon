@@ -283,13 +283,13 @@ class VariableModelTextureSupplier : ModelTextureSupplier {
 }
 
 class ModelLayer {
-    var name: String = ""
-    var enabled: Boolean = true
-    var tint: Vector4f = Vector4f(1F, 1F, 1F, 1F)
-    var texture: ModelTextureSupplier? = null
-    var emissive: Boolean = false
-    var translucent: Boolean = false
-    var translucent_cull: Boolean = false
+    val name: String = ""
+    val enabled: Boolean = true
+    val tint: Vector4f = Vector4f(1F, 1F, 1F, 1F)
+    val texture: ModelTextureSupplier? = null
+    val emissive: Boolean = false
+    val translucent: Boolean = false
+    val translucent_cull: Boolean = false
 }
 
 enum class SpriteType {

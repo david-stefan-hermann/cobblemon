@@ -454,14 +454,13 @@ open class PosableModel(@Transient override val rootPart: Bone) : ModelFrame {
         if (provider != null) {
             for (layer in currentLayers) {
                 var renderLayer : RenderType
-                val layerTexture = layer.texture
-                if (layerTexture is AnimatedModelTextureSupplier && layerTexture.interpolation) {
+                if (layer.texture is AnimatedModelTextureSupplier && layer.texture.interpolation) {
                     //Handle Interpolation
-                    val texture = layerTexture.interpolatedTexture(currentState ?: FloatingState()) ?: continue
+                    val texture = layer.texture.interpolatedTexture(currentState ?: FloatingState()) ?: continue
                     renderLayer = makeLayer(DynamicStateShard(texture), layer.emissive, layer.translucent, layer.translucent_cull)
                 }
                 else {
-                    val texture = layerTexture?.invoke(currentState ?: FloatingState()) ?: continue
+                    val texture = layer.texture?.invoke(currentState ?: FloatingState()) ?: continue
                     renderLayer = getLayer(texture, layer.emissive, layer.translucent, layer.translucent_cull)
                 }
                 val consumer = provider.getBuffer(renderLayer)
@@ -569,9 +568,6 @@ open class PosableModel(@Transient override val rootPart: Bone) : ModelFrame {
         // Is there any reason why we should actually change the pose?
         if (entity != null && (poseName == null || currentPose == null || !currentPose.isSuitable(state) || entityPoseType !in currentPose.poseTypes)) {
             val desirablePose = getFirstSuitablePose(state, entityPoseType)
-            if (desirablePose == currentPose) {
-                return currentPose
-            }
             // If this if succeeds then it just no longer fits this pose
             if (currentPose != null) {
                 // Don't apply pose correction until the current primary animation is complete.
