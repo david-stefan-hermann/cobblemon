@@ -22,7 +22,7 @@ object SetActiveTMPacketHandler : ServerNetworkPacketHandler<SetActiveTMPacket> 
         val inventory = menu.inventory ?: return
         val tmData = Cobblemon.playerDataManager.getTMData(player)
 
-        if (packet.tm != null && packet.tm.id !in tmData.learnedTMs) {
+        if (packet.tm != null && (!packet.tm.isPassivelyObtained() && packet.tm.id !in tmData.learnedTMs)) {
             return // Hacker smh
         }
 

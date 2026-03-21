@@ -79,9 +79,7 @@ class TechnicalMachine(
 
             if (player != null && !includeUnlearned) {
                 val learnedTMs = CobblemonClient.clientTMMoveData.learnedTMs
-                tms.retainAll { tm ->
-                    tm.obtainMethods.any { it is DefaultObtainMethod } || learnedTMs.contains(tm.id)
-                }
+                tms.retainAll { tm -> tm.isPassivelyObtained() || tm.id in learnedTMs }
             }
 
             return tms
@@ -110,6 +108,8 @@ class TechnicalMachine(
         }
         return true
     }
+
+    fun isPassivelyObtained() = obtainMethods.any { it is DefaultObtainMethod }
 
     /**
      * Returns a [MutableComponent] of the translated move name of this [TechnicalMachine]
