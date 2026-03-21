@@ -27,7 +27,6 @@ data class GeneralPlayerData(
     var starterSelected: Boolean,
     var starterUUID: UUID?,
     var keyItems: MutableSet<ResourceLocation>,
-    var tmSet: MutableSet<ResourceLocation>,
     var battleTheme: ResourceLocation?,
     var partySelectTutorialDone: Boolean = false,
     val extraData: MutableMap<String, PlayerDataExtension>,
@@ -55,7 +54,6 @@ data class GeneralPlayerData(
             starterSelected,
             starterUUID,
             advancementData.totalBattleVictoryCount == 0,
-            tmSet,
             battleTheme,
             partySelectTutorialDone
         )

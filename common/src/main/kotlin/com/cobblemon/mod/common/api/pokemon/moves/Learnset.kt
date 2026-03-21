@@ -20,9 +20,7 @@ import com.google.gson.JsonElement
 import net.minecraft.network.RegistryFriendlyByteBuf
 
 open class Learnset : ClientDataSynchronizer<Learnset> {
-    class Interpreter(
-        val loadMove: (JsonElement, Learnset) -> Boolean
-    ) {
+    class Interpreter(val loadMove: (JsonElement, Learnset) -> Boolean) {
         companion object {
             fun parseFromPrefixIntoList(prefix: String, list: (Learnset) -> MutableList<MoveTemplate>): Interpreter {
                 return Interpreter { element, learnset ->

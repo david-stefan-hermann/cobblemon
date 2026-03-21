@@ -8,6 +8,7 @@
 
 package com.cobblemon.mod.common.client.net.gui
 
+import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.api.net.ServerNetworkPacketHandler
 import com.cobblemon.mod.common.block.tmmachine.TMMachineMenu
 import com.cobblemon.mod.common.net.messages.client.ui.SetActiveTMPacket
@@ -19,6 +20,11 @@ object SetActiveTMPacketHandler : ServerNetworkPacketHandler<SetActiveTMPacket> 
     override fun handle(packet: SetActiveTMPacket, server: MinecraftServer, player: ServerPlayer) {
         val menu = player.containerMenu as? TMMachineMenu ?: return
         val inventory = menu.inventory ?: return
+        val tmData = Cobblemon.playerDataManager.getTMData(player)
+
+        if (packet.tm != null && packet.tm.id !in tmData.learnedTMs) {
+            return // Hacker smh
+        }
 
         menu.tmMachineEntity?.let { blockEntity ->
             blockEntity.activeMove = packet.tm?.moveName?.name ?: ""

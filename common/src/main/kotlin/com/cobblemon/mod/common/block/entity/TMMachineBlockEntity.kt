@@ -40,7 +40,8 @@ import net.minecraft.world.Container
 import net.minecraft.world.inventory.ContainerData
 import net.minecraft.world.level.Level
 
-class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity(CobblemonBlockEntities.TM_MACHINE, pos, state) {
+class TMMachineBlockEntity(pos: BlockPos, state: BlockState) :
+    BaseContainerBlockEntity(CobblemonBlockEntities.TM_MACHINE, pos, state) {
     companion object {
         const val BURN_ACTIVE_TAG = "burnActive"
         const val BURN_PROGRESS_TAG = "burnProgress"
@@ -49,7 +50,8 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
 
         const val BURN_PROGRESS_PER_TICK = 2
         const val BURN_TOTAL_TIME = 200
-        const val TOTAL_PROCESS_TIME = BURN_TOTAL_TIME + ((TMMachineScreen.CRAFT_TICKS + TMMachineScreen.RESET_DISC_TICKS) * BURN_PROGRESS_PER_TICK)
+        const val TOTAL_PROCESS_TIME =
+            BURN_TOTAL_TIME + ((TMMachineScreen.CRAFT_TICKS + TMMachineScreen.RESET_DISC_TICKS) * BURN_PROGRESS_PER_TICK)
 
         // Container data IDs
         const val BURN_PROGRESS_INDEX = 0
@@ -114,12 +116,13 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
     var tmMachineInventory = TMMachineBlockInventory(this)
     var partialTicks: Float = 0F
 
-    var burnProgress : Int = 0
-    var burnActive : Boolean = false
+    var burnProgress: Int = 0
+    var burnActive: Boolean = false
     var repeatProcess: Boolean = false
     var activeMove: String = ""
 
     var containerData: ContainerData = object : ContainerData {
+        override fun getCount() = 6
         override fun get(index: Int): Int {
             return when (index) {
                 BURN_PROGRESS_INDEX -> burnProgress
@@ -140,13 +143,9 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
             }
         }
 
-        override fun getCount(): Int {
-            return 6
-        }
     }
 
     private fun canCraftSelectedTM(): Boolean {
-        val level = level ?: return false
         val move = Moves.getByName(activeMove) ?: return false
         val tm = TechnicalMachines.moveToTM[move] ?: return false
 
@@ -294,7 +293,7 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
         level?.blockEntityChanged(worldPosition)
 
         // Mark the chunk containing this block entity as dirty, ensuring it is saved
-        level?.getChunkAt(worldPosition)?.setUnsaved(true)
+        level?.getChunkAt(worldPosition)?.isUnsaved = true
 
         // Update Neighbours
         level?.updateNeighborsAt(blockPos, currentState.block)
@@ -304,7 +303,8 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
 
     override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean = tmMachineInventory.canPlaceItem(slot, stack)
 
-    override fun canTakeItem(target: Container, slot: Int, stack: ItemStack): Boolean = tmMachineInventory.canTakeItem(target, slot, stack)
+    override fun canTakeItem(target: Container, slot: Int, stack: ItemStack): Boolean =
+        tmMachineInventory.canTakeItem(target, slot, stack)
 
     fun playSound(soundEvent: SoundEvent, volume: Float = 1F, pitch: Float = 1F) {
         level?.playSound(null, worldPosition, soundEvent, SoundSource.BLOCKS, volume, pitch)
@@ -329,9 +329,7 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
     }
 
     class TMMachineBlockInventory(val blockEntity: TMMachineBlockEntity) : SimpleContainer(6) {
-        override fun canTakeItem(target: Container, slot: Int, stack: ItemStack): Boolean =
-            if (slot == 0) true else false
-
+        override fun canTakeItem(target: Container, slot: Int, stack: ItemStack) = slot == 0
         override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean {
             val powered = blockEntity.level?.hasNeighborSignal(blockEntity.blockPos) == true
             val allowAutomation = blockEntity.containerData.get(BURN_ACTIVE_INDEX) == 1 || powered
@@ -345,9 +343,11 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
                 return when (slot) {
                     1 -> item == CobblemonItems.BLANK_TM
                     2, 3, 4 -> {
-                        val recipe = tm.getClampedRecipe() ?: return false
+                        val recipe = tm.getClampedRecipe()
                         val recipeIndex = slot - 2
-                        if (recipeIndex >= recipe.size) return false
+                        if (recipe == null || recipeIndex >= recipe.size) {
+                            return false
+                        }
                         recipe[recipeIndex].ingredient.test(stack)
                     }
                     else -> false
@@ -361,7 +361,10 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBloc
             super.setChanged()
             blockEntity.setChanged()
 
-            val allowAutomation = blockEntity.containerData.get(BURN_ACTIVE_INDEX) == 1 || blockEntity.containerData.get(REPEAT_PROCESS_INDEX) == 1
+            val allowAutomation =
+                blockEntity.containerData.get(BURN_ACTIVE_INDEX) == 1 || blockEntity.containerData.get(
+                    REPEAT_PROCESS_INDEX
+                ) == 1
 
             // force comparators to refresh if inventory changes and batch mode is on
             if (allowAutomation) {

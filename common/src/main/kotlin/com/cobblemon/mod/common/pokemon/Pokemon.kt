@@ -1571,8 +1571,7 @@ open class Pokemon : ShowdownIdentifiable {
         originalTrainer = fakeTrainerName
     }
 
-    fun refreshOriginalTrainer()
-    {
+    fun refreshOriginalTrainer() {
         when (originalTrainerType)
         {
             OriginalTrainerType.PLAYER -> {
@@ -1591,8 +1590,7 @@ open class Pokemon : ShowdownIdentifiable {
         }
     }
 
-    fun removeOriginalTrainer()
-    {
+    fun removeOriginalTrainer() {
         originalTrainer = null
         originalTrainerType = OriginalTrainerType.NONE
         originalTrainerName = null

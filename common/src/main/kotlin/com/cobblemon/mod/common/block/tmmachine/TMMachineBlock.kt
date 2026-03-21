@@ -11,9 +11,9 @@ package com.cobblemon.mod.common.block.tmmachine
 import com.cobblemon.mod.common.CobblemonBlockEntities
 import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.block.entity.TMMachineBlockEntity
+import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.playSoundServer
 import com.cobblemon.mod.common.util.toVec3d
-import com.cobblemon.mod.common.util.cobblemonResource
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.core.BlockPos
@@ -27,7 +27,10 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.context.BlockPlaceContext
 import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
-import net.minecraft.world.level.block.*
+import net.minecraft.world.level.block.BaseEntityBlock
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.RenderShape
+import net.minecraft.world.level.block.SimpleWaterloggedBlock
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityTicker
 import net.minecraft.world.level.block.entity.BlockEntityType
@@ -112,8 +115,8 @@ class TMMachineBlock(properties: Properties) : BaseEntityBlock(properties), Simp
             .setValue(EMPTY, true))
     }
 
-    override fun <T : BlockEntity?> getTicker(level: Level, state: BlockState, blockEntityType: BlockEntityType<T?>): BlockEntityTicker<T?>? {
-        return createTicker(level, blockEntityType as BlockEntityType<*>, CobblemonBlockEntities.TM_MACHINE) as BlockEntityTicker<T?>?
+    override fun <T : BlockEntity> getTicker(level: Level, state: BlockState, blockEntityType: BlockEntityType<T>): BlockEntityTicker<T>? {
+        return createTicker(level, blockEntityType, CobblemonBlockEntities.TM_MACHINE)
     }
 
     @Nullable
@@ -124,7 +127,7 @@ class TMMachineBlock(properties: Properties) : BaseEntityBlock(properties), Simp
 
     override fun fallOn(level: Level, state: BlockState, pos: BlockPos, entity: Entity, fallDistance: Float) {
         if (!level.isClientSide && (entity is LivingEntity) &&
-            (entity.getBbWidth() * entity.getBbWidth() * entity.getBbHeight() > 0.512F) &&
+            (entity.bbWidth * entity.bbWidth * entity.bbHeight > 0.512F) &&
             (entity.y >= (pos.y + 0.55)) &&
             state.hasProperty(OPEN) && state.getValue(OPEN)
         ) {
@@ -233,7 +236,7 @@ class TMMachineBlock(properties: Properties) : BaseEntityBlock(properties), Simp
 
         // Have comparator output act like a progress bar when burning because that might be super dope to see without going into the menu
         if (be.burnActive) {
-            val scaled = (be.burnProgress.toFloat() / TMMachineBlockEntity.TOTAL_PROCESS_TIME.toFloat() * 15f).toInt()
+            val scaled = (be.burnProgress.toFloat() / TMMachineBlockEntity.TOTAL_PROCESS_TIME.toFloat() * 15F).toInt()
             return scaled.coerceIn(0, 15)
         }
 

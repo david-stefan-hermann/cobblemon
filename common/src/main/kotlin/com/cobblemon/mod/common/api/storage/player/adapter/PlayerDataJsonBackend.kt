@@ -36,7 +36,6 @@ class PlayerDataJsonBackend: JsonBackedPlayerDataStoreBackend<GeneralPlayerData>
         starterUUID =  null,
         keyItems = Cobblemon.config.defaultKeyItems,
         extraData = mutableMapOf(),
-        tmSet = mutableSetOf(),
         battleTheme = CobblemonSounds.PVP_BATTLE.location,
         partySelectTutorialDone = false
     )}

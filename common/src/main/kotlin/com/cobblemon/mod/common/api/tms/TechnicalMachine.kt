@@ -24,10 +24,10 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 
 class TechnicalMachine(
-        val moveName: MoveTemplate,
-        val recipe: List<TechnicalMachineRecipe>?,
-        val obtainMethods: List<ObtainMethod> = emptyList(),
-        val type: String
+    val moveName: MoveTemplate,
+    val recipe: List<TechnicalMachineRecipe>?,
+    val obtainMethods: List<ObtainMethod> = emptyList(),
+    val type: String
 ) {
     companion object {
         /**
@@ -61,7 +61,7 @@ class TechnicalMachine(
                 val iterator = tms.iterator()
                 while (iterator.hasNext()) {
                     val tm = iterator.next()
-                    if (!pokemon.species.moves.tmLearnableMoves().contains(tm.moveName)) {
+                    if (tm.moveName !in pokemon.form.moves.tmLearnableMoves()) {
                         iterator.remove()
                     }
                 }
@@ -78,7 +78,7 @@ class TechnicalMachine(
             }
 
             if (player != null && !includeUnlearned) {
-                val learnedTMs = CobblemonClient.clientTMMoveData?.learnedTMs ?: emptySet()
+                val learnedTMs = CobblemonClient.clientTMMoveData.learnedTMs
                 tms.retainAll { tm ->
                     tm.obtainMethods.any { it is DefaultObtainMethod } || learnedTMs.contains(tm.id)
                 }

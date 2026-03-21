@@ -34,7 +34,6 @@ data class ClientGeneralPlayerData(
     var starterSelected: Boolean = false,
     var starterUUID: UUID? = null,
     var showChallengeLabel: Boolean = true,
-    var tmSet: MutableSet<ResourceLocation> = mutableSetOf(),
     val battleTheme: ResourceLocation? = null,
     var partySelectTutorialDone: Boolean = false
 ) : ClientInstancedPlayerData {
@@ -48,7 +47,6 @@ data class ClientGeneralPlayerData(
         buf.writeNullable(starterUUID) { pb, value -> pb.writeString(value.toString()) }
         buf.writeNullable(resetStarters) { pb, value -> pb.writeBoolean(value) }
         buf.writeNullable(battleTheme) {pb, value -> pb.writeIdentifier(value)}
-        buf.writeCollection(tmSet) { pb, value -> pb.writeIdentifier(value)}
         buf.writeBoolean(partySelectTutorialDone)
     }
     companion object {
@@ -60,7 +58,6 @@ data class ClientGeneralPlayerData(
             val showChallengeLabel = buffer.readBoolean()
             val starterUUID = buffer.readNullable { it.readString() }?.let { UUID.fromString(it) }
             val resetStarterPrompt = buffer.readNullable { it.readBoolean() }
-            val tmSet = buffer.readCollection({ mutableSetOf<ResourceLocation>() }) { it.readIdentifier() }
             val battleTheme = buffer.readNullable { it.readIdentifier() }
             val partySelectTutorialDone = buffer.readBoolean()
             val data = ClientGeneralPlayerData(
@@ -70,7 +67,6 @@ data class ClientGeneralPlayerData(
                 starterSelected,
                 starterUUID,
                 showChallengeLabel,
-                tmSet,
                 battleTheme,
                 partySelectTutorialDone
             )

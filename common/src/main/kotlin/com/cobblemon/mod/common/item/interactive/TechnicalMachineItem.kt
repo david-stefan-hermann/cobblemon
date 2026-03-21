@@ -31,9 +31,9 @@ class TechnicalMachineItem(properties: Properties) : CobblemonItem(properties), 
         val moveTemplate = TMMoveComponent.getTMMove(stack) ?: return false
         val pokemon = entity.pokemon
 
-        val tmLearnableMoves = pokemon.species.moves.tmLearnableMoves()
+        val tmLearnableMoves = pokemon.form.moves.tmLearnableMoves()
 
-        if (!tmLearnableMoves.contains(moveTemplate)) {
+        if (moveTemplate !in tmLearnableMoves) {
             player.displayClientMessage(lang("tms.cannot_learn", pokemon.getDisplayName(), moveTemplate.displayName), true)
             return false
         }

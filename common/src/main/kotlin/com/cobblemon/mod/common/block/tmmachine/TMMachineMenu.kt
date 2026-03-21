@@ -41,7 +41,7 @@ class TMMachineMenu(menuType: MenuType<*>, syncId: Int) : AbstractContainerMenu(
         this.containerData = SimpleContainerData(6)
         this.tmMachineEntity = (inventory as? TMMachineBlockEntity.TMMachineBlockInventory)?.blockEntity
 
-        this.addDataSlots(containerData)
+        this.addDataSlots(containerData!!)
         inventory?.startOpen(playerInventory.player)
 
         val startX = 15
