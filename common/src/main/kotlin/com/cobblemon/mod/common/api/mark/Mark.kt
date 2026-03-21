@@ -28,7 +28,7 @@ class Mark(
     val group: String?,
     val chance: Float = 0F,
     val indexNumber: Int?,
-    val aspect: String?
+    val aspects: List<String> = emptyList()
 ): StringRepresentable {
 
     companion object {
@@ -44,7 +44,7 @@ class Mark(
                 buffer.readNullable { buffer.readString() },
                 buffer.readFloat(),
                 buffer.readNullable { buffer.readInt() },
-                buffer.readNullable { buffer.readString() }
+                buffer.readList { buffer.readString() }
             )
         }
     }
@@ -85,6 +85,6 @@ class Mark(
         buffer.writeNullable(group) { _, v -> buffer.writeString(v) }
         buffer.writeFloat(chance)
         buffer.writeNullable(indexNumber) { _, v -> buffer.writeInt(v) }
-        buffer.writeNullable(aspect) { _, v -> buffer.writeString(v) }
+        buffer.writeCollection(aspects) { _, v -> buffer.writeString(v) }
     }
 }
