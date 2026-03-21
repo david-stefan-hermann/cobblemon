@@ -77,7 +77,7 @@ class SpeciesLevelManager(
 
         ScheduledTask.Builder()
             .tracker(ServerTaskTracker)
-            .interval(0f)
+            .interval(0F)
             .infiniteIterations()
             .execute { task ->
                 var processed = 0

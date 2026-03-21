@@ -8,39 +8,36 @@
 
 package com.cobblemon.mod.common.api.tms
 
+import com.cobblemon.mod.common.CobblemonNetwork.sendPacket
+import com.cobblemon.mod.common.api.moves.MoveTemplate
+import com.cobblemon.mod.common.api.scheduling.ScheduledTask
+import com.cobblemon.mod.common.api.scheduling.ServerTaskTracker
 import com.cobblemon.mod.common.api.storage.player.InstancedPlayerData
 import com.cobblemon.mod.common.api.storage.player.PlayerInstancedDataStoreTypes
 import com.cobblemon.mod.common.api.storage.player.client.ClientTMMoveManager
-import com.cobblemon.mod.common.api.scheduling.ScheduledTask
-import com.cobblemon.mod.common.api.scheduling.ServerTaskTracker
-import com.cobblemon.mod.common.api.moves.MoveTemplate
+import com.cobblemon.mod.common.net.messages.client.SetClientPlayerDataPacket
+import com.cobblemon.mod.common.net.messages.client.toast.ToastPacket
 import com.cobblemon.mod.common.pokemon.Pokemon
+import com.cobblemon.mod.common.util.getPlayer
+import com.cobblemon.mod.common.util.lang
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
+import java.util.UUID
+import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
-import java.util.*
 
 class TMMoveManager(
     override val uuid: UUID,
-    override val learnedTMs: MutableSet<ResourceLocation> = mutableSetOf()
-) : AbstractTMMoveManager(), InstancedPlayerData {
+    val learnedTMs: MutableSet<ResourceLocation> = mutableSetOf()
+) : InstancedPlayerData {
 
-    override val storeType = PlayerInstancedDataStoreTypes.TM_MOVES
+    val storeType = PlayerInstancedDataStoreTypes.TM_MOVES
 
-    override fun initialize() {}
-
-    override fun toClientData(): ClientTMMoveManager {
-        return ClientTMMoveManager(learnedTMs.toMutableSet())
-    }
-
-    override fun toClientDataFrom(set: Set<ResourceLocation>): ClientTMMoveManager {
-        return ClientTMMoveManager(set.toMutableSet())
-    }
+    override fun toClientData() = ClientTMMoveManager(learnedTMs.toMutableSet())
+    fun toClientDataFrom(set: Set<ResourceLocation>) = ClientTMMoveManager(set.toMutableSet())
 
     fun syncTMsFromPokemon(pokemon: Pokemon) {
-        val learnableTMs = getLearnableTMsFromPokemon(pokemon)
-
-        learn(learnableTMs)
+        learn(getLearnableTMsFromPokemon(pokemon))
     }
 
     fun syncTMFromMove(moveTemplate: MoveTemplate) {
@@ -50,8 +47,8 @@ class TMMoveManager(
 
     fun getLearnableTMsFromPokemon(pokemon: Pokemon): Collection<ResourceLocation> {
         return TechnicalMachines.tmMap.values
-            .filter { tm -> pokemon.allAccessibleMoves.contains(tm.moveName) }
-            .map { tm -> tm.id }
+            .filter { tm -> tm.moveName in pokemon.allAccessibleMoves }
+            .map(TechnicalMachine::id)
     }
 
     fun scheduleFullSyncFromStores(
@@ -74,7 +71,7 @@ class TMMoveManager(
 
         ScheduledTask.Builder()
             .tracker(ServerTaskTracker)
-            .interval(0f)
+            .interval(0F)
             .infiniteIterations()
             .execute { task ->
                 var processed = 0
@@ -94,6 +91,76 @@ class TMMoveManager(
             .build()
     }
 
+    fun learn(tmIds: Collection<ResourceLocation>): Boolean {
+        val newLearnedTms = mutableListOf<ResourceLocation>()
+        for (tmId in tmIds) {
+            if (learnedTMs.add(tmId)) {
+                newLearnedTms.add(tmId)
+            }
+        }
+
+        if (newLearnedTms.isEmpty()) return false
+
+        syncClient(newLearnedTms.toSet())
+        sendTMToast(newLearnedTms)
+
+        return true
+    }
+
+    fun unlearn(tmIds: Collection<ResourceLocation>): Boolean {
+        val removedTms = mutableListOf<ResourceLocation>()
+
+        for (tmId in tmIds) {
+            if (learnedTMs.remove(tmId)) {
+                removedTms.add(tmId)
+            }
+        }
+
+        if (removedTms.isEmpty()) return false
+
+        syncClient(learnedTMs, isIncremental = false)
+
+        return true
+    }
+
+    fun sendTMToast(tmIds: List<ResourceLocation>) {
+        val player = uuid.getPlayer() ?: return
+        var moveName: Component = Component.empty()
+        val icons = tmIds.mapNotNull {
+            val tm = TechnicalMachines.tmMap[it] ?: return@mapNotNull null
+            moveName = tm.translatedMoveName()
+
+            return@mapNotNull tm.createItemStack()
+        }
+
+        val description = if (icons.size == 1) moveName else lang("tms.check_tmm")
+
+        val packet = ToastPacket(
+            title = lang("tms.new_tms_learned"),
+            description = description,
+            icons = icons,
+            frameTexture = ResourceLocation.parse("minecraft:toast/advancement"),
+            progress = -1F,
+            progressColor = 0x00FF00,
+            // Keeping it a fixed UUID makes it so the ToastTracker merges different toasts on the client
+            uuid = UUID.nameUUIDFromBytes("tm_toast".toByteArray()),
+            behaviour = ToastPacket.Behaviour.SHOW_OR_UPDATE,
+            durationMs = 4000L
+        )
+
+        player.sendPacket(packet)
+    }
+
+    fun syncClient(updateSet: Set<ResourceLocation> = learnedTMs, isIncremental: Boolean = true) {
+        uuid.getPlayer()?.sendPacket(
+            SetClientPlayerDataPacket(
+                type = storeType,
+                playerData = toClientDataFrom(updateSet),
+                isIncremental = isIncremental
+            )
+        )
+    }
+
     companion object {
         val CODEC: Codec<TMMoveManager> = RecordCodecBuilder.create { instance ->
             instance.group(
@@ -104,9 +171,7 @@ class TMMoveManager(
                     .xmap({ it.toMutableSet() }, { it.toList() })
                     .fieldOf("learnedTMs")
                     .forGetter { it.learnedTMs }
-            ).apply(instance) { uuid, learnedTMs ->
-                TMMoveManager(uuid, learnedTMs)
-            }
+            ).apply(instance, ::TMMoveManager)
         }
     }
 }

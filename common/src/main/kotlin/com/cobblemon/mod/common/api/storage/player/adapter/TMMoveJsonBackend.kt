@@ -15,9 +15,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import java.util.UUID
 
-class TMMoveJsonBackend :
-    JsonBackedPlayerDataStoreBackend<TMMoveManager>("tm_moves", PlayerInstancedDataStoreTypes.TM_MOVES) {
-
+class TMMoveJsonBackend : JsonBackedPlayerDataStoreBackend<TMMoveManager>("tm_moves", PlayerInstancedDataStoreTypes.TM_MOVES) {
     override val gson = GsonBuilder()
         .setPrettyPrinting()
         .disableHtmlEscaping()

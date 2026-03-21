@@ -249,8 +249,8 @@ object Cobblemon {
             starterHandler.handleJoin(it)
             it.requestWallpapers()
             sendServerSettingsPacketToPlayer(it)
-            it.tmList()?.scheduleFullSyncFromStores(it.party(), it.pc())
-            it.speciesLevels()?.scheduleFullSyncFromStores(it.party(), it.pc())
+            it.tmList().scheduleFullSyncFromStores(it.party(), it.pc())
+            it.speciesLevels().scheduleFullSyncFromStores(it.party(), it.pc())
         }
         PlatformEvents.SERVER_PLAYER_LOGOUT.subscribe {
             PCLinkManager.removeLink(it.player.uuid)
