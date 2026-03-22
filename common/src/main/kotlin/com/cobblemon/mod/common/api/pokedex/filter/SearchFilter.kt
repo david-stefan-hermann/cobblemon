@@ -15,6 +15,7 @@ import com.cobblemon.mod.common.api.pokedex.PokedexEntryProgress
 import com.cobblemon.mod.common.api.pokedex.entry.PokedexEntry
 import com.cobblemon.mod.common.api.pokemon.PokemonSpecies
 import com.cobblemon.mod.common.api.pokemon.evolution.Evolution
+import com.cobblemon.mod.common.api.storage.player.client.ClientPokedexManager
 import com.cobblemon.mod.common.api.tms.TechnicalMachines
 import com.cobblemon.mod.common.client.CobblemonClient
 import com.cobblemon.mod.common.pokemon.abilities.HiddenAbility
@@ -58,7 +59,6 @@ class SearchFilter(val pokedexManager: AbstractPokedexManager, val searchString:
                 if (pokedexManager.getHighestKnowledgeFor(entry) !== PokedexEntryProgress.CAUGHT) return false
                 val search = searchString.trim().lowercase()
                 val learnedTMs = CobblemonClient.clientTMMoveData.learnedTMs
-                val speciesLevels = CobblemonClient.clientSpeciesLevelData.speciesLevels
                 val forms = pokedexManager.getCaughtForms(entry)
                 val formData = if (forms.isEmpty()) {
                     listOf(species.standardForm)
@@ -68,7 +68,8 @@ class SearchFilter(val pokedexManager: AbstractPokedexManager, val searchString:
                     }
                 }
                 return formData.any { form ->
-                    hasDiscoveredMove(form, search, speciesLevels, learnedTMs)
+                    val highestLevel = pokedexManager.getSpeciesRecord(form.species.resourceIdentifier)?.getFormRecord(form.name)?.highestLevel ?: -1
+                    hasDiscoveredMove(form, search, highestLevel, pokedexManager, learnedTMs)
                 }
             }
             SearchByType.DROPS -> {
@@ -95,7 +96,8 @@ class SearchFilter(val pokedexManager: AbstractPokedexManager, val searchString:
     private fun hasDiscoveredMove(
         form: FormData,
         search: String,
-        speciesLevels: Map<ResourceLocation, Int>,
+        highestLevel: Int,
+        pokedex: AbstractPokedexManager,
         learnedTMs: Set<ResourceLocation>
     ): Boolean {
         val evolutionMoveLevels = buildEvolutionMoveLevelIndex(form)
@@ -105,12 +107,11 @@ class SearchFilter(val pokedexManager: AbstractPokedexManager, val searchString:
         }
 
         fun isLevelUpDiscovered(move: MoveTemplate, level: Int): Boolean {
-            val currentLevel = speciesLevels[form.species.resourceIdentifier] ?: 0
-            if (currentLevel >= level) return true
+            if (highestLevel >= level) return true
 
             for ((evolutionSpeciesId, moveLevels) in evolutionMoveLevels) {
                 val evolutionLevel = moveLevels[move.name] ?: continue
-                val evolutionHighest = speciesLevels[evolutionSpeciesId] ?: 0
+                val evolutionHighest = pokedex.getSpeciesRecord(evolutionSpeciesId)?.highestLevel ?: -1
                 if (evolutionHighest >= evolutionLevel) return true
             }
             return false

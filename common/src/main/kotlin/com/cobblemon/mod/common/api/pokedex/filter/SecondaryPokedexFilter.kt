@@ -46,7 +46,6 @@ class SecondaryPokedexFilter(
     private fun hasUndiscoveredLevelUpTM(entry: PokedexEntry): Boolean {
         if (pokedexManager.getHighestKnowledgeFor(entry) != PokedexEntryProgress.CAUGHT) return false
         val species = PokemonSpecies.getByIdentifier(entry.speciesId) ?: return false
-        val speciesLevels = CobblemonClient.clientSpeciesLevelData.speciesLevels
         val forms = pokedexManager.getCaughtForms(entry)
         val formData = if (forms.isEmpty()) {
             listOf(species.standardForm)
@@ -57,23 +56,23 @@ class SecondaryPokedexFilter(
         }
 
         return formData.any { form ->
-            hasUndiscoveredLevelUpTM(form, speciesLevels)
+            val highestLevel = pokedexManager.getSpeciesRecord(form.species.resourceIdentifier)?.getFormRecord(form.name)?.highestLevel ?: -1
+            hasUndiscoveredLevelUpTM(form, highestLevel)
         }
     }
 
     private fun hasUndiscoveredLevelUpTM(
         form: FormData,
-        speciesLevels: Map<ResourceLocation, Int>
+        highestLevel: Int
     ): Boolean {
         val evolutionMoveLevels = buildEvolutionMoveLevelIndex(form)
 
         fun isLevelUpDiscovered(move: MoveTemplate, level: Int): Boolean {
-            val currentLevel = speciesLevels[form.species.resourceIdentifier] ?: 0
-            if (currentLevel >= level) return true
+            if (highestLevel >= level) return true
 
             for ((evolutionSpeciesId, moveLevels) in evolutionMoveLevels) {
                 val evolutionLevel = moveLevels[move.name] ?: continue
-                val evolutionHighest = speciesLevels[evolutionSpeciesId] ?: 0
+                val evolutionHighest = pokedexManager.getSpeciesRecord(evolutionSpeciesId)?.highestLevel ?: -1
                 if (evolutionHighest >= evolutionLevel) return true
             }
 

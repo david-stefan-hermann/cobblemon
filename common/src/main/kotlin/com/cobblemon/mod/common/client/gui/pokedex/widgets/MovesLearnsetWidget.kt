@@ -673,19 +673,19 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
     private fun buildLearnsetEntries(form: FormData): List<LearnsetMoveEntry> {
         val entries = linkedMapOf<String, LearnsetMoveEntry>()
         val speciesId = form.species.resourceIdentifier
-        val speciesLevels = CobblemonClient.clientSpeciesLevelData.speciesLevels
+        val pokedexManager = CobblemonClient.clientPokedexData
+        val highestLevel = pokedexManager.getSpeciesRecord(speciesId)?.getFormRecord(form.name)?.highestLevel ?: 0
         val evolutionMoveLevels = buildEvolutionMoveLevelIndex(form)
         val learnedTMs = CobblemonClient.clientTMMoveData.learnedTMs
         val unlockAllMoveDexMovesByDefault = ServerSettings.unlockAllMoveDexMovesByDefault
 
         fun isLevelUpDiscovered(move: MoveTemplate, level: Int): Boolean {
             if (unlockAllMoveDexMovesByDefault) return true
-            val currentLevel = speciesLevels[speciesId] ?: 0
-            if (currentLevel >= level) return true
+            if (highestLevel >= level) return true
 
             for ((evolutionSpeciesId, moveLevels) in evolutionMoveLevels) {
                 val evolutionLevel = moveLevels[move.name] ?: continue
-                val evolutionHighest = speciesLevels[evolutionSpeciesId] ?: 0
+                val evolutionHighest = pokedexManager.getSpeciesRecord(evolutionSpeciesId)?.highestLevel ?: 0
                 if (evolutionHighest >= evolutionLevel) return true
             }
 

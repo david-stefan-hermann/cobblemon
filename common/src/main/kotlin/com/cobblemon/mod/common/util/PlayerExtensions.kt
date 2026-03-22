@@ -61,7 +61,6 @@ fun ServerPlayer.party() = Cobblemon.storage.getParty(this)
 fun ServerPlayer.pc() = Cobblemon.storage.getPC(this)
 fun ServerPlayer.pokedex() = Cobblemon.playerDataManager.getPokedexData(this)
 fun ServerPlayer.tmList() = Cobblemon.playerDataManager.getTMData(this)
-fun ServerPlayer.speciesLevels() = Cobblemon.playerDataManager.getSpeciesLevelData(this)
 val ServerPlayer.activeDialogue: ActiveDialogue?
     get() = DialogueManager.activeDialogues[uuid]
 val ServerPlayer.isInDialogue: Boolean
