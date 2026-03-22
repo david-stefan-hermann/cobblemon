@@ -90,6 +90,7 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
     var playedSendOutSound: Boolean = false
     var playedThrowingSound: Boolean = false
     private var lastAlphaEyeParticle = 0L
+    val eyeTrailPositions = mutableMapOf<String, ArrayDeque<Pair<Vec3, Long>>>() // List of eye locators that are tracking their position overtime for alpha eye trail rendering
 
     val secondsSinceBeamEffectStarted: Float
         get() = (System.currentTimeMillis() - beamStartTime) / 1000F
@@ -479,9 +480,10 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
                 }
             }
         }
-        spawnAlphaEyeParticles()
     }
 
+
+    // TODO: use the aspect
     private fun spawnAlphaEyeParticles() {
         if (currentEntity.entityData.get(PokemonEntity.MARK) != ALPHA_MARK_ID) {
             return

@@ -226,16 +226,16 @@ class CobblemonConfig {
     var pokemonIntrinsicSizeMax = 1.05F
 
     @CobblemonConfigField(Category.Pokemon, lang = "alpha_pokemon_size_small_multiplier", SERVER)
-    var alphaPokemonSizeSmallMultiplier = 1.4F
+    var alphaPokemonSizeSmallMultiplier = 1.85F
 
     @CobblemonConfigField(Category.Pokemon, lang = "alpha_pokemon_size_medium_multiplier", SERVER)
-    var alphaPokemonSizeMediumMultiplier = 1.3F
+    var alphaPokemonSizeMediumMultiplier = 1.66F
 
     @CobblemonConfigField(Category.Pokemon, lang = "alpha_pokemon_size_large_multiplier", SERVER)
-    var alphaPokemonSizeLargeMultiplier = 1.2F
+    var alphaPokemonSizeLargeMultiplier = 1.5F
 
     @CobblemonConfigField(Category.Pokemon, lang = "alpha_pokemon_size_extra_large_multiplier", SERVER)
-    var alphaPokemonSizeExtraLargeMultiplier = 1.1F
+    var alphaPokemonSizeExtraLargeMultiplier = 1.33F
 
     @CobblemonConfigField(Category.Pokemon, lang = "baby_pokemon_level_duration", SERVER)
     var babyPokemonLevelDuration = 9

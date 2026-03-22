@@ -8,6 +8,7 @@
 
 package com.cobblemon.mod.common.pokemon.aspects
 
+import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonCosmeticItems
 import com.cobblemon.mod.common.CobblemonMemories
 import com.cobblemon.mod.common.api.pokemon.PokemonProperties

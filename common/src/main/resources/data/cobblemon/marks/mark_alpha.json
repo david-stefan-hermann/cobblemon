@@ -5,5 +5,5 @@
 	"description": "cobblemon.mark.mark_alpha.desc",
 	"texture": "cobblemon:textures/gui/mark/mark_alpha.png",
 	"indexNumber": 107,
-	"aspect": ["alpha_eyes"]
+	"aspects": ["alpha_eyes"]
 }

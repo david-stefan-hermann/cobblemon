@@ -151,6 +151,26 @@ class PokemonRenderer(
             super.render(entity, entityYaw, partialTicks, poseMatrix, buffer, packedLight)
         }
 
+        // Call rendering for alpha eye trail
+        updateEyeTrail(
+            aspects = clientDelegate.currentAspects,
+            locatorStates = clientDelegate.locatorStates,
+            entityPos = entity.getPosition(partialTicks),
+            trailPositions = clientDelegate.eyeTrailPositions
+        )
+        if (clientDelegate.eyeTrailPositions.isNotEmpty()) {
+            val camPos = Minecraft.getInstance().gameRenderer.mainCamera.position
+            for ((_, positions) in clientDelegate.eyeTrailPositions) {
+                renderEyeTrail(
+                    positions = positions,
+                    entityPos = entity.getPosition(partialTicks),
+                    camPos = camPos,
+                    poseStack = poseMatrix,
+                    bufferSource = buffer
+                )
+            }
+        }
+
         modelNow.green = 1F
         modelNow.blue = 1F
         modelNow.resetLayerContext()
