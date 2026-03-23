@@ -69,7 +69,7 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
 
     lateinit var currentEntity: PokemonEntity
     var phaseTarget: Entity? = null
-    var entityScaleModifier = 1F
+    var activeSendoutScale = 1F // The current scale used for the send-out animation
 
     override fun getEntity() = currentEntity
 
@@ -134,7 +134,7 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
                         null
                     } ?: return
                     val primaryAnimation = PrimaryAnimation(animation)
-                    after(seconds = 3F) { entityScaleModifier = 0F }
+                    after(seconds = 3F) { activeSendoutScale = 0F }
                     this.addPrimaryAnimation(primaryAnimation)
                 }
             } else if (data == PokemonEntity.BEAM_MODE) {
@@ -152,7 +152,7 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
                         // the duplicate particle effects.
                         if (ballDone) {
                             playedSendOutSound = false
-                            entityScaleModifier = 0F
+                            activeSendoutScale = 0F
                             beamStartTime = System.currentTimeMillis()
                             ballStartTime = System.currentTimeMillis()
                             currentEntity.isInvisible = true
@@ -263,7 +263,7 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
                             currentEntity.after(seconds = POKEBALL_AIR_TIME) {
                                 // Skip scaling task if the Pokémon is already being recalled
                                 if (scaleAnimTask == null || scaleAnimTask!!.expired) {
-                                    scaleAnimTask = lerpOnClient(BEAM_SHRINK_TIME) { entityScaleModifier = it }
+                                    scaleAnimTask = lerpOnClient(BEAM_SHRINK_TIME) { activeSendoutScale = it }
                                     currentEntity.isInvisible = false
                                     currentEntity.isSilent = false
                                     currentEntity.after(seconds = POKEBALL_AIR_TIME * 2) {
@@ -280,7 +280,7 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
                         // Adding the ballDone check to here as well so that the send out sound doesn't play twice when putting pokemon into pasture block.
                         if (ballDone) {
                             playedSendOutSound = false
-                            entityScaleModifier = 0F
+                            activeSendoutScale = 0F
                             currentEntity.isInvisible = false
                             currentEntity.isSilent = false
                             ballDone = false
@@ -308,7 +308,7 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
                                 )
                                 playedSendOutSound = true
                             }
-                            scaleAnimTask = lerpOnClient(BEAM_SHRINK_TIME) { entityScaleModifier = it }
+                            scaleAnimTask = lerpOnClient(BEAM_SHRINK_TIME) { activeSendoutScale = it }
                             currentEntity.after(seconds = BEAM_SHRINK_TIME * 2) {
                                 ballOffset = 0f
                                 ballRotOffset = 0f
@@ -323,12 +323,12 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
                         ballRotOffset = 0f
                         sendOutPosition = null
                         afterOnClient(seconds = BEAM_EXTEND_TIME) {
-                            entityScaleModifier = 1F
+                            activeSendoutScale = 1F
 
                             // Cancel any ongoing scale animation tasks
                             scaleAnimTask?.expire()
                             scaleAnimTask = lerpOnClient(BEAM_SHRINK_TIME) {
-                                entityScaleModifier = (1 - it)
+                                activeSendoutScale = (1 - it)
                             }
                         }
                     }
