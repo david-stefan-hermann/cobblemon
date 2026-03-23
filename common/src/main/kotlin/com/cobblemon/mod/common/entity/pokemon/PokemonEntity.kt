@@ -1591,7 +1591,7 @@ open class PokemonEntity(
         nbt.putString(DataKeys.SHOULDER_SPECIES, this.pokemon.species.resourceIdentifier.toString())
         nbt.putString(DataKeys.SHOULDER_FORM, this.pokemon.form.name)
         nbt.put(DataKeys.SHOULDER_ASPECTS, this.pokemon.aspects.map(StringTag::valueOf).toNbtList())
-        nbt.putFloat(DataKeys.SHOULDER_SCALE_MODIFIER, this.pokemon.scaleModifier)
+        nbt.putFloat(DataKeys.SHOULDER_SCALE_MODIFIER, this.pokemon.effectiveScale)
         nbt.put(
             DataKeys.SHOULDER_ITEM,
             this.level().registryAccess()

@@ -222,7 +222,7 @@ class PokemonOnShoulderRenderer<T : Player>(renderLayerParent: RenderLayerParent
                             it.species,
                             it.form,
                             it.aspects,
-                            it.scaleModifier,
+                            it.effectiveScale,
                             it.heldItem
                         )
                     }, { null })

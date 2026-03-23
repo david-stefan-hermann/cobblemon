@@ -232,7 +232,7 @@ class PokemonServerDelegate : PokemonSideDelegate {
         val trackedNickname =  mock?.nickname ?: entity.pokemon.nickname ?: Component.empty()
         val trackedAspects = mock?.aspects ?: entity.pokemon.aspects
         val trackedBall = mock?.pokeball ?: entity.pokemon.caughtBall.name.toString()
-        val trackedScaleModifier = mock?.scaleModifier ?: entity.pokemon.scaleModifier
+        val trackedScaleModifier = mock?.scaleModifier ?: entity.pokemon.effectiveScale
 
         entity.ownerUUID = entity.pokemon.getOwnerUUID()
         entity.entityData.set(PokemonEntity.SPECIES, trackedSpecies)
