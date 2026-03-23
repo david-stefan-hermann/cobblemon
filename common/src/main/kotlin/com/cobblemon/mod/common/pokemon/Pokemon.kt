@@ -276,6 +276,22 @@ open class Pokemon : ShowdownIdentifiable {
         setIntrinsicScale(Random.nextBetween(config.pokemonIntrinsicSizeMin, config.pokemonIntrinsicSizeMax))
     }
 
+    fun assignSizeMarks() {
+        //  this is where we should assign a mark based on min or max intrinsic scale
+        val miniMark = Marks.getByIdentifier(cobblemonResource("mark_mini"))!!
+        val jumboMark = Marks.getByIdentifier(cobblemonResource("mark_jumbo"))!!
+        val config = Cobblemon.config
+
+        if (scaleModifier == config.pokemonIntrinsicSizeMin) { // minimum size
+            exchangeMark(miniMark, true)
+            activeMark = miniMark
+        }
+        if (scaleModifier == config.pokemonIntrinsicSizeMax) { // maximum size
+            exchangeMark(jumboMark, true)
+            activeMark = jumboMark
+        }
+    }
+
     fun hyperTrainIV(stat: Stat, value: Int) {
         val quotient = clamp(currentHealth / maxHealth.toFloat(), 0F, 1F)
         CobblemonEvents.HYPER_TRAINED_IV_PRE.postThen(
