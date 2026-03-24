@@ -128,6 +128,14 @@ class FishingSpawnCause(
 
         }
 
+        fun alterAlphaAttempt(pokemonEntity: PokemonEntity) {
+            if (pokemonEntity.pokemon.isAlpha) {
+                return
+            }
+            pokemonEntity.pokemon.isAlpha = true
+            pokemonEntity.entityData.set(PokemonEntity.IS_ALPHA, true)
+        }
+
         fun alterFriendshipAttempt(pokemonEntity: PokemonEntity, effect: SpawnBait.Effect) {
             if (pokemonEntity.pokemon.friendship + effect.value > Cobblemon.config.maxPokemonFriendship)
                 pokemonEntity.pokemon.setFriendship(Cobblemon.config.maxPokemonFriendship)
