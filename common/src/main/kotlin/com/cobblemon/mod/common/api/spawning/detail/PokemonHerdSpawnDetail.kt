@@ -53,6 +53,7 @@ class PokemonHerdSpawnDetail : SpawnDetail() {
         var isLeader: Boolean? = null
         var weight: Float = 1F
         var maxTimes = 10
+        var isAlpha: Boolean? = null
     }
 
     override fun isValid() = super.isValid() && herdablePokemon.all { it.pokemon.hasSpecies() && it.weight > 0F && it.maxTimes > 0 }
@@ -108,6 +109,8 @@ class PokemonHerdSpawnDetail : SpawnDetail() {
             val max = level + offset.last
             min..max
         } ?: level..level
+
+        herdable.pokemon.isAlpha = herdable.isAlpha
 
         return PokemonSpawnAction(
             spawnablePosition = spawnablePosition,
