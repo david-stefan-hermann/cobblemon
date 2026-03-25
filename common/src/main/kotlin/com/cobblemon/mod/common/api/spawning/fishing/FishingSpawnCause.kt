@@ -133,6 +133,7 @@ class FishingSpawnCause(
                 return
             }
             pokemonEntity.pokemon.isAlpha = true
+            pokemonEntity.pokemon.initializeMovesetWithRandomTm()
             pokemonEntity.entityData.set(PokemonEntity.IS_ALPHA, true)
         }
 

@@ -1899,6 +1899,29 @@ open class Pokemon : ShowdownIdentifiable {
         moveSet.copyFrom(newMoveset)
     }
 
+    fun initializeMovesetWithRandomTm(moveCount: Int = MoveSet.MOVE_COUNT): Boolean {
+        if (moveCount <= 0) {
+            return false
+        }
+
+        val tmMoves = form.moves.tmMoves.distinct().toMutableList()
+        if (tmMoves.isEmpty()) {
+            return false
+        }
+
+        tmMoves.shuffle()
+        val count = min(moveCount, tmMoves.size)
+        moveSet.doWithoutEmitting {
+            moveSet.clear()
+            for (i in 0 until count) {
+                moveSet.setMove(i, tmMoves[i].create())
+                moveSet[i]?.update()
+            }
+        }
+        moveSet.update()
+        return true
+    }
+
     @Deprecated(
         message = "Will be removed within potentially 1 title update",
         replaceWith = ReplaceWith("initializeMovesetFromDefault"),
