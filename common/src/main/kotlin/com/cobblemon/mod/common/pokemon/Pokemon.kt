@@ -616,7 +616,7 @@ open class Pokemon : ShowdownIdentifiable {
                 val t = (level - 1).toFloat() / (maxLevel - 1).toFloat()
                 minMultiplier + (1F - minMultiplier) * t
             }
-            return babyPokemonMultiplier * if (this.isAlpha) getAlphaScaleMultiplier() else scaleModifier
+            return if (this.isAlpha) getAlphaScaleMultiplier() else babyPokemonMultiplier * scaleModifier
         }
 
     private fun getAlphaScaleMultiplier(): Float {
