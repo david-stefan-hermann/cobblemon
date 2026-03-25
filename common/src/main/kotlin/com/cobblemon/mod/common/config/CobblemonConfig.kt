@@ -210,6 +210,12 @@ class CobblemonConfig {
     @CobblemonConfigField(Category.Spawning, lang = "shiny_rate", SERVER)
     var shinyRate = 8192F
 
+    @CobblemonConfigField(Category.Pokemon, lang = "fossil_machine_alpha_chance", SERVER)
+    var fossilMachineAlphaChance = 100
+
+    @CobblemonConfigField(Category.Pokemon, lang = "fossil_machine_shiny_chance", SERVER)
+    var fossilMachineShinyChance = 500
+
     @CobblemonConfigField(Category.Pokemon, lang = "shiny_notice_particles_distance", CLIENT)
     var shinyNoticeParticlesDistance = 24F
 
