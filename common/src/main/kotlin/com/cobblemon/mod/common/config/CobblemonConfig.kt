@@ -283,7 +283,7 @@ class CobblemonConfig {
     var pastureBlockUpdateTicks = 40
 
     @CobblemonConfigField(Category.World, lang = "pasture_max_wander_distance", SERVER)
-    var pastureMaxWanderDistance = 64
+    var pastureMaxWanderDistance = 32
 
     @CobblemonConfigField(Category.World, lang = "pasture_max_per_chunk", SERVER)
     var pastureMaxPerChunk = 4F
@@ -309,6 +309,12 @@ class CobblemonConfig {
 
     @CobblemonConfigField(Category.Pokedex, lang = "max_pokedex_scanning_detection_range", SERVER)
     var maxPokedexScanningDetectionRange = 10.0
+
+    @CobblemonConfigField(Category.Pokedex, lang = "unlock_all_move_dex_moves_by_default", SERVER)
+    var unlockAllMoveDexMovesByDefault = false
+
+    @CobblemonConfigField(Category.Pokemon, lang = "infinite_tm_uses", SERVER)
+    var infiniteTmUses = false
 
     @CobblemonConfigField(Category.Pokedex, lang = "hide_unimplemented_pokemon_in_the_pokedex", CLIENT)
     var hideUnimplementedPokemonInThePokedex = false

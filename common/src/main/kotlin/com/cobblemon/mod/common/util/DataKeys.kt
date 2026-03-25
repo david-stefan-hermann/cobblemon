@@ -213,6 +213,7 @@ object DataKeys {
     const val HAS_CREATED_POKEMON = "HasCreatedPokemon"
     const val FOSSIL_OWNER = "FossilOwner"
     const val FOSSIL_STATE = "FossilState"
+    const val MONITOR_DISK = "MonitorDisk"
 
     // Generic Block Entity
     const val BLOCK_ENTITY_USER_AMOUNT = "userAmount"
@@ -263,8 +264,8 @@ object DataKeys {
 
     const val SCRIPTED_BEHAVIOURS_ARE_CUSTOM = "BehavioursAreCustom"
     const val SCRIPTED_BEHAVIOURS = "Behaviours"
-    const val SCRIPTED_DATA = "Data"
-    const val SCRIPTED_CONFIG = "Config"
+    const val SCRIPTED_DATA = "ScriptingData"
+    const val SCRIPTED_CONFIG = "ScriptingConfig"
 
     // PokemonProperties
     const val ELEMENTAL_TYPE = "ElementalType"
