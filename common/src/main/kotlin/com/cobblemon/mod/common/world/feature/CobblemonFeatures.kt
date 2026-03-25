@@ -9,6 +9,7 @@
 package com.cobblemon.mod.common.world.feature
 
 import com.cobblemon.mod.common.platform.PlatformRegistry
+import com.cobblemon.mod.common.world.feature.structure.CobblemonFeature
 import net.minecraft.core.Registry
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
@@ -30,4 +31,6 @@ object CobblemonFeatures : PlatformRegistry<Registry<Feature<*>>, ResourceKey<Re
     val BERRY_GROVE_FEATURE = CobblemonFeatures.create("berry_grove", BerryGroveFeature())
     @JvmField
     val TYPE_GEM_FEATURE = create("type_gem", TypeGemFeature())
+    @JvmField
+    val COBBLEMON_FEATURE = create("structure", CobblemonFeature())
 }
