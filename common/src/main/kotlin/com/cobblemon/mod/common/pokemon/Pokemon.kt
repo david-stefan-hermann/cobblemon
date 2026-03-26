@@ -1907,9 +1907,7 @@ open class Pokemon : ShowdownIdentifiable {
     }
 
     fun initializeMovesetWithRandomTm(moveCount: Int = MoveSet.MOVE_COUNT): Boolean {
-        if (moveCount <= 0) {
-            return false
-        }
+        val numTMMoves = moveCount.coerceIn(1, MoveSet.MOVE_COUNT)
 
         val tmMoves = form.moves.tmMoves.distinct().toMutableList()
         if (tmMoves.isEmpty()) {
@@ -1917,7 +1915,7 @@ open class Pokemon : ShowdownIdentifiable {
         }
 
         tmMoves.shuffle()
-        val count = min(moveCount, tmMoves.size)
+        val count = min(numTMMoves, tmMoves.size)
         moveSet.doWithoutEmitting {
             moveSet.clear()
             for (i in 0 until count) {
