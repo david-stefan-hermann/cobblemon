@@ -303,7 +303,6 @@ fun doAlphaEyeRendering(
         poseStack = poseStack,
         bufferSource = bufferSource
     )
-    return
     if (clientDelegate.eyeTrailPositions.isNotEmpty()) {
         for ((_, positions) in clientDelegate.eyeTrailPositions) {
             renderEyeTrail(

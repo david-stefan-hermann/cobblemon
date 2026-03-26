@@ -480,6 +480,7 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
                 }
             }
         }
+        spawnAlphaEyeParticles()
     }
 
 

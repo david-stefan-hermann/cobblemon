@@ -2613,6 +2613,8 @@
   "cobblemon.config.ui.baby_pokemon_level_duration.tooltip": "The number of levels that a Pokémon is considered a baby for the purposes of appearing smaller than usual.",
   "cobblemon.config.ui.baby_pokemon_size_multiplier": "Baby Pokémon Minimum Size",
   "cobblemon.config.ui.baby_pokemon_size_multiplier.tooltip": "The size multiplier applied to a level 1 Pokémon.",
+  "cobblemon.config.ui.minimum_riding_scale": "Minimum Pokémon Scale Modifier to Ride",
+  "cobblemon.config.ui.minimum_riding_scale.tooltip": "The scale at which a Pokémon can no longer be ridden.",
   "cobblemon.config.ui.apple_leftovers_chance": "Apple Leftovers Chance",
   "cobblemon.config.ui.apple_leftovers_chance.tooltip": "The chance to drop Leftovers when a Player eats an item that has #cobblemon:held/leaves_leftovers.",
   "cobblemon.config.ui.max_roots_in_area": "Max Roots in Area",
