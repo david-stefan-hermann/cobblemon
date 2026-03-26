@@ -1262,6 +1262,7 @@ open class PokemonEntity(
             if (seats.isEmpty()) return@ifRidingAvailableSupply false;
             if ((owner as? ServerPlayer)?.isInBattle() == true) return@ifRidingAvailableSupply false;
             if (this.owner != player && this.passengers.isEmpty()) return@ifRidingAvailableSupply false;
+            if(pokemon.effectiveScale < Cobblemon.config.minimumRidingScale) return@ifRidingAvailableSupply false;
             return@ifRidingAvailableSupply behaviour.isActive(settings, state, this);
         }
         if (pokemon.getOwnerPlayer() == player) {
@@ -1554,6 +1555,9 @@ open class PokemonEntity(
                 || stack.`is`(CobblemonItemTags.WHITELISTED_ITEMS_TO_HOLD)
 
     fun tryRidingPokemon(player: ServerPlayer): Boolean {
+        if (pokemon.effectiveScale < Cobblemon.config.minimumRidingScale) {
+            return false
+        }
         val event = RidePokemonEvent.Pre(player, this)
         CobblemonEvents.RIDE_EVENT_PRE.post(event)
         if (!event.isCanceled) {

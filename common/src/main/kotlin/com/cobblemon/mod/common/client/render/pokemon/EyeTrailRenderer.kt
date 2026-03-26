@@ -8,12 +8,24 @@
 
 package com.cobblemon.mod.common.client.render.pokemon
 
+import com.cobblemon.mod.common.client.entity.PokemonClientDelegate
 import com.cobblemon.mod.common.client.render.MatrixWrapper
+import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
+import com.cobblemon.mod.common.util.toVec3d
 import net.minecraft.client.renderer.RenderType
 import com.mojang.blaze3d.vertex.PoseStack
+import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3f
+import java.lang.Math.clamp
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.iterator
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 /**
  *
@@ -22,10 +34,10 @@ import org.joml.Vector3f
  * @author Jackson
  * @since March 21st, 2026
  */
-private const val TRAIL_MAX_WIDTH = 0.015f
-private const val TRAIL_MAX_ALPHA = 0.8f
+private const val TRAIL_MAX_WIDTH = 0.1f
+private const val TRAIL_MAX_ALPHA = 0.6f
 private val TRAIL_COLOR = Vector3f(0.7f, 0.0f, 0.0f)
-private const val TRAIL_DURATION_MS = 250 // lookback distance in ms for previous eye positions for trail rendering
+private const val TRAIL_DURATION_MS = 400 // lookback distance in ms for previous eye positions for trail rendering
 
 private val EYE_LOCATOR_NAMES = setOf(
     "eye_left", "eye_right", "eye",
@@ -63,9 +75,111 @@ fun updateEyeTrail(
     }
 }
 
+fun renderAlphaEyeBloom(
+    entity: PokemonEntity,
+    partialTicks: Float,
+    camPos: Vec3,
+    poseStack: PoseStack,
+    bufferSource: MultiBufferSource
+) {
+    val clientDelegate = entity.delegate as PokemonClientDelegate
+    if ("alpha_eyes" !in clientDelegate.currentAspects) return
+
+    val entityPos = entity.getPosition(partialTicks)
+    val locatorStates = clientDelegate.locatorStates
+
+    // Render bloom for all eye locators present on the model
+    for (locatorName in EYE_LOCATOR_NAMES) {
+        val wrapper = locatorStates[locatorName] ?: continue
+
+        // Gather the forward vector for this eye (useful for positioning the bloom and determining if we are head on with the eye)
+        val eyeForward = wrapper.matrix.transformDirection(Vector3f(0f, 0f, -1f)).toVec3d()
+
+        // Gather eye position and camera position vectors for the bloom calculation
+        val matrix = poseStack.last().pose()
+        val eyeLocalPos = wrapper.matrix.getTranslation(Vector3f()).toVec3d()
+        val eyeWorldPos = entityPos.add(eyeLocalPos)
+        val toCam = camPos.subtract(eyeWorldPos).normalize()
+        val camUp = Minecraft.getInstance().gameRenderer.mainCamera.upVector.toVec3d()
+        val camPerp = camUp.cross(toCam).normalize()
+
+        // Have the bloom shrink depending upon if you're looking at the eye from the side or behind.
+        // This article talks about how GTA5 did this for their bloom as well: https://simonschreibt.de/gat/gta-v-underestimated-glow/
+        //val radius = 0.35 * clamp((eyeForward.dot(toCam) + 1.0) * 0.5, 0.0, 1.0)
+        val offAngleMod = clamp(eyeForward.dot(toCam), 0.0, 1.0).pow(2)
+        val radius = 0.35 * offAngleMod
+        val bloomEyeDist = 0.1 * offAngleMod // Also move the bloom closer to the eye if you're looking at it from the side
+
+        // Set bloom values
+        val bloomCenter = eyeLocalPos.add(eyeForward.scale(bloomEyeDist)) // Move forward off the eyes a bit
+        val centerAlpha = 1.0f
+        val edgeAlpha = 0.0f
+        val segments = 12 // Number of triangles in our circle ring pizza of a bloom
+        val angleStep = (2.0 * Math.PI) / segments
+        val r = TRAIL_COLOR.x
+        val g = TRAIL_COLOR.y
+        val b = TRAIL_COLOR.z
+
+        // Render bloom using concentric "rings" (its all just triangle pizza in the end)
+        val rings = 6 //TODO: is this too many?
+        val consumer = bufferSource.getBuffer(RenderType.dragonRays()) // rgba flat color triangle rendering
+
+        for (ring in 0 until rings) {
+            val t0 = ring.toFloat() / rings
+            val t1 = (ring + 1).toFloat() / rings
+
+            var r0 = radius * t0
+            var r1 = radius * t1
+
+            // Quadratic falloff as the rings get farther from the center
+            val a0 = centerAlpha * sqrt(1.0f - t0)
+            val a1 = centerAlpha * sqrt(1.0f - t1)
+
+            for (i in 0 until segments) {
+                val ang0 = angleStep * i
+                val ang1 = angleStep * (i + 1)
+
+                // Just grab some noise using this method found here: https://thebookofshaders.com/11/ (I say found here but I think this is pretty standard)
+                val noise = 0.95f + 0.05f * sin(System.currentTimeMillis() * 0.003 + (ang0 * 2.0 * 432151)).toFloat()
+
+                // TODO: Reinclude when I can figure out how to not make it shite
+                val a0 = centerAlpha * (1.0f - t0).pow(2) //* noise
+                val a1 = centerAlpha * (1.0f - t1).pow(2) //* noise
+//
+//                r0 *= noise
+//                r1 *= noise
+
+                val dir0 = camPerp.scale(cos(ang0)).add(camUp.scale(sin(ang0)))
+                val dir1 = camPerp.scale(cos(ang1)).add(camUp.scale(sin(ang1)))
+
+                val p00 = bloomCenter.add(dir0.scale(r0))
+                val p01 = bloomCenter.add(dir1.scale(r0))
+                val p10 = bloomCenter.add(dir0.scale(r1))
+                val p11 = bloomCenter.add(dir1.scale(r1))
+
+                // Two triangles per quad: p00, p10, p11 and p00, p11, p01
+                consumer.addVertex(matrix, p00.x.toFloat(), p00.y.toFloat(), p00.z.toFloat())
+                    .setColor(r, g, b, a0)
+                consumer.addVertex(matrix, p10.x.toFloat(), p10.y.toFloat(), p10.z.toFloat())
+                    .setColor(r, g, b, a1)
+                consumer.addVertex(matrix, p11.x.toFloat(), p11.y.toFloat(), p11.z.toFloat())
+                    .setColor(r, g, b, a1)
+
+                consumer.addVertex(matrix, p00.x.toFloat(), p00.y.toFloat(), p00.z.toFloat())
+                    .setColor(r, g, b, a0)
+                consumer.addVertex(matrix, p11.x.toFloat(), p11.y.toFloat(), p11.z.toFloat())
+                    .setColor(r, g, b, a1)
+                consumer.addVertex(matrix, p01.x.toFloat(), p01.y.toFloat(), p01.z.toFloat())
+                    .setColor(r, g, b, a0)
+            }
+        }
+    }
+}
+
 fun renderEyeTrail(
     positions: ArrayDeque<Pair<Vec3, Long>>,
-    entityPos: Vec3,
+    partialTicks: Float,
+    entity: PokemonEntity,
     camPos: Vec3,
     poseStack: PoseStack,
     bufferSource: MultiBufferSource
@@ -73,8 +187,44 @@ fun renderEyeTrail(
     if (positions.size < 2) return
 
     val consumer = bufferSource.getBuffer(RenderType.lightning())
+    val entityPos = entity.getPosition(partialTicks)
+
     val matrix = poseStack.last().pose()
     val n = positions.size
+    val billboardWidth = 0.1
+    val eyeWorldPos = positions.last().first
+    val toCam = camPos.subtract(eyeWorldPos).normalize()
+    val camUp = Minecraft.getInstance().gameRenderer.mainCamera.upVector.toVec3d()
+    val camPerp = camUp.cross(toCam).normalize()
+    val billboardCenter = eyeWorldPos.add(toCam.scale(0.5)).subtract(entityPos)
+
+
+    // Render billboard quad eye glow
+    //val billboardWidth = 0.05
+//    val eyeCenter = positions.first().first.subtract(entityPos)
+//    val camUp = Minecraft.getInstance().gameRenderer.mainCamera.upVector.toVec3d()
+//    val toCam = camPos.subtract(eyeCenter).normalize()
+//    val camPerp = camUp.cross(toCam).normalize()
+//    val billboardCenter = eyeCenter.add(toCam.scale(0.01)) // We want to avoid z fighting with the eye plane
+
+
+
+    val topRight = billboardCenter.add(camPerp.scale(billboardWidth)).add(camUp.scale(billboardWidth))
+    val topLeft = billboardCenter.subtract(camPerp.scale(billboardWidth)).add(camUp.scale(billboardWidth))
+    val bottomRight = billboardCenter.add(camPerp.scale(billboardWidth)).subtract(camUp.scale(billboardWidth))
+    val bottomLeft = billboardCenter.subtract(camPerp.scale(billboardWidth)).subtract(camUp.scale(billboardWidth))
+
+//    consumer.addVertex(matrix, topRight.x.toFloat(), topRight.y.toFloat(), topRight.z.toFloat())
+//        .setColor(r, g, b, maxAlpha)
+//
+//    consumer.addVertex(matrix, topLeft.x.toFloat(), topLeft.y.toFloat(), topLeft.z.toFloat())
+//        .setColor(r, g, b, maxAlpha)
+//
+//    consumer.addVertex(matrix, bottomLeft.x.toFloat(), bottomLeft.y.toFloat(), bottomLeft.z.toFloat())
+//        .setColor(r, g, b, maxAlpha)
+//
+//    consumer.addVertex(matrix, bottomRight.x.toFloat(), bottomRight.y.toFloat(), bottomRight.z.toFloat())
+//        .setColor(r, g, b, maxAlpha)
 
     for (i in 0 until n - 1) {
         val curr = positions[i].first
@@ -126,5 +276,43 @@ fun renderEyeTrail(
             (localNext.y - py * wNext).toFloat(),
             (localNext.z - pz * wNext).toFloat()
         ).setColor(r, g, b, aNext)
+    }
+}
+
+
+fun doAlphaEyeRendering(
+    entity: PokemonEntity,
+    partialTicks: Float,
+    poseStack: PoseStack,
+    bufferSource: MultiBufferSource
+) {
+
+    val clientDelegate = entity.delegate as PokemonClientDelegate
+    val camPos = Minecraft.getInstance().gameRenderer.mainCamera.position
+
+    updateEyeTrail(
+        aspects = clientDelegate.currentAspects,
+        locatorStates = clientDelegate.locatorStates,
+        entityPos = entity.getPosition(partialTicks),
+        trailPositions = clientDelegate.eyeTrailPositions
+    )
+    renderAlphaEyeBloom(
+        entity = entity,
+        partialTicks = partialTicks,
+        camPos = camPos,
+        poseStack = poseStack,
+        bufferSource = bufferSource
+    )
+    if (clientDelegate.eyeTrailPositions.isNotEmpty()) {
+        for ((_, positions) in clientDelegate.eyeTrailPositions) {
+            renderEyeTrail(
+                positions = positions,
+                partialTicks = partialTicks,
+                entity = entity,
+                camPos = camPos,
+                poseStack = poseStack,
+                bufferSource = bufferSource
+            )
+        }
     }
 }

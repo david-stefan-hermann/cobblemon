@@ -255,6 +255,9 @@ class CobblemonConfig {
     @CobblemonConfigField(Category.Pokemon, lang = "baby_pokemon_size_multiplier", SERVER)
     var babyPokemonSizeMultiplier = 0.8F
 
+    @CobblemonConfigField(Category.Pokemon, lang = "minimum_riding_scale", SERVER)
+    var minimumRidingScale = 0.75F
+
     @CobblemonConfigField(Category.World, lang = "apple_leftovers_chance", SERVER)
     var appleLeftoversChance = 0.025
 

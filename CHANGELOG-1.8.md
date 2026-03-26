@@ -24,6 +24,8 @@
 - Tweaked the spawning selector interface to take a bucket function rather than a bucket directly.
 
 ### Molang & Datapacks
+- Added q.world.spawn_loot_table_items(loot_table_id, x, y, z) which spawns the items from the loot table at the position. (Use type: "minecraft:chest" for the loot table.)
+- Added q.pokemon.entity to access the entity of pokemon.
 
 ### Particles
 
