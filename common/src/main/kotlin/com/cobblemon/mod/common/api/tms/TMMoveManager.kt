@@ -46,9 +46,12 @@ class TMMoveManager(
     }
 
     fun getLearnableTMsFromPokemon(pokemon: Pokemon): Collection<ResourceLocation> {
-        return TechnicalMachines.tmMap.values
-            .filter { tm -> tm.moveName in pokemon.allAccessibleMoves }
-            .map(TechnicalMachine::id)
+        val learnableTMs = mutableSetOf<ResourceLocation>()
+        val learnableMoves = pokemon.allAccessibleMoves + pokemon.moveSet.getMoveTemplates()
+        for (move in learnableMoves) {
+            TechnicalMachines.moveToTM[move]?.id?.let(learnableTMs::add)
+        }
+        return learnableTMs
     }
 
     fun scheduleFullSyncFromStores(
@@ -77,9 +80,7 @@ class TMMoveManager(
                 var processed = 0
                 while (processed < batchSize && iterator.hasNext()) {
                     val pokemon = iterator.next()
-                    for (move in pokemon.allAccessibleMoves) {
-                        TechnicalMachines.moveToTM[move]?.id?.let { tmIds.add(it) }
-                    }
+                    tmIds.addAll(getLearnableTMsFromPokemon(pokemon))
                     processed++
                 }
 
