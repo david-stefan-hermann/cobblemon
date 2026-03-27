@@ -166,6 +166,7 @@ import net.minecraft.world.level.block.MagmaBlock
 import net.minecraft.world.level.block.SweetBerryBushBlock
 import net.minecraft.world.level.block.WitherRoseBlock
 import net.minecraft.world.phys.Vec3
+import kotlin.math.pow
 
 enum class OriginalTrainerType : StringRepresentable {
     NONE, PLAYER, NPC;
@@ -630,12 +631,16 @@ open class Pokemon : ShowdownIdentifiable {
         val config = Cobblemon.config
         val hitbox = form.hitbox
         val baseHitboxSize = max(hitbox.width, hitbox.height) * form.baseScale
-        return when {
-            baseHitboxSize < 0.5F -> config.alphaPokemonSizeSmallMultiplier
-            baseHitboxSize < 1.5F -> config.alphaPokemonSizeMediumMultiplier
-            baseHitboxSize < 10F -> config.alphaPokemonSizeLargeMultiplier
-            else -> config.alphaPokemonSizeExtraLargeMultiplier
-        }
+
+        // returns the multiplier for the alpha scale based on the hitbox size.
+        val largestSize = 5.0
+        val smallestSize = 0.25
+
+        val coercedHitboxSize = clamp(baseHitboxSize.toDouble(), smallestSize, largestSize)
+
+        val newPokemonAlphaScaleMultiplier = 1.1 + (0.8 * ( (1.0/2.0).pow(coercedHitboxSize) ))
+
+        return newPokemonAlphaScaleMultiplier.toFloat()
     }
 
     private fun setIntrinsicScale(value: Float) {

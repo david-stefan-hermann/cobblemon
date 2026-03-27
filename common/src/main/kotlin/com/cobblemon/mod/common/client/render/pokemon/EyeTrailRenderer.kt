@@ -106,12 +106,13 @@ fun renderAlphaEyeBloom(
         // Have the bloom shrink depending upon if you're looking at the eye from the side or behind.
         // This article talks about how GTA5 did this for their bloom as well: https://simonschreibt.de/gat/gta-v-underestimated-glow/
         //val radius = 0.35 * clamp((eyeForward.dot(toCam) + 1.0) * 0.5, 0.0, 1.0)
-        val offAngleMod = clamp(eyeForward.dot(toCam), 0.0, 1.0).pow(2)
-        val radius = 0.35 * offAngleMod
-        val bloomEyeDist = 0.1 * offAngleMod // Also move the bloom closer to the eye if you're looking at it from the side
+        val offAngleModQuad = clamp(eyeForward.dot(toCam) + 0.5, 0.0, 1.0).pow(2)
+        val offAngleModLinear = clamp(eyeForward.dot(toCam) + 0.5, 0.0, 1.0)
+        val radius = 0.35 * offAngleModQuad
+        val bloomEyeDist = 0.1 * offAngleModLinear // Also move the bloom closer to the eye if you're looking at it from the side
 
         // Set bloom values
-        val bloomCenter = eyeLocalPos.add(eyeForward.scale(bloomEyeDist)) // Move forward off the eyes a bit
+        val bloomCenter = eyeLocalPos.add(toCam.scale(bloomEyeDist)) // Move forward off the eyes a bit
         val centerAlpha = 1.0f
         val edgeAlpha = 0.0f
         val segments = 12 // Number of triangles in our circle ring pizza of a bloom
@@ -121,7 +122,7 @@ fun renderAlphaEyeBloom(
         val b = TRAIL_COLOR.z
 
         // Render bloom using concentric "rings" (its all just triangle pizza in the end)
-        val rings = 6 //TODO: is this too many?
+        val rings = 5 //TODO: is this too many?
         val consumer = bufferSource.getBuffer(RenderType.dragonRays()) // rgba flat color triangle rendering
 
         for (ring in 0 until rings) {
