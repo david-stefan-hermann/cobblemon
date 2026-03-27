@@ -46,8 +46,7 @@ class AlphaLevelMatchingSensor : Sensor<PokemonEntity>(20) {
             lastMatchingPlayerId = nearestPlayer.uuid
             entity.cry()
 
-            // test particles to make sure the level matching is working todo fix with wild might particles later
-            SpawnSnowstormEntityParticlePacket(cobblemonResource("shiny_ring"), entity.id, listOf("shiny_particles", "middle"))
+            SpawnSnowstormEntityParticlePacket(cobblemonResource("statup_actor"), entity.id, listOf("middle", "root"))
                 .sendToPlayersAround(entity.x, entity.y, entity.z, 64.0, world.dimension())
         }
 
