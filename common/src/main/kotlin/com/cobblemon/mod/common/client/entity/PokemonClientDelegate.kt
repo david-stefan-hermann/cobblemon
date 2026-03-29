@@ -14,6 +14,7 @@ import com.bedrockk.molang.runtime.value.StringValue
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonNetwork
 import com.cobblemon.mod.common.CobblemonSounds
+import com.cobblemon.mod.common.OrientationControllable
 import com.cobblemon.mod.common.api.entity.PokemonSideDelegate
 import com.cobblemon.mod.common.api.molang.MoLangFunctions.addFunctions
 import com.cobblemon.mod.common.api.pokeball.PokeBalls
@@ -531,29 +532,31 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
     }
 
     fun getSeatLocator(passenger: Entity): String {
-        val seatIndex = this.getEntity().occupiedSeats.indexOf(passenger)
-        if (seatIndex == -1) throw IllegalArgumentException("Entity is not currently riding a seat")
-        return this.getEntity().rideProp.seats[seatIndex].locator ?: "seat_${seatIndex + 1}"
+        val seat = this.getEntity().occupiedSeats.entries
+            .firstOrNull { it.value == passenger }?.key
+            ?: throw IllegalArgumentException("Entity is not currently riding a seat")
+        return seat.locator
     }
 
     override fun positionRider(passenger: Entity, positionUpdater: MoveFunction) {
         val locatorName = getSeatLocator(passenger)
         val locator = this.locatorStates[locatorName] ?: return
 
-        val offset = locator.matrix.getTranslation(Vector3f())
-            .sub(
-                Vector3f(
-                    0f,
-                    passenger.eyeHeight - (passenger.bbHeight / 2),
-                    0f
-                )
-            ) // This is close but not exact
+        val seatOffset = locator.matrix.getTranslation(Vector3f())
+
+        val orientable = this.getEntity() as? OrientationControllable
+        val controller = orientable?.orientationController
+        if (controller != null && controller.isActive() && controller.orientation != null) {
+            controller.orientation!!.transform(seatOffset)
+        }
+
+        seatOffset.sub(Vector3f(0f, passenger.eyeHeight - (passenger.bbHeight / 2), 0f))
 
         positionUpdater.accept(
             passenger,
-            this.getEntity().x + offset.x,
-            this.getEntity().y + offset.y,
-            this.getEntity().z + offset.z
+            this.getEntity().x + seatOffset.x,
+            this.getEntity().y + seatOffset.y,
+            this.getEntity().z + seatOffset.z
         )
     }
 }

@@ -288,7 +288,9 @@ open class PokemonEntity(
     val friendship: Int
         get() = entityData.get(FRIENDSHIP)
     val seats: List<Seat>
-        get() = form.riding.seats
+        get() = form.riding.seats.filter { seat ->
+            seat.condition?.let { runtime.resolveBoolean(it) } ?: true
+        }
     val rideProp: RidingProperties
         get() = form.riding
     var shownItem: ItemStack
@@ -339,7 +341,7 @@ open class PokemonEntity(
         if (pokemon.form.riding.behaviours != null) {
             ridingController = RidingController(this, pokemon.form.riding.behaviours!!)
         }
-        occupiedSeats = arrayOfNulls(seats.size)
+        occupiedSeats.clear()
     }
 
     /**
@@ -419,7 +421,7 @@ open class PokemonEntity(
 
     var tickSpawned = 0
 
-    var occupiedSeats = arrayOfNulls<Entity>(seats.size)
+    var occupiedSeats = mutableMapOf<Seat, Entity>()
 
     init {
         delegate.initialize(this)
@@ -538,10 +540,8 @@ open class PokemonEntity(
     }
 
     public override fun removePassenger(passenger: Entity) {
-        val passengerIndex = occupiedSeats.indexOf(passenger)
-        if (passengerIndex != -1) {
-            occupiedSeats[passengerIndex] = null
-        }
+        occupiedSeats.entries.removeIf { it.value == passenger }
+        (delegate as? PokemonServerDelegate)?.passengerOffsets?.remove(passenger.id)
         if (level().isClientSide) {
             MountedCameraTypeHandler.handleDismount(passenger, this)
         }
@@ -557,6 +557,22 @@ open class PokemonEntity(
             }
         }
     }
+
+    /**
+     * Actively check if all occupied seats are still valid.
+     */
+    fun recheckSeatConditions() {
+        val effectiveSeats = seats
+        occupiedSeats.entries
+            .filter { it.key !in effectiveSeats }
+            .forEach { it.value.stopRiding() }
+    }
+
+    fun getSeatForPassenger(passenger: Entity): Seat? {
+        return occupiedSeats.entries.firstOrNull { it.value == passenger }?.key
+    }
+
+
 
     override fun thunderHit(level: ServerLevel, lightning: LightningBolt) {
         // Ground types shouldn't take lightning damage
@@ -635,6 +651,7 @@ open class PokemonEntity(
         flyDistO = flyDist
 
         ridingController?.tick()
+        recheckSeatConditions()
 
         if (isBattling) {
             // Deploy a platform if a non-wild Pokemon is touching water but not underwater.
@@ -2215,8 +2232,11 @@ open class PokemonEntity(
         rideStatOverrides[style]!![stat] = value
     }
 
+    /**
+     * Check for a seat in [seats] that is not already in [occupiedSeats]
+     */
     override fun canAddPassenger(passenger: Entity): Boolean {
-        return passengers.size < seats.size
+        return seats.any { it !in occupiedSeats }
     }
 
     public override fun addPassenger(passenger: Entity) {
@@ -2241,9 +2261,9 @@ open class PokemonEntity(
         } else if (level().isClientSide) {
             MountedCameraTypeHandler.handleMount(passenger, this)
         }
-        val passengerIndex = occupiedSeats.indexOfFirst { it == null }
-        if (passengerIndex != -1) {
-            occupiedSeats[passengerIndex] = passenger
+        val availableSeat = seats.firstOrNull { it !in occupiedSeats }
+        if (availableSeat != null) {
+            occupiedSeats[availableSeat] = passenger
         }
         super.addPassenger(passenger)
         if (passengers.size == 1) {

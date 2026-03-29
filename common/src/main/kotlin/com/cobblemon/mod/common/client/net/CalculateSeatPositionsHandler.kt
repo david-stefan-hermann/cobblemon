@@ -24,6 +24,7 @@ import net.minecraft.world.phys.Vec3
 object CalculateSeatPositionsHandler : ClientNetworkPacketHandler<CalculateSeatPositionsPacket> {
     private const val FORMAT = "%.2f"
     private const val SEAT_PREFIX = "seat_"
+    private const val ALPHA_SEAT_PREFIX = "alpha_seat_"
     private const val SIMULATION_PERIOD_TICKS = 15 * 20F
 
     class SeatRanges(
@@ -60,7 +61,9 @@ object CalculateSeatPositionsHandler : ClientNetworkPacketHandler<CalculateSeatP
             model.applyAnimations(null, state, 0F, 0F, 0F, 0F, 0F)
             model.updateLocators(null, state)
 
-            for ((key, locatorState) in state.locatorStates.entries.filter { it.key.startsWith(SEAT_PREFIX) }.sortedBy { it.key }) {
+            for ((key, locatorState) in state.locatorStates.entries
+                .filter { it.key.startsWith(SEAT_PREFIX) || it.key.startsWith(ALPHA_SEAT_PREFIX)}
+                .sortedBy { it.key }) {
                 val index = key.replace(SEAT_PREFIX, "").toInt()
                 val seatPosition = locatorState.transformPosition(Vec3.ZERO)
                 val seatRanges = seatData.getOrPut(index, ::SeatRanges)
