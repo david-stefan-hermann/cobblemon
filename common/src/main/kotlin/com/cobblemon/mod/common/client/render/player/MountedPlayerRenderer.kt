@@ -61,8 +61,7 @@ object MountedPlayerRenderer {
         root.yRot = 0F
         root.zRot = 0F
 
-        val seatIndex = pokemonEntity.passengers.indexOf(player).takeIf { it != -1 && it < pokemonEntity.seats.size } ?: return
-        val seat = pokemonEntity.seats[seatIndex]
+        val seat = pokemonEntity.getSeatForPassenger(player) ?: return
         val animations = seat.poseAnimations
             ?.firstOrNull { it.poseTypes.isEmpty() || it.poseTypes.contains(pokemonEntity.getCurrentPoseType()) }?.animations
             ?: defaultAnimations

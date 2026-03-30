@@ -43,6 +43,7 @@ import com.cobblemon.mod.common.util.asIdentifierDefaultingNamespace
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.resolve
 import com.mojang.blaze3d.vertex.PoseStack
+import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
 import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.resources.ResourceLocation
@@ -53,6 +54,7 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.Entity.MoveFunction
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.phys.Vec3
+import org.joml.AxisAngle4f
 import org.joml.Vector3f
 
 class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
@@ -542,21 +544,25 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
         val locatorName = getSeatLocator(passenger)
         val locator = this.locatorStates[locatorName] ?: return
 
-        val seatOffset = locator.matrix.getTranslation(Vector3f())
+        val locatorOffset = locator.matrix.getTranslation(Vector3f())
 
-        val orientable = this.getEntity() as? OrientationControllable
-        val controller = orientable?.orientationController
-        if (controller != null && controller.isActive() && controller.orientation != null) {
-            controller.orientation!!.transform(seatOffset)
-        }
+        // Get the locator's "up" direction
+        val rotation = org.joml.Quaternionf(locator.matrix.getRotation(AxisAngle4f()))
+        val localUp = Vector3f(0f, 1f, 0f)
+        rotation.transform(localUp)
 
-        seatOffset.sub(Vector3f(0f, passenger.eyeHeight - (passenger.bbHeight / 2), 0f))
+        // Push the position along the locator's up by half bbHeight
+        // This puts the bounding box center at the visual rider center
+        locatorOffset.add(localUp.mul((passenger.bbHeight / 2f) - 0.35f))
+
+        // Minecraft positions entities at feet, so subtract half bbHeight in world Y
+        locatorOffset.sub(Vector3f(0f, passenger.bbHeight / 2f, 0f))
 
         positionUpdater.accept(
             passenger,
-            this.getEntity().x + seatOffset.x,
-            this.getEntity().y + seatOffset.y,
-            this.getEntity().z + seatOffset.z
+            this.getEntity().x + locatorOffset.x,
+            this.getEntity().y + locatorOffset.y,
+            this.getEntity().z + locatorOffset.z
         )
     }
 }
