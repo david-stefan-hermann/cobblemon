@@ -12,10 +12,22 @@
 - Added /givetm Command
 - Added Move Dex to Pokedex
 - Added Disk Rack for storing disks and being an audio sequencer for Noteblocks
+- Added scaling to "baby" pokemon (smaller at level 1 -> normal sized at level 10)
+- Added conditional seats for riding. Seats can be gated by molang such as "is_alpha".
+- Added Alpha Pokemon
+    - Added alpha scaling (alphas are larger than thier normal counterparts)
+    - Alphas spawn with 2 random TM moves from their learnset
+    - Added alpha level matching and stat boost
+    - Added pitch-down and reverb to alpha cries
+    - Added alpha pokemon bait effect
+    - Added alpha eye rendering including: eye overlay, bloom, eye trail, and particles.
 
 
 ### Changes
 - Data Monitor can accept Disks (TMs, Music Disks, Upgrade, Dubious Disk, etc) to change look
+- Rider positioning is now client-driven (Remove poseOffsets and offset per seat/pose) in favor of sending real time passenger position.
+- Cleaned up seat data. Removed all now unused fields from seats in all species files. Also made locator seat names explicit in species file (however, this doesn't break legacy format)
+- Marks can now provide aspects.
 
 ### Fixes
 - Fixed rare Pokémon being far too likely to spawn multiple times in a single spawn cycle. The dev told me that the exact bug is too complicated to explain.
