@@ -44,7 +44,7 @@ class Mark(
                 buffer.readNullable { buffer.readString() },
                 buffer.readFloat(),
                 buffer.readNullable { buffer.readInt() },
-                buffer.readList { buffer.readString() }
+                buffer.readNullable { buffer.readList { buffer.readString() } },
             )
         }
     }
@@ -85,6 +85,6 @@ class Mark(
         buffer.writeNullable(group) { _, v -> buffer.writeString(v) }
         buffer.writeFloat(chance)
         buffer.writeNullable(indexNumber) { _, v -> buffer.writeInt(v) }
-        buffer.writeCollection(aspects ?: emptyList()) { _, v -> buffer.writeString(v) }
+        buffer.writeNullable(aspects) { _, v -> buffer.writeCollection(v) { _, aspect -> buffer.writeString(aspect) } }
     }
 }
