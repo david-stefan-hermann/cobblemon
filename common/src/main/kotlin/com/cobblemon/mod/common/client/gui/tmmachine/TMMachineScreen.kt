@@ -77,7 +77,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         const val CRAFT_TICKS = 10 // Length for craft completion animation
         const val RESET_DISC_TICKS = 4 // Length for disc reset animation
 
-        const val SCREEN_SAVER_TIMEOUT_TICKS = 200 // 10 Seconds
+        const val SCREEN_SAVER_TIMEOUT_TICKS = 1200
         const val SCREEN_SAVER_WIDTH = 118
         const val SCREEN_SAVER_HEIGHT = 110
 
@@ -893,6 +893,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     }
 
     override fun mouseMoved(mouseX: Double, mouseY: Double) {
+        resetScreenSaver()
         ticksElapsed = 0
         super.mouseMoved(mouseX, mouseY)
     }
@@ -912,6 +913,12 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     override fun mouseScrolled(mouseX: Double, mouseY: Double, scrollX: Double, scrollY: Double): Boolean {
         if (resetScreenSaver()) return false
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY)
+    }
+
+    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, dragX: Double, dragY: Double): Boolean {
+        if (resetScreenSaver()) return false
+        ticksElapsed = 0
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
