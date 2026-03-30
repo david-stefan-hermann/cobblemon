@@ -122,7 +122,9 @@ class SearchFilter(val pokedexManager: AbstractPokedexManager, val searchString:
 
         form.moves.tmMoves.forEach { move ->
             val tmId = TechnicalMachines.moveToTM[move]?.id
-            val discovered = tmId == null || tmId in learnedTMs
+            val discovered = tmId == null
+                || tmId in learnedTMs
+                || TechnicalMachines.tmMap[tmId]?.isPassivelyObtained() == true
             if (discovered && matches(move)) return true
         }
 

@@ -698,7 +698,11 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             val key = move.name
             if (!entries.containsKey(key)) {
                 val tmId = TechnicalMachines.moveToTM[move]?.id
-                val tmUnlocked = tmId != null && tmId in learnedTMs
+                val tmUnlocked = tmId != null && (
+                    unlockAllMoveDexMovesByDefault
+                    || tmId in learnedTMs
+                    || TechnicalMachines.tmMap[tmId]?.isPassivelyObtained() == true
+                )
                 val resolvedTmLocked = if (source == LearnsetSource.TM) tmLocked else false
                 entries[key] = LearnsetMoveEntry(move, source, level, resolvedTmLocked, isDiscovered, tmId, tmUnlocked)
             }
@@ -714,7 +718,9 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         form.moves.tmMoves.sortedBy { it.displayName.string }.forEach { move ->
             val tmLocked = if (unlockAllMoveDexMovesByDefault) false else {
                 val tmId = TechnicalMachines.moveToTM[move]?.id
-                tmId != null && tmId !in learnedTMs
+                tmId != null
+                    && tmId !in learnedTMs
+                    && TechnicalMachines.tmMap[tmId]?.isPassivelyObtained() != true
             }
             addEntry(move, LearnsetSource.TM, tmLocked = tmLocked, isDiscovered = !tmLocked)
         }

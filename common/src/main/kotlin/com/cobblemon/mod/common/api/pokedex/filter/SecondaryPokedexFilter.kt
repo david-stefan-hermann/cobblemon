@@ -78,7 +78,8 @@ class SecondaryPokedexFilter(
         form.moves.levelUpMoves.forEach { (level, moves) ->
             for (move in moves) {
                 val tmId = TechnicalMachines.moveToTM[move]?.id ?: continue
-                if (tmId !in learnedTMs && !isLevelUpDiscovered(level)) {
+                val tmUnlocked = tmId in learnedTMs || TechnicalMachines.tmMap[tmId]?.isPassivelyObtained() == true
+                if (!tmUnlocked && !isLevelUpDiscovered(level)) {
                     return true
                 }
             }
