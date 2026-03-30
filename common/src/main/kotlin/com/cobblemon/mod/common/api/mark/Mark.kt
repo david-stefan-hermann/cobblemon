@@ -28,7 +28,7 @@ class Mark(
     val group: String?,
     val chance: Float = 0F,
     val indexNumber: Int?,
-    val aspects: List<String> = emptyList()
+    val aspects: List<String>?
 ): StringRepresentable {
 
     companion object {
@@ -85,6 +85,6 @@ class Mark(
         buffer.writeNullable(group) { _, v -> buffer.writeString(v) }
         buffer.writeFloat(chance)
         buffer.writeNullable(indexNumber) { _, v -> buffer.writeInt(v) }
-        buffer.writeCollection(aspects) { _, v -> buffer.writeString(v) }
+        buffer.writeCollection(aspects ?: emptyList()) { _, v -> buffer.writeString(v) }
     }
 }
