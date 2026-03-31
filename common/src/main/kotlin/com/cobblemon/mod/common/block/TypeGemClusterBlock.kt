@@ -30,7 +30,6 @@ import net.minecraft.world.item.enchantment.Enchantments
 import net.minecraft.world.item.enchantment.ItemEnchantments
 import net.minecraft.world.level.LevelAccessor
 import net.minecraft.world.level.LevelReader
-import net.minecraft.world.level.block.AirBlock
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.DirectionalBlock
@@ -96,11 +95,13 @@ class TypeGemClusterBlock(
         val blockBelow = world.getBlockState(pos).block
         val shouldGrow = blockBelow is TypeGemCoreBlock
 
-        return defaultBlockState()
+        val placedState = defaultBlockState()
                 .setValue(FACING, facing)
                 .setValue(SHOULD_GROW, shouldGrow)
                 .setValue(STAGE, 0)
                 .setValue(STUNTED, false)
+
+        return if (placedState.canSurvive(world, context.clickedPos)) placedState else null
     }
 
     override fun isRandomlyTicking(state: BlockState): Boolean = state.getValue(SHOULD_GROW)
@@ -270,10 +271,28 @@ class TypeGemClusterBlock(
     }
 
     override fun canSurvive(state: BlockState, level: LevelReader, pos: BlockPos): Boolean {
-        val supportPos = pos.relative(state.getValue(FACING).opposite)
-        val supportBlock = level.getBlockState(supportPos).block
-        return supportBlock !is AirBlock
+        val facing = state.getValue(FACING)
+        val supportPos = pos.relative(facing.opposite)
+        val supportState = level.getBlockState(supportPos)
+        val supportBlock = supportState.block
+        return supportState.isFaceSturdy(level, supportPos, facing) &&
+            supportState.isCollisionShapeFullBlock(level, supportPos) &&
+            supportBlock !is TypeGemClusterBlock
     }
+
+    override fun propagatesSkylightDown(
+        state: BlockState,
+        level: net.minecraft.world.level.BlockGetter,
+        pos: BlockPos
+    ): Boolean = true
+
+    override fun getShadeBrightness(
+        state: BlockState,
+        level: net.minecraft.world.level.BlockGetter,
+        pos: BlockPos
+    ): Float = 1.0F
+
+    override fun useShapeForLightOcclusion(state: BlockState): Boolean = false
 
     override fun codec(): MapCodec<out DirectionalBlock> = CODEC
 
