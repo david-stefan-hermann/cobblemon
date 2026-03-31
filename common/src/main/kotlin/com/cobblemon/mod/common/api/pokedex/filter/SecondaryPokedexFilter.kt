@@ -8,7 +8,6 @@
 
 package com.cobblemon.mod.common.api.pokedex.filter
 
-import com.cobblemon.mod.common.api.moves.MoveTemplate
 import com.cobblemon.mod.common.api.pokedex.AbstractPokedexManager
 import com.cobblemon.mod.common.api.pokedex.PokedexEntryProgress
 import com.cobblemon.mod.common.api.pokedex.entry.PokedexEntry
@@ -65,23 +64,22 @@ class SecondaryPokedexFilter(
         form: FormData,
         highestLevel: Int
     ): Boolean {
-        val evolutionMoveLevels = buildEvolutionMoveLevelIndex(form)
+        val learnedTMs = CobblemonClient.clientTMMoveData.learnedTMs
+        val highestEvolutionLevel = collectEvolutionForms(form).maxOfOrNull { evolutionForm ->
+            val speciesRecord = pokedexManager.getSpeciesRecord(evolutionForm.species.resourceIdentifier)
+            speciesRecord?.getFormRecord(evolutionForm.name)?.highestLevel ?: speciesRecord?.highestLevel ?: -1
+        } ?: -1
 
-        fun isLevelUpDiscovered(move: MoveTemplate, level: Int): Boolean {
+        fun isLevelUpDiscovered(level: Int): Boolean {
             if (highestLevel >= level) return true
-
-            for ((evolutionSpeciesId, moveLevels) in evolutionMoveLevels) {
-                val evolutionLevel = moveLevels[move.name] ?: continue
-                val evolutionHighest = pokedexManager.getSpeciesRecord(evolutionSpeciesId)?.highestLevel ?: -1
-                if (evolutionHighest >= evolutionLevel) return true
-            }
-
-            return false
+            return highestEvolutionLevel >= level
         }
 
         form.moves.levelUpMoves.forEach { (level, moves) ->
             for (move in moves) {
-                if (TechnicalMachines.moveToTM[move] != null && !isLevelUpDiscovered(move, level)) {
+                val tmId = TechnicalMachines.moveToTM[move]?.id ?: continue
+                val tmUnlocked = tmId in learnedTMs || TechnicalMachines.tmMap[tmId]?.isPassivelyObtained() == true
+                if (!tmUnlocked && !isLevelUpDiscovered(level)) {
                     return true
                 }
             }
@@ -90,6 +88,7 @@ class SecondaryPokedexFilter(
         return false
     }
 
+    // todo remove this since it isn't needed anymore
     private fun buildEvolutionMoveLevelIndex(form: FormData): Map<ResourceLocation, Map<String, Int>> {
         val evolutionForms = collectEvolutionForms(form)
         val levelsBySpecies = mutableMapOf<ResourceLocation, MutableMap<String, Int>>()

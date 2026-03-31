@@ -46,12 +46,19 @@ class TMMoveManager(
     }
 
     fun getLearnableTMsFromPokemon(pokemon: Pokemon): Collection<ResourceLocation> {
-        val learnableTMs = mutableSetOf<ResourceLocation>()
-        val learnableMoves = pokemon.allAccessibleMoves + pokemon.moveSet.getMoveTemplates()
-        for (move in learnableMoves) {
-            TechnicalMachines.moveToTM[move]?.id?.let(learnableTMs::add)
+        val learnableMoves = pokemon.allAccessibleMoves.toMutableSet()
+        learnableMoves.addAll(pokemon.moveSet.map { it.template })
+
+        var preEvolution = pokemon.preEvolution
+        while (preEvolution != null) {
+            learnableMoves.addAll(preEvolution.form.moves.getLevelUpMovesUpTo(pokemon.level))
+            learnableMoves.addAll(preEvolution.form.moves.evolutionMoves)
+            preEvolution = preEvolution.form.preEvolution
         }
-        return learnableTMs
+
+        return TechnicalMachines.tmMap.values
+            .filter { tm -> tm.moveName in learnableMoves }
+            .map(TechnicalMachine::id)
     }
 
     fun scheduleFullSyncFromStores(
