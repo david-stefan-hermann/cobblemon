@@ -8,7 +8,7 @@
 
 package com.cobblemon.mod.common.block
 
-import com.cobblemon.mod.common.CobblemonItems
+import com.cobblemon.mod.common.CobblemonBlocks
 import com.cobblemon.mod.common.api.tags.CobblemonBlockTags
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
@@ -20,14 +20,10 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.util.RandomSource
 import net.minecraft.world.item.BlockItem
-import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.BlockItemStateProperties
 import net.minecraft.world.item.component.CustomModelData
 import net.minecraft.world.item.context.BlockPlaceContext
-import net.minecraft.world.item.enchantment.Enchantments
-import net.minecraft.world.item.enchantment.ItemEnchantments
 import net.minecraft.world.level.LevelAccessor
 import net.minecraft.world.level.LevelReader
 import net.minecraft.world.level.block.AirBlock
@@ -38,22 +34,19 @@ import net.minecraft.world.level.block.Mirror
 import net.minecraft.world.level.block.Rotation
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.StateDefinition
+import net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING
 import net.minecraft.world.level.block.state.properties.BooleanProperty
 import net.minecraft.world.level.block.state.properties.DirectionProperty
 import net.minecraft.world.level.block.state.properties.IntegerProperty
 import net.minecraft.world.level.material.PushReaction
-import net.minecraft.world.level.storage.loot.LootContext
 import net.minecraft.world.level.storage.loot.LootParams
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams
 import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
-import javax.swing.text.html.HTML.Attribute.SHAPES
-import kotlin.io.path.Path
 
 class TypeGemClusterBlock(
-        settings: Properties,
-        val nextStage: Block,
-        val dropItemId: ResourceLocation
+    settings: Properties,
+    val nextStage: Block,
+    val dropItemId: ResourceLocation
 ) : DirectionalBlock(settings.pushReaction(PushReaction.DESTROY)) {
 
     companion object {
@@ -82,10 +75,10 @@ class TypeGemClusterBlock(
 
     init {
         registerDefaultState(stateDefinition.any()
-                .setValue(FACING, Direction.UP)
-                .setValue(SHOULD_GROW, true)
-                .setValue(STAGE, 0)
-                .setValue(STUNTED, false)
+            .setValue(FACING, Direction.UP)
+            .setValue(SHOULD_GROW, true)
+            .setValue(STAGE, 0)
+            .setValue(STUNTED, false)
         )
     }
 
@@ -97,10 +90,10 @@ class TypeGemClusterBlock(
         val shouldGrow = blockBelow is TypeGemCoreBlock
 
         return defaultBlockState()
-                .setValue(FACING, facing)
-                .setValue(SHOULD_GROW, shouldGrow)
-                .setValue(STAGE, 0)
-                .setValue(STUNTED, false)
+            .setValue(FACING, facing)
+            .setValue(SHOULD_GROW, shouldGrow)
+            .setValue(STAGE, 0)
+            .setValue(STUNTED, false)
     }
 
     override fun isRandomlyTicking(state: BlockState): Boolean = state.getValue(SHOULD_GROW)
@@ -125,19 +118,9 @@ class TypeGemClusterBlock(
         val facing = state.getValue(FACING)
 
         if (isStunted) {
-            // println("[TypeGemClusterBlock] Cluster at $pos is STUNTED at STAGE_3. Finalizing growth.")
-            level.setBlock(pos, state.setValue(SHOULD_GROW, false), Block.UPDATE_ALL)
+            level.setBlock(pos, state.setValue(SHOULD_GROW, false), UPDATE_ALL)
             return
         }
-
-        // Log type of cluster based on nextStage
-        val clusterType = level.registryAccess()
-                .registryOrThrow(BuiltInRegistries.BLOCK.key())
-                .getKey(nextStage)
-                .toString()
-
-        // println("[TypeGemClusterBlock] Attempting to grow into TypeGemBlock at $pos")
-        // println("[TypeGemClusterBlock] Cluster type: $clusterType")
 
         // Check neighboring gem blocks
         val hasConflict = Direction.entries
@@ -145,20 +128,16 @@ class TypeGemClusterBlock(
                 .any { dir ->
                     val neighborPos = pos.relative(dir)
                     val neighborState = level.getBlockState(neighborPos)
-                    val neighborBlockId = BuiltInRegistries.BLOCK.getKey(neighborState.block)
-                    // println("[TypeGemClusterBlock] Neighbor at $dir -> $neighborBlockId")
                     isGem(neighborState)
                 }
 
         if (hasConflict) {
-            // println("[TypeGemClusterBlock] Found nearby TypeGemBlock(s). Stunting cluster at $pos.")
             level.setBlock(
-                    pos,
-                    state.setValue(STUNTED, true).setValue(SHOULD_GROW, false),
-                    Block.UPDATE_ALL
+                pos,
+                state.setValue(STUNTED, true).setValue(SHOULD_GROW, false),
+                UPDATE_ALL
             )
         } else {
-            // println("[TypeGemClusterBlock] No conflicts. Converting cluster to TypeGemBlock.")
             var nextState = nextStage.defaultBlockState()
             if (nextState.hasProperty(FACING)) {
                 nextState = nextState.setValue(FACING, facing)
@@ -167,7 +146,6 @@ class TypeGemClusterBlock(
             attachDecorativeClusters(level, pos, random)
         }
     }
-
 
     private fun isGem(state: BlockState): Boolean {
         return state.`is`(CobblemonBlockTags.TYPE_GEM_BLOCKS)
@@ -199,7 +177,7 @@ class TypeGemClusterBlock(
                 .setValue(SHOULD_GROW, false) // so we can reduce lag... hopefully
                 .setValue(STUNTED, false)
 
-            level.setBlock(clusterPos, clusterState, Block.UPDATE_ALL)
+            level.setBlock(clusterPos, clusterState, UPDATE_ALL)
         }
     }
 
@@ -272,7 +250,7 @@ class TypeGemClusterBlock(
     override fun canSurvive(state: BlockState, level: LevelReader, pos: BlockPos): Boolean {
         val supportPos = pos.relative(state.getValue(FACING).opposite)
         val supportBlock = level.getBlockState(supportPos).block
-        return supportBlock !is AirBlock
+        return CobblemonBlocks.typeGemBlocks().containsValue(supportBlock) || (supportBlock == CobblemonBlocks.TYPE_GEM_CORE)
     }
 
     override fun codec(): MapCodec<out DirectionalBlock> = CODEC
