@@ -8,7 +8,7 @@
 
 package com.cobblemon.mod.common.block
 
-import com.cobblemon.mod.common.CobblemonItems
+import com.cobblemon.mod.common.CobblemonBlocks
 import com.cobblemon.mod.common.api.tags.CobblemonBlockTags
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
@@ -20,16 +20,13 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.util.RandomSource
 import net.minecraft.world.item.BlockItem
-import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.BlockItemStateProperties
 import net.minecraft.world.item.component.CustomModelData
 import net.minecraft.world.item.context.BlockPlaceContext
-import net.minecraft.world.item.enchantment.Enchantments
-import net.minecraft.world.item.enchantment.ItemEnchantments
 import net.minecraft.world.level.LevelAccessor
 import net.minecraft.world.level.LevelReader
+import net.minecraft.world.level.block.AirBlock
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.DirectionalBlock
@@ -37,22 +34,19 @@ import net.minecraft.world.level.block.Mirror
 import net.minecraft.world.level.block.Rotation
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.StateDefinition
+import net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING
 import net.minecraft.world.level.block.state.properties.BooleanProperty
 import net.minecraft.world.level.block.state.properties.DirectionProperty
 import net.minecraft.world.level.block.state.properties.IntegerProperty
 import net.minecraft.world.level.material.PushReaction
-import net.minecraft.world.level.storage.loot.LootContext
 import net.minecraft.world.level.storage.loot.LootParams
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams
 import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
-import javax.swing.text.html.HTML.Attribute.SHAPES
-import kotlin.io.path.Path
 
 class TypeGemClusterBlock(
-        settings: Properties,
-        val nextStage: Block,
-        val dropItemId: ResourceLocation
+    settings: Properties,
+    val nextStage: Block,
+    val dropItemId: ResourceLocation
 ) : DirectionalBlock(settings.pushReaction(PushReaction.DESTROY)) {
 
     companion object {
@@ -81,10 +75,10 @@ class TypeGemClusterBlock(
 
     init {
         registerDefaultState(stateDefinition.any()
-                .setValue(FACING, Direction.UP)
-                .setValue(SHOULD_GROW, true)
-                .setValue(STAGE, 0)
-                .setValue(STUNTED, false)
+            .setValue(FACING, Direction.UP)
+            .setValue(SHOULD_GROW, true)
+            .setValue(STAGE, 0)
+            .setValue(STUNTED, false)
         )
     }
 
@@ -95,13 +89,11 @@ class TypeGemClusterBlock(
         val blockBelow = world.getBlockState(pos).block
         val shouldGrow = blockBelow is TypeGemCoreBlock
 
-        val placedState = defaultBlockState()
-                .setValue(FACING, facing)
-                .setValue(SHOULD_GROW, shouldGrow)
-                .setValue(STAGE, 0)
-                .setValue(STUNTED, false)
-
-        return if (placedState.canSurvive(world, context.clickedPos)) placedState else null
+        return defaultBlockState()
+            .setValue(FACING, facing)
+            .setValue(SHOULD_GROW, shouldGrow)
+            .setValue(STAGE, 0)
+            .setValue(STUNTED, false)
     }
 
     override fun isRandomlyTicking(state: BlockState): Boolean = state.getValue(SHOULD_GROW)
@@ -126,19 +118,9 @@ class TypeGemClusterBlock(
         val facing = state.getValue(FACING)
 
         if (isStunted) {
-            // println("[TypeGemClusterBlock] Cluster at $pos is STUNTED at STAGE_3. Finalizing growth.")
-            level.setBlock(pos, state.setValue(SHOULD_GROW, false), Block.UPDATE_ALL)
+            level.setBlock(pos, state.setValue(SHOULD_GROW, false), UPDATE_ALL)
             return
         }
-
-        // Log type of cluster based on nextStage
-        val clusterType = level.registryAccess()
-                .registryOrThrow(BuiltInRegistries.BLOCK.key())
-                .getKey(nextStage)
-                .toString()
-
-        // println("[TypeGemClusterBlock] Attempting to grow into TypeGemBlock at $pos")
-        // println("[TypeGemClusterBlock] Cluster type: $clusterType")
 
         // Check neighboring gem blocks
         val hasConflict = Direction.entries
@@ -146,20 +128,16 @@ class TypeGemClusterBlock(
                 .any { dir ->
                     val neighborPos = pos.relative(dir)
                     val neighborState = level.getBlockState(neighborPos)
-                    val neighborBlockId = BuiltInRegistries.BLOCK.getKey(neighborState.block)
-                    // println("[TypeGemClusterBlock] Neighbor at $dir -> $neighborBlockId")
                     isGem(neighborState)
                 }
 
         if (hasConflict) {
-            // println("[TypeGemClusterBlock] Found nearby TypeGemBlock(s). Stunting cluster at $pos.")
             level.setBlock(
-                    pos,
-                    state.setValue(STUNTED, true).setValue(SHOULD_GROW, false),
-                    Block.UPDATE_ALL
+                pos,
+                state.setValue(STUNTED, true).setValue(SHOULD_GROW, false),
+                UPDATE_ALL
             )
         } else {
-            // println("[TypeGemClusterBlock] No conflicts. Converting cluster to TypeGemBlock.")
             var nextState = nextStage.defaultBlockState()
             if (nextState.hasProperty(FACING)) {
                 nextState = nextState.setValue(FACING, facing)
@@ -168,7 +146,6 @@ class TypeGemClusterBlock(
             attachDecorativeClusters(level, pos, random)
         }
     }
-
 
     private fun isGem(state: BlockState): Boolean {
         return state.`is`(CobblemonBlockTags.TYPE_GEM_BLOCKS)
@@ -200,7 +177,7 @@ class TypeGemClusterBlock(
                 .setValue(SHOULD_GROW, false) // so we can reduce lag... hopefully
                 .setValue(STUNTED, false)
 
-            level.setBlock(clusterPos, clusterState, Block.UPDATE_ALL)
+            level.setBlock(clusterPos, clusterState, UPDATE_ALL)
         }
     }
 
@@ -237,20 +214,20 @@ class TypeGemClusterBlock(
         val facing = state.getValue(FACING)
 
         val (min, max) = when (stage) {
-            0 -> 4.5 to 7.0   // type_gem_bud_small_* (7px wide, 7px protrusion)
-            1 -> 2.5 to 9.0   // type_gem_bud_medium_* (11px wide, 9px protrusion)
-            2 -> 1.0 to 13.0  // type_gem_bud_large_* (14px wide, 13px protrusion)
-            3 -> 0.0 to 16.0  // Fully grown cluster size.
+            0 -> 5.0 to 11.0
+            1 -> 4.0 to 12.0
+            2 -> 3.0 to 13.0
+            3 -> 2.0 to 14.0
             else -> return Shapes.empty()
         }
 
         return when (facing) {
-            Direction.UP    -> Shapes.box(min / 16.0, 0.0, min / 16.0, (16 - min) / 16.0, max / 16.0, (16 - min) / 16.0)
-            Direction.DOWN  -> Shapes.box(min / 16.0, (16 - max) / 16.0, min / 16.0, (16 - min) / 16.0, 1.0, (16 - min) / 16.0)
-            Direction.NORTH -> Shapes.box(min / 16.0, min / 16.0, (16 - max) / 16.0, (16 - min) / 16.0, (16 - min) / 16.0, 1.0)
-            Direction.SOUTH -> Shapes.box(min / 16.0, min / 16.0, 0.0, (16 - min) / 16.0, (16 - min) / 16.0, max / 16.0)
-            Direction.WEST  -> Shapes.box((16 - max) / 16.0, min / 16.0, min / 16.0, 1.0, (16 - min) / 16.0, (16 - min) / 16.0)
-            Direction.EAST  -> Shapes.box(0.0, min / 16.0, min / 16.0, max / 16.0, (16 - min) / 16.0, (16 - min) / 16.0)
+            Direction.UP    -> Shapes.box(min / 16, 0.0, min / 16, max / 16, (min + 1) / 16, max / 16)
+            Direction.DOWN  -> Shapes.box(min / 16, (16 - (min + 1)) / 16, min / 16, max / 16, 1.0, max / 16)
+            Direction.NORTH -> Shapes.box(min / 16, min / 16, (16 - (min + 1)) / 16, max / 16, max / 16, 1.0)
+            Direction.SOUTH -> Shapes.box((16 - max) / 16, min / 16, 0.0, (16 - min) / 16, max / 16, (min + 1) / 16)
+            Direction.WEST  -> Shapes.box((16 - (min + 1)) / 16, min / 16, min / 16, 1.0, max / 16, max / 16)
+            Direction.EAST  -> Shapes.box(0.0, min / 16, min / 16, (min + 1) / 16, max / 16, max / 16)
         }
     }
 
@@ -271,28 +248,10 @@ class TypeGemClusterBlock(
     }
 
     override fun canSurvive(state: BlockState, level: LevelReader, pos: BlockPos): Boolean {
-        val facing = state.getValue(FACING)
-        val supportPos = pos.relative(facing.opposite)
-        val supportState = level.getBlockState(supportPos)
-        val supportBlock = supportState.block
-        return supportState.isFaceSturdy(level, supportPos, facing) &&
-            supportState.isCollisionShapeFullBlock(level, supportPos) &&
-            supportBlock !is TypeGemClusterBlock
+        val supportPos = pos.relative(state.getValue(FACING).opposite)
+        val supportBlock = level.getBlockState(supportPos).block
+        return CobblemonBlocks.typeGemBlocks().containsValue(supportBlock) || (supportBlock == CobblemonBlocks.TYPE_GEM_CORE)
     }
-
-    override fun propagatesSkylightDown(
-        state: BlockState,
-        level: net.minecraft.world.level.BlockGetter,
-        pos: BlockPos
-    ): Boolean = true
-
-    override fun getShadeBrightness(
-        state: BlockState,
-        level: net.minecraft.world.level.BlockGetter,
-        pos: BlockPos
-    ): Float = 1.0F
-
-    override fun useShapeForLightOcclusion(state: BlockState): Boolean = false
 
     override fun codec(): MapCodec<out DirectionalBlock> = CODEC
 
