@@ -15,7 +15,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.core.component.DataComponents
-import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.util.RandomSource
@@ -26,7 +25,6 @@ import net.minecraft.world.item.component.CustomModelData
 import net.minecraft.world.item.context.BlockPlaceContext
 import net.minecraft.world.level.LevelAccessor
 import net.minecraft.world.level.LevelReader
-import net.minecraft.world.level.block.AirBlock
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.DirectionalBlock
@@ -34,7 +32,6 @@ import net.minecraft.world.level.block.Mirror
 import net.minecraft.world.level.block.Rotation
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.StateDefinition
-import net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING
 import net.minecraft.world.level.block.state.properties.BooleanProperty
 import net.minecraft.world.level.block.state.properties.DirectionProperty
 import net.minecraft.world.level.block.state.properties.IntegerProperty
@@ -109,7 +106,7 @@ class TypeGemClusterBlock(
 
         if (currentStage < 3) {
             // Progress through stages regardless of STUNTED
-            level.setBlock(pos, state.setValue(STAGE, currentStage + 1), Block.UPDATE_ALL)
+            level.setBlock(pos, state.setValue(STAGE, currentStage + 1), UPDATE_ALL)
             return
         }
 
@@ -142,7 +139,7 @@ class TypeGemClusterBlock(
             if (nextState.hasProperty(FACING)) {
                 nextState = nextState.setValue(FACING, facing)
             }
-            level.setBlock(pos, nextState, Block.UPDATE_ALL)
+            level.setBlock(pos, nextState, UPDATE_ALL)
             attachDecorativeClusters(level, pos, random)
         }
     }
