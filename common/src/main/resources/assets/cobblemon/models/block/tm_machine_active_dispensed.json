@@ -58,6 +58,15 @@
             }
         },
         {
+            "name": "dispensed_disc_center",
+            "from": [8, 2.5, -2],
+            "to": [12, 2.5, 2],
+            "faces": {
+                "up": {"uv": [14.5, 2.25, 15.5, 3.25], "texture": "#texture"},
+                "down": {"uv": [14.5, 2.25, 15.5, 3.25], "texture": "#texture"}
+            }
+        },
+        {
             "name": "glass",
             "from": [1, 6, 1],
             "to": [15, 6, 15],
