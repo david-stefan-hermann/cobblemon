@@ -628,7 +628,6 @@ open class Pokemon : ShowdownIdentifiable {
         }
 
     private fun getAlphaScaleMultiplier(): Float {
-        val config = Cobblemon.config
         val hitbox = form.hitbox
         val baseHitboxSize = max(hitbox.width, hitbox.height) * form.baseScale
 

@@ -23,6 +23,7 @@ import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.iterator
 import kotlin.math.cos
+import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -34,16 +35,12 @@ import kotlin.math.sqrt
  * @author Jackson
  * @since March 21st, 2026
  */
+private const val TARGET_DIMENSION_SIZE_FOR_RENDERING = 3.0f // Without scaling this is what the rendering is designed for.
 private const val TRAIL_MAX_WIDTH = 0.1f
+private const val BLOOM_RADIUS = 0.35f
 private const val TRAIL_MAX_ALPHA = 0.6f
 private val TRAIL_COLOR = Vector3f(0.7f, 0.0f, 0.0f)
 private const val TRAIL_DURATION_MS = 400 // lookback distance in ms for previous eye positions for trail rendering
-
-private val EYE_LOCATOR_NAMES = setOf(
-    "eye_left", "eye_right", "eye",
-    "locator_eye_left", "locator_eye_right",
-    "eye1", "eye2"
-)
 
 /**
  * Updates the eye trail positions based on the current entity position and locator states
@@ -58,7 +55,7 @@ fun updateEyeTrail(
         trailPositions.clear()
         return
     }
-    for (locatorName in EYE_LOCATOR_NAMES) {
+    for (locatorName in locatorStates.keys.filter { "eye" in it.lowercase() }) {
         val wrapper = locatorStates[locatorName] ?: continue
         val pos = wrapper.matrix.getTranslation(Vector3f())
         val worldPos = Vec3(
@@ -75,6 +72,9 @@ fun updateEyeTrail(
     }
 }
 
+/**
+ * Renders alpha eye bloom using concentric rings
+ */
 fun renderAlphaEyeBloom(
     entity: PokemonEntity,
     partialTicks: Float,
@@ -89,7 +89,7 @@ fun renderAlphaEyeBloom(
     val locatorStates = clientDelegate.locatorStates
 
     // Render bloom for all eye locators present on the model
-    for (locatorName in EYE_LOCATOR_NAMES) {
+    for (locatorName in locatorStates.keys.filter { "eye" in it.lowercase() }) {
         val wrapper = locatorStates[locatorName] ?: continue
 
         // Gather the forward vector for this eye (useful for positioning the bloom and determining if we are head on with the eye)
@@ -108,7 +108,7 @@ fun renderAlphaEyeBloom(
         //val radius = 0.35 * clamp((eyeForward.dot(toCam) + 1.0) * 0.5, 0.0, 1.0)
         val offAngleModQuad = clamp(eyeForward.dot(toCam) + 0.5, 0.0, 1.0).pow(2)
         val offAngleModLinear = clamp(eyeForward.dot(toCam) + 0.5, 0.0, 1.0)
-        val radius = 0.35 * offAngleModQuad
+        val radius = BLOOM_RADIUS * offAngleModQuad * getHitboxScaling(entity)
         val bloomEyeDist = 0.1 * offAngleModLinear // Also move the bloom closer to the eye if you're looking at it from the side
 
         // Set bloom values
@@ -189,43 +189,10 @@ fun renderEyeTrail(
 
     val consumer = bufferSource.getBuffer(RenderType.lightning())
     val entityPos = entity.getPosition(partialTicks)
-
     val matrix = poseStack.last().pose()
     val n = positions.size
-    val billboardWidth = 0.1
-    val eyeWorldPos = positions.last().first
-    val toCam = camPos.subtract(eyeWorldPos).normalize()
-    val camUp = Minecraft.getInstance().gameRenderer.mainCamera.upVector.toVec3d()
-    val camPerp = camUp.cross(toCam).normalize()
-    val billboardCenter = eyeWorldPos.add(toCam.scale(0.5)).subtract(entityPos)
+    val targetSize = TRAIL_MAX_WIDTH * getHitboxScaling(entity)
 
-
-    // Render billboard quad eye glow
-    //val billboardWidth = 0.05
-//    val eyeCenter = positions.first().first.subtract(entityPos)
-//    val camUp = Minecraft.getInstance().gameRenderer.mainCamera.upVector.toVec3d()
-//    val toCam = camPos.subtract(eyeCenter).normalize()
-//    val camPerp = camUp.cross(toCam).normalize()
-//    val billboardCenter = eyeCenter.add(toCam.scale(0.01)) // We want to avoid z fighting with the eye plane
-
-
-
-    val topRight = billboardCenter.add(camPerp.scale(billboardWidth)).add(camUp.scale(billboardWidth))
-    val topLeft = billboardCenter.subtract(camPerp.scale(billboardWidth)).add(camUp.scale(billboardWidth))
-    val bottomRight = billboardCenter.add(camPerp.scale(billboardWidth)).subtract(camUp.scale(billboardWidth))
-    val bottomLeft = billboardCenter.subtract(camPerp.scale(billboardWidth)).subtract(camUp.scale(billboardWidth))
-
-//    consumer.addVertex(matrix, topRight.x.toFloat(), topRight.y.toFloat(), topRight.z.toFloat())
-//        .setColor(r, g, b, maxAlpha)
-//
-//    consumer.addVertex(matrix, topLeft.x.toFloat(), topLeft.y.toFloat(), topLeft.z.toFloat())
-//        .setColor(r, g, b, maxAlpha)
-//
-//    consumer.addVertex(matrix, bottomLeft.x.toFloat(), bottomLeft.y.toFloat(), bottomLeft.z.toFloat())
-//        .setColor(r, g, b, maxAlpha)
-//
-//    consumer.addVertex(matrix, bottomRight.x.toFloat(), bottomRight.y.toFloat(), bottomRight.z.toFloat())
-//        .setColor(r, g, b, maxAlpha)
 
     for (i in 0 until n - 1) {
         val curr = positions[i].first
@@ -234,8 +201,8 @@ fun renderEyeTrail(
         val tCurr = i.toFloat() / (n - 1)
         val tNext = (i + 1).toFloat() / (n - 1)
 
-        val wCurr = TRAIL_MAX_WIDTH * tCurr
-        val wNext = TRAIL_MAX_WIDTH * tNext
+        val wCurr = targetSize * tCurr
+        val wNext = targetSize * tNext
         val aCurr = TRAIL_MAX_ALPHA * tCurr
         val aNext = TRAIL_MAX_ALPHA * tNext
 
@@ -316,4 +283,18 @@ fun doAlphaEyeRendering(
             )
         }
     }
+}
+
+/**
+ * Calculates the scaling applied to the eye rendering based on the entities
+ * largest hitbox dimension relative to a TARGET_DIMENSION_SIZE_FOR_RENDERING.
+ */
+fun getHitboxScaling(
+    entity: PokemonEntity
+): Float {
+    val form = entity.pokemon.form
+    val hitbox = form.hitbox
+    val largestHitboxDimension = max(hitbox.width, hitbox.height) * form.baseScale * entity.pokemon.effectiveScale
+    val percHit = largestHitboxDimension / TARGET_DIMENSION_SIZE_FOR_RENDERING
+    return sqrt(percHit) // Take the square root of the percentage increase or decrease from the target dimension. This is to make the change not so drastic
 }
