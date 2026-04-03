@@ -63,8 +63,6 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
         const val BEAM_EXTEND_TIME = 0.2F
         const val POKEBALL_AIR_TIME = 0.5F
         const val SHINY_PARTICLE_COOLDOWN = 3.5F
-        private const val ALPHA_EYE_PARTICLE_COOLDOWN_MS = 1000L
-        private val ALPHA_MARK_ID = cobblemonResource("mark_alpha").toString()
     }
 
     override val schedulingTracker: SchedulingTracker
@@ -92,7 +90,6 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
     var sendOutOffset: Vec3? = null
     var playedSendOutSound: Boolean = false
     var playedThrowingSound: Boolean = false
-    private var lastAlphaEyeParticle = 0L
     val eyeTrailPositions = mutableMapOf<String, ArrayDeque<Pair<Vec3, Long>>>() // List of eye locators that are tracking their position overtime for alpha eye trail rendering
 
     val secondsSinceBeamEffectStarted: Float
@@ -461,11 +458,14 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
                 val random = currentEntity.level().random
                 when (particleData) {
                     is ParticleData.SnowstormParticle -> {
-                        val locator = particleData.locators.firstOrNull { this.locatorStates[it] != null } ?: "root"
+                        val locators = particleData.locatorResolver(locatorStates).ifEmpty { listOf("root") }
                         if (particleData.chance > random.nextDouble()) {
-                            repeat(particleData.amount) {
-                                runtime.resolve("q.particle('${particleData.particle}', '$locator')".asExpressionLike())
+                            locators.forEach { locator ->
+                                repeat(particleData.amount) {
+                                    runtime.resolve("q.particle('${particleData.particle}', '$locator')".asExpressionLike())
+                                }
                             }
+
                         }
                     }
                     is ParticleData.MinecraftParticle -> {
@@ -483,33 +483,6 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
                 }
             }
         }
-        spawnAlphaEyeParticles()
-    }
-
-
-    // TODO: use the aspect
-    private fun spawnAlphaEyeParticles() {
-        if (currentEntity.entityData.get(PokemonEntity.MARK) != ALPHA_MARK_ID) {
-            return
-        }
-
-        val now = System.currentTimeMillis()
-        if (now - lastAlphaEyeParticle < ALPHA_EYE_PARTICLE_COOLDOWN_MS) {
-            return
-        }
-
-        val locatorCandidates = mutableListOf("eye1", "eye2", "eye_left", "eye_right", "eye")
-        locatorCandidates.addAll(getMatchingLocators("eye"))
-        locatorCandidates.addAll(listOf("locator_eye_left", "locator_eye_right"))
-        val locators = locatorCandidates.distinct().filter { locatorStates[it] != null }
-        if (locators.isEmpty()) {
-            return
-        }
-
-        locators.forEach { locator ->
-            runtime.resolve("q.particle('cobblemon:alpha_eyes', '$locator')".asExpressionLike())
-        }
-        lastAlphaEyeParticle = now
     }
 
     fun cry() {
