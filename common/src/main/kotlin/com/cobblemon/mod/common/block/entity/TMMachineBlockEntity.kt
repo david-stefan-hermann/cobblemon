@@ -205,7 +205,7 @@ class TMMachineBlockEntity(pos: BlockPos, state: BlockState) :
                     // Add crafted TM to result slot
                     if (resultStack.isEmpty) {
                         setItem(TMMachineMenu.RESULT_SLOT, craftedTmStack)
-                        setTint(move.elementalType.hue)
+                        setTint(move.elementalType.hue, 0.8F)
                     } else if (resultStack.count < resultStack.maxStackSize) {
                         resultStack.grow(1)
                     }

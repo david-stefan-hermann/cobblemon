@@ -211,10 +211,10 @@ class TypeGemClusterBlock(
         val facing = state.getValue(FACING)
 
         val (min, max) = when (stage) {
-            0 -> 4.5 to 7.0   // type_gem_bud_small_* (7px wide, 7px protrusion)
-            1 -> 2.5 to 9.0   // type_gem_bud_medium_* (11px wide, 9px protrusion)
-            2 -> 1.0 to 13.0  // type_gem_bud_large_* (14px wide, 13px protrusion)
-            3 -> 0.0 to 16.0  // Fully grown cluster size.
+            0 -> 6.0 to 5.0  // type_gem_bud_small_* (4px wide, 5px protrusion)
+            1 -> 5.0 to 6.0  // type_gem_bud_medium_* (6px wide, 6px protrusion)
+            2 -> 4.0 to 7.0  // type_gem_bud_large_* (8px wide, 7px protrusion)
+            3 -> 3.0 to 8.0  // Fully grown cluster (10px wide, 8px protrusion)
             else -> return Shapes.empty()
         }
 
