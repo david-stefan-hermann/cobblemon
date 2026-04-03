@@ -32,10 +32,10 @@ class AlphaUpdatePacket(pokemon: () -> Pokemon?, value: Boolean): SingleUpdatePa
 
     companion object {
         val ID = cobblemonResource("alpha_update")
-        fun decode(buffer: RegistryFriendlyByteBuf): CaughtBallUpdatePacket {
+        fun decode(buffer: RegistryFriendlyByteBuf): AlphaUpdatePacket  {
             val pokemon = decodePokemon(buffer)
-            val pokeBall = PokeBalls.getPokeBall(buffer.readIdentifier()) ?: PokeBalls.POKE_BALL
-            return CaughtBallUpdatePacket(pokemon, pokeBall)
+            val value = buffer.readBoolean()
+            return AlphaUpdatePacket(pokemon, value)
         }
     }
 }
