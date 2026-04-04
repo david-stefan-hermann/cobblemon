@@ -1284,6 +1284,7 @@
   "cobblemon.ui.pp": "PP",
   "cobblemon.ui.effect": "Effect",
   "cobblemon.ui.pokemon": "Pokémon",
+  "cobblemon.ui.pokemon.alpha": "Alpha Pokémon",
   "cobblemon.ui.exit": "Exit",
 
   "cobblemon.ui.pc.box.title": "Box %1$s",
@@ -1721,15 +1722,15 @@
   "cobblemon.mark.ribbon_contest_super_master_cleverness.desc": "A Ribbon awarded to a Pokémon that has perfectly embodied Cleverness in Pokémon Contests.",
 
   "cobblemon.mark.ribbon_contest_super_master_coolness": "Coolness Master Ribbon",
-  "cobblemon.mark.ribbon_contest_super_master_coolness.title": "%1$s the Former Star",
+  "cobblemon.mark.ribbon_contest_super_master_coolness.title": "%1$s the Star",
   "cobblemon.mark.ribbon_contest_super_master_coolness.desc": "A Ribbon awarded to a Pokémon that has perfectly embodied Coolness in Pokémon Contests.",
 
   "cobblemon.mark.ribbon_contest_super_master_cuteness": "Cuteness Master Ribbon",
-  "cobblemon.mark.ribbon_contest_super_master_cuteness.title": "%1$s the Former Idol",
+  "cobblemon.mark.ribbon_contest_super_master_cuteness.title": "%1$s the Idol",
   "cobblemon.mark.ribbon_contest_super_master_cuteness.desc": "A Ribbon awarded to a Pokémon that has perfectly embodied Cuteness in Pokémon Contests.",
 
   "cobblemon.mark.ribbon_contest_super_master_toughness": "Toughness Master Ribbon",
-  "cobblemon.mark.ribbon_contest_super_master_toughness.title": "%1$s the Formerly Buff",
+  "cobblemon.mark.ribbon_contest_super_master_toughness.title": "%1$s the Buff",
   "cobblemon.mark.ribbon_contest_super_master_toughness.desc": "A Ribbon awarded to a Pokémon that has perfectly embodied Toughness in Pokémon Contests.",
 
   "cobblemon.mark.ribbon_contest_super_star": "Contest Star Ribbon",
@@ -1741,35 +1742,35 @@
   "cobblemon.mark.ribbon_contest_super_star_twinkling.desc": "A Ribbon awarded to a Pokémon that has perfectly embodied shining brilliance in Super Contest Shows.",
 
   "cobblemon.mark.ribbon_day_alert": "Alert Ribbon",
-  "cobblemon.mark.ribbon_day_alert.title": "%1$s the Once Vigilant",
+  "cobblemon.mark.ribbon_day_alert.title": "%1$s the Vigilant",
   "cobblemon.mark.ribbon_day_alert.desc": "A Ribbon for recalling an invigorating event that created life energy.",
 
   "cobblemon.mark.ribbon_day_careless": "Careless Ribbon",
-  "cobblemon.mark.ribbon_day_careless.title": "%1$s the Once Imperfect",
+  "cobblemon.mark.ribbon_day_careless.title": "%1$s the Imperfect",
   "cobblemon.mark.ribbon_day_careless.desc": "A Ribbon for recalling a careless error that helped steer life decisions.",
 
   "cobblemon.mark.ribbon_day_downcast": "Downcast Ribbon",
-  "cobblemon.mark.ribbon_day_downcast.title": "%1$s the Once Shaken",
+  "cobblemon.mark.ribbon_day_downcast.title": "%1$s the Shaken",
   "cobblemon.mark.ribbon_day_downcast.desc": "A Ribbon for recalling feelings of sadness that added spice to life.",
 
   "cobblemon.mark.ribbon_day_relax": "Relax Ribbon",
-  "cobblemon.mark.ribbon_day_relax.title": "%1$s the Once Well-Rested",
+  "cobblemon.mark.ribbon_day_relax.title": "%1$s the Well-Rested",
   "cobblemon.mark.ribbon_day_relax.desc": "A Ribbon for recalling a refreshing event that added sparkle to life.",
 
   "cobblemon.mark.ribbon_day_shock": "Shock Ribbon",
-  "cobblemon.mark.ribbon_day_shock.title": "%1$s the Once Cowardly",
+  "cobblemon.mark.ribbon_day_shock.title": "%1$s the Cowardly",
   "cobblemon.mark.ribbon_day_shock.desc": "A Ribbon for recalling a thrilling event that made life more exciting.",
 
   "cobblemon.mark.ribbon_day_smile": "Smile Ribbon",
-  "cobblemon.mark.ribbon_day_smile.title": "%1$s the Once Cheery",
+  "cobblemon.mark.ribbon_day_smile.title": "%1$s the Cheery",
   "cobblemon.mark.ribbon_day_smile.desc": "A Ribbon for recalling that smiles enrich the quality of life.",
 
   "cobblemon.mark.ribbon_day_snooze": "Snooze Ribbon",
-  "cobblemon.mark.ribbon_day_snooze.title": "%1$s the Once Sleepy",
+  "cobblemon.mark.ribbon_day_snooze.title": "%1$s the Sleepy",
   "cobblemon.mark.ribbon_day_snooze.desc": "A Ribbon for recalling a deep slumber that made life soothing.",
 
   "cobblemon.mark.ribbon_effort": "Effort Ribbon",
-  "cobblemon.mark.ribbon_effort.title": "%1$s the Once Well-Trained",
+  "cobblemon.mark.ribbon_effort.title": "%1$s the Well-Trained",
   "cobblemon.mark.ribbon_effort.desc": "A Ribbon awarded for being an exceptionally hard worker.",
 
   "cobblemon.mark.ribbon_event": "Event Ribbon",
@@ -1887,7 +1888,7 @@
   "cobblemon.mark.ribbon_once-in-a-lifetime.desc": "A rare Ribbon found extremely infrequently on Pokémon.",
 
   "cobblemon.mark.ribbon_partner": "Partner Ribbon",
-  "cobblemon.mark.ribbon_partner.desc": "A special Ribbon awarded to a Pokémon that was once partnered with another great Trainer.",
+  "cobblemon.mark.ribbon_partner.desc": "A special Ribbon awarded to a Pokémon that is partnered with a great Trainer.",
 
   "cobblemon.mark.ribbon_record": "Record Ribbon",
   "cobblemon.mark.ribbon_record.title": "%1$s the Record Holder",
@@ -1958,8 +1959,8 @@
   "cobblemon.mark.mark_revival.desc": "A mark for a resurrected Pokémon.",
 
   "cobblemon.mark.mark_titan": "Titan Mark",
-  "cobblemon.mark.mark_titan.title": "%1$s the Former Titan",
-  "cobblemon.mark.mark_titan.desc": "A mark for a Pokémon that was a Titan.",
+  "cobblemon.mark.mark_titan.title": "%1$s the Titan",
+  "cobblemon.mark.mark_titan.desc": "A mark for a Pokémon that is a Titan.",
 
   "cobblemon.mark.mark_uncommon": "Uncommon Mark",
   "cobblemon.mark.mark_uncommon.title": "%1$s the Sociable",
