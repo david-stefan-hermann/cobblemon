@@ -651,7 +651,8 @@ open class PokemonEntity(
         flyDistO = flyDist
 
         ridingController?.tick()
-        recheckSeatConditions()
+        if (!level().isClientSide) { recheckSeatConditions() }
+
 
         if (isBattling) {
             // Deploy a platform if a non-wild Pokemon is touching water but not underwater.
@@ -2236,7 +2237,9 @@ open class PokemonEntity(
      * Check for a seat in [seats] that is not already in [occupiedSeats]
      */
     override fun canAddPassenger(passenger: Entity): Boolean {
-        return seats.any { it !in occupiedSeats }
+        val seatsAvailable: Boolean = seats.any { it !in occupiedSeats.keys }
+        val passengerSeated: Boolean = passenger in occupiedSeats.values
+        return seatsAvailable && !passengerSeated
     }
 
     public override fun addPassenger(passenger: Entity) {
@@ -2261,10 +2264,15 @@ open class PokemonEntity(
         } else if (level().isClientSide) {
             MountedCameraTypeHandler.handleMount(passenger, this)
         }
-        val availableSeat = seats.firstOrNull { it !in occupiedSeats }
-        if (availableSeat != null) {
-            occupiedSeats[availableSeat] = passenger
+
+        // Make sure we aren't adding a passenger multiple times. Also blocks reassignment by the client.
+        if (!(passenger in occupiedSeats.values)) {
+            val availableSeat = seats.firstOrNull { it !in occupiedSeats }
+            if (availableSeat != null) {
+                occupiedSeats[availableSeat] = passenger
+            }
         }
+
         super.addPassenger(passenger)
         if (passengers.size == 1) {
             // Someone just started riding, fill in the stamina value! Gets run from both sides.

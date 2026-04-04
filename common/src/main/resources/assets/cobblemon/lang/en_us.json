@@ -1200,7 +1200,6 @@
   "cobblemon.ui.starter.narrator.backbutton": "Back button pressed",
   "cobblemon.ui.starter.choose_starter_description": "Press the \"%1$s\" key",
   "cobblemon.ui.starter.chooseyourstarter": "Press %1$s to choose your Pokémon and begin your journey!",
-  "cobblemon.ui.back": "Back",
   "cobblemon.ui.moves": "Moves",
   "cobblemon.ui.moves.switch": "Switch Move",
   "cobblemon.ui.moves.pp": "%1$sPP",
