@@ -12,6 +12,12 @@
 - Pangoro (+ Cosmetic with Black Glasses)
 - Skitty
 - Delcatty
+- Wurmple
+- Silcoon
+- Beautifly
+- Cascoon
+- Dustox
+- Audino
 
 ### Model updates for the following Pokémon
 - Goomy
