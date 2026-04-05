@@ -50,6 +50,7 @@
 - q.item.has_enchantment(minecraft:sharpness, 3)
 - Added `has_chosen_starter` & `get_starter_uuid` as available Molang functions
 - Added `marks`, `has_mark`, & `remove_marks` as available Molang functions for pokemon
+- Added `weighted_choice` as new feature type. It requires to set weights for each choice and allows developers to simplify process of assigning random aspect choice based on marbles chance
 
 ### Localization
 - Updated translations for:
