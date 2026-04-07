@@ -3927,7 +3927,7 @@
   "cobblemon.entity.variable.animation_name.name": "Animation Name",
   "cobblemon.entity.variable.animation_name.desc": "The name of the animation to play when the NPC is interacted with.",
 
-  "cobblemon.entity.variable.play_animation.name": "Play Animation On Interaction",
+  "cobblemon.entity.variable.play_animation.name": "Play Animation",
   "cobblemon.entity.variable.play_animation.desc": "Whether to play an animation when the NPC is interacted with.",
 
   "npc.sacchi.name": "Professor Sacchi",
