@@ -53,6 +53,7 @@
 - q.item.has_enchantment(minecraft:sharpness, 3)
 - Added `has_chosen_starter` & `get_starter_uuid` as available Molang functions
 - Added `marks`, `has_mark`, & `remove_marks` as available Molang functions for pokemon
+- Added optional `order` field to starter categories. It will allow to explicitly sort categories in starter selection screen
 
 ### Localization
 - Updated translations for:
