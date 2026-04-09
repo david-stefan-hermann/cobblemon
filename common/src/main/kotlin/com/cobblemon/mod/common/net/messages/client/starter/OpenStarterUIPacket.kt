@@ -57,7 +57,7 @@ class OpenStarterUIPacket internal constructor(val categories: List<RenderableSt
                     )
                 )
             }
-            return OpenStarterUIPacket(categories.sortedBy { it.order })
+            return OpenStarterUIPacket(categories)
         }
     }
 }
