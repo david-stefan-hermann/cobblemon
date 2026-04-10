@@ -367,11 +367,9 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     }
 
     private fun resetScreenSaver(): Boolean {
-        if (ticksElapsed >= SCREEN_SAVER_TIMEOUT_TICKS) {
-            ticksElapsed = 0
-            return true
-        }
-        return false
+        val wasScreenSaverActive = ticksElapsed > SCREEN_SAVER_TIMEOUT_TICKS
+        ticksElapsed = 0
+        return wasScreenSaverActive
     }
 
     private fun loadBurnScreenData() {
@@ -1077,6 +1075,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        ticksElapsed = 0
         if (resetScreenSaver()) return false
         return super.mouseClicked(mouseX, mouseY, button)
     }
@@ -1089,11 +1088,13 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, scrollX: Double, scrollY: Double): Boolean {
+        ticksElapsed = 0
         if (resetScreenSaver()) return false
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        ticksElapsed = 0
         if (resetScreenSaver()) return false
         val searchFocused = this::moveSearchWidget.isInitialized && moveSearchWidget.isFocused
 
