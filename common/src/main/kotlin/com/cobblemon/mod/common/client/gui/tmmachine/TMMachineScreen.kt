@@ -430,6 +430,9 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             player = inventory.player,
             includeUnlearned = ServerSettings.unlockAllMoveDexMovesByDefault
         ).toMutableList()
+        pokemon?.let { selectedPokemon ->
+            filteredList.retainAll { tm -> tm.moveName in selectedPokemon.form.moves.tmMoves }
+        }
         if (sortType == null) filteredList.sortBy { it.type }
         tmList.set(filteredList)
     }
@@ -481,7 +484,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
 
     fun canLearnTMMove(move: MoveTemplate, pokemon: Pokemon): Int {
         if (pokemon.moveSet.getMoveTemplates().contains(move) || pokemon.allAccessibleMoves.contains(move)) return TMPartySlotWidget.LEARNED
-        val learnableMoves = pokemon.form.moves.tmLearnableMoves()
+        val learnableMoves = pokemon.form.moves.tmMoves
         return if (learnableMoves.contains(move)) TMPartySlotWidget.CAN_LEARN else TMPartySlotWidget.CANNOT_LEARN
     }
 
