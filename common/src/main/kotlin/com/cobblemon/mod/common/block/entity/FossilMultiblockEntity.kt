@@ -119,6 +119,25 @@ open class FossilMultiblockEntity(
         if (this.multiblockStructure != null && level != null) {
             this.multiblockStructure!!.setRemoved(level!!)
         }
+
+        if (level?.isClientSide == true) {
+            BlockEntitySoundTracker.stop(
+                blockPos,
+                CobblemonSounds.MONITOR_LOADING.location
+            )
+        }
+
+        if (this.porygonProcess != PorygonProcessType.INACTIVE) {
+            val itemToDrop = when (this.porygonProcess) {
+                PorygonProcessType.UPGRADE -> CobblemonItems.UPGRADE
+                PorygonProcessType.DUBIOUS -> CobblemonItems.DUBIOUS_DISC
+                else -> null
+            }
+
+            if (itemToDrop != null) {
+                Containers.dropItemStack(level, worldPosition.x.toDouble(), worldPosition.y.toDouble(), worldPosition.z.toDouble(), ItemStack(itemToDrop))
+            }
+        }
     }
 
     override fun loadAdditional(nbt: CompoundTag, registryLookup: HolderLookup.Provider) {
@@ -393,11 +412,15 @@ open class FossilMultiblockEntity(
     }
 
     fun completePorygonProcess (world: Level) {
+        //Store value and set process to Inactive to prevent odd block states
+        var oldProcess = porygonProcess
+        porygonProcess = PorygonProcessType.INACTIVE
+
         porygonTicks = 0
         if (world is ServerLevel) {
             BlockEntitySoundTracker.stop(blockPos, CobblemonSounds.MONITOR_LOADING.location)
 
-            if (porygonProcess == PorygonProcessType.UPGRADE){
+            if (oldProcess == PorygonProcessType.UPGRADE){
                 val facing = blockState.getValue(HorizontalDirectionalBlock.FACING).opposite
                 val offset = facing.normal
 
@@ -430,7 +453,7 @@ open class FossilMultiblockEntity(
                 )
             }
 
-            else if (porygonProcess == PorygonProcessType.DUBIOUS) {
+            else if (oldProcess == PorygonProcessType.DUBIOUS) {
                 world.removeBlock(blockPos, false)
 
                 world.sendParticles(
@@ -533,9 +556,8 @@ open class FossilMultiblockEntity(
                 }
             }
 
-            spawnPorygon(world, porygonProcess)
+            spawnPorygon(world, oldProcess)
         }
-        porygonProcess = PorygonProcessType.INACTIVE
 
         setChanged()
     }
