@@ -95,8 +95,8 @@ abstract class BattleActor(
             return
         }
 
+        mustChoose = true // This must happen before the sendUpdate, not after, otherwise AI-driven actors will get locked (they may reply instantly)
         sendUpdate(BattleMakeChoicePacket())
-        mustChoose = true
     }
 
     fun setActionResponses(responses: List<ShowdownActionResponse>) {
