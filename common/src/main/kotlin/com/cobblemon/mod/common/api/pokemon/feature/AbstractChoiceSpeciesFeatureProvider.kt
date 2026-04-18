@@ -23,7 +23,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf
  * that implements any sort of choice based value selection.
  * Parameters can be overridden to change default behavior, aspects, and the available choices.
  *
- * @author Gito
+ * @author Hiroku
  * @since April 9th, 2026
  */
 abstract class AbstractChoiceSpeciesFeatureProvider<T>(
