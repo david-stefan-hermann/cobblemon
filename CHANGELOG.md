@@ -53,6 +53,7 @@
 - Added `BattleFleeAttemptEvent` fired from `PokemonBattle.checkFleeAttempt`, allowing developers to intercept and control flee attempts
 
 ### Molang & Datapacks
+- Added basic chatter NPC Behaviour
 - q.item.is_enchanted()
 - q.item.has_enchantment(minecraft:sharpness, 3)
 - Added `has_chosen_starter` & `get_starter_uuid` as available Molang functions
