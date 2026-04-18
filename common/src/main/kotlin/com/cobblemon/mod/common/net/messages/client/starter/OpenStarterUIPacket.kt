@@ -39,13 +39,13 @@ class OpenStarterUIPacket internal constructor(val categories: List<RenderableSt
         fun decode(buffer: RegistryFriendlyByteBuf): OpenStarterUIPacket {
             val numCategories = buffer.readInt()
             val categories = arrayListOf<RenderableStarterCategory>()
-            repeat((0 until numCategories).count()) {
+            repeat(numCategories) {
                 val name = buffer.readString()
                 val displayName = buffer.readString()
                 val order = buffer.readInt()
                 val numProperties = buffer.readInt()
                 val renderablePokemon = mutableListOf<RenderablePokemon>()
-                repeat(times = numProperties) {
+                repeat(numProperties) {
                     renderablePokemon.add(RenderablePokemon.loadFromBuffer(buffer))
                 }
                 categories.add(
