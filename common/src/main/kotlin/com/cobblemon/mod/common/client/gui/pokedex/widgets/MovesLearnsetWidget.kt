@@ -65,7 +65,6 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
     lang("ui.moves")
 ) {
     companion object {
-        private const val LIST_TOP_OFFSET = -15
         private const val LIST_HEIGHT = 60
         private const val LIST_SLOT_HEIGHT = 15
 
@@ -733,7 +732,7 @@ class MovesLearnsetWidget(val pX: Int, val pY: Int) : SoundlessWidget(
     )
 
     private class LearnsetMovesScrollingWidget(
-        val listX: Int,
+        listX: Int,
         val listY: Int,
         listWidth: Int,
         listHeight: Int,
