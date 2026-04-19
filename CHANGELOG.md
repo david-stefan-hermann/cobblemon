@@ -23,7 +23,6 @@
 - Remade the Starter Selection Screen with new assets
 - Refactored berry trees to be less impactful on TPS (more performant)
 - Changed the bait effects of the following items: (Vanilla) Sweet & Glow Berries, Golden & Enchanted Golden Apples (Cobblemon) Custap, Eggant, Hopo & Micle Berries, Sweet Hearts
-- Changed mark order to use indexNumber then namespace, rather than just namespace
 
 ### Fixes
 - Fixes https://gitlab.com/cable-mc/cobblemon/-/issues/1943
@@ -61,6 +60,7 @@
 - Added `marks`, `has_mark`, & `remove_marks` as available Molang functions for pokemon
 - Added Data Component support for species drops, eg `"components": {"minecraft:custom_model_data": 123}`
 - Added new sortOrder field to mark entries, (defaults to 0 if not specified) which controls the order in which marks are rendered on the HUD, with higher numbers being rendered on top of lower numbers
+- Added optional `order` field to starter categories. It will allow to explicitly sort categories in starter selection screen
 
 ### Localization
 - Updated translations for:
