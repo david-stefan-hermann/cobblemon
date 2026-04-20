@@ -12,14 +12,13 @@ import com.cobblemon.mod.common.api.battles.model.PokemonBattle
 import com.cobblemon.mod.common.battles.dispatch.InterpreterInstruction
 
 /**
- * Format: |upkeep|
+ * Tails every `update` output from Showdown. Used for picking up any forced switches that need to be done.
  *
- * Signals the upkeep phase of the turn where the number of turns left for field conditions are updated.
  * @author Hiroku
- * @since March 12th, 2022
+ * @since April 13th, 2026
  */
-class UpkeepInstruction : InterpreterInstruction {
+object PostUpdateInstruction : InterpreterInstruction {
     override fun invoke(battle: PokemonBattle) {
-        // We could do some updates here like checking field condition state for client side shenanigans
+        battle.dispatchGo { battle.actors.forEach { it.postUpdate() } }
     }
 }
