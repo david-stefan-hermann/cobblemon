@@ -1074,6 +1074,7 @@
   "cobblemon.fishing_bait_effects.typing.tooltip": "%1$s%% - %3$s× Chance for %2$s Types",
   "cobblemon.fishing_bait_effects.egg_group.tooltip": "%1$s%% - %3$s× Chance for %2$s Egg Group",
   "cobblemon.fishing_bait_effects.shiny_reroll.tooltip": "%1$s%% - %3$s× Shiny Chance",
+  "cobblemon.fishing_bait_effects.mark_chance.tooltip": "%1$s%% - +%3$s%% Mark Chance",
   "cobblemon.fishing_bait_effects.drops_reroll.tooltip": "%1$s%% - %3$s× Drops Reroll",
   "cobblemon.fishing_bait_effects.ha_chance.tooltip": "%1$s%% - Attract Hidden Ability",
   "cobblemon.fishing_bait_effects.pokemon_chance.tooltip": "%1$s%% - Reel in a Pokémon",
@@ -2575,6 +2576,10 @@
   "cobblemon.config.ui.allow_experience_from_pvp.tooltip": "Whether to allow Exp. gain from PvP battles.",
   "cobblemon.config.ui.experience_share_multiplier": "Experience Share Multiplier",
   "cobblemon.config.ui.experience_share_multiplier.tooltip": "Multiplier of how much of the total Exp is given to a Pokémon holding an Exp. Share.",
+  "cobblemon.config.ui.award_experience_to_fainted_pokemon": "Award Exp. to Fainted Pokémon",
+  "cobblemon.config.ui.award_experience_to_fainted_pokemon.tooltip": "Whether fainted Pokémon receive Exp. for opponents they helped defeat before fainting.",
+  "cobblemon.config.ui.award_experience_on_battle_loss": "Award Exp. on Battle Loss",
+  "cobblemon.config.ui.award_experience_on_battle_loss.tooltip": "Whether Pokémon receive Exp. for opponents they defeated even if the battle is lost. Requires 'Award Exp. to Fainted Pokémon' to be enabled for fainted Pokémon to benefit.",
   "cobblemon.config.ui.lucky_egg_multiplier": "Lucky Egg Multiplier",
   "cobblemon.config.ui.lucky_egg_multiplier.tooltip": "Multiplier of how much of the total Exp is given to a Pokémon holding a Lucky Egg.",
   "cobblemon.config.ui.allow_spectating": "Allow Spectating",
@@ -3999,6 +4004,18 @@
 
   "cobblemon.entity.variable.dialogue_selection.name": "Dialogue",
   "cobblemon.entity.variable.dialogue_selection.desc": "The resource identifier of the dialogue to open on interaction, such as cobblemon:your_dialogue",
+
+  "cobblemon.behaviour.chatter_npc.name": "Chatter NPC",
+  "cobblemon.behaviour.chatter_npc.desc": "Allows the NPC to talk with the player using the in-game chat when interacted with, optional animation support.",
+
+  "cobblemon.entity.variable.chat_message.name": "Chat Message",
+  "cobblemon.entity.variable.chat_message.desc": "Content for the message the NPC says when interacted with. Supports traditional minecraft colour and formatting.",
+
+  "cobblemon.entity.variable.animation_name.name": "Animation Name",
+  "cobblemon.entity.variable.animation_name.desc": "The name of the animation to play when the NPC is interacted with.",
+
+  "cobblemon.entity.variable.play_animation.name": "Play Animation",
+  "cobblemon.entity.variable.play_animation.desc": "Whether to play an animation when the NPC is interacted with.",
 
   "npc.sacchi.name": "Professor Sacchi",
 
