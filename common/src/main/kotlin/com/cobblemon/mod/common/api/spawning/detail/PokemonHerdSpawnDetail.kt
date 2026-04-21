@@ -58,7 +58,6 @@ class PokemonHerdSpawnDetail : SpawnDetail() {
         var isLeader: Boolean? = null
         var weight: Float = 1F
         var maxTimes = 10
-        var isAlpha: Boolean? = null
         var heldItem: ResourceLocation? = null
     }
 
@@ -115,8 +114,6 @@ class PokemonHerdSpawnDetail : SpawnDetail() {
             val max = level + offset.last
             min..max
         } ?: level..level
-
-        herdable.pokemon.isAlpha = herdable.isAlpha
 
         val heldItem = herdable.heldItem?.let { heldItemId ->
             val item = spawnablePosition.world.registryAccess().registryOrThrow(Registries.ITEM).get(heldItemId)
