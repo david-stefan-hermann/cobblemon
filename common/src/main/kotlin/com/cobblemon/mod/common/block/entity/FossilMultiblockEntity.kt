@@ -121,10 +121,8 @@ open class FossilMultiblockEntity(
         }
 
         if (level?.isClientSide == true) {
-            BlockEntitySoundTracker.stop(
-                blockPos,
-                CobblemonSounds.MONITOR_LOADING.location
-            )
+            BlockEntitySoundTracker.stop(blockPos, CobblemonSounds.MONITOR_LOADING.location)
+            BlockEntitySoundTracker.stop(blockPos, CobblemonSounds.MONITOR_GLITCHING.location)
         }
 
         if (this.porygonProcess != PorygonProcessType.INACTIVE) {
@@ -370,29 +368,38 @@ open class FossilMultiblockEntity(
     fun startPorygonProcess(stack: ItemStack, world: Level) {
         porygonTicks = 0
 
-        if (world is ServerLevel) {
-            val sound = SimpleSoundInstance(
-                CobblemonSounds.MONITOR_LOADING.location,
-                SoundSource.BLOCKS,
-                0.6f,
-                1.0f,
-                world.random,
-                true,
-                0,
-                SoundInstance.Attenuation.LINEAR,
-                blockPos.x + 0.5,
-                blockPos.y + 0.5,
-                blockPos.z + 0.5,
-                false
-            )
-
-            BlockEntitySoundTracker.play(blockPos, sound)
-        }
-
         porygonProcess = when (stack.item) {
             CobblemonItems.DUBIOUS_DISC -> PorygonProcessType.DUBIOUS
             CobblemonItems.UPGRADE -> PorygonProcessType.UPGRADE
             else -> PorygonProcessType.INACTIVE
+        }
+
+        if (world is ServerLevel) {
+
+            val soundEvent = when (porygonProcess) {
+                PorygonProcessType.DUBIOUS -> CobblemonSounds.MONITOR_GLITCHING
+                PorygonProcessType.UPGRADE -> CobblemonSounds.MONITOR_LOADING
+                else -> null
+            }
+
+            if (soundEvent != null) {
+                val sound = SimpleSoundInstance(
+                    soundEvent.location,
+                    SoundSource.BLOCKS,
+                    0.6f,
+                    1.0f,
+                    world.random,
+                    true,
+                    0,
+                    SoundInstance.Attenuation.LINEAR,
+                    blockPos.x + 0.5,
+                    blockPos.y + 0.5,
+                    blockPos.z + 0.5,
+                    false
+                )
+
+                BlockEntitySoundTracker.play(blockPos, sound)
+            }
         }
 
         setChanged()
@@ -419,6 +426,7 @@ open class FossilMultiblockEntity(
         porygonTicks = 0
         if (world is ServerLevel) {
             BlockEntitySoundTracker.stop(blockPos, CobblemonSounds.MONITOR_LOADING.location)
+            BlockEntitySoundTracker.stop(blockPos, CobblemonSounds.MONITOR_GLITCHING.location)
 
             if (oldProcess == PorygonProcessType.UPGRADE){
                 val facing = blockState.getValue(HorizontalDirectionalBlock.FACING).opposite
