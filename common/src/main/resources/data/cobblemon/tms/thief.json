@@ -10,10 +10,6 @@
     {
       "item": "cobblemon:dark_gem",
       "count": 5
-    },
-    {
-      "tag": "cobblemon:held/is_held_item",
-      "count": 1
     }
   ]
 }
