@@ -18,6 +18,13 @@
 - Cascoon
 - Dustox
 - Audino
+- Snom
+- Frosmoth
+- Applin
+- Flapple
+- Appletun
+- Dipplin
+- Hydrapple
 
 ### Model updates for the following Pokémon
 - Goomy
