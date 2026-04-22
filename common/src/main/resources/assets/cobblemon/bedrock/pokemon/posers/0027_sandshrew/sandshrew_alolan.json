@@ -14,6 +14,7 @@
         "NONE"
       ],
       "animations": [
+        "q.look('head')",
         "q.bedrock('sandshrew_alolan', 'ground_idle')"
       ],
       "quirks": [
@@ -26,6 +27,7 @@
         "WALK"
       ],
       "animations": [
+        "q.look('head')",
         "q.bedrock('sandshrew_alolan', 'ground_walk')"
       ],
       "quirks": [

@@ -15,6 +15,7 @@
       ],
       "isBattle": true,
       "animations": [
+        "q.look('head')",
         "q.bedrock('lycanroc_dusk', 'ground_idle')"
       ]
     },
@@ -24,6 +25,7 @@
         "SWIM"
       ],
       "animations": [
+        "q.look('head')",
         "q.bedrock('lycanroc_dusk', 'ground_idle')",
         "q.quadruped_walk(1, 1, 'leg_front_left', 'leg_front_right', 'leg_back_left', 'leg_back_right')"
       ]

@@ -15,6 +15,7 @@
       ],
       "isBattle": true,
       "animations": [
+        "q.look('head')",
         "q.bedrock('lycanroc_midnight', 'ground_idle')"
       ]
     },
@@ -24,6 +25,7 @@
         "SWIM"
       ],
       "animations": [
+        "q.look('head')",
         "q.bedrock('lycanroc_midnight', 'ground_idle')",
         "q.biped_walk(1, 1, 'leg_left', 'leg_right')"
       ]

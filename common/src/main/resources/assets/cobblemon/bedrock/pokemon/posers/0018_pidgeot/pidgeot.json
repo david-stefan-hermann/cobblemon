@@ -20,6 +20,7 @@
         "NONE"
       ],
       "animations": [
+        "q.look('head')",
         "q.bedrock('pidgeot', 'ground_idle')"
       ],
       "transformedParts": [
@@ -50,6 +51,7 @@
         "WALK"
       ],
       "animations": [
+        "q.look('head')",
         "q.bedrock('pidgeot', 'ground_idle')",
         "q.biped_walk(1, 1, 'leg_left', 'leg_right')"
       ],
@@ -82,6 +84,7 @@
         "FLOAT"
       ],
       "animations": [
+        "q.look('head')",
         "q.pitch_tilt('body')",
         "q.bedrock('pidgeot', 'air_idle')",
         "q.sine_wing_flap(1, 1, 0.5, 'z', 'wing_open_left', 'wing_open_right')"
@@ -115,6 +118,7 @@
         "SWIM"
       ],
       "animations": [
+        "q.look('head')",
         "q.pitch_tilt('body')",
         "q.bedrock('pidgeot', 'air_fly')"
       ],

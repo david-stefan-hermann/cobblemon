@@ -44,6 +44,7 @@
 - Pidgeotto
 - Pidgeot
 - Sandslash
+- Nidoking
 
 ### Animation updates for the following Pokémon
 - Drampa
