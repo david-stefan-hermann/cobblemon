@@ -38,6 +38,9 @@
 - Zubat
 - Golbat
 - Crobat
+- Pidgey
+- Pidgeotto
+- Pidgeot
 
 ### Animation updates for the following Pokémon
 - Drampa

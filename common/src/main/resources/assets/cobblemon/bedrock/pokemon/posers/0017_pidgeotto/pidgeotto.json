@@ -1,9 +1,9 @@
 {
-  "portraitScale": 2.2,
-  "portraitTranslation": [-0.6, 0.15, 0],
-  "profileScale": 0.9,
-  "profileTranslation": [0, 0.4, 0],
-  "rootBone": "pidgeot",
+  "portraitScale": 3.29,
+  "portraitTranslation": [-0.39, -2.17, 0],
+  "profileScale": 0.76,
+  "profileTranslation": [-0.04, 0.62, 0.0],
+  "rootBone": "pidgeotto",
   "thirdPersonCameraOffset": {
     "seat_1": [0, 1.5, 1],
     "seat_1_reverse": [0, 1.5, 1],
@@ -20,7 +20,7 @@
         "NONE"
       ],
       "animations": [
-        "q.bedrock('pidgeot', 'ground_idle')"
+        "q.bedrock('pidgeotto', 'ground_idle')"
       ],
       "transformedParts": [
         {
@@ -41,7 +41,7 @@
         }
       ],
       "quirks": [
-        "q.bedrock_quirk('pidgeot', 'blink')"
+        "q.bedrock_quirk('pidgeotto', 'blink')"
       ]
     },
     "walk": {
@@ -50,7 +50,7 @@
         "WALK"
       ],
       "animations": [
-        "q.bedrock('pidgeot', 'ground_idle')",
+        "q.bedrock('pidgeotto', 'ground_idle')",
         "q.biped_walk(1, 1, 'leg_left', 'leg_right')"
       ],
       "transformedParts": [
@@ -72,7 +72,7 @@
         }
       ],
       "quirks": [
-        "q.bedrock_quirk('pidgeot', 'blink')"
+        "q.bedrock_quirk('pidgeotto', 'blink')"
       ]
     },
     "hover": {
@@ -83,7 +83,7 @@
       ],
       "animations": [
         "q.pitch_tilt('body')",
-        "q.bedrock('pidgeot', 'air_idle')",
+        "q.bedrock('pidgeotto', 'air_idle')",
         "q.sine_wing_flap(1, 1, 0.5, 'z', 'wing_open_left', 'wing_open_right')"
       ],
       "transformedParts": [
@@ -105,7 +105,7 @@
         }
       ],
       "quirks": [
-        "q.bedrock_quirk('pidgeot', 'blink')"
+        "q.bedrock_quirk('pidgeotto', 'blink')"
       ]
     },
     "fly": {
@@ -116,7 +116,7 @@
       ],
       "animations": [
         "q.pitch_tilt('body')",
-        "q.bedrock('pidgeot', 'air_idle')"
+        "q.bedrock('pidgeotto', 'air_idle')"
       ],
       "transformedParts": [
         {
@@ -137,7 +137,7 @@
         }
       ],
       "quirks": [
-        "q.bedrock_quirk('pidgeot', 'blink')"
+        "q.bedrock_quirk('pidgeotto', 'blink')"
       ]
     }
   }
