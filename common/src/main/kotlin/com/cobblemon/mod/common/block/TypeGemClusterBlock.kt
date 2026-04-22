@@ -93,7 +93,7 @@ class TypeGemClusterBlock(
             .setValue(STUNTED, false)
     }
 
-    override fun isRandomlyTicking(state: BlockState): Boolean = state.getValue(SHOULD_GROW)
+    public override fun isRandomlyTicking(state: BlockState): Boolean = state.getValue(SHOULD_GROW)
 
     override fun randomTick(state: BlockState, level: ServerLevel, pos: BlockPos, random: RandomSource) {
         advanceGrowth(state, level, pos, random)
