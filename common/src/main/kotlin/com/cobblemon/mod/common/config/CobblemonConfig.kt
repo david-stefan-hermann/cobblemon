@@ -146,6 +146,12 @@ class CobblemonConfig {
     @CobblemonConfigField(Category.Battles, lang = "experience_share_multiplier", SERVER)
     var experienceShareMultiplier = .5
 
+    @CobblemonConfigField(Category.Battles, lang = "award_experience_to_fainted_pokemon", SERVER)
+    var awardExperienceToFaintedPokemon = false
+
+    @CobblemonConfigField(Category.Battles, lang = "award_experience_on_battle_loss", SERVER)
+    var awardExperienceOnBattleLoss = false
+
     @CobblemonConfigField(Category.Battles, lang = "lucky_egg_multiplier", SERVER)
     var luckyEggMultiplier = 1.5
 
@@ -391,6 +397,12 @@ class CobblemonConfig {
 
     @CobblemonConfigField(Category.Spawning, lang = "despawner_max_age_ticks", SERVER)
     var despawnerMaxAgeTicks = 3600
+
+    @CobblemonConfigField(Category.Spawning, lang = "data_monitor_alpha_rate", SERVER)
+    var monitorAlphaRate = 40
+
+    @CobblemonConfigField(Category.Spawning, lang = "data_monitor_shiny_rate", SERVER)
+    var monitorShinyRate = 200
 
     fun clone(): CobblemonConfig {
         val newConfig = CobblemonConfig()

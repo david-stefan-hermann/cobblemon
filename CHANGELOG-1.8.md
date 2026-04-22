@@ -25,6 +25,27 @@
     - Added alpha pokemon bait effect
     - Added alpha eye rendering including: eye overlay, bloom, eye trail, and particles.
 
+#### Added sounds to the following moves
+- Absorb
+- Aurora Beam
+- Double Team
+- Fire Punch
+- Fire Spin
+- Flame Charge
+- Flame Wheel
+- Giga Drain
+- Ice Punch
+- Leech Life
+- Magical Leaf
+- Mega Drain
+- Minimize
+- Poison Gas
+- Rock Throw
+- Scary Face
+- Seed bomb
+- Smokescreen
+- String Shot
+- Tail Whip
 
 ### Changes
 - Data Monitor can accept Disks (TMs, Music Disks, Upgrade, Dubious Disk, etc) to change look
@@ -39,10 +60,12 @@
 
 ### Developer
 - Tweaked the spawning selector interface to take a bucket function rather than a bucket directly.
+- Added a new `cobblemon:height_range` processor type to allow developers to restrict structure spawning ranges.
 
 ### Molang & Datapacks
 - Added q.world.spawn_loot_table_items(loot_table_id, x, y, z) which spawns the items from the loot table at the position. (Use type: "minecraft:chest" for the loot table.)
 - Added q.pokemon.entity to access the entity of pokemon.
+- Flamethrower and Seismic Toss had their action effect json cleaned up
 
 ### Particles
 
