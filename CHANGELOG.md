@@ -18,6 +18,8 @@
 - Cascoon
 - Dustox
 - Audino
+- Rockruff
+- Lycanroc
 - Snom
 - Frosmoth
 - Applin
