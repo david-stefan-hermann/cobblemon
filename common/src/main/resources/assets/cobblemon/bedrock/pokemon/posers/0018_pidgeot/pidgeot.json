@@ -1,8 +1,8 @@
 {
   "portraitScale": 2.2,
-  "portraitTranslation": [-0.6, 0.15, 0],
-  "profileScale": 0.9,
-  "profileTranslation": [0, 0.4, 0],
+  "portraitTranslation": [-0.84, 1.19, 0],
+  "profileScale": 0.75,
+  "profileTranslation": [0, 0.65, 0],
   "rootBone": "pidgeot",
   "thirdPersonCameraOffset": {
     "seat_1": [0, 1.5, 1],
@@ -116,7 +116,7 @@
       ],
       "animations": [
         "q.pitch_tilt('body')",
-        "q.bedrock('pidgeot', 'air_idle')"
+        "q.bedrock('pidgeot', 'air_fly')"
       ],
       "transformedParts": [
         {

@@ -27,6 +27,8 @@
 - Appletun
 - Dipplin
 - Hydrapple
+- Sandshrew (Alolan)
+- Sandslash (Alolan)
 
 ### Model updates for the following Pokémon
 - Goomy
@@ -41,6 +43,7 @@
 - Pidgey
 - Pidgeotto
 - Pidgeot
+- Sandslash
 
 ### Animation updates for the following Pokémon
 - Drampa
