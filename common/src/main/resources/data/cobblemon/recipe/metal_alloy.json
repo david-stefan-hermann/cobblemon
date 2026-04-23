@@ -1,0 +1,19 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        " I ",
+        "ISI",
+        " I "
+    ],
+    "key": {
+        "I": {
+            "tag": "c:ingots/iron"
+        }
+        "S": {
+            "item": "cobblemon:thunderstone"
+        }
+    },
+    "result": {
+        "id": "cobblemon:metal_alloy"
+    }
+}

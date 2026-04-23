@@ -38,6 +38,7 @@
 ### Changes
 - Data Monitor can accept Disks (TMs, Music Disks, Upgrade, Dubious Disk, etc) to change look
 - Sharp Beak can now be crafted
+- Metal Alloy can now be crafted
 - Ability Capsules can now be brewed
 - The following items can now be obtained by brushing the following Pokemon:
   - Pink Wool - Wigglytuff
