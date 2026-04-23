@@ -584,5 +584,18 @@ object CobblemonSounds : PlatformRegistry<Registry<SoundEvent>, ResourceKey<Regi
         CAMPFIRE_POT_STEP
     )
 
+    @JvmField
+    val ITEM_BLOCK_PAPER_SMALL_PLACE = this.create("block.item_block.paper_small.place")
+    @JvmField
+    val ITEM_BLOCK_PAPER_SMALL_BREAK = this.create("block.item_block.paper_small.break")
+    @JvmField
+    val ITEM_BLOCK_PAPER_SMALL_SOUNDS = SoundType(1f, 1f,
+        ITEM_BLOCK_PAPER_SMALL_BREAK,
+        SoundEvents.WOOL_STEP,
+        ITEM_BLOCK_PAPER_SMALL_PLACE,
+        SoundEvents.WOOL_HIT,
+        SoundEvents.WOOL_FALL
+    )
+
     private fun create(name: String): SoundEvent = this.create(name, SoundEvent.createVariableRangeEvent(cobblemonResource(name)))
 }

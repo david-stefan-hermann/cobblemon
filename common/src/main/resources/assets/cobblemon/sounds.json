@@ -855,8 +855,23 @@
     "sounds": [
       { "name": "cobblemon:block/campfire_pot/campfire_pot_step_1", "volume": 0.5 },
       { "name": "cobblemon:block/campfire_pot/campfire_pot_step_2", "volume": 0.5 },
-      { "name": "cobblemon:block/campfire_pot/campfire_pot_step_3", "volume": 0.5 },
       { "name": "cobblemon:block/campfire_pot/campfire_pot_step_3", "volume": 0.5 }
+    ]
+  },
+  "block.item_block.paper_small.place": {
+    "subtitle": "subtitles.block.generic.place",
+    "sounds": [
+      { "name": "cobblemon:block/item_block/paper_small_place_1", "volume": 0.4 },
+      { "name": "cobblemon:block/item_block/paper_small_place_2", "volume": 0.4 },
+      { "name": "cobblemon:block/item_block/paper_small_place_3", "volume": 0.4 }
+    ]
+  },
+  "block.item_block.paper_small.break": {
+    "subtitle": "subtitles.block.generic.break",
+    "sounds": 
+      { "name": "cobblemon:block/item_block/paper_small_break_1", "volume": 0.6 },
+      { "name": "cobblemon:block/item_block/paper_small_break_2", "volume": 0.6 },
+      { "name": "cobblemon:block/item_block/paper_small_break_3", "volume": 0.6 }
     ]
   },
   "move.absorb.actor": {
