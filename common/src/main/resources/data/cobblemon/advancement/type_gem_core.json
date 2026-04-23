@@ -1,0 +1,21 @@
+{
+  "display": {
+    "icon": {
+      "id": "cobblemon:type_gem_core"
+    },
+    "title": "advancements.cobblemon.type_gem_core",
+    "description": "advancements.cobblemon.type_gem_core.description"
+  },
+  "parent": "cobblemon:root",
+  "criteria": {
+    "dummy": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "dummy"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

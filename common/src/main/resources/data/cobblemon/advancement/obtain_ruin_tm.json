@@ -1,0 +1,21 @@
+{
+  "display": {
+    "icon": {
+      "id": "cobblemon:blank_tm"
+    },
+    "title": "advancements.cobblemon.obtain_ruin_tm",
+    "description": "advancements.cobblemon.obtain_ruin_tm.description"
+  },
+  "parent": "cobblemon:craft_tm",
+  "criteria": {
+    "dummy": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "dummy"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

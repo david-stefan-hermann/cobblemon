@@ -1,0 +1,24 @@
+{
+  "display": {
+		"icon": {
+			"id": "cobblemon:link_cable",
+			"components": {
+        "minecraft:custom_model_data": 7
+      }
+		},
+    "title": "advancements.cobblemon.first_alpha_catch",
+    "description": "advancements.cobblemon.first_alpha_catch.description"
+  },
+  "parent": "cobblemon:first_catch",
+  "criteria": {
+    "dummy": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "dummy"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

@@ -1,0 +1,25 @@
+{
+  "display": {
+    "icon": {
+      "id": "cobblemon:tm_shelf"
+    },
+    "title": "advancements.cobblemon.register_all_moves",
+    "description": "advancements.cobblemon.register_all_moves.description",
+    "frame": "challenge"
+  },
+  "parent": "cobblemon:obtain_ruin_tm",
+  "criteria": {
+    "dummy": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "dummy"
+    ]
+  ],
+  "rewards": {
+    "experience": 100
+  },
+  "sends_telemetry_event": false
+}
