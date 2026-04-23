@@ -87,6 +87,8 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
 
         const val DESCRIPTION_SCROLLBAR_WIDTH = 2
 
+        val moveOverlayBar = cobblemonResource("textures/gui/tmmachine/summary_move_overlay_bar.png")
+
         val baseResource = cobblemonResource("textures/gui/tmmachine/base.png")
         val tmTray = cobblemonResource("textures/gui/tmmachine/tm_tray.png")
         val iconBack = cobblemonResource("textures/gui/tmmachine/icon_back.png")
@@ -1201,9 +1203,36 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             }
         }
 
-        renderScreenSaver(graphics)
-
         super.render(graphics, mouseX, mouseY, delta)
+
+        if (mode == TM_BURN_MODE && ::selectedMoveButton.isInitialized) {
+            selectedMoveButton.showOverlayBar = !selectedMoveButton.isHovered
+
+            if (selectedMoveButton.isHovered) {
+                blitk(
+                    matrixStack = matrices,
+                    texture = moveOverlayBar,
+                    x = selectedMoveButton.x + 85,
+                    y = selectedMoveButton.y + 13,
+                    width = 22,
+                    height = 8
+                )
+
+                blitk(
+                    matrixStack = matrices,
+                    texture = iconBack,
+                    x = (selectedMoveButton.x + 92) / HALF_SCALE,
+                    y = (selectedMoveButton.y + 13) / HALF_SCALE,
+                    width = 20,
+                    height = 18,
+                    textureHeight = 36,
+                    vOffset = 18,
+                    scale = HALF_SCALE
+                )
+            }
+        }
+
+        renderScreenSaver(graphics)
 
         renderMoveInfo(graphics, mouseX, mouseY)
 
