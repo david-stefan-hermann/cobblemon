@@ -3,6 +3,7 @@
   "portraitTranslation": [-0.15, -0.78, 0],
   "profileScale": 0.70,
   "profileTranslation": [0.00, 0.70, 0],
+  "rootBone": "yamask",
   "animations": {
     "faint": "q.bedrock_primary('yamask', 'faint', q.curve('one'))",
     "cry": "q.bedrock_stateful('yamask', 'cry')"
