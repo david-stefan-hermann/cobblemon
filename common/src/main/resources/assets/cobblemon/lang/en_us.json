@@ -2970,6 +2970,7 @@
   "cobblemon.battle.activate.tidyup": "Tidying up complete!",
   "cobblemon.battle.activate.trapped": "%1$s can no longer escape!",
   "cobblemon.battle.activate.trick":"%1$s switched items with its target!",
+  "cobblemon.battle.activate.wanderingspirit": "%1$s swapped Abilities with its target!",
   "cobblemon.battle.activate.whirlpool": "%1$s became trapped in the vortex!",
   "cobblemon.battle.activate.wideguard": "Wide Guard protected %1$s!",
   "cobblemon.battle.activate.wrap": "%1$s was wrapped by %2$s!",
