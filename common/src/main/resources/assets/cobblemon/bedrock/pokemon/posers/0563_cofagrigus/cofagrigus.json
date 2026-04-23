@@ -3,6 +3,7 @@
   "portraitTranslation": [-0.19, 2.80, 0],
   "profileScale": 0.35,
   "profileTranslation": [0.00, 1.30, 0],
+  "rootBone": "cofagrigus",
   "animations": {
     "faint": "q.bedrock_primary('cofagrigus', 'faint', q.curve('one'))",
     "cry": "q.bedrock_stateful('cofagrigus', 'cry')"
