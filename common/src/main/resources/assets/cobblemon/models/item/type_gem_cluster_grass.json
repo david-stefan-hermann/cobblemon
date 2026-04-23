@@ -1,26 +1,32 @@
 {
     "parent":  "minecraft:item/generated",
     "textures":  {
-                     "layer0":  "cobblemon:block/type_gems/type_gem_cluster_grass"
+                     "layer0":  "cobblemon:block/type_gems/grass_gem_cluster"
                  },
     "overrides":  [
                       {
                           "predicate":  {
                                             "custom_model_data":  0
                                         },
-                          "model":  "cobblemon:item/type_gem_bud_small_grass"
+                          "model":  "cobblemon:item/small_grass_gem_bud"
                       },
                       {
                           "predicate":  {
                                             "custom_model_data":  1
                                         },
-                          "model":  "cobblemon:item/type_gem_bud_medium_grass"
+                          "model":  "cobblemon:item/medium_grass_gem_bud"
                       },
                       {
                           "predicate":  {
                                             "custom_model_data":  2
                                         },
-                          "model":  "cobblemon:item/type_gem_bud_large_grass"
+                          "model":  "cobblemon:item/large_grass_gem_bud"
+                      },
+                      {
+                          "predicate":  {
+                                            "custom_model_data":  3
+                                        },
+                          "model":  "cobblemon:item/type_gem_cluster_grass"
                       }
                   ]
 }

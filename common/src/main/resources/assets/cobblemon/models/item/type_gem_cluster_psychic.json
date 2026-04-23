@@ -1,26 +1,32 @@
 {
     "parent":  "minecraft:item/generated",
     "textures":  {
-                     "layer0":  "cobblemon:block/type_gems/type_gem_cluster_psychic"
+                     "layer0":  "cobblemon:block/type_gems/psychic_gem_cluster"
                  },
     "overrides":  [
                       {
                           "predicate":  {
                                             "custom_model_data":  0
                                         },
-                          "model":  "cobblemon:item/type_gem_bud_small_psychic"
+                          "model":  "cobblemon:item/small_psychic_gem_bud"
                       },
                       {
                           "predicate":  {
                                             "custom_model_data":  1
                                         },
-                          "model":  "cobblemon:item/type_gem_bud_medium_psychic"
+                          "model":  "cobblemon:item/medium_psychic_gem_bud"
                       },
                       {
                           "predicate":  {
                                             "custom_model_data":  2
                                         },
-                          "model":  "cobblemon:item/type_gem_bud_large_psychic"
+                          "model":  "cobblemon:item/large_psychic_gem_bud"
+                      },
+                      {
+                          "predicate":  {
+                                            "custom_model_data":  3
+                                        },
+                          "model":  "cobblemon:item/type_gem_cluster_psychic"
                       }
                   ]
 }

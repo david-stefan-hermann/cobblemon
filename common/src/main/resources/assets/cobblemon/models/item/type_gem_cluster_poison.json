@@ -1,26 +1,32 @@
 {
     "parent":  "minecraft:item/generated",
     "textures":  {
-                     "layer0":  "cobblemon:block/type_gems/type_gem_cluster_poison"
+                     "layer0":  "cobblemon:block/type_gems/poison_gem_cluster"
                  },
     "overrides":  [
                       {
                           "predicate":  {
                                             "custom_model_data":  0
                                         },
-                          "model":  "cobblemon:item/type_gem_bud_small_poison"
+                          "model":  "cobblemon:item/small_poison_gem_bud"
                       },
                       {
                           "predicate":  {
                                             "custom_model_data":  1
                                         },
-                          "model":  "cobblemon:item/type_gem_bud_medium_poison"
+                          "model":  "cobblemon:item/medium_poison_gem_bud"
                       },
                       {
                           "predicate":  {
                                             "custom_model_data":  2
                                         },
-                          "model":  "cobblemon:item/type_gem_bud_large_poison"
+                          "model":  "cobblemon:item/large_poison_gem_bud"
+                      },
+                      {
+                          "predicate":  {
+                                            "custom_model_data":  3
+                                        },
+                          "model":  "cobblemon:item/type_gem_cluster_poison"
                       }
                   ]
 }
