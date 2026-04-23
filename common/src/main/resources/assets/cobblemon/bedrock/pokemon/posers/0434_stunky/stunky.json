@@ -1,9 +1,9 @@
 {
-    "portraitScale": 2.19,
-    "portraitTranslation": [-0.54,-0.52,0],
+    "portraitScale": 2.31,
+    "portraitTranslation": [-0.71,-1.53,0],
     "profileScale": 0.67,
     "profileTranslation": [0,0.74,0],
-  "rootBone": "glameow",
+  "rootBone": "stunky",
     "poses": {
       "standing": {
         "poseTypes": [
@@ -15,10 +15,10 @@
         "isBattle": false,
         "animations": [
           "q.look('head')",
-          "q.bedrock('glameow', 'ground_idle')"
+          "q.bedrock('stunky', 'ground_idle')"
         ],
         "quirks": [
-          "q.bedrock_quirk('glameow', 'blink')"
+          "q.bedrock_quirk('stunky', 'blink')"
         ]
       },
       "walking": {
@@ -28,11 +28,11 @@
         ],
         "animations": [
           "q.look('head')",
-          "q.bedrock('glameow', 'ground_idle')",
-          "q.quadruped_walk(0.66, 0.6, 'left_upper_front_leg', 'right_upper_front_leg', 'left_upper_back_leg', 'right_upper_back_leg')"
+          "q.bedrock('stunky', 'ground_idle')",
+          "q.quadruped_walk(1, 1, 'leg_front_left', 'leg_front_right', 'leg_back_left', 'leg_back_right')"
         ],
         "quirks": [
-          "q.bedrock_quirk('glameow', 'blink')"
+          "q.bedrock_quirk('stunky', 'blink')"
         ]
       }
     }
