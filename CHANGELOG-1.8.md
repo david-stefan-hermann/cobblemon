@@ -37,6 +37,8 @@
 
 ### Changes
 - Data Monitor can accept Disks (TMs, Music Disks, Upgrade, Dubious Disk, etc) to change look
+- Sharp Beak can now be crafted
+- Ability Capsules can now be brewed
 
 ### Fixes
 - Fixed rare Pokémon being far too likely to spawn multiple times in a single spawn cycle. The dev told me that the exact bug is too complicated to explain.
