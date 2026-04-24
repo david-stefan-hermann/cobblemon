@@ -343,7 +343,7 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     @JvmField
     val TYPE_GEM_CLUSTER_POISON = typeGemCluster("poison_gem_cluster", TYPE_GEM_BLOCK_POISON, cobblemonResource("poison_gem"))
     @JvmField
-    val TYPE_GEM_CLUSTER_GROUND = typeGemCluster("type_gem_cluster_ground", TYPE_GEM_BLOCK_GROUND, cobblemonResource("ground_gem"))
+    val TYPE_GEM_CLUSTER_GROUND = typeGemCluster("ground_gem_cluster", TYPE_GEM_BLOCK_GROUND, cobblemonResource("ground_gem"))
     @JvmField
     val TYPE_GEM_CLUSTER_FLYING = typeGemCluster("type_gem_cluster_flying", TYPE_GEM_BLOCK_FLYING, cobblemonResource("flying_gem"))
     @JvmField
