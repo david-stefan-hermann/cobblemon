@@ -26,13 +26,13 @@
                   }
                 }
               ],
-              "name": "cobblemon:type_gem_cluster_steel"
+              "name": "cobblemon:steel_gem_cluster"
             },
             {
               "type": "minecraft:item",
               "conditions": [
                 {
-                  "block": "cobblemon:type_gem_cluster_steel",
+                  "block": "cobblemon:steel_gem_cluster",
                   "condition": "minecraft:block_state_property",
                   "properties": {
                     "stage": "3"
