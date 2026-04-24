@@ -37,7 +37,7 @@ class TypeGemCoreBlock(properties: Properties) : Block(properties) {
             mapOf(
                 ResourceLocation.parse("cobblemon:normal_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_NORMAL,
                 ResourceLocation.parse("cobblemon:fire_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_FIRE,
-                ResourceLocation.parse("cobblemon:type_gem_block_water") to CobblemonBlocks.TYPE_GEM_CLUSTER_WATER,
+                ResourceLocation.parse("cobblemon:water_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_WATER,
                 ResourceLocation.parse("cobblemon:type_gem_block_electric") to CobblemonBlocks.TYPE_GEM_CLUSTER_ELECTRIC,
                 ResourceLocation.parse("cobblemon:grass_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_GRASS,
                 ResourceLocation.parse("cobblemon:type_gem_block_ice") to CobblemonBlocks.TYPE_GEM_CLUSTER_ICE,
