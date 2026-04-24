@@ -202,7 +202,7 @@
 
   "block.cobblemon.type_gem_core": "Deepslate Crystal Core",
   "block.cobblemon.normal_gem_block": "Normal Gem Block",
-  "block.cobblemon.type_gem_block_fire": "Fire Type Gem Block",
+  "block.cobblemon.fire_gem_block": "Fire Gem Block",
   "block.cobblemon.type_gem_block_water": "Water Type Gem Block",
   "block.cobblemon.type_gem_block_electric": "Electric Type Gem Block",
   "block.cobblemon.type_gem_block_grass": "Grass Type Gem Block",
