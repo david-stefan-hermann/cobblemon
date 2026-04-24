@@ -40,7 +40,7 @@ class TypeGemCoreBlock(properties: Properties) : Block(properties) {
                 ResourceLocation.parse("cobblemon:water_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_WATER,
                 ResourceLocation.parse("cobblemon:electric_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_ELECTRIC,
                 ResourceLocation.parse("cobblemon:grass_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_GRASS,
-                ResourceLocation.parse("cobblemon:type_gem_block_ice") to CobblemonBlocks.TYPE_GEM_CLUSTER_ICE,
+                ResourceLocation.parse("cobblemon:ice_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_ICE,
                 ResourceLocation.parse("cobblemon:type_gem_block_fighting") to CobblemonBlocks.TYPE_GEM_CLUSTER_FIGHTING,
                 ResourceLocation.parse("cobblemon:poison_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_POISON,
                 ResourceLocation.parse("cobblemon:ground_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_GROUND,
