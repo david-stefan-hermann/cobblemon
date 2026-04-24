@@ -16,7 +16,7 @@
 	  "cobblemon:type_gem_block_ghost",
 	  "cobblemon:type_gem_block_dragon",
 	  "cobblemon:type_gem_block_dark",
-	  "cobblemon:type_gem_block_steel",
+	  "cobblemon:steel_gem_block",
 	  "cobblemon:type_gem_block_fairy"
   ]
 }
