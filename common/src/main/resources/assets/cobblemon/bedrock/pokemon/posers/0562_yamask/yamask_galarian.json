@@ -3,6 +3,7 @@
   "portraitTranslation": [-0.15, -0.62, 0],
   "profileScale": 0.70,
   "profileTranslation": [0.00, 0.70, 0],
+  "rootBone": "yamask_galarian",
   "animations": {
     "cry": "q.bedrock_stateful('yamask_galarian', 'cry')"
   },
