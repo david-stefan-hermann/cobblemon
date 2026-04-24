@@ -1,7 +1,7 @@
 {
     "parent":  "minecraft:item/generated",
     "textures":  {
-                     "layer0":  "cobblemon:block/type_gems/type_gem_cluster_water"
+                     "layer0":  "cobblemon:block/type_gems/water_gem_cluster"
                  },
     "overrides":  [
                       {
