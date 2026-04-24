@@ -220,7 +220,7 @@
   "block.cobblemon.type_gem_block_steel": "Steel Type Gem Block",
   "block.cobblemon.type_gem_block_fairy": "Fairy Type Gem Block",
   "block.cobblemon.normal_gem_cluster": "Normal Gem Cluster",
-  "block.cobblemon.type_gem_cluster_fire": "Fire Type Gem Cluster",
+  "block.cobblemon.fire_gem_cluster": "Fire Gem Cluster",
   "block.cobblemon.type_gem_cluster_water": "Water Type Gem Cluster",
   "block.cobblemon.type_gem_cluster_electric": "Electric Type Gem Cluster",
   "block.cobblemon.type_gem_cluster_grass": "Grass Type Gem Cluster",

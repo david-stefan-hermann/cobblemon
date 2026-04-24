@@ -26,13 +26,13 @@
                   }
                 }
               ],
-              "name": "cobblemon:type_gem_cluster_fire"
+              "name": "cobblemon:fire_gem_cluster"
             },
             {
               "type": "minecraft:item",
               "conditions": [
                 {
-                  "block": "cobblemon:type_gem_cluster_fire",
+                  "block": "cobblemon:fire_gem_cluster",
                   "condition": "minecraft:block_state_property",
                   "properties": {
                     "stage": "3"
