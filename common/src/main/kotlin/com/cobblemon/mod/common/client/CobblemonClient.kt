@@ -282,6 +282,7 @@ object CobblemonClient {
             CobblemonBlocks.HEALING_MACHINE,
             CobblemonBlocks.MEDICINAL_LEEK,
             CobblemonBlocks.HEALING_MACHINE,
+            CobblemonBlocks.MONITOR,
             CobblemonBlocks.RED_MINT,
             CobblemonBlocks.BLUE_MINT,
             CobblemonBlocks.CYAN_MINT,
