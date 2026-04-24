@@ -11,7 +11,7 @@
     }
   },
   "result": {
-    "id": "cobblemon:type_gem_block_grass",
+    "id": "cobblemon:grass_gem_block",
     "count": 1
   },
   "criteria": {
@@ -30,7 +30,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "cobblemon:type_gem_block_grass"
+        "recipe": "cobblemon:grass_gem_block"
       }
     }
   },
