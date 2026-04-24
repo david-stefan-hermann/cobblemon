@@ -874,6 +874,22 @@
       { "name": "cobblemon:block/item_block/paper_small_break_3", "volume": 0.6 }
     ]
   },
+  "block.item_block.paper_large.place": {
+    "subtitle": "subtitles.block.generic.place",
+    "sounds": [
+      { "name": "cobblemon:block/item_block/paper_large_place_1", "volume": 0.4 },
+      { "name": "cobblemon:block/item_block/paper_large_place_2", "volume": 0.4 },
+      { "name": "cobblemon:block/item_block/paper_large_place_3", "volume": 0.4 }
+    ]
+  },
+  "block.item_block.paper_large.break": {
+    "subtitle": "subtitles.block.generic.break",
+    "sounds": [
+      { "name": "cobblemon:block/item_block/paper_large_break_1", "volume": 0.6 },
+      { "name": "cobblemon:block/item_block/paper_large_break_2", "volume": 0.6 },
+      { "name": "cobblemon:block/item_block/paper_large_break_3", "volume": 0.6 }
+    ]
+  },
   "move.absorb.actor": {
     "sounds": [ { "name": "cobblemon:move/absorb/absorb_actor", "volume": 0.3 } ]
   },

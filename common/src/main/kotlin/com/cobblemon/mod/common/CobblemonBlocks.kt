@@ -598,9 +598,9 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     val SPELL_TAG = create("spell_tag", WallAttachedStackableItemBlock(BlockBehaviour.Properties.of().sound(CobblemonSounds.ITEM_BLOCK_PAPER_SMALL_SOUNDS).mapColor(MapColor.NONE).pushReaction(PushReaction.DESTROY).noOcclusion().noCollission(), WallAttachedStackableItemBlock.WallStackableItemBlockType.TAG))
 
     @JvmField
-    val BLUNDER_POLICY = create("blunder_policy", WallAttachedDirectionalShapeBlock(BlockBehaviour.Properties.of().sound(SoundType.CANDLE).mapColor(MapColor.NONE).noOcclusion().noCollission(), 14, 12, 1))
+    val BLUNDER_POLICY = create("blunder_policy", WallAttachedDirectionalShapeBlock(BlockBehaviour.Properties.of().sound(CobblemonSounds.ITEM_BLOCK_PAPER_LARGE_SOUNDS).mapColor(MapColor.NONE).noOcclusion().noCollission(), 14, 12, 1))
     @JvmField
-    val WEAKNESS_POLICY = create("weakness_policy", WallAttachedDirectionalShapeBlock(BlockBehaviour.Properties.of().sound(SoundType.CANDLE).mapColor(MapColor.NONE).noOcclusion().noCollission(), 14, 12, 1))
+    val WEAKNESS_POLICY = create("weakness_policy", WallAttachedDirectionalShapeBlock(BlockBehaviour.Properties.of().sound(CobblemonSounds.ITEM_BLOCK_PAPER_LARGE_SOUNDS).mapColor(MapColor.NONE).noOcclusion().noCollission(), 14, 12, 1))
 
     @JvmField
     val FULL_HEAL = create("full_heal", StackableItemBlock(BlockBehaviour.Properties.of().sound(SoundType.CANDLE).mapColor(MapColor.NONE).noOcclusion(), StackableItemBlock.StackableItemBlockType.STATUS_RESTORE))

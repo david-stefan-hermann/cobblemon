@@ -589,10 +589,23 @@ object CobblemonSounds : PlatformRegistry<Registry<SoundEvent>, ResourceKey<Regi
     @JvmField
     val ITEM_BLOCK_PAPER_SMALL_BREAK = this.create("block.item_block.paper_small.break")
     @JvmField
-    val ITEM_BLOCK_PAPER_SMALL_SOUNDS = SoundType(1f, 1f,
+    val ITEM_BLOCK_PAPER_SMALL_SOUNDS = SoundType(1f, 1.1f,
         ITEM_BLOCK_PAPER_SMALL_BREAK,
         SoundEvents.WOOL_STEP,
         ITEM_BLOCK_PAPER_SMALL_PLACE,
+        SoundEvents.WOOL_HIT,
+        SoundEvents.WOOL_FALL
+    )
+
+    @JvmField
+    val ITEM_BLOCK_PAPER_LARGE_PLACE = this.create("block.item_block.paper_large.place")
+    @JvmField
+    val ITEM_BLOCK_PAPER_LARGE_BREAK = this.create("block.item_block.paper_large.break")
+    @JvmField
+    val ITEM_BLOCK_PAPER_LARGE_SOUNDS = SoundType(1f, 1.1f,
+        ITEM_BLOCK_PAPER_LARGE_BREAK,
+        SoundEvents.WOOL_STEP,
+        ITEM_BLOCK_PAPER_LARGE_PLACE,
         SoundEvents.WOOL_HIT,
         SoundEvents.WOOL_FALL
     )
