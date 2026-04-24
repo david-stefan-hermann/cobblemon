@@ -29,6 +29,13 @@
 - Hydrapple
 - Sandshrew (Alolan)
 - Sandslash (Alolan)
+- Seviper
+- Zangoose
+- Stunky
+- Skuntank
+- Pawniard
+- Bisharp
+- Kingambit
 
 ### Model updates for the following Pokémon
 - Goomy
@@ -45,10 +52,17 @@
 - Pidgeot
 - Sandslash
 - Nidoking
+- Sableye
+- Mawile
+- Nacli
+- Naclestack
+- Garganacl
+- Skarmory
 
 ### Animation updates for the following Pokémon
 - Drampa
 - Archeops
+- Skarmory
 
 ### Changes
 - Dragonite's mailbag cosmetic can now also be obtained with a chest in the cosmetic slot

@@ -1,145 +1,141 @@
 {
   "portraitScale": 2.2,
-  "portraitTranslation": [-0.84, 1.19, 0],
-  "profileScale": 0.75,
-  "profileTranslation": [0, 0.65, 0],
+  "portraitTranslation": [-0.6, 0.15, 0],
+  "profileScale": 0.9,
+  "profileTranslation": [0, 0.4, 0],
   "rootBone": "pidgeot",
-  "thirdPersonCameraOffset": {
-    "seat_1": [0, 1.5, 1],
-    "seat_1_reverse": [0, 1.5, 1],
-    "seat_2": [0, 1.5, 1],
-    "seat_2_reverse": [0, 1.5, 1]
+  "animations": {
+    "cry": "q.bedrock_stateful('pidgeot', 'cry')"
   },
   "poses": {
     "standing": {
-      "poseName": "standing",
-      "poseTypes": [
-        "PORTRAIT",
-        "PROFILE",
-        "STAND",
-        "NONE"
-      ],
+      "poseTypes": ["STAND", "NONE", "PORTRAIT", "PROFILE"],
       "animations": [
-        "q.look('head')",
-        "q.bedrock('pidgeot', 'ground_idle')"
+        "q.look('neck')",
+        "q.bedrock('pidgeot', 'ground_idle_PLACEHOLDER')"
       ],
       "transformedParts": [
-        {
-          "part": "wing_open_left",
-          "isVisible": false
-        },
-        {
-          "part": "wing_open_right",
-          "isVisible": false
-        },
-        {
-          "part": "wing_closed_left",
-          "isVisible": true
-        },
-        {
-          "part": "wing_closed_right",
-          "isVisible": true
-        }
-      ],
+         {
+           "part": "wing_open_left",
+           "isVisible": false
+         },
+         {
+           "part": "wing_open_right",
+           "isVisible": false
+         },
+         {
+           "part": "wing_closed_left",
+           "isVisible": true
+         },
+         {
+           "part": "wing_closed_right",
+           "isVisible": true
+         }
+        ],
       "quirks": [
         "q.bedrock_quirk('pidgeot', 'blink')"
       ]
     },
-    "walk": {
-      "poseName": "walk",
-      "poseTypes": [
-        "WALK"
-      ],
+    "walking": {
+      "poseTypes": ["WALK", "SWIM"],
       "animations": [
-        "q.look('head')",
-        "q.bedrock('pidgeot', 'ground_idle')",
-        "q.biped_walk(1, 1, 'leg_left', 'leg_right')"
+        "q.look('neck')",
+        "q.bedrock('pidgeot', 'ground_idle_PLACEHOLDER')",
+        "q.biped_walk(0.66, 0.6, 'leg_left', 'leg_right')"
       ],
       "transformedParts": [
-        {
-          "part": "wing_open_left",
-          "isVisible": false
-        },
-        {
-          "part": "wing_open_right",
-          "isVisible": false
-        },
-        {
-          "part": "wing_closed_left",
-          "isVisible": true
-        },
-        {
-          "part": "wing_closed_right",
-          "isVisible": true
-        }
-      ],
-      "quirks": [
-        "q.bedrock_quirk('pidgeot', 'blink')"
-      ]
+         {
+           "part": "wing_open_left",
+           "isVisible": false
+         },
+         {
+           "part": "wing_open_right",
+           "isVisible": false
+         },
+         {
+           "part": "wing_closed_left",
+           "isVisible": true
+         },
+         {
+           "part": "wing_closed_right",
+           "isVisible": true
+         }
+        ],
+      "quirks": ["q.bedrock_quirk('pidgeot', 'blink')"]
     },
     "hover": {
-      "poseName": "hover",
-      "poseTypes": [
-        "HOVER",
-        "FLOAT"
-      ],
-      "animations": [
-        "q.look('head')",
-        "q.pitch_tilt('body')",
-        "q.bedrock('pidgeot', 'air_idle')",
-        "q.sine_wing_flap(1, 1, 0.5, 'z', 'wing_open_left', 'wing_open_right')"
-      ],
+      "poseTypes": ["HOVER"],
+      "animations": ["q.look('neck')", "q.bedrock('pidgeot', 'air_idle')"],
       "transformedParts": [
-        {
-          "part": "wing_open_left",
-          "isVisible": true
-        },
-        {
-          "part": "wing_open_right",
-          "isVisible": true
-        },
-        {
-          "part": "wing_closed_left",
-          "isVisible": false
-        },
-        {
-          "part": "wing_closed_right",
-          "isVisible": false
-        }
-      ],
+         {
+           "part": "wing_open_left",
+           "isVisible": true
+         },
+         {
+           "part": "wing_open_right",
+           "isVisible": true
+         },
+         {
+           "part": "wing_closed_left",
+           "isVisible": false
+         },
+         {
+           "part": "wing_closed_right",
+           "isVisible": false
+         }
+        ],
       "quirks": [
         "q.bedrock_quirk('pidgeot', 'blink')"
       ]
     },
     "fly": {
-      "poseName": "fly",
-      "poseTypes": [
-        "FLY",
-        "SWIM"
-      ],
-      "animations": [
-        "q.look('head')",
-        "q.pitch_tilt('body')",
-        "q.bedrock('pidgeot', 'air_fly')"
-      ],
+      "poseTypes": ["FLY"],
+      "condition": "!q.is_gliding",
+      "animations": ["q.look('neck')", "q.bedrock('pidgeot', 'air_idle')"],
       "transformedParts": [
-        {
-          "part": "wing_open_left",
-          "isVisible": true
-        },
-        {
-          "part": "wing_open_right",
-          "isVisible": true
-        },
-        {
-          "part": "wing_closed_left",
-          "isVisible": false
-        },
-        {
-          "part": "wing_closed_right",
-          "isVisible": false
-        }
-      ],
+         {
+           "part": "wing_open_left",
+           "isVisible": true
+         },
+         {
+           "part": "wing_open_right",
+           "isVisible": true
+         },
+         {
+           "part": "wing_closed_left",
+           "isVisible": false
+         },
+         {
+           "part": "wing_closed_right",
+           "isVisible": false
+         }
+        ],
+      "quirks": [
+        "q.bedrock_quirk('pidgeot', 'blink')"
+      ]
+    },
+    "glide": {
+      "poseTypes": ["FLY"],
+      "condition": "q.is_gliding",
+      "animations": ["q.look('neck')", "q.bedrock('pidgeot', 'air_fly')"],
+      "transformedParts": [
+         {
+           "part": "wing_open_left",
+           "isVisible": true
+         },
+         {
+           "part": "wing_open_right",
+           "isVisible": true
+         },
+         {
+           "part": "wing_closed_left",
+           "isVisible": false
+         },
+         {
+           "part": "wing_closed_right",
+           "isVisible": false
+         }
+        ],
       "quirks": [
         "q.bedrock_quirk('pidgeot', 'blink')"
       ]
