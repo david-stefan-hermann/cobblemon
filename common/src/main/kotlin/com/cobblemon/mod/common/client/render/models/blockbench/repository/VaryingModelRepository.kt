@@ -230,6 +230,8 @@ object VaryingModelRepository {
         inbuilt("raticate", ::RaticateModel)
         inbuilt("rattata_alolan", ::RattataAlolanModel)
         inbuilt("raticate_alolan", ::RaticateAlolanModel)
+        inbuilt("pidgey", ::PidgeyModel)
+        inbuilt("pidgeotto", ::PidgeottoModel)
         inbuilt("diglett", ::DiglettModel)
         inbuilt("dugtrio", ::DugtrioModel)
         inbuilt("krabby", ::KrabbyModel)
