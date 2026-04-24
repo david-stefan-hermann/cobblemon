@@ -1224,7 +1224,7 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     @JvmField
     val TYPE_GEM_CLUSTER_WATER = blockItem("water_gem_cluster", CobblemonBlocks.TYPE_GEM_CLUSTER_WATER)
     @JvmField
-    val TYPE_GEM_CLUSTER_ELECTRIC = blockItem("type_gem_cluster_electric", CobblemonBlocks.TYPE_GEM_CLUSTER_ELECTRIC)
+    val TYPE_GEM_CLUSTER_ELECTRIC = blockItem("electric_gem_cluster", CobblemonBlocks.TYPE_GEM_CLUSTER_ELECTRIC)
     @JvmField
     val TYPE_GEM_CLUSTER_GRASS = blockItem("grass_gem_cluster", CobblemonBlocks.TYPE_GEM_CLUSTER_GRASS)
     @JvmField
