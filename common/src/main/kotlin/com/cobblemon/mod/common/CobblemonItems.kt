@@ -1289,7 +1289,7 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     @JvmField
     val TYPE_GEM_BLOCK_STEEL = blockItem("steel_gem_block", CobblemonBlocks.TYPE_GEM_BLOCK_STEEL)
     @JvmField
-    val TYPE_GEM_BLOCK_FAIRY = blockItem("type_gem_block_fairy", CobblemonBlocks.TYPE_GEM_BLOCK_FAIRY)
+    val TYPE_GEM_BLOCK_FAIRY = blockItem("fairy_gem_block", CobblemonBlocks.TYPE_GEM_BLOCK_FAIRY)
 
     @JvmField
     val POKEROD_SMITHING_TEMPLATE = create("pokerod_smithing_template", SmithingTemplateItem(

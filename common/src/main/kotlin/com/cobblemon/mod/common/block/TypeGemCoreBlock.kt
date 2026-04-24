@@ -52,7 +52,7 @@ class TypeGemCoreBlock(properties: Properties) : Block(properties) {
                 ResourceLocation.parse("cobblemon:dragon_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_DRAGON,
                 ResourceLocation.parse("cobblemon:type_gem_block_dark") to CobblemonBlocks.TYPE_GEM_CLUSTER_DARK,
                 ResourceLocation.parse("cobblemon:steel_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_STEEL,
-                ResourceLocation.parse("cobblemon:type_gem_block_fairy") to CobblemonBlocks.TYPE_GEM_CLUSTER_FAIRY
+                ResourceLocation.parse("cobblemon:fairy_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_FAIRY
             )
         }
 
