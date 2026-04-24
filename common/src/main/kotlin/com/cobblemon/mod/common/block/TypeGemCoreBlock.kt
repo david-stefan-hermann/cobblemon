@@ -49,7 +49,7 @@ class TypeGemCoreBlock(properties: Properties) : Block(properties) {
                 ResourceLocation.parse("cobblemon:type_gem_block_bug") to CobblemonBlocks.TYPE_GEM_CLUSTER_BUG,
                 ResourceLocation.parse("cobblemon:rock_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_ROCK,
                 ResourceLocation.parse("cobblemon:type_gem_block_ghost") to CobblemonBlocks.TYPE_GEM_CLUSTER_GHOST,
-                ResourceLocation.parse("cobblemon:type_gem_block_dragon") to CobblemonBlocks.TYPE_GEM_CLUSTER_DRAGON,
+                ResourceLocation.parse("cobblemon:dragon_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_DRAGON,
                 ResourceLocation.parse("cobblemon:type_gem_block_dark") to CobblemonBlocks.TYPE_GEM_CLUSTER_DARK,
                 ResourceLocation.parse("cobblemon:steel_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_STEEL,
                 ResourceLocation.parse("cobblemon:type_gem_block_fairy") to CobblemonBlocks.TYPE_GEM_CLUSTER_FAIRY
