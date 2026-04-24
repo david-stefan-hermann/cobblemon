@@ -26,7 +26,7 @@
                   }
                 }
               ],
-              "name": "cobblemon:type_gem_block_normal"
+              "name": "cobblemon:normal_gem_block"
             },
             {
               "type": "minecraft:item",

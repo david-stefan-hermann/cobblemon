@@ -288,7 +288,7 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     private val typeGemBlocks = mutableMapOf<ResourceLocation, Block>()
 
     @JvmField
-    val TYPE_GEM_BLOCK_NORMAL = typeGemBlock("type_gem_block_normal")
+    val TYPE_GEM_BLOCK_NORMAL = typeGemBlock("normal_gem_block")
     @JvmField
     val TYPE_GEM_BLOCK_FIRE = typeGemBlock("type_gem_block_fire")
     @JvmField
