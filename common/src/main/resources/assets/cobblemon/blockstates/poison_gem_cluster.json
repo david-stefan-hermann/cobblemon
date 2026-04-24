@@ -79,28 +79,28 @@
       "y": 90
     },
     "stage=3,facing=down": {
-      "model": "cobblemon:block/type_gems/type_gem_cluster_poison",
+      "model": "cobblemon:block/type_gems/poison_gem_cluster",
       "x": 180
     },
     "stage=3,facing=up": {
-      "model": "cobblemon:block/type_gems/type_gem_cluster_poison"
+      "model": "cobblemon:block/type_gems/poison_gem_cluster"
     },
     "stage=3,facing=north": {
-      "model": "cobblemon:block/type_gems/type_gem_cluster_poison",
+      "model": "cobblemon:block/type_gems/poison_gem_cluster",
       "x": 90
     },
     "stage=3,facing=south": {
-      "model": "cobblemon:block/type_gems/type_gem_cluster_poison",
+      "model": "cobblemon:block/type_gems/poison_gem_cluster",
       "x": 90,
       "y": 180
     },
     "stage=3,facing=west": {
-      "model": "cobblemon:block/type_gems/type_gem_cluster_poison",
+      "model": "cobblemon:block/type_gems/poison_gem_cluster",
       "x": 90,
       "y": 270
     },
     "stage=3,facing=east": {
-      "model": "cobblemon:block/type_gems/type_gem_cluster_poison",
+      "model": "cobblemon:block/type_gems/poison_gem_cluster",
       "x": 90,
       "y": 90
     }

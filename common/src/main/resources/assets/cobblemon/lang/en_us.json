@@ -226,7 +226,7 @@
   "block.cobblemon.grass_gem_cluster": "Grass Gem Cluster",
   "block.cobblemon.type_gem_cluster_ice": "Ice Type Gem Cluster",
   "block.cobblemon.type_gem_cluster_fighting": "Fighting Type Gem Cluster",
-  "block.cobblemon.type_gem_cluster_poison": "Poison Type Gem Cluster",
+  "block.cobblemon.poison_gem_cluster": "Poison Gem Cluster",
   "block.cobblemon.type_gem_cluster_ground": "Ground Type Gem Cluster",
   "block.cobblemon.type_gem_cluster_flying": "Flying Type Gem Cluster",
   "block.cobblemon.type_gem_cluster_psychic": "Psychic Type Gem Cluster",
