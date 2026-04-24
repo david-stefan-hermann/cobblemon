@@ -1230,7 +1230,7 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     @JvmField
     val TYPE_GEM_CLUSTER_ICE = blockItem("ice_gem_cluster", CobblemonBlocks.TYPE_GEM_CLUSTER_ICE)
     @JvmField
-    val TYPE_GEM_CLUSTER_FIGHTING = blockItem("type_gem_cluster_fighting", CobblemonBlocks.TYPE_GEM_CLUSTER_FIGHTING)
+    val TYPE_GEM_CLUSTER_FIGHTING = blockItem("fighting_gem_cluster", CobblemonBlocks.TYPE_GEM_CLUSTER_FIGHTING)
     @JvmField
     val TYPE_GEM_CLUSTER_POISON = blockItem("poison_gem_cluster", CobblemonBlocks.TYPE_GEM_CLUSTER_POISON)
     @JvmField
