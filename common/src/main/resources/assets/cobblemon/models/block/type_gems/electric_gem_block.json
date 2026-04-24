@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "cobblemon:block/type_gems/type_gem_block_electric"
+    "all": "cobblemon:block/type_gems/electric_gem_block"
   }
 }

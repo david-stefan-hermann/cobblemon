@@ -294,7 +294,7 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     @JvmField
     val TYPE_GEM_BLOCK_WATER = typeGemBlock("water_gem_block")
     @JvmField
-    val TYPE_GEM_BLOCK_ELECTRIC = typeGemBlock("type_gem_block_electric")
+    val TYPE_GEM_BLOCK_ELECTRIC = typeGemBlock("electric_gem_block")
     @JvmField
     val TYPE_GEM_BLOCK_GRASS = typeGemBlock("grass_gem_block")
     @JvmField
