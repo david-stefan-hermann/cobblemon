@@ -236,7 +236,7 @@
   "block.cobblemon.dragon_gem_cluster": "Dragon Gem Cluster",
   "block.cobblemon.type_gem_cluster_dark": "Dark Type Gem Cluster",
   "block.cobblemon.steel_gem_cluster": "Steel Gem Cluster",
-  "block.cobblemon.type_gem_cluster_fairy": "Fairy Type Gem Cluster",
+  "block.cobblemon.fairy_gem_cluster": "Fairy Gem Cluster",
 
   "item.cobblemon.rare_candy": "Rare Candy",
   "item.cobblemon.rare_candy.tooltip": "Increases a Pokémon's level by one",
