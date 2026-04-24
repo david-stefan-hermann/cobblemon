@@ -4,6 +4,7 @@
   "textures": {
     "texture": "cobblemon:block/functional/monitor/monitor",
     "screen": "cobblemon:block/functional/monitor/monitor_screen",
+    "screen_overlay": "cobblemon:block/functional/monitor/monitor_screen",
     "side": "cobblemon:block/functional/monitor/monitor_side",
     "particle": "cobblemon:block/functional/monitor/monitor_particle"
   },
@@ -58,6 +59,14 @@
       "to": [13, 14, 2],
       "faces": {
         "north": {"uv": [3, 4, 13, 12], "texture": "#screen"}
+      }
+    },
+    {
+      "name": "screen_overlay",
+      "from": [3, 6, 2],
+      "to": [13, 14, 2],
+      "faces": {
+        "north": {"uv": [3, 4, 13, 12], "texture": "#screen_overlay"}
       }
     },
     {

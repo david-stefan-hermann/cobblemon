@@ -17,7 +17,6 @@ import com.cobblemon.mod.common.api.tms.TechnicalMachines
 import com.cobblemon.mod.common.client.CobblemonClient
 import com.cobblemon.mod.common.pokemon.FormData
 import com.cobblemon.mod.common.util.asIdentifierDefaultingNamespace
-import net.minecraft.resources.ResourceLocation
 
 enum class PokedexCategoryFilterType {
     ALL,
@@ -92,38 +91,6 @@ class PokedexCategoryFilter(
         }
 
         return false
-    }
-
-    // todo remove this since it isn't needed anymore
-    private fun buildEvolutionMoveLevelIndex(form: FormData): Map<ResourceLocation, Map<String, Int>> {
-        val evolutionForms = collectEvolutionForms(form)
-        val levelsBySpecies = mutableMapOf<ResourceLocation, MutableMap<String, Int>>()
-
-        for (evolutionForm in evolutionForms) {
-            val speciesId = evolutionForm.species.resourceIdentifier
-            val moveLevels = levelsBySpecies.getOrPut(speciesId) { mutableMapOf() }
-            buildMoveLevelIndex(evolutionForm).forEach { (moveName, level) ->
-                val current = moveLevels[moveName]
-                if (current == null || level < current) {
-                    moveLevels[moveName] = level
-                }
-            }
-        }
-
-        return levelsBySpecies
-    }
-
-    private fun buildMoveLevelIndex(form: FormData): Map<String, Int> {
-        val levels = mutableMapOf<String, Int>()
-        form.moves.levelUpMoves.forEach { (level, moves) ->
-            moves.forEach { move ->
-                val current = levels[move.name]
-                if (current == null || level < current) {
-                    levels[move.name] = level
-                }
-            }
-        }
-        return levels
     }
 
     private fun collectEvolutionForms(rootForm: FormData): List<FormData> {
