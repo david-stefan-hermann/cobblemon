@@ -11,6 +11,7 @@
 - Added Deepslate Core Block
 - Added /givetm Command
 - Added Move Dex to Pokedex
+- Added the Habitat Block, a spawner block for servers and adventure maps that controls spawning in an area.
 - Added Disk Rack for storing disks and being an audio sequencer for Noteblocks
 - Added intrinsic scaling to all mons (+-5%). Some rendering cases such as shoulder mounting revert to 1.0 scaling to preserve animation accuracy.
 - Added scaling to "baby" pokemon (smaller (-20%) at level 1 -> normal sized at level 10)
@@ -57,6 +58,8 @@
 ### Fixes
 - Fixed rare Pokémon being far too likely to spawn multiple times in a single spawn cycle. The dev told me that the exact bug is too complicated to explain.
 - Resolved the niche issue where Structures would spawn in an incorrect location, creating very funky world gen.
+- Fixed Galarian Ponyta missing its cry.
+- Fixed various log warnings caused by redundant files and sound events.
 
 ### Developer
 - Tweaked the spawning selector interface to take a bucket function rather than a bucket directly.
