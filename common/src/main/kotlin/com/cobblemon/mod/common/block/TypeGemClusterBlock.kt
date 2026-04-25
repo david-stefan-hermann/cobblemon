@@ -40,6 +40,7 @@ import net.minecraft.world.level.material.PushReaction
 import net.minecraft.world.level.storage.loot.LootParams
 import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
+import javax.xml.crypto.Data
 
 class TypeGemClusterBlock(
     settings: Properties,
@@ -101,7 +102,7 @@ class TypeGemClusterBlock(
     }
 
     fun advanceGrowth(state: BlockState, level: LevelAccessor, pos: BlockPos, random: RandomSource) {
-        if (!state.getValue(SHOULD_GROW)) return
+        if (!gemClusterCanGrow(state, level, pos)) return
 
         val currentStage = state.getValue(STAGE)
 
@@ -179,6 +180,14 @@ class TypeGemClusterBlock(
         }
     }
 
+    fun gemClusterCanGrow(state: BlockState, level: LevelReader, pos: BlockPos): Boolean {
+        if (!state.getValue(SHOULD_GROW)) return false
+
+        val supportPos = pos.relative(state.getValue(FACING).opposite)
+        val supportBlock = level.getBlockState(supportPos).block
+        return CobblemonBlocks.typeGemBlocks().containsValue(supportBlock) || (supportBlock == CobblemonBlocks.TYPE_GEM_CORE) // Cannot grow if not on any gem blocks
+    }
+
     override fun getDrops(state: BlockState, params: LootParams.Builder): List<ItemStack> {
         val drops = super.getDrops(state, params)
 
@@ -248,9 +257,9 @@ class TypeGemClusterBlock(
     }
 
     override fun canSurvive(state: BlockState, level: LevelReader, pos: BlockPos): Boolean {
-        val supportPos = pos.relative(state.getValue(FACING).opposite)
-        val supportBlock = level.getBlockState(supportPos).block
-        return CobblemonBlocks.typeGemBlocks().containsValue(supportBlock) || (supportBlock == CobblemonBlocks.TYPE_GEM_CORE)
+        val direction = state.getValue(FACING)
+        val supportPos = pos.relative(direction.opposite)
+        return level.getBlockState(supportPos).isFaceSturdy(level, supportPos, direction)
     }
 
     override fun propagatesSkylightDown(state: BlockState, level: net.minecraft.world.level.BlockGetter, pos: BlockPos): Boolean = true
@@ -265,5 +274,24 @@ class TypeGemClusterBlock(
     override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
         super.createBlockStateDefinition(builder)
         builder.add(FACING, SHOULD_GROW, STAGE, STUNTED)
+    }
+
+    override fun getCloneItemStack(level: LevelReader, pos: BlockPos, state: BlockState): ItemStack {
+        val stack = super.getCloneItemStack(level, pos, state)
+        val itemPath = BuiltInRegistries.ITEM.getKey(stack.item).path
+        if (itemPath.startsWith("type_gem_cluster_")) {
+            stack.set(
+                DataComponents.BLOCK_STATE,
+                BlockItemStateProperties.EMPTY
+                    .with(STAGE, state.getValue(STAGE))
+                    .with(SHOULD_GROW, false)
+                    .with(STUNTED, state.getValue(STUNTED))
+            )
+            stack.set(
+                DataComponents.CUSTOM_MODEL_DATA,
+                CustomModelData(state.getValue(STAGE))
+            )
+        }
+        return stack
     }
 }
