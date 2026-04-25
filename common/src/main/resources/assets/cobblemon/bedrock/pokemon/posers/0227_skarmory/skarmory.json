@@ -55,6 +55,7 @@
     "standing": {
       "poseTypes": ["STAND", "NONE", "PORTRAIT", "PROFILE"],
       "isBattle": false,
+      "condition": "!q.in_air",
       "animations": ["q.look('head')", "q.bedrock('skarmory', 'ground_idle')"],
       "quirks": ["q.bedrock_quirk('skarmory', 'blink')",
         "q.bedrock_quirk('skarmory', 'idle_quirk_left')",
@@ -63,6 +64,7 @@
     },
     "walking": {
       "poseTypes": ["WALK"],
+      "condition": "!q.in_air && !q.is_sprinting",
       "animations": [
         "q.look('head')",
         "q.bedrock('skarmory', 'ground_walk')",
@@ -85,6 +87,7 @@
     },
     "fly": {
       "poseTypes": ["FLY"],
+      "condition": "!q.is_gliding",
       "animations": ["q.look('head')", "q.bedrock('skarmory', 'air_fly')",
         {
           "condition": "q.is_ridden",
@@ -100,10 +103,10 @@
       "animations": [
         "q.look('head', 0.4, 0.25, 5, -5, 10, -10)",
         "q.bedrock('skarmory', 'air_glide')",
-        "q.bedrock('skarmory', 'ride_air_dive')",
+        "q.bedrock('skarmory', 'ride_dive')",
         {
           "condition": "q.is_ridden",
-          "animation": "q.bedrock('skarmory', 'ride_air_fly')"
+          "animation": "q.bedrock('skarmory', 'ride_air_glide')"
         }
       ],
       "quirks": [

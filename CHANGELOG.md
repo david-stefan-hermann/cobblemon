@@ -63,6 +63,11 @@
 - Drampa
 - Archeops
 - Skarmory
+- Riolu
+- Lucario
+- Shellos
+- Skitty
+- Joltik
 
 ### Changes
 - Dragonite's mailbag cosmetic can now also be obtained with a chest in the cosmetic slot
