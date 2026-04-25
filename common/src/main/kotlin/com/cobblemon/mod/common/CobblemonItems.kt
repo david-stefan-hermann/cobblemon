@@ -21,8 +21,8 @@ import com.cobblemon.mod.common.api.text.gray
 import com.cobblemon.mod.common.block.BerryBlock
 import com.cobblemon.mod.common.block.MintBlock
 import com.cobblemon.mod.common.block.MintBlock.MintType
-import com.cobblemon.mod.common.client.pokedex.PokedexType
 import com.cobblemon.mod.common.block.campfirepot.CampfirePotColor
+import com.cobblemon.mod.common.client.pokedex.PokedexType
 import com.cobblemon.mod.common.entity.boat.CobblemonBoatType
 import com.cobblemon.mod.common.item.*
 import com.cobblemon.mod.common.item.armor.CobblemonArmorTrims
@@ -35,7 +35,6 @@ import com.cobblemon.mod.common.item.berry.HealingBerryItem
 import com.cobblemon.mod.common.item.berry.PPRestoringBerryItem
 import com.cobblemon.mod.common.item.berry.PortionHealingBerryItem
 import com.cobblemon.mod.common.item.berry.StatusCuringBerryItem
-import com.cobblemon.mod.common.item.interactive.PonigiriItem
 import com.cobblemon.mod.common.item.food.SinisterTeaItem
 import com.cobblemon.mod.common.item.interactive.*
 import com.cobblemon.mod.common.item.interactive.ability.AbilityChangeItem
@@ -445,6 +444,9 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     //val SCATTER_BANG = this.create("scatter_bang", ScatterBangItem(Item.Settings()))
     //@JvmField
     //val STICKY_GLOB = this.create("sticky_glob", StickyGlobItem(Item.Settings()))
+
+    @JvmField
+    val GROTTO_BLOCK = blockItem("grotto_block", CobblemonBlocks.GROTTO_BLOCK)
 
     @JvmField
     val RESTORATION_TANK = blockItem("restoration_tank", CobblemonBlocks.RESTORATION_TANK)
