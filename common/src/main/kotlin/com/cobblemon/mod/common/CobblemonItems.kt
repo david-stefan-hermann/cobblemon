@@ -1277,7 +1277,7 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     @JvmField
     val TYPE_GEM_BLOCK_PSYCHIC = blockItem("type_gem_block_psychic", CobblemonBlocks.TYPE_GEM_BLOCK_PSYCHIC)
     @JvmField
-    val TYPE_GEM_BLOCK_BUG = blockItem("type_gem_block_bug", CobblemonBlocks.TYPE_GEM_BLOCK_BUG)
+    val TYPE_GEM_BLOCK_BUG = blockItem("bug_gem_block", CobblemonBlocks.TYPE_GEM_BLOCK_BUG)
     @JvmField
     val TYPE_GEM_BLOCK_ROCK = blockItem("rock_gem_block", CobblemonBlocks.TYPE_GEM_BLOCK_ROCK)
     @JvmField

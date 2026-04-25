@@ -310,7 +310,7 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     @JvmField
     val TYPE_GEM_BLOCK_PSYCHIC = typeGemBlock("type_gem_block_psychic")
     @JvmField
-    val TYPE_GEM_BLOCK_BUG = typeGemBlock("type_gem_block_bug")
+    val TYPE_GEM_BLOCK_BUG = typeGemBlock("bug_gem_block")
     @JvmField
     val TYPE_GEM_BLOCK_ROCK = typeGemBlock("rock_gem_block")
     @JvmField
