@@ -404,6 +404,35 @@ object CobblemonSounds : PlatformRegistry<Registry<SoundEvent>, ResourceKey<Regi
     )
 
     @JvmField
+    val TYPE_GEM_BLOCK_BREAK = this.create("block.type_gem_cluster.break")
+    @JvmField
+    val TYPE_GEM_CLUSTER_BREAK = this.create("block.type_gem_block.break")
+    @JvmField
+    val TYPE_GEM_BLOCK_HIT = this.create("block.type_gem_block.hit")
+    @JvmField
+    val TYPE_GEM_BLOCK_PLACE = this.create("block.type_gem_block.place")
+    @JvmField
+    val TYPE_GEM_BLOCK_STEP = this.create("block.type_gem_block.step")
+
+    @JvmField
+    val TYPE_GEM_CLUSTER_SOUNDS = SoundType(1f, 1.2f,
+        TYPE_GEM_CLUSTER_BREAK,
+        TYPE_GEM_BLOCK_STEP,
+        TYPE_GEM_BLOCK_PLACE,
+        TYPE_GEM_BLOCK_HIT,
+        TYPE_GEM_BLOCK_STEP
+    )
+
+    @JvmField
+    val TYPE_GEM_BLOCK_SOUNDS = SoundType(1f, 1.1f,
+        TYPE_GEM_BLOCK_BREAK,
+        TYPE_GEM_BLOCK_STEP,
+        TYPE_GEM_BLOCK_PLACE,
+        TYPE_GEM_BLOCK_HIT,
+        TYPE_GEM_BLOCK_STEP
+    )
+
+    @JvmField
     val EVOLUTION_STONE_BLOCK_SOUNDS = SoundType(1f, 1.1f,
         EVOLUTION_STONE_BLOCK_BREAK,
         EVOLUTION_STONE_BLOCK_STEP,

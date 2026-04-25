@@ -991,7 +991,7 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     }
 
     private fun typeGemBlock(name: String): Block {
-        val typeGemBlock = this.create(name, Block(BlockBehaviour.Properties.of().strength(3.0F, 6.0F).sound(SoundType.AMETHYST)))
+        val typeGemBlock = this.create(name, Block(BlockBehaviour.Properties.of().strength(3.0F, 6.0F).sound(CobblemonSounds.TYPE_GEM_BLOCK_SOUNDS)))
 
         val identifier = cobblemonResource(name)
         typeGemBlocks[identifier] = typeGemBlock
@@ -1002,7 +1002,7 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     fun typeGemBlocks() = typeGemBlocks.toMap()
 
     private fun typeGemCluster(name: String, gemBlock: Block, dropItemId: ResourceLocation): Block {
-        val gemClusterBlock = this.create(name, TypeGemClusterBlock(BlockBehaviour.Properties.of().strength(2.0F, 3.0F).sound(SoundType.AMETHYST_CLUSTER).pushReaction(PushReaction.DESTROY), gemBlock, dropItemId))
+        val gemClusterBlock = this.create(name, TypeGemClusterBlock(BlockBehaviour.Properties.of().strength(2.0F, 3.0F).sound(CobblemonSounds.TYPE_GEM_CLUSTER_SOUNDS).pushReaction(PushReaction.DESTROY), gemBlock, dropItemId))
 
         TypeGemClusterBlock.gemToClusterMap[gemBlock] = gemClusterBlock
 
