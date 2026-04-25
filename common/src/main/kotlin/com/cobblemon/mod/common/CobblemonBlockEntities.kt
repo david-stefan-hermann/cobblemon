@@ -9,6 +9,7 @@
 package com.cobblemon.mod.common
 
 import com.cobblemon.mod.common.block.entity.*
+import com.cobblemon.mod.common.block.habitat.HabitatBlockEntity
 import com.cobblemon.mod.common.block.multiblock.FossilMultiblockBuilder
 import com.cobblemon.mod.common.platform.PlatformRegistry
 import net.minecraft.core.Registry
@@ -47,8 +48,8 @@ object CobblemonBlockEntities : PlatformRegistry<Registry<BlockEntityType<*>>, R
     val TM_MACHINE: BlockEntityType<TMMachineBlockEntity> = this.create("tm_machine", BlockEntityType.Builder.of(::TMMachineBlockEntity, CobblemonBlocks.TM_MACHINE).build(null))
 
     @JvmField
-    val GROTTO_BLOCK: BlockEntityType<GrottoBlockEntity> = this.create("grotto_block",
-            BlockEntityType.Builder.of(::GrottoBlockEntity, CobblemonBlocks.GROTTO_BLOCK).build(null)
+    val HABITAT_BLOCK: BlockEntityType<HabitatBlockEntity> = this.create("habitat_block",
+            BlockEntityType.Builder.of(::HabitatBlockEntity, CobblemonBlocks.HABITAT_BLOCK).build(null)
     )
 
     @JvmField

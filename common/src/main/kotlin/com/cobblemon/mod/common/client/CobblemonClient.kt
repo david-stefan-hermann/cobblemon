@@ -8,7 +8,6 @@
 
 package com.cobblemon.mod.common.client
 
-import com.cobblemon.mod.client.render.blockentity.GrottoBlockRenderer
 import com.cobblemon.mod.common.Cobblemon.LOGGER
 import com.cobblemon.mod.common.CobblemonBlockEntities
 import com.cobblemon.mod.common.CobblemonBlocks
@@ -34,16 +33,7 @@ import com.cobblemon.mod.common.client.gui.tmmachine.TMMachineScreen
 import com.cobblemon.mod.common.client.particle.BedrockParticleOptionsRepository
 import com.cobblemon.mod.common.client.render.ClientPlayerIcon
 import com.cobblemon.mod.common.client.render.DeferredRenderer
-import com.cobblemon.mod.common.client.render.block.BerryBlockRenderer
-import com.cobblemon.mod.common.client.render.block.CampfireBlockEntityRenderer
-import com.cobblemon.mod.common.client.render.block.DisplayCaseRenderer
-import com.cobblemon.mod.common.client.render.block.FossilAnalyzerRenderer
-import com.cobblemon.mod.common.client.render.block.GildedChestBlockRenderer
-import com.cobblemon.mod.common.client.render.block.HealingMachineRenderer
-import com.cobblemon.mod.common.client.render.block.LecternBlockEntityRenderer
-import com.cobblemon.mod.common.client.render.block.PokeSnackBlockEntityRenderer
-import com.cobblemon.mod.common.client.render.block.RestorationTankRenderer
-import com.cobblemon.mod.common.client.render.block.TMShelfBlockEntityRenderer
+import com.cobblemon.mod.common.client.render.block.*
 import com.cobblemon.mod.common.client.render.boat.CobblemonBoatRenderer
 import com.cobblemon.mod.common.client.render.color.AprijuiceItemColorProvider
 import com.cobblemon.mod.common.client.render.color.PokeBaitItemColorProvider
@@ -441,7 +431,7 @@ object CobblemonClient {
             CobblemonBlockEntities.RESTORATION_TANK,
             ::RestorationTankRenderer
         )
-        this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.GROTTO_BLOCK, ::GrottoBlockRenderer)
+        this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.HABITAT_BLOCK, ::HabitatBlockRenderer)
         this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.GILDED_CHEST, ::GildedChestBlockRenderer)
         this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.DISPLAY_CASE, ::DisplayCaseRenderer)
         this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.LECTERN, ::LecternBlockEntityRenderer)

@@ -446,9 +446,6 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     //val STICKY_GLOB = this.create("sticky_glob", StickyGlobItem(Item.Settings()))
 
     @JvmField
-    val GROTTO_BLOCK = blockItem("grotto_block", CobblemonBlocks.GROTTO_BLOCK)
-
-    @JvmField
     val RESTORATION_TANK = blockItem("restoration_tank", CobblemonBlocks.RESTORATION_TANK)
     @JvmField
     val FOSSIL_ANALYZER = blockItem("fossil_analyzer", CobblemonBlocks.FOSSIL_ANALYZER)
@@ -606,6 +603,9 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     @JvmField val HOPO_BERRY = berryItem("hopo", PPRestoringBerryItem(CobblemonBlocks.HOPO_BERRY) { CobblemonMechanics.berries.ppRestoreAmount })
 
     @JvmField val BERRY_JUICE = this.create("berry_juice", BerryJuiceItem())
+
+    @JvmField
+    val HABITAT_BLOCK = blockItem("habitat_block", CobblemonBlocks.HABITAT_BLOCK)
 
     @JvmField
     val GALARICA_NUTS = compostableItemNameBlockItem("galarica_nuts", CobblemonBlocks.GALARICA_NUT_BUSH)

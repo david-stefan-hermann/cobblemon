@@ -392,7 +392,7 @@ object CobblemonItemGroups {
         entries.accept(CobblemonItems.WATER_STONE_ORE)
         entries.accept(CobblemonItems.DEEPSLATE_WATER_STONE_ORE)
 
-        entries.accept(CobblemonItems.GROTTO_BLOCK)
+        entries.accept(CobblemonItems.HABITAT_BLOCK)
         entries.accept(CobblemonItems.DAWN_STONE_BLOCK)
         entries.accept(CobblemonItems.DUSK_STONE_BLOCK)
         entries.accept(CobblemonItems.FIRE_STONE_BLOCK)

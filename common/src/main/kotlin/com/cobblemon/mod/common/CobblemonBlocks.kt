@@ -20,6 +20,7 @@ import com.cobblemon.mod.common.block.general.BaleBlock
 import com.cobblemon.mod.common.block.general.HorizontalRotationCarpetBlock
 import com.cobblemon.mod.common.block.general.HorizontalRotationalBlock
 import com.cobblemon.mod.common.block.grower.SaccharineTreeGrower
+import com.cobblemon.mod.common.block.habitat.HabitatBlock
 import com.cobblemon.mod.common.block.sign.CobblemonHangingSignBlock
 import com.cobblemon.mod.common.block.sign.CobblemonSignBlock
 import com.cobblemon.mod.common.block.sign.CobblemonWallHangingSignBlock
@@ -537,11 +538,16 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     )
 
     @JvmField
-    val GROTTO_BLOCK = this.create("grotto_block", GrottoBlock(BlockBehaviour.Properties.of()
-            .mapColor(MapColor.STONE)
-            .strength(1.5F)
-            .pushReaction(PushReaction.BLOCK)
-    ))
+    val HABITAT_BLOCK = this.create(
+        name = "habitat_block",
+        entry = HabitatBlock(
+            properties = BlockBehaviour.Properties.of()
+                .mapColor(MapColor.STONE)
+                .strength(1.5F, Blocks.OBSIDIAN.explosionResistance)
+                .pushReaction(PushReaction.BLOCK)
+        )
+    )
+
 
     @JvmField
     val CAMPFIRE = create("campfire", CampfireBlock(BlockBehaviour.Properties.of().sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK).mapColor(MapColor.PODZOL).strength(2.0F).lightLevel{14}, false))
