@@ -70,6 +70,7 @@
 - Joltik
 - Purrloin
 - Liepard
+- Flygon
 
 ### Changes
 - Dragonite's mailbag cosmetic can now also be obtained with a chest in the cosmetic slot
