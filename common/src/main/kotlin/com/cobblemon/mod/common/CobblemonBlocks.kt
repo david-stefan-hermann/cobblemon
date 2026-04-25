@@ -283,7 +283,7 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     val BLACK_TUMBLESTONE_BLOCK = this.create("black_tumblestone_block", Block(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BLACK).strength(1.0F).sound(CobblemonSounds.TUMBLESTONE_BLOCK_SOUNDS).requiresCorrectToolForDrops().instrument(NoteBlockInstrument.BASEDRUM)))
 
     @JvmField
-    val TYPE_GEM_CORE = this.create("type_gem_core", TypeGemCoreBlock(BlockBehaviour.Properties.of().strength(4.0F, 10.0F).requiresCorrectToolForDrops()))
+    val TYPE_GEM_CORE = this.create("deepslate_crystal_core", TypeGemCoreBlock(BlockBehaviour.Properties.of().strength(4.0F, 10.0F).requiresCorrectToolForDrops()))
 
     private val typeGemBlocks = mutableMapOf<ResourceLocation, Block>()
 
