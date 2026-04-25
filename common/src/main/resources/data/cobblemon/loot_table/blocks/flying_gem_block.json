@@ -26,7 +26,7 @@
                   }
                 }
               ],
-              "name": "cobblemon:type_gem_block_flying"
+              "name": "cobblemon:flying_gem_block"
             },
             {
               "type": "minecraft:item",

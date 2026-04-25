@@ -44,7 +44,7 @@ class TypeGemCoreBlock(properties: Properties) : Block(properties) {
                 ResourceLocation.parse("cobblemon:fighting_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_FIGHTING,
                 ResourceLocation.parse("cobblemon:poison_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_POISON,
                 ResourceLocation.parse("cobblemon:ground_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_GROUND,
-                ResourceLocation.parse("cobblemon:type_gem_block_flying") to CobblemonBlocks.TYPE_GEM_CLUSTER_FLYING,
+                ResourceLocation.parse("cobblemon:flying_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_FLYING,
                 ResourceLocation.parse("cobblemon:type_gem_block_psychic") to CobblemonBlocks.TYPE_GEM_CLUSTER_PSYCHIC,
                 ResourceLocation.parse("cobblemon:bug_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_BUG,
                 ResourceLocation.parse("cobblemon:rock_gem_block") to CobblemonBlocks.TYPE_GEM_CLUSTER_ROCK,
