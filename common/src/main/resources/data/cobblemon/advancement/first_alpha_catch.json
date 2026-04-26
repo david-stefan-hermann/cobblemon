@@ -11,13 +11,17 @@
   },
   "parent": "cobblemon:first_catch",
   "criteria": {
-    "dummy": {
-      "trigger": "minecraft:impossible"
+    "catch": {
+      "trigger": "cobblemon:craft_alpha_pokemon",
+      "conditions": {
+        "count": 1
+      }
+
     }
   },
   "requirements": [
     [
-      "dummy"
+      "catch"
     ]
   ],
   "sends_telemetry_event": false

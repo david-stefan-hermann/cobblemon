@@ -1,0 +1,19 @@
+{
+  "display": {
+    "icon": {
+      "id": "cobblemon:blank_tm"
+    },
+    "title": "advancements.cobblemon.obtain_ancient_tm",
+    "description": "advancements.cobblemon.obtain_ancient_tm.description"
+  },
+  "parent": "cobblemon:craft_tm",
+  "criteria": {
+    "learn_tm": {
+      "trigger": "cobblemon:has_learn_specific_tm",
+      "conditions": {
+        "tm": "cobblemon:vacuumwave"
+      }
+    }
+  },
+  "sends_telemetry_event": false
+}

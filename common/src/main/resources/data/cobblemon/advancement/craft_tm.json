@@ -6,7 +6,7 @@
     "title": "advancements.cobblemon.craft_tm",
     "description": "advancements.cobblemon.craft_tm.description"
   },
-  "parent": "cobblemon:type_gem_core",
+  "parent": "cobblemon:plant_type_gem",
   "criteria": {
     "tm": {
       "trigger": "minecraft:inventory_changed",

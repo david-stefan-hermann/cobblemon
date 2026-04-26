@@ -7,15 +7,17 @@
     "description": "advancements.cobblemon.register_all_moves.description",
     "frame": "challenge"
   },
-  "parent": "cobblemon:obtain_ruin_tm",
+  "parent": "cobblemon:obtain_ancient_tm",
   "criteria": {
-    "dummy": {
-      "trigger": "minecraft:impossible"
+    "learn_all_tms": {
+      "trigger": "cobblemon:has_learn_all_tm",
+      "conditions": {}
     }
+
   },
   "requirements": [
     [
-      "dummy"
+      "learn_all_tms"
     ]
   ],
   "rewards": {

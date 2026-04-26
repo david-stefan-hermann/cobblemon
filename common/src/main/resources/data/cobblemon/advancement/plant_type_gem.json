@@ -1,12 +1,12 @@
 {
   "display": {
     "icon": {
-      "id": "cobblemon:blank_tm"
+      "id": "cobblemon:deepslate_crystal_core"
     },
-    "title": "advancements.cobblemon.obtain_ruin_tm",
-    "description": "advancements.cobblemon.obtain_ruin_tm.description"
+    "title": "advancements.cobblemon.plant_type_gem",
+    "description": "advancements.cobblemon.plant_type_gem.description"
   },
-  "parent": "cobblemon:craft_tm",
+  "parent": "cobblemon:root",
   "criteria": {
     "dummy": {
       "trigger": "minecraft:impossible"
