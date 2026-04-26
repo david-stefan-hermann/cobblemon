@@ -19,13 +19,12 @@ import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.block.MonitorBlock
 import com.cobblemon.mod.common.block.multiblock.FossilMultiblockStructure
 import com.cobblemon.mod.common.client.sound.BlockEntitySoundTracker
+import com.cobblemon.mod.common.client.sound.instances.CancellableSoundInstance
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
 import com.cobblemon.mod.common.item.components.TMMoveComponent
 import com.cobblemon.mod.common.item.interactive.TechnicalMachineItem
 import com.cobblemon.mod.common.util.DataKeys
 import com.cobblemon.mod.common.util.tmList
-import net.minecraft.client.resources.sounds.SimpleSoundInstance
-import net.minecraft.client.resources.sounds.SoundInstance
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.core.HolderLookup
@@ -186,7 +185,13 @@ open class FossilMultiblockEntity(
         if (!isValidDisk(handStack) && !isPorygonItem(handStack)) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
         if (multiblockStructure != null) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
 
-        if (level.isClientSide) return ItemInteractionResult.SUCCESS
+        if (level.isClientSide) {
+            //Start Porygon process on Client Side for sounds
+            if (isPorygonItem(handStack)) {
+                startPorygonProcess(handStack.copyWithCount(1), level)
+            }
+            return ItemInteractionResult.SUCCESS
+        }
 
         //Porygon Item interaction
         if (isPorygonItem(handStack)){
@@ -374,7 +379,7 @@ open class FossilMultiblockEntity(
             else -> PorygonProcessType.INACTIVE
         }
 
-        if (world is ServerLevel) {
+        if (world.isClientSide) {
 
             val soundEvent = when (porygonProcess) {
                 PorygonProcessType.DUBIOUS -> CobblemonSounds.MONITOR_GLITCHING
@@ -383,19 +388,12 @@ open class FossilMultiblockEntity(
             }
 
             if (soundEvent != null) {
-                val sound = SimpleSoundInstance(
-                    soundEvent.location,
-                    SoundSource.BLOCKS,
-                    0.6f,
-                    1.0f,
-                    world.random,
-                    true,
-                    0,
-                    SoundInstance.Attenuation.LINEAR,
-                    blockPos.x + 0.5,
-                    blockPos.y + 0.5,
-                    blockPos.z + 0.5,
-                    false
+                val sound = CancellableSoundInstance(
+                    soundEvent,
+                    blockPos,
+                    repeat = true,
+                    volume = 0.6f,
+                    pitch = 1.0f
                 )
 
                 BlockEntitySoundTracker.play(blockPos, sound)
@@ -424,10 +422,13 @@ open class FossilMultiblockEntity(
         porygonProcess = PorygonProcessType.INACTIVE
 
         porygonTicks = 0
-        if (world is ServerLevel) {
+
+        if (level?.isClientSide == true) {
             BlockEntitySoundTracker.stop(blockPos, CobblemonSounds.MONITOR_LOADING.location)
             BlockEntitySoundTracker.stop(blockPos, CobblemonSounds.MONITOR_GLITCHING.location)
+        }
 
+        if (world is ServerLevel) {
             if (oldProcess == PorygonProcessType.UPGRADE){
                 val facing = blockState.getValue(HorizontalDirectionalBlock.FACING).opposite
                 val offset = facing.normal
