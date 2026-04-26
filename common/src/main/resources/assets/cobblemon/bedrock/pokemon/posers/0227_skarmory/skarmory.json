@@ -4,6 +4,17 @@
   "profileScale": 0.57,
   "profileTranslation": [0, 0.89, 0],
   "rootBone": "skarmory",
+  "firstPersonCameraOffset": {
+    "seat_1": [0, 0.45, 0]
+  },
+  "thirdPersonCameraOffset": {
+    "seat_1": [0, 0.35, 0],
+    "seat_1_reverse": [0, 0.35, 0]
+  },
+  "thirdPersonCameraOffsetNoViewBobbing": {
+    "seat_1": [0, 0.35, 0],
+    "seat_1_reverse": [0, 0.35, 0]
+  },
   "animations": {
     "faint": "q.bedrock_primary('skarmory', 'faint', q.curve('one'))",
     "cry": "q.bedrock_stateful('skarmory', 'cry')",
