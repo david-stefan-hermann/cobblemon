@@ -202,7 +202,7 @@ class TypeGemClusterBlock(
                 BlockItemStateProperties.EMPTY
                     .with(STAGE, state.getValue(STAGE))
                     .with(SHOULD_GROW, false)
-                    .with(STUNTED, state.getValue(STUNTED))
+                    .with(STUNTED, false)
             )
             stack.set(
                 DataComponents.CUSTOM_MODEL_DATA,
@@ -285,7 +285,7 @@ class TypeGemClusterBlock(
                 BlockItemStateProperties.EMPTY
                     .with(STAGE, state.getValue(STAGE))
                     .with(SHOULD_GROW, false)
-                    .with(STUNTED, state.getValue(STUNTED))
+                    .with(STUNTED, false)
             )
             stack.set(
                 DataComponents.CUSTOM_MODEL_DATA,
