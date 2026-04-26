@@ -194,7 +194,7 @@ class TypeGemClusterBlock(
             val blockItem = stack.item as? BlockItem ?: continue
             if (blockItem.block !is TypeGemClusterBlock) continue
             val itemPath = BuiltInRegistries.ITEM.getKey(stack.item).path
-            if (!itemPath.startsWith("type_gem_cluster_")) continue
+            if (!itemPath.endsWith("_gem_cluster")) continue
 
             stack.set(
                 DataComponents.BLOCK_STATE,
@@ -278,7 +278,7 @@ class TypeGemClusterBlock(
     override fun getCloneItemStack(level: LevelReader, pos: BlockPos, state: BlockState): ItemStack {
         val stack = super.getCloneItemStack(level, pos, state)
         val itemPath = BuiltInRegistries.ITEM.getKey(stack.item).path
-        if (itemPath.startsWith("type_gem_cluster_")) {
+        if (itemPath.endsWith("_gem_cluster")) {
             stack.set(
                 DataComponents.BLOCK_STATE,
                 BlockItemStateProperties.EMPTY
