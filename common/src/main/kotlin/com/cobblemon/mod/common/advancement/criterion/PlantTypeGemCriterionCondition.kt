@@ -9,6 +9,7 @@
 package com.cobblemon.mod.common.advancement.criterion
 
 import com.cobblemon.mod.common.block.TypeGemClusterBlock
+import com.cobblemon.mod.common.block.TypeGemCoreBlock
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.advancements.critereon.ContextAwarePredicate
@@ -29,6 +30,6 @@ class PlantTypeGemCriterion(
     }
 
     override fun matches(player: ServerPlayer, context: PlantTypeGemContext): Boolean {
-        return context.block.isRandomlyTicking(player.level().getBlockState(context.pos))
+        return player.level().getBlockState(context.pos).block is TypeGemCoreBlock
     }
 }
