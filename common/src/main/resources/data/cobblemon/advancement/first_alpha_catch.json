@@ -12,7 +12,7 @@
   "parent": "cobblemon:first_catch",
   "criteria": {
     "catch": {
-      "trigger": "cobblemon:craft_alpha_pokemon",
+      "trigger": "cobblemon:catch_alpha_pokemon",
       "conditions": {
         "count": 1
       }
