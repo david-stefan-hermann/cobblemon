@@ -69,8 +69,6 @@ import com.cobblemon.mod.common.api.storage.StoreCoordinates
 import com.cobblemon.mod.common.api.storage.party.NPCPartyStore
 import com.cobblemon.mod.common.api.storage.party.PlayerPartyStore
 import com.cobblemon.mod.common.api.storage.pc.PCStore
-import com.cobblemon.mod.common.api.tms.TechnicalMachines
-import com.cobblemon.mod.common.api.tms.TMMoveManager
 import com.cobblemon.mod.common.api.types.ElementalType
 import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.api.types.tera.TeraType
@@ -119,7 +117,6 @@ import com.cobblemon.mod.common.util.playSoundServer
 import com.cobblemon.mod.common.util.server
 import com.cobblemon.mod.common.util.setPositionSafely
 import com.cobblemon.mod.common.util.toBlockPos
-import com.cobblemon.mod.common.util.tmList
 import com.google.gson.JsonObject
 import com.mojang.datafixers.util.Pair
 import com.mojang.serialization.Codec
@@ -278,22 +275,6 @@ open class Pokemon : ShowdownIdentifiable {
         }
         val config = Cobblemon.config
         setIntrinsicScale(Random.nextBetween(config.pokemonIntrinsicSizeMin, config.pokemonIntrinsicSizeMax))
-    }
-
-    fun assignSizeMarks() {
-        //  this is where we should assign a mark based on min or max intrinsic scale
-        val miniMark = Marks.getByIdentifier(cobblemonResource("mark_mini"))!!
-        val jumboMark = Marks.getByIdentifier(cobblemonResource("mark_jumbo"))!!
-        val config = Cobblemon.config
-
-        if (scaleModifier == config.pokemonIntrinsicSizeMin) { // minimum size
-            exchangeMark(miniMark, true)
-            activeMark = miniMark
-        }
-        if (scaleModifier == config.pokemonIntrinsicSizeMax) { // maximum size
-            exchangeMark(jumboMark, true)
-            activeMark = jumboMark
-        }
     }
 
     fun hyperTrainIV(stat: Stat, value: Int) {

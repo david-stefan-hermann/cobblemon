@@ -263,7 +263,7 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
         val currentEntry = this.currentEntry ?: return
 
         val hasKnowledge =
-            CobblemonClient.clientPokedexData.getKnowledgeForSpecies(currentEntry.speciesId) != PokedexEntryProgress.NONE
+            CobblemonClient.clientPokedexData.getKnowledgeForSpecies(currentEntry.speciesId) != PokedexEntryProgress.UNREGISTERED
         val species = currentEntry.speciesId.let { PokemonSpecies.getByIdentifier(it) } ?: return
 
         val matrices = context.pose()
@@ -616,7 +616,7 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
         }
         genderButton.buttonX = pX + (if (shinyButton.visible) 114F else 126F)
 
-        if (CobblemonClient.clientPokedexData.getHighestKnowledgeFor(pokedexEntry) == PokedexEntryProgress.NONE) return
+        if (CobblemonClient.clientPokedexData.getHighestKnowledgeFor(pokedexEntry) == PokedexEntryProgress.UNREGISTERED) return
 
         var startPosition = if (shinyButton.visible) 1 else 0
         startPosition += if (genderButton.visible || (species.maleRatio == -1F)) 1 else 0
@@ -760,7 +760,7 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
         && !children.any { it.isMouseOver(mouseX, mouseY) && it is ScaledButton }
 
     private fun isSelectedPokemonOwned(): Boolean {
-        return currentEntry?.let { CobblemonClient.clientPokedexData.getKnowledgeForSpecies(it.speciesId) } == PokedexEntryProgress.CAUGHT
+        return currentEntry?.let { CobblemonClient.clientPokedexData.getKnowledgeForSpecies(it.speciesId) } == PokedexEntryProgress.OWNED
     }
 
     fun playSound(soundEvent: SoundEvent) {

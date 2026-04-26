@@ -1289,7 +1289,7 @@
   "cobblemon.ui.pp": "PP",
   "cobblemon.ui.effect": "Effect",
   "cobblemon.ui.pokemon": "Pokémon",
-  "cobblemon.ui.pokemon.alpha": "Alpha Pokémon",
+  "cobblemon.ui.pokemon.alpha": "Alpha",
   "cobblemon.ui.exit": "Exit",
 
   "cobblemon.ui.pc.box.title": "Box %1$s",
@@ -1342,8 +1342,6 @@
 
   "cobblemon.ui.pokedex.scan.registered_suffix": "%1$s Registered",
   "cobblemon.ui.pokedex.scan.trainer_owned": "Trainer Owned",
-  "cobblemon.ui.pokedex.scan.size": "Size: %1$s",
-  "cobblemon.ui.pokedex.scan.alpha": "Alpha",
 
   "cobblemon.ui.pokedex.region.national": "National",
   "cobblemon.ui.pokedex.region.alola": "Alola",
@@ -1364,7 +1362,7 @@
   "cobblemon.ui.pokedex.search.type.moves": "Move Name",
   "cobblemon.ui.pokedex.search.type.drops": "Drops",
   "cobblemon.ui.pokedex.filter.all": "All",
-  "cobblemon.ui.pokedex.filter.caught": "Caught",
+  "cobblemon.ui.pokedex.filter.owned": "Owned",
   "cobblemon.ui.pokedex.filter.seen": "Seen",
   "cobblemon.ui.pokedex.filter.unregistered": "Unregistered",
   "cobblemon.ui.pokedex.filter.rideable": "Rideable",
@@ -2668,11 +2666,6 @@
   "cobblemon.config.ui.alpha_pokemon_size_large_multiplier.tooltip": "Alpha size multiplier for Pokémon with hitboxes between 1.5 and 10 blocks.",
   "cobblemon.config.ui.alpha_pokemon_size_extra_large_multiplier": "Alpha Size Extra Large Multiplier",
   "cobblemon.config.ui.alpha_pokemon_size_extra_large_multiplier.tooltip": "Alpha size multiplier for Pokémon with hitboxes larger than 10 blocks.",
-  "cobblemon.ui.size_category.xs": "XS",
-  "cobblemon.ui.size_category.s": "S",
-  "cobblemon.ui.size_category.m": "M",
-  "cobblemon.ui.size_category.l": "L",
-  "cobblemon.ui.size_category.xl": "XL",
   "cobblemon.config.ui.baby_pokemon_level_duration": "Baby Pokémon Level Duration",
   "cobblemon.config.ui.baby_pokemon_level_duration.tooltip": "The number of levels that a Pokémon is considered a baby for the purposes of appearing smaller than usual.",
   "cobblemon.config.ui.baby_pokemon_size_multiplier": "Baby Pokémon Minimum Size",
@@ -3489,6 +3482,13 @@
   "cobblemon.experience.learned_move": "%1$s has learned %2$s.",
 
   "cobblemon.party.faintRecover": "%1$s has recovered from fainting.",
+
+  "cobblemon.size_category.prefix": "Size: %1$s",
+  "cobblemon.size_category.xs": "XS",
+  "cobblemon.size_category.s": "S",
+  "cobblemon.size_category.m": "M",
+  "cobblemon.size_category.l": "L",
+  "cobblemon.size_category.xl": "XL",
 
   "cobblemon.type.suffix": "%1$s Type",
   "cobblemon.type.fire": "Fire",
