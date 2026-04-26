@@ -308,10 +308,13 @@ object CobblemonItemGroups {
         entries.accept(CobblemonItems.RESTORATION_TANK)
         entries.accept(CobblemonItems.FOSSIL_ANALYZER)
         entries.accept(CobblemonItems.MONITOR)
+        entries.accept(CobblemonItems.DAMAGED_MONITOR)
         entries.accept(CobblemonItems.PC)
         entries.accept(CobblemonItems.HEALING_MACHINE)
         entries.accept(CobblemonItems.PASTURE)
         entries.accept(CobblemonItems.TM_MACHINE)
+        entries.accept(CobblemonItems.TM_SHELF)
+        entries.accept(CobblemonItems.HABITAT_BLOCK)
 
         entries.accept(CobblemonItems.GILDED_CHEST)
         entries.accept(CobblemonItems.YELLOW_GILDED_CHEST)
@@ -374,8 +377,8 @@ object CobblemonItemGroups {
         entries.accept(CobblemonItems.TYPE_GEM_BLOCK_NORMAL)
         entries.accept(CobblemonItems.TYPE_GEM_BLOCK_FIRE)
         entries.accept(CobblemonItems.TYPE_GEM_BLOCK_WATER)
-        entries.accept(CobblemonItems.TYPE_GEM_BLOCK_ELECTRIC)
         entries.accept(CobblemonItems.TYPE_GEM_BLOCK_GRASS)
+        entries.accept(CobblemonItems.TYPE_GEM_BLOCK_ELECTRIC)
         entries.accept(CobblemonItems.TYPE_GEM_BLOCK_ICE)
         entries.accept(CobblemonItems.TYPE_GEM_BLOCK_FIGHTING)
         entries.accept(CobblemonItems.TYPE_GEM_BLOCK_POISON)
@@ -454,7 +457,6 @@ object CobblemonItemGroups {
         entries.accept(CobblemonItems.WATER_STONE_ORE)
         entries.accept(CobblemonItems.DEEPSLATE_WATER_STONE_ORE)
 
-        entries.accept(CobblemonItems.HABITAT_BLOCK)
         entries.accept(CobblemonItems.DAWN_STONE_BLOCK)
         entries.accept(CobblemonItems.DUSK_STONE_BLOCK)
         entries.accept(CobblemonItems.FIRE_STONE_BLOCK)
@@ -952,6 +954,7 @@ object CobblemonItemGroups {
 
     private fun opBlocksInjections(injector: Injector) {
         injector.putLast(CobblemonItems.NPC_EDITOR)
+        injector.putLast(CobblemonItems.HABITAT_BLOCK)
     }
 
     /**
