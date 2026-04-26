@@ -313,7 +313,7 @@ object CobblemonItemGroups {
         entries.accept(CobblemonItems.HEALING_MACHINE)
         entries.accept(CobblemonItems.PASTURE)
         entries.accept(CobblemonItems.TM_MACHINE)
-        entries.accept(CobblemonItems.TM_SHELF)
+        entries.accept(CobblemonItems.DISC_SHELF)
         entries.accept(CobblemonItems.HABITAT_BLOCK)
 
         entries.accept(CobblemonItems.GILDED_CHEST)

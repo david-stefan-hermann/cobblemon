@@ -22,7 +22,7 @@ class GemItem(settings: Properties, val block: Block): Item(settings) {
             if (!world.getBlockState(pos.relative(direction)).isAir) return InteractionResult.FAIL
             context.itemInHand.consume(1, context.player)
             world.setBlockAndUpdate(pos.relative(direction), block.defaultBlockState().setValue(DirectionalBlock.FACING, direction))
-            world.playSound(null, pos, SoundEvents.SMALL_AMETHYST_BUD_PLACE, SoundSource.BLOCKS)
+            world.playSound(null, pos, CobblemonSounds.TYPE_GEM_CLUSTER_SOUNDS.placeSound, SoundSource.BLOCKS)
             return InteractionResult.SUCCESS
         }
 
