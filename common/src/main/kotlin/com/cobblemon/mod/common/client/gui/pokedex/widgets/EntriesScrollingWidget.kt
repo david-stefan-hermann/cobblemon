@@ -270,7 +270,7 @@ class EntriesScrollingWidget(val pX: Int, val pY: Int, val setPokedexEntry: (Pok
                     scale = SCALE
                 )
 
-                if (discoveryLevel == PokedexEntryProgress.CAUGHT) {
+                if (discoveryLevel == PokedexEntryProgress.OWNED) {
                     blitk(
                         matrixStack = matrices,
                         texture = caughtIcon,

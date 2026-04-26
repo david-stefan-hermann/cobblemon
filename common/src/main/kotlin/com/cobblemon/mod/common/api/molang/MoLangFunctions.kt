@@ -1862,6 +1862,7 @@ object MoLangFunctions {
             map.put("species") { pokemon.species.struct }
             map.put("form") { StringValue(pokemon.form.name) }
             map.put("weight") { DoubleValue(pokemon.species.weight.toDouble()) }
+            map.put("size_category") { _ -> StringValue(pokemon.getSizeCategory().name) }
             map.put("matches") { params -> DoubleValue(params.getString(0).toProperties().matches(pokemon)) }
             map.put("apply") { params ->
                 params.getString(0).toProperties().apply(pokemon)
@@ -2411,9 +2412,9 @@ object MoLangFunctions {
                 val formName = params.getStringOrNull(1)
 
                 if (formName == null) {
-                    return@put DoubleValue(pokedex.getHighestKnowledgeForSpecies(speciesId).ordinal >= PokedexEntryProgress.ENCOUNTERED.ordinal)
+                    return@put DoubleValue(pokedex.getHighestKnowledgeForSpecies(speciesId).ordinal >= PokedexEntryProgress.SEEN.ordinal)
                 } else {
-                    return@put DoubleValue((pokedex.getSpeciesRecord(speciesId)?.getFormRecord(formName)?.knowledge?.ordinal ?: 0) >= PokedexEntryProgress.ENCOUNTERED.ordinal)
+                    return@put DoubleValue((pokedex.getSpeciesRecord(speciesId)?.getFormRecord(formName)?.knowledge?.ordinal ?: 0) >= PokedexEntryProgress.SEEN.ordinal)
                 }
             }
 
@@ -2421,9 +2422,9 @@ object MoLangFunctions {
                 val speciesId = params.getString(0).asIdentifierDefaultingNamespace()
                 val formName = params.getStringOrNull(1)
                 if (formName == null) {
-                    return@put DoubleValue(pokedex.getHighestKnowledgeForSpecies(speciesId) == PokedexEntryProgress.CAUGHT)
+                    return@put DoubleValue(pokedex.getHighestKnowledgeForSpecies(speciesId) == PokedexEntryProgress.OWNED)
                 } else {
-                    return@put DoubleValue(pokedex.getSpeciesRecord(speciesId)?.getFormRecord(formName)?.knowledge == PokedexEntryProgress.CAUGHT)
+                    return@put DoubleValue(pokedex.getSpeciesRecord(speciesId)?.getFormRecord(formName)?.knowledge == PokedexEntryProgress.OWNED)
                 }
             }
             map.put("caught_count") { DoubleValue(pokedex.getGlobalCalculatedValue(CaughtCount)) }
