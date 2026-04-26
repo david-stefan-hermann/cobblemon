@@ -31,7 +31,7 @@
                           "predicate":  {
                                             "custom_model_data":  3
                                         },
-                          "model":  "cobblemon:item/type_gem_cluster_dragon"
+                          "model":  "cobblemon:item/dragon_gem_cluster"
                       }
                   ]
 }
