@@ -40,7 +40,6 @@ import net.minecraft.world.level.material.PushReaction
 import net.minecraft.world.level.storage.loot.LootParams
 import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
-import javax.xml.crypto.Data
 
 class TypeGemClusterBlock(
     settings: Properties,
