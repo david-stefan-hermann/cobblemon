@@ -8,13 +8,13 @@
   },
   "parent": "cobblemon:root",
   "criteria": {
-    "dummy": {
-      "trigger": "minecraft:impossible"
+    "plant_type_gem": {
+      "trigger": "cobblemon:plant_type_gem"
     }
   },
   "requirements": [
     [
-      "dummy"
+      "plant_type_gem"
     ]
   ],
   "sends_telemetry_event": false

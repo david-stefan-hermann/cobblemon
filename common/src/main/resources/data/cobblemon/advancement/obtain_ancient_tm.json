@@ -8,12 +8,10 @@
   },
   "parent": "cobblemon:craft_tm",
   "criteria": {
-    "learn_tm": {
-      "trigger": "cobblemon:has_learn_specific_tm",
-      "conditions": {
-        "tm": "cobblemon:vacuumwave"
-      }
-    }
+    "learn_tm_MOVE":
+        {"trigger":"cobblemon:has_learn_specific_tm","conditions":{"tm":"cobblemon:MOVE"}},
+    "gain_tm_MOVE": 
+        {"trigger": "minecraft:inventory_changed","conditions":{"items":[{"items":"cobblemon:technical_machine","components":{"cobblemon:tm_move":{"move":"MOVE"}}}]}}
   },
   "sends_telemetry_event": false
 }
