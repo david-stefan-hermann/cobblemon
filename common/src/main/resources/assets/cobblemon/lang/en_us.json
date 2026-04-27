@@ -423,7 +423,7 @@
   "item.cobblemon.razor_fang.tooltip_1": "When the holder successfully inflicts damage, the target may also flinch",
   "item.cobblemon.razor_fang.tooltip_2": "Evolves Gligar into Gliscor when held while leveling up during the night",
   "item.cobblemon.red_card": "Red Card",
-  "item.cobblemon.red_card.tooltip_1": "Pokemon that damage the holder are forced to switch out",
+  "item.cobblemon.red_card.tooltip_1": "Pokémon that damage the holder are forced to switch out",
   "item.cobblemon.red_card.tooltip_2": "Consumed after use",
   "item.cobblemon.ring_target": "Ring Target",
   "item.cobblemon.ring_target.tooltip": "The holder's type immunities are removed",
@@ -489,7 +489,7 @@
   "item.cobblemon.white_herb.tooltip_1": "Restores any lowered stat in battle",
   "item.cobblemon.white_herb.tooltip_2": "Consumed after use",
   "item.cobblemon.bright_powder": "Bright Powder",
-  "item.cobblemon.bright_powder.tooltip": "Reduces the accuracy of enemy pokemon's moves by 10%",
+  "item.cobblemon.bright_powder.tooltip": "Reduces the accuracy of enemy Pokémon's moves by 10%",
   "item.cobblemon.metal_powder": "Metal Powder",
   "item.cobblemon.metal_powder.tooltip": "Raises an untransformed Ditto's Defense and Sp. Def by 50%",
   "item.cobblemon.quick_powder": "Quick Powder",
@@ -1030,6 +1030,7 @@
   "cobblemon.fishing_bait_effects.typing.tooltip": "%1$s%% - %3$s× Chance for %2$s Types",
   "cobblemon.fishing_bait_effects.egg_group.tooltip": "%1$s%% - %3$s× Chance for %2$s Egg Group",
   "cobblemon.fishing_bait_effects.shiny_reroll.tooltip": "%1$s%% - %3$s× Shiny Chance",
+  "cobblemon.fishing_bait_effects.mark_chance.tooltip": "%1$s%% - +%3$s%% Mark Chance",
   "cobblemon.fishing_bait_effects.drops_reroll.tooltip": "%1$s%% - %3$s× Drops Reroll",
   "cobblemon.fishing_bait_effects.ha_chance.tooltip": "%1$s%% - Attract Hidden Ability",
   "cobblemon.fishing_bait_effects.pokemon_chance.tooltip": "%1$s%% - Reel in a Pokémon",
@@ -1210,6 +1211,8 @@
   "cobblemon.trade.error.duplicate": "You already sent a trade request to %1$s!",
 
   "cobblemon.ui.party": "Party",
+  "cobblemon.ui.party.party_select_title": "Change Party Selection",
+  "cobblemon.ui.party.party_select_description": "Press %1$s/%2$s or hold %3$s and scroll.",
   "cobblemon.ui.power": "Power",
   "cobblemon.ui.accuracy": "Accuracy",
   "cobblemon.ui.effect": "Effect",
@@ -2120,6 +2123,7 @@
   "cobblemon.ui.status.psn": "PSN",
   "cobblemon.ui.status.slp": "SLP",
   "cobblemon.ui.status.tox": "PSN",
+  "cobblemon.ui.exp.number": "+%1$s §oEXP",
   "cobblemon.battle.ui.fight": "Fight",
   "cobblemon.battle.ui.switch": "Switch",
   "cobblemon.battle.ui.capture": "Catch",
@@ -2491,6 +2495,10 @@
   "cobblemon.config.ui.allow_experience_from_pvp.tooltip": "Whether to allow Exp. gain from PvP battles.",
   "cobblemon.config.ui.experience_share_multiplier": "Experience Share Multiplier",
   "cobblemon.config.ui.experience_share_multiplier.tooltip": "Multiplier of how much of the total Exp is given to a Pokémon holding an Exp. Share.",
+  "cobblemon.config.ui.award_experience_to_fainted_pokemon": "Award Exp. to Fainted Pokémon",
+  "cobblemon.config.ui.award_experience_to_fainted_pokemon.tooltip": "Whether fainted Pokémon receive Exp. for opponents they helped defeat before fainting.",
+  "cobblemon.config.ui.award_experience_on_battle_loss": "Award Exp. on Battle Loss",
+  "cobblemon.config.ui.award_experience_on_battle_loss.tooltip": "Whether Pokémon receive Exp. for opponents they defeated even if the battle is lost. Requires 'Award Exp. to Fainted Pokémon' to be enabled for fainted Pokémon to benefit.",
   "cobblemon.config.ui.lucky_egg_multiplier": "Lucky Egg Multiplier",
   "cobblemon.config.ui.lucky_egg_multiplier.tooltip": "Multiplier of how much of the total Exp is given to a Pokémon holding a Lucky Egg.",
   "cobblemon.config.ui.allow_spectating": "Allow Spectating",
@@ -2601,7 +2609,7 @@
   "cobblemon.config.ui.summary_profile_animations.always_animate.tooltip": "Entire party animates unless fainted",
 
   "cobblemon.config.ui.third_person_view_bobbing": "Third Person View Bobbing",
-  "cobblemon.config.ui.third_person_view_bobbing.tooltip": "If true then use default Minecraft behavior to follow directly behind the player's head. If false then follow a fixed offset from the pokemon.",
+  "cobblemon.config.ui.third_person_view_bobbing.tooltip": "If true then use default Minecraft behavior to follow directly behind the player's head. If false then follow a fixed offset from the Pokémon.",
   "cobblemon.config.ui.invert_pitch": "Invert Pitch",
   "cobblemon.config.ui.invert_pitch.tooltip": "Invert the direction for pitch (up and down).",
   "cobblemon.config.ui.invert_yaw": "Invert Yaw",
@@ -2835,6 +2843,8 @@
   "cobblemon.battle.transform": "%1$s transformed into %2$s",
   "cobblemon.battle.endability": "%1$s's ability was suppressed!",
   "cobblemon.battle.select_target": "Select Target",
+  "cobblemon.battle.combine": "The two moves have become one! It's a combined move!",
+  "cobblemon.battle.waiting": "%1$s is waiting for %2$s's move...",
 
   "cobblemon.battle.weather.raindance.start": "It started to rain!",
   "cobblemon.battle.weather.raindance.upkeep": "Rain continues to fall.",
@@ -3004,6 +3014,8 @@
   "cobblemon.battle.fieldend.wonderroom": "Wonder Room wore off, and Defense and Sp. Def stats returned to normal!",
 
   "cobblemon.battle.sidestart.ally.auroraveil": "Aurora Veil made your team stronger against physical and special moves!",
+  "cobblemon.battle.sidestart.ally.firepledge": "A sea of fire enveloped your team!",
+  "cobblemon.battle.sidestart.ally.grasspledge": "A swamp enveloped your team!",
   "cobblemon.battle.sidestart.ally.lightscreen": "Light Screen made your team stronger against special moves!",
   "cobblemon.battle.sidestart.ally.luckychant": "Lucky Chant shielded your team from critical hits!",
   "cobblemon.battle.sidestart.ally.mist": "Your team became shrouded in mist!",
@@ -3014,7 +3026,10 @@
   "cobblemon.battle.sidestart.ally.stickyweb": "A sticky web has been laid on the ground around your team!",
   "cobblemon.battle.sidestart.ally.tailwind": "The Tailwind blew from behind your team!",
   "cobblemon.battle.sidestart.ally.toxicspikes": "Poison spikes were scattered on the ground all around your team!",
+  "cobblemon.battle.sidestart.ally.waterpledge": "A rainbow appeared in the sky on your team's side!",
   "cobblemon.battle.sidestart.opponent.auroraveil": "Aurora Veil made the opposing team stronger against physical and special moves!",
+  "cobblemon.battle.sidestart.opponent.firepledge": "A sea of fire enveloped the opposing team!",
+  "cobblemon.battle.sidestart.opponent.grasspledge": "A swamp enveloped the opposing team!",
   "cobblemon.battle.sidestart.opponent.lightscreen": "Light Screen made the opposing team stronger against special moves!",
   "cobblemon.battle.sidestart.opponent.luckychant": "Lucky Chant shielded the opposing team from critical hits!",
   "cobblemon.battle.sidestart.opponent.mist": "The opposing team became shrouded in mist!",
@@ -3025,9 +3040,11 @@
   "cobblemon.battle.sidestart.opponent.stickyweb": "A sticky web has been laid on the ground around the opposing team!",
   "cobblemon.battle.sidestart.opponent.tailwind": "The Tailwind blew from behind the opposing team!",
   "cobblemon.battle.sidestart.opponent.toxicspikes": "Poison spikes were scattered on the ground all around the opposing team!",
-
+  "cobblemon.battle.sidestart.opponent.waterpledge": "A rainbow appeared in the sky on the opposing team's side!",
 
   "cobblemon.battle.sideend.ally.auroraveil": "Your team's Aurora Veil wore off!",
+  "cobblemon.battle.sideend.ally.firepledge": "The sea of fire around your team disappeared!",
+  "cobblemon.battle.sideend.ally.grasspledge": "The swamp around your team disappeared!",
   "cobblemon.battle.sideend.ally.lightscreen": "Your team's Light Screen wore off!",
   "cobblemon.battle.sideend.ally.luckychant": "Your team's Lucky Chant wore off!",
   "cobblemon.battle.sideend.ally.mist": "Your team is no longer protected by mist!",
@@ -3038,7 +3055,10 @@
   "cobblemon.battle.sideend.ally.stickyweb": "The sticky web has disappeared from the ground around your team",
   "cobblemon.battle.sideend.ally.tailwind": "Your team's Tailwind petered out!",
   "cobblemon.battle.sideend.ally.toxicspikes": "The poison spikes disappeared from the ground around your team!",
+  "cobblemon.battle.sideend.ally.waterpledge": "The rainbow on your team's side disappeared!",
   "cobblemon.battle.sideend.opponent.auroraveil": "The opposing team's Aurora Veil wore off!",
+  "cobblemon.battle.sideend.opponent.firepledge": "The sea of fire around the opposing team disappeared!",
+  "cobblemon.battle.sideend.opponent.grasspledge": "The swamp around the opposing team disappeared!",
   "cobblemon.battle.sideend.opponent.lightscreen": "The opposing team's Light Screen wore off!",
   "cobblemon.battle.sideend.opponent.luckychant": "The opposing team's Lucky Chant wore off!",
   "cobblemon.battle.sideend.opponent.mist": "The opposing team is no longer protected by mist!",
@@ -3049,6 +3069,7 @@
   "cobblemon.battle.sideend.opponent.stickyweb": "The sticky web has disappeared from the ground around the opposing team",
   "cobblemon.battle.sideend.opponent.tailwind": "The opposing team's Tailwind petered out!",
   "cobblemon.battle.sideend.opponent.toxicspikes": "The poison spikes disappeared from the ground around the opposing team!",
+  "cobblemon.battle.sideend.opponent.waterpledge": "The rainbow on the opposing team's side disappeared!",
 
   "cobblemon.battle.cant.generic": "%1$s can't use %2$s!",
   "cobblemon.battle.cant.truant": "%1$s is loafing around!",
@@ -3123,6 +3144,7 @@
   "cobblemon.battle.damage.dryskin": "%1$s was hurt by its Dry Skin!",
   "cobblemon.battle.damage.firespin": "%1$s is hurt by Fire Spin!",
   "cobblemon.battle.damage.flameburst": "The bursting flame hit %1$s!",
+  "cobblemon.battle.damage.firepledge": "%1$s is hurt by the sea of fire!",
   "cobblemon.battle.damage.generic": "%1$s was hurt!",
   "cobblemon.battle.damage.hail": "%1$s was buffeted by hail.",
   "cobblemon.battle.damage.highjumpkick": "%1$s crashed into the ground!",
@@ -3402,6 +3424,7 @@
   "cobblemon.starterselection.category.galar": "Galar",
   "cobblemon.starterselection.category.hisui_bias": "Hisui",
   "cobblemon.starterselection.category.paldea": "Paldea",
+  "cobblemon.starterselection.category.special": "Special",
 
   "cobblemon.stat.hp.name": "HP",
   "cobblemon.stat.attack.name": "Attack",
@@ -3910,6 +3933,18 @@
 
   "cobblemon.entity.variable.dialogue_selection.name": "Dialogue",
   "cobblemon.entity.variable.dialogue_selection.desc": "The resource identifier of the dialogue to open on interaction, such as cobblemon:your_dialogue",
+
+  "cobblemon.behaviour.chatter_npc.name": "Chatter NPC",
+  "cobblemon.behaviour.chatter_npc.desc": "Allows the NPC to talk with the player using the in-game chat when interacted with, optional animation support.",
+
+  "cobblemon.entity.variable.chat_message.name": "Chat Message",
+  "cobblemon.entity.variable.chat_message.desc": "Content for the message the NPC says when interacted with. Supports traditional minecraft colour and formatting.",
+
+  "cobblemon.entity.variable.animation_name.name": "Animation Name",
+  "cobblemon.entity.variable.animation_name.desc": "The name of the animation to play when the NPC is interacted with.",
+
+  "cobblemon.entity.variable.play_animation.name": "Play Animation",
+  "cobblemon.entity.variable.play_animation.desc": "Whether to play an animation when the NPC is interacted with.",
 
   "npc.sacchi.name": "Professor Sacchi",
 

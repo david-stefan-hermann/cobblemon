@@ -149,6 +149,9 @@
     ]
   },
   "behaviour": {
+    "combat": {
+      "willDefendOwner": true
+    },
     "moving": {
       "swim": {
         "canBreatheUnderwater": true,
@@ -159,9 +162,6 @@
         "avoidsLand": true,
         "walkSpeed": "0.2"
       }
-    },
-    "combat": {
-      "willDefendOwner": true
     },
     "resting": {
       "drowsyChance": 0.0333,
@@ -327,6 +327,9 @@
         "east-sea"
       ],
       "behaviour": {
+        "combat": {
+          "willDefendOwner": true
+        },
         "moving": {
           "walk": {
             "avoidsLand": true,
@@ -337,9 +340,6 @@
             "canBreatheUnderwater": true,
             "swimSpeed": "0.2"
           }
-        },
-        "combat": {
-          "willDefendOwner": true
         },
         "resting": {
           "drowsyChance": 0.0333,
