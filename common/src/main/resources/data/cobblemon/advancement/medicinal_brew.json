@@ -10,7 +10,7 @@
       "translate": "advancements.cobblemon.medicinal_brew.description"
     }
   },
-  "parent": "cobblemon:obtain_leek",
+  "parent": "cobblemon:place_campfire_pot",
   "criteria": {
     "check_inv": {
       "trigger": "minecraft:inventory_changed",
