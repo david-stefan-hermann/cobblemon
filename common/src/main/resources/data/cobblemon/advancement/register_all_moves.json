@@ -3,8 +3,12 @@
     "icon": {
       "id": "cobblemon:tm_shelf"
     },
-    "title": "advancements.cobblemon.register_all_moves",
-    "description": "advancements.cobblemon.register_all_moves.description",
+    "title": {
+      "translate": "advancements.cobblemon.register_all_moves"
+    },
+    "description": {
+      "translate": "advancements.cobblemon.register_all_moves.description"
+    },
     "frame": "challenge"
   },
   "parent": "cobblemon:obtain_ancient_tm",

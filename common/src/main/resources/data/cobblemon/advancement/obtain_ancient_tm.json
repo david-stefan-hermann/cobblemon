@@ -3,8 +3,12 @@
     "icon": {
       "id": "cobblemon:blank_tm"
     },
-    "title": "advancements.cobblemon.obtain_ancient_tm",
-    "description": "advancements.cobblemon.obtain_ancient_tm.description"
+    "title": {
+      "translate": "advancements.cobblemon.obtain_ancient_tm"
+    },
+    "description": {
+      "translate": "advancements.cobblemon.obtain_ancient_tm.description"
+    }
   },
   "parent": "cobblemon:craft_tm",
   "criteria": {

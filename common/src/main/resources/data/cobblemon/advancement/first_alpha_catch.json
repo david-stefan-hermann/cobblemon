@@ -1,13 +1,17 @@
 {
   "display": {
-		"icon": {
-			"id": "cobblemon:link_cable",
-			"components": {
+    "icon": {
+      "id": "cobblemon:link_cable",
+      "components": {
         "minecraft:custom_model_data": 7
       }
-		},
-    "title": "advancements.cobblemon.first_alpha_catch",
-    "description": "advancements.cobblemon.first_alpha_catch.description"
+    },
+    "title": {
+      "translate": "advancements.cobblemon.first_alpha_catch"
+    },
+    "description": {
+      "translate": "advancements.cobblemon.first_alpha_catch.description"
+    }
   },
   "parent": "cobblemon:first_catch",
   "criteria": {
@@ -16,7 +20,6 @@
       "conditions": {
         "count": 1
       }
-
     }
   },
   "requirements": [

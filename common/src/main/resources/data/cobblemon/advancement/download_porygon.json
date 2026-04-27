@@ -3,8 +3,12 @@
     "icon": {
       "id": "cobblemon:upgrade"
     },
-    "title": "advancements.cobblemon.download_porygon",
-    "description": "advancements.cobblemon.download_porygon.description",
+    "title": {
+      "translate": "advancements.cobblemon.download_porygon"
+    },
+    "description": {
+      "translate": "advancements.cobblemon.download_porygon.description"
+    },
     "hidden": true
   },
   "parent": "cobblemon:craft_tm",

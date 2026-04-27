@@ -3,8 +3,12 @@
     "icon": {
       "id": "cobblemon:deepslate_crystal_core"
     },
-    "title": "advancements.cobblemon.plant_type_gem",
-    "description": "advancements.cobblemon.plant_type_gem.description"
+    "title": {
+      "translate": "advancements.cobblemon.plant_type_gem"
+    },
+    "description": {
+      "translate": "advancements.cobblemon.plant_type_gem.description"
+    }
   },
   "parent": "cobblemon:root",
   "criteria": {

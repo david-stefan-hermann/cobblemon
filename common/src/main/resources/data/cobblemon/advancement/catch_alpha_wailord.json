@@ -6,8 +6,12 @@
             "cobblemon:pokemon_item": {"species":"cobblemon:wailord","aspects":["alpha"]}
       }
 		},
-    "title": "advancements.cobblemon.catch_alpha_wailord",
-    "description": "advancements.cobblemon.catch_alpha_wailord.description",
+    "title": {
+      "translate": "advancements.cobblemon.catch_alpha_wailord"
+    },
+    "description": {
+      "translate": "advancements.cobblemon.catch_alpha_wailord.description"
+    },
     "frame": "challenge",
     "hidden": true
   },
