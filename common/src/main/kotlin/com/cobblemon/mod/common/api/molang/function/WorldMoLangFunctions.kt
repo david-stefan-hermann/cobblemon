@@ -23,32 +23,29 @@ import com.cobblemon.mod.common.api.spawning.TimeRange
 import com.cobblemon.mod.common.entity.npc.NPCEntity
 import com.cobblemon.mod.common.net.messages.client.effect.SpawnSnowstormParticlePacket
 import com.cobblemon.mod.common.net.messages.client.sound.UnvalidatedPlaySoundS2CPacket
-import com.cobblemon.mod.common.util.asArrayValue
-import com.cobblemon.mod.common.util.asBlockPos
-import com.cobblemon.mod.common.util.asIdentifierDefaultingNamespace
-import com.cobblemon.mod.common.util.asResource
-import com.cobblemon.mod.common.util.blockRegistry
-import com.cobblemon.mod.common.util.getDoubleOrNull
-import com.cobblemon.mod.common.util.getOrNull
-import com.cobblemon.mod.common.util.getStringOrNull
-import com.cobblemon.mod.common.util.server
-import com.cobblemon.mod.common.util.toProperties
+import com.cobblemon.mod.common.util.*
+import java.util.UUID
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Holder
 import net.minecraft.core.registries.Registries
+import net.minecraft.resources.ResourceKey
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundSource
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.LightningBolt
 import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.Level.ExplosionInteraction
 import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.levelgen.Heightmap
+import net.minecraft.world.level.storage.loot.LootParams
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
-import java.util.*
 
 object WorldMoLangFunctions : AbstractMoLangFunctionHolder<Holder<Level>>() {
     override fun Holder<Level>.moLangFunctions(): MutableMap<String, (MoParams) -> Any> {
@@ -252,6 +249,43 @@ object WorldMoLangFunctions : AbstractMoLangFunctionHolder<Holder<Level>>() {
             val healer = world.getBlockEntity(pos, CobblemonBlockEntities.HEALING_MACHINE).orElse(null)
                 ?: return@put DoubleValue.ONE
             return@put DoubleValue(healer.isInUse)
+        }
+
+        map["spawn_loot_table_items"] = put@{ params ->
+            val serverLevel = world as? ServerLevel
+            if (serverLevel == null) {
+                Cobblemon.LOGGER.warn("spawn_loot_table_items: world is not a ServerLevel")
+                return@put DoubleValue.ZERO
+            }
+            val lootTableId = params.getString(0).asIdentifierDefaultingNamespace()
+            val x = params.getDouble(1)
+            val y = params.getDouble(2)
+            val z = params.getDouble(3)
+
+            val lootTableKey = ResourceKey.create(Registries.LOOT_TABLE, lootTableId)
+            val lootTable = serverLevel.server.reloadableRegistries().getLootTable(lootTableKey)
+
+            val lootParams = LootParams.Builder(serverLevel)
+                .withParameter(LootContextParams.ORIGIN, Vec3(x, y, z))
+                .create(LootContextParamSets.COMMAND)
+
+            val items = lootTable.getRandomItems(lootParams)
+            val spawnedItems = ArrayStruct(hashMapOf())
+            var index = 0
+
+            for (itemStack in items) {
+                if (!itemStack.isEmpty) {
+                    val itemEntity = ItemEntity(serverLevel, x, y, z, itemStack)
+                    itemEntity.setDefaultPickUpDelay()
+                    if (serverLevel.addFreshEntity(itemEntity)) {
+                        spawnedItems.setDirectly("$index", itemStack.asMoLangValue(serverLevel.registryAccess()))
+                        index++
+                    } else {
+                        Cobblemon.LOGGER.warn("spawn_loot_table_items: Failed to add entity to world for ${itemStack.item}")
+                    }
+                }
+            }
+            return@put spawnedItems
         }
 
         return map

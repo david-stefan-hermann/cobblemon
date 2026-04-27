@@ -11,8 +11,10 @@ package com.cobblemon.mod.common.api.molang.function
 import com.bedrockk.molang.runtime.MoParams
 import com.bedrockk.molang.runtime.struct.QueryStruct
 import com.bedrockk.molang.runtime.value.DoubleValue
+import com.bedrockk.molang.runtime.value.MoValue
 import com.bedrockk.molang.runtime.value.StringValue
 import com.cobblemon.mod.common.Cobblemon
+import com.cobblemon.mod.common.CobblemonMovesetBuilders
 import com.cobblemon.mod.common.api.mark.Marks
 import com.cobblemon.mod.common.api.molang.MoLangFunctions.asMoLangValue
 import com.cobblemon.mod.common.api.moves.BenchedMove
@@ -32,6 +34,7 @@ import com.cobblemon.mod.common.util.getIntOrNull
 import com.cobblemon.mod.common.util.server
 import com.cobblemon.mod.common.util.toProperties
 import kotlin.random.Random
+import net.minecraft.resources.ResourceLocation
 
 object PokemonMoLangFunctions : AbstractMoLangFunctionHolder<Pokemon>() {
     override fun Pokemon.moLangFunctions(): MutableMap<String, (MoParams) -> Any> {
@@ -364,9 +367,19 @@ object PokemonMoLangFunctions : AbstractMoLangFunctionHolder<Pokemon>() {
 
             return@addRideBoost DoubleValue(if (pokemon.addRideBoost(stat, value)) 1.0 else 0.0)
         }
-        map["initialize_moveset"] = { params ->
-            val preferLatest = params.getBooleanOrNull(0) ?: true
-            pokemon.initializeMoveset(preferLatest)
+        map["initialize_moveset"] = put@{ params ->
+            val param = params.get<MoValue>(0) ?: StringValue(pokemon.form.defaultWildMovesetBuilder.toString())
+            if (param is DoubleValue) {
+                pokemon.initializeMoveset(param == DoubleValue.ONE)
+            } else {
+                val movesetBuilderId = ResourceLocation.parse(param.asString())
+                val movesetBuilder = CobblemonMovesetBuilders.movesetBuilders[movesetBuilderId]
+                    ?: run {
+                        Cobblemon.LOGGER.error("Tried initializing moveset from moveset builder ${param.asString()} but it does not exist.")
+                        return@put DoubleValue.ZERO
+                    }
+                pokemon.initializeMovesetFrom(movesetBuilder)
+            }
             DoubleValue.ONE
         }
         map["validate_moveset"] = { params ->
@@ -434,6 +447,11 @@ object PokemonMoLangFunctions : AbstractMoLangFunctionHolder<Pokemon>() {
             evolution?.forceEvolve(pokemon)
             StringValue(evolution.toString())
         }
+
+        map["entity"] = { pokemon.entity?.asMoLangValue() ?: DoubleValue.ZERO }
+        map["is_alpha"] = { DoubleValue(pokemon.isAlpha) }
+        map["size_category"] = { _ -> StringValue(pokemon.getSizeCategory().name) }
+
         return map
     }
 }

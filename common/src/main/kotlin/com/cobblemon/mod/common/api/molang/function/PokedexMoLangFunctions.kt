@@ -38,11 +38,11 @@ object PokedexMoLangFunctions : AbstractMoLangFunctionHolder<AbstractPokedexMana
             val formName = params.getStringOrNull(1)
 
             if (formName == null) {
-                return@put DoubleValue(pokedex.getHighestKnowledgeForSpecies(speciesId).ordinal >= PokedexEntryProgress.ENCOUNTERED.ordinal)
+                return@put DoubleValue(pokedex.getHighestKnowledgeForSpecies(speciesId).ordinal >= PokedexEntryProgress.SEEN.ordinal)
             } else {
                 return@put DoubleValue(
                     (pokedex.getSpeciesRecord(speciesId)?.getFormRecord(formName)?.knowledge?.ordinal
-                        ?: 0) >= PokedexEntryProgress.ENCOUNTERED.ordinal
+                        ?: 0) >= PokedexEntryProgress.SEEN.ordinal
                 )
             }
         }
@@ -51,11 +51,11 @@ object PokedexMoLangFunctions : AbstractMoLangFunctionHolder<AbstractPokedexMana
             val speciesId = params.getString(0).asIdentifierDefaultingNamespace()
             val formName = params.getStringOrNull(1)
             if (formName == null) {
-                return@put DoubleValue(pokedex.getHighestKnowledgeForSpecies(speciesId) == PokedexEntryProgress.CAUGHT)
+                return@put DoubleValue(pokedex.getHighestKnowledgeForSpecies(speciesId) == PokedexEntryProgress.OWNED)
             } else {
                 return@put DoubleValue(
                     pokedex.getSpeciesRecord(speciesId)
-                        ?.getFormRecord(formName)?.knowledge == PokedexEntryProgress.CAUGHT
+                        ?.getFormRecord(formName)?.knowledge == PokedexEntryProgress.OWNED
                 )
             }
         }
