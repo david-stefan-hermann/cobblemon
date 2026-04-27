@@ -439,7 +439,7 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
             }
 
             if (hasKnowledge) {
-                if (gender != Gender.GENDERLESS) genderButton.render(context, mouseX, mouseY, delta)
+                if (genderButton.visible) genderButton.render(context, mouseX, mouseY, delta)
 
                 shinyButton.render(context, mouseX, mouseY, delta)
 
