@@ -62,6 +62,14 @@ class FishingSpawnCause(
             }
         }
 
+        fun alterMarksAttempt(pokemonEntity: PokemonEntity, effect: SpawnBait.Effect) {
+            // This is not needed as markings are only applied when the pokémon gets captured by a player,
+            // but let's leave it here just in case
+            if (pokemonEntity.pokemon.marks.isNotEmpty()) return
+
+            pokemonEntity.pokemon.applyPotentialMarks(1.0 + (effect.value / 100))
+        }
+
         fun saveDropsReroll(pokemonEntity: PokemonEntity, effect: SpawnBait.Effect) {
             pokemonEntity.pokemon.forcedAspects += DROPS_REROLL_ASPECT
         }
@@ -126,6 +134,15 @@ class FishingSpawnCause(
             return
 
 
+        }
+
+        fun alterAlphaAttempt(pokemonEntity: PokemonEntity) {
+            if (pokemonEntity.pokemon.isAlpha) {
+                return
+            }
+            pokemonEntity.pokemon.isAlpha = true
+            pokemonEntity.pokemon.initializeMovesetWithRandomTm(2)
+            pokemonEntity.entityData.set(PokemonEntity.IS_ALPHA, true)
         }
 
         fun alterFriendshipAttempt(pokemonEntity: PokemonEntity, effect: SpawnBait.Effect) {
