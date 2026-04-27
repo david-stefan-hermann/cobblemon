@@ -14,7 +14,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.util.StringRepresentable
 
 /**
- * Contains stats about a specific pokemon for putting in the pokedex
+ * Contains stats about a specific Pokémon for putting in the PokéDex
  *
  * @author JPAK, Apion
  * @since February 21, 2024

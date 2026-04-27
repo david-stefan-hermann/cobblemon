@@ -131,6 +131,7 @@ import kotlin.math.absoluteValue
 import kotlin.math.atan2
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import net.minecraft.core.BlockPos
@@ -163,7 +164,6 @@ import net.minecraft.world.level.block.MagmaBlock
 import net.minecraft.world.level.block.SweetBerryBushBlock
 import net.minecraft.world.level.block.WitherRoseBlock
 import net.minecraft.world.phys.Vec3
-import kotlin.math.pow
 
 enum class OriginalTrainerType : StringRepresentable {
     NONE, PLAYER, NPC;
@@ -1913,9 +1913,9 @@ open class Pokemon : ShowdownIdentifiable {
     }
 
     @Deprecated(
-        message = "Will be removed within potentially 1 title update",
-        replaceWith = ReplaceWith("initializeMovesetFromDefault"),
-        level = DeprecationLevel.ERROR
+        message = "Will be removed with a title update, maybe as early as 1.9",
+        replaceWith = ReplaceWith("initializeMovesetFromDefault() or initializeMovesetFrom(movesetBuilder)"),
+        level = DeprecationLevel.WARNING
     )
     fun initializeMoveset(preferLatest: Boolean = true) {
         val possibleMoves = form.moves.getLevelUpMovesUpTo(level).toMutableList()
