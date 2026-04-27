@@ -26,6 +26,7 @@
 - Changed the bait effects of the following items: (Vanilla) Sweet & Glow Berries, Golden & Enchanted Golden Apples (Cobblemon) Custap, Eggant, Hopo & Micle Berries, Sweet Hearts
 
 ### Fixes
+- Fixed Pokédex layout for genderless variations
 - Fixes https://gitlab.com/cable-mc/cobblemon/-/issues/1943
 - Fix occasional crash on retrieving revived fossils
 - Fixed a compatibility issue with World Game Rules which caused some log spam in specific cases.
@@ -47,6 +48,7 @@
 - Fixed sliding particles incorrectly handling block collision
 - Fixed Full Heal not curing status conditions in battle
 - Fixed a rare issue with battles locking up when you are forced to switch, with the switch menu appearing instantly.
+- Fixed the combined effects of Pledge moves having broken Showdown message handling and localization
 
 ### Developer
 - Added `PokeSnackSpawnerFactory` which allows influence registration on PokeSnack encounters
@@ -62,6 +64,8 @@
 - Added Data Component support for species drops, eg `"components": {"minecraft:custom_model_data": 123}`
 - Added new sortOrder field to mark entries, (defaults to 0 if not specified) which controls the order in which marks are rendered on the HUD, with higher numbers being rendered on top of lower numbers
 - Added optional `order` field to starter categories. It will allow to explicitly sort categories in starter selection screen
+ - SpeciesAdditions append vs override now matches wiki documentation
+- Added `weighted_choice` as new feature type. It requires to set weights for each choice and allows developers to simplify process of assigning random aspect choice based on marbles chance
 
 ### Localization
 - Updated translations for:
