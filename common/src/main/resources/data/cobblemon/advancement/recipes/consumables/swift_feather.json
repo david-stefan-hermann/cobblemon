@@ -1,9 +1,9 @@
 {
-  "parent": "cobblemon:recipes/root",
+  "parent": "cobblemon:recipes/consumables",
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "cobblemon:clever_feather"
+        "recipe": "cobblemon:swift_feather"
       },
       "trigger": "minecraft:recipe_unlocked"
     },
@@ -21,7 +21,7 @@
       "conditions": {
         "items": [
           {
-            "items": "cobblemon:pink_mint_leaf"
+            "items": "cobblemon:green_mint_leaf"
           }
         ]
       },
@@ -40,7 +40,7 @@
   ],
   "rewards": {
     "recipes": [
-      "cobblemon:clever_feather"
+      "cobblemon:swift_feather"
     ]
   }
 }

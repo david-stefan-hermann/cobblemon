@@ -1,9 +1,9 @@
 {
-  "parent": "cobblemon:recipes/root",
+  "parent": "cobblemon:recipes/misc",
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "cobblemon:apricorn_boat"
+        "recipe": "cobblemon:saccharine_boat"
       },
       "trigger": "minecraft:recipe_unlocked"
     },
@@ -22,7 +22,7 @@
   ],
   "rewards": {
     "recipes": [
-      "cobblemon:apricorn_boat"
+      "cobblemon:saccharine_boat"
     ]
   },
   "sends_telemetry_event": false

@@ -1,5 +1,5 @@
 {
-  "parent": "minecraft:recipes/root",
+  "parent": "minecraft:recipes/campfire_pot",
   "criteria": {
     "has_cup": {
       "conditions": {

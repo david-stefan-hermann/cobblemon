@@ -1,9 +1,9 @@
 {
-  "parent": "cobblemon:recipes/root",
+  "parent": "cobblemon:recipes/consumables",
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "cobblemon:muscle_feather"
+        "recipe": "cobblemon:resist_feather"
       },
       "trigger": "minecraft:recipe_unlocked"
     },
@@ -21,7 +21,7 @@
       "conditions": {
         "items": [
           {
-            "items": "cobblemon:red_mint_leaf"
+            "items": "cobblemon:blue_mint_leaf"
           }
         ]
       },
@@ -40,7 +40,7 @@
   ],
   "rewards": {
     "recipes": [
-      "cobblemon:muscle_feather"
+      "cobblemon:resist_feather"
     ]
   }
 }

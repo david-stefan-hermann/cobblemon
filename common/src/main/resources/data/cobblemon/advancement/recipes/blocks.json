@@ -1,0 +1,10 @@
+{
+  "parent": "cobblemon:recipes/root",
+  "criteria": {
+    "root": {
+      "trigger": "minecraft:tick"
+    }
+  },
+  "requirements": [],
+  "sends_telemetry_event": false
+}
