@@ -20,9 +20,9 @@ import net.minecraft.util.StringRepresentable
  * @since February 21, 2024
  */
 enum class PokedexEntryProgress : StringRepresentable, Comparable<PokedexEntryProgress> {
-    NONE,
-    ENCOUNTERED,
-    CAUGHT;
+    UNREGISTERED,
+    SEEN,
+    OWNED;
 
     override fun getSerializedName() = this.name
     companion object {

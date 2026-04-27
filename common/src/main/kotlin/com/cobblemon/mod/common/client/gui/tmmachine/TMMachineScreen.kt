@@ -27,6 +27,9 @@ import com.cobblemon.mod.common.block.entity.TMMachineBlockEntity
 import com.cobblemon.mod.common.block.tmmachine.TMMachineMenu
 import com.cobblemon.mod.common.client.CobblemonClient
 import com.cobblemon.mod.common.client.CobblemonResources
+import com.cobblemon.mod.common.client.gui.MoveCategoryIcon
+import com.cobblemon.mod.common.client.gui.ScrollingWidget
+import com.cobblemon.mod.common.client.gui.TypeIcon
 import com.cobblemon.mod.common.client.gui.interact.moveselect.MoveSlotButton
 import com.cobblemon.mod.common.client.gui.summary.widgets.screens.moves.MovesWidget
 import com.cobblemon.mod.common.client.settings.ServerSettings
@@ -49,10 +52,11 @@ import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.core.BlockPos
-import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.Style
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.sounds.SoundEvent
+import net.minecraft.util.Mth
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.inventory.ClickType
 import net.minecraft.world.inventory.Slot
@@ -77,15 +81,22 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         const val CRAFT_TICKS = 10 // Length for craft completion animation
         const val RESET_DISC_TICKS = 4 // Length for disc reset animation
 
-        const val SCREEN_SAVER_TIMEOUT_TICKS = 200 // 10 Seconds
+        const val SCREEN_SAVER_TIMEOUT_TICKS = 1200 // 60 Seconds
         const val SCREEN_SAVER_WIDTH = 118
         const val SCREEN_SAVER_HEIGHT = 110
 
+        const val DESCRIPTION_SCROLLBAR_WIDTH = 2
+
+        val moveOverlayBar = cobblemonResource("textures/gui/tmmachine/summary_move_overlay_bar.png")
+
         val baseResource = cobblemonResource("textures/gui/tmmachine/base.png")
         val tmTray = cobblemonResource("textures/gui/tmmachine/tm_tray.png")
-        val iconArrowLeft = cobblemonResource("textures/gui/tmmachine/icon_arrow_left.png")
-        val iconArrowRight = cobblemonResource("textures/gui/tmmachine/icon_arrow_right.png")
+        val iconBack = cobblemonResource("textures/gui/tmmachine/icon_back.png")
+        val tooltipMoveInfo = cobblemonResource("textures/gui/tmmachine/tooltip_move_info.png")
         val emptyDiscSlot = cobblemonResource("textures/item/tms/blank_disc_empty_slot.png")
+
+        val scrollbarSlide = cobblemonResource("textures/gui/tmmachine/scrollbar_slide.png")
+        val scrollbarTrack = cobblemonResource("textures/gui/tmmachine/scrollbar_track.png")
 
         val discBase = cobblemonResource("textures/gui/tmmachine/tm_base.png")
         val discBorder = cobblemonResource("textures/gui/tmmachine/tm_border.png")
@@ -107,7 +118,6 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         fun getLogoResource(langCode: String?): ResourceLocation =
             logoResourceMap.entries.find { it.value.contains(langCode?.substringBefore("_")) }?.key ?: logo
     }
-
     var selectedTM: TechnicalMachine? = null
     var heldStackMove: MoveTemplate? = null
     var tmList: SettableObservable<MutableList<TechnicalMachine>> = SettableObservable(mutableListOf())
@@ -121,6 +131,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     lateinit var backButton: IconButton
     lateinit var startButton: StartButton
     lateinit var selectedMoveButton: MoveSlotButton
+    lateinit var moveDescriptionWidget: MoveDescriptionWidget
     lateinit var typesScrollList: TypesScrollingWidget
     lateinit var movesScrollingList: MovesScrollingWidget
     lateinit var moveSearchWidget: MoveSearchWidget
@@ -140,6 +151,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     var scanLineOffsetY: Double = 0.0
 
     var initScreen: Boolean = false
+    var heldMoveItemChanged = false
 
     override fun init() {
         imageWidth = WIDTH
@@ -160,20 +172,21 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
                 pY = topPos + 9 + ((TMPartySlotWidget.HEIGHT + 3) * index),
                 pokemon = pokemon,
                 onPress = {
-                    if ((it as TMPartySlotWidget).clickable) {
-                        if (heldStackMove != null && pokemon != null) {
+                    if ((it as TMPartySlotWidget).clickable  && pokemon != null) {
+                        // Teach move if holding TM item, else open learnable moves list for Pokémon
+                        if (heldStackMove != null) {
                             heldStackMove?.let { move ->
                                 if (canLearnTMMove(move, pokemon) == TMPartySlotWidget.CAN_LEARN) {
                                     CobblemonNetwork.sendToServer(TMMachineTeachMovePacket(pokemon.uuid, menu.carried, move))
+                                    // Mark to update client next tick
+                                    heldMoveItemChanged = true
                                 }
                             }
-                        } else {
-                            if (mode == TYPE_SELECT_MODE && pokemon != null) {
-                                setMoveList(pokemon = pokemon)
-                                setScreenFromMode(MOVE_SELECT_MODE)
-                                selectedPokemon = pokemon
-                                playSound(CobblemonSounds.GUI_CLICK)
-                            }
+                        } else if (mode != TM_BURN_MODE) {
+                            setMoveList(pokemon = pokemon)
+                            setScreenFromMode(MOVE_SELECT_MODE)
+                            selectedPokemon = pokemon
+                            playSound(CobblemonSounds.GUI_CLICK)
                         }
                     }
                 }
@@ -184,8 +197,16 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             if (!children().contains(slot)) addRenderableWidget(slot)
         }
 
+        moveDescriptionWidget = MoveDescriptionWidget(
+            leftPos + 125,
+            topPos + 42,
+            60,
+            34
+        )
+        if (!children().contains(moveDescriptionWidget)) addRenderableWidget(moveDescriptionWidget)
+
         typesScrollList = TypesScrollingWidget(
-            pX = leftPos + 7,
+            pX = leftPos + 6,
             pY = topPos + 11,
             setType = { type ->
                 sortType = type
@@ -212,13 +233,14 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         if (!children().contains(moveSearchWidget)) addRenderableWidget(moveSearchWidget)
 
         backButton = IconButton(
-            leftPos + 90F,
+            leftPos + 106F,
             topPos + 1F,
+            20,
             18,
-            18,
-            iconArrowLeft,
-            hoverExtendRight = 11
-        ) { setScreenFromMode(TYPE_SELECT_MODE) }
+            iconBack
+        ) {
+            setScreenFromMode(TYPE_SELECT_MODE)
+        }
         if (!children().contains(backButton)) addRenderableWidget(backButton)
 
         selectedMoveButton = MoveSlotButton(
@@ -228,7 +250,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             pp = selectedTM?.moveName?.pp ?: 0,
             ppAsFraction = false
         ) {
-            if (!isBurnActive()) {
+            if ((it as MoveSlotButton).enabled) {
                 if (::movesScrollingList.isInitialized && movesScrollingList.children().isEmpty()) setMoveList()
                 playSound(CobblemonSounds.GUI_CLICK)
                 setScreenFromMode(MOVE_SELECT_MODE)
@@ -308,7 +330,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
                 }
 
                 if (::selectedMoveButton.isInitialized) {
-                    selectedMoveButton.enabled = !isBurnActive()
+                    selectedMoveButton.enabled = !isBurnActive() && (heldStackMove == null || heldStackMove == selectedTM?.moveName)
                 }
 
                 if (isBurnActive()) {
@@ -325,30 +347,9 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             if (!initScreen) loadBurnScreenData()
         }
 
-        val heldStack = menu.carried
-        if (heldStack.item == CobblemonItems.TECHNICAL_MACHINE) {
-            // Store move of TM item picked up by player cursor.
-            TMMoveComponent.getTMMove(heldStack)?.let { move ->
-                if (heldStackMove != move) heldStackMove = move
-                if (mode == TYPE_SELECT_MODE) updatePartySlotStatus(heldStackMove)
-            }
-        } else if (heldStackMove != null) {
-            heldStackMove = null
-            updatePartySlotStatus(null)
-        }
-
-        // Allow dragging held TMs onto party slots in both move list and burn views.
-        when (mode) {
-            TM_BURN_MODE -> {
-                for (slot in partySlotList) {
-                    slot.clickable = heldStackMove != null && (selectedTM == null || heldStackMove == selectedTM?.moveName)
-                }
-                updatePartySlotStatus(selectedTM?.moveName ?: heldStackMove)
-            }
-            MOVE_SELECT_MODE -> {
-                for (slot in partySlotList) slot.clickable = heldStackMove != null
-                updatePartySlotStatus(heldStackMove)
-            }
+        if (heldMoveItemChanged) {
+            heldMoveItemChanged = false
+            updateHeldStackMove()
         }
 
         // Screen saver
@@ -384,11 +385,9 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     }
 
     private fun resetScreenSaver(): Boolean {
-        if (ticksElapsed >= SCREEN_SAVER_TIMEOUT_TICKS) {
-            ticksElapsed = 0
-            return true
-        }
-        return false
+        val wasScreenSaverActive = ticksElapsed > SCREEN_SAVER_TIMEOUT_TICKS
+        ticksElapsed = 0
+        return wasScreenSaverActive
     }
 
     private fun loadBurnScreenData() {
@@ -438,6 +437,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
                 toggleTMBurn(true)
             }
         }
+        updateHeldStackMove()
     }
 
     private fun setMoveList(filter: String? = null, pokemon: Pokemon? = null) {
@@ -448,6 +448,9 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             player = inventory.player,
             includeUnlearned = ServerSettings.unlockAllMoveDexMovesByDefault
         ).toMutableList()
+        pokemon?.let { selectedPokemon ->
+            filteredList.retainAll { tm -> tm.moveName in selectedPokemon.form.moves.tmMoves }
+        }
         if (sortType == null) filteredList.sortBy { it.type }
         tmList.set(filteredList)
     }
@@ -470,7 +473,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             }
         }
 
-        for (slot in partySlotList) slot.clickable = isVisible
+        setPartySlotsClickable(isVisible)
     }
 
     private fun toggleMoveSelect(isVisible: Boolean) {
@@ -499,7 +502,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
 
     fun canLearnTMMove(move: MoveTemplate, pokemon: Pokemon): Int {
         if (pokemon.moveSet.getMoveTemplates().contains(move) || pokemon.allAccessibleMoves.contains(move)) return TMPartySlotWidget.LEARNED
-        val learnableMoves = pokemon.form.moves.tmLearnableMoves()
+        val learnableMoves = pokemon.form.moves.tmMoves
         return if (learnableMoves.contains(move)) TMPartySlotWidget.CAN_LEARN else TMPartySlotWidget.CANNOT_LEARN
     }
 
@@ -511,6 +514,13 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
 
         if (::movesScrollingList.isInitialized) {
             movesScrollingList.setSlotHighlighted(if (clicked) null else selectedTM?.id)
+        }
+
+        if (::moveDescriptionWidget.isInitialized) {
+            val selectedDescription = selectedTM?.moveName?.description?.string
+            moveDescriptionWidget.setText(
+                if (selectedDescription != null) listOf(selectedDescription) else emptyList()
+            )
         }
 
         if (clicked) {
@@ -686,8 +696,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     }
 
     fun renderMoveInfo(context: GuiGraphics, mouseX: Int, mouseY: Int) {
-        val currentTm = selectedTM
-        val moveTemplate = currentTm?.moveName
+        val moveTemplate = selectedTM?.moveName
 
         blitk(
             matrixStack = context.pose(),
@@ -774,23 +783,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         )
 
         if (moveTemplate != null) {
-            context.pose().pushPose()
-            context.pose().scale(HALF_SCALE, HALF_SCALE, 1F)
-            MultiLineLabelK.create(
-                component = moveTemplate.description,
-                width = 55 / HALF_SCALE,
-                maxLines = 5
-            ).renderLeftAligned(
-                context = context,
-                x = (leftPos + 127.5) / HALF_SCALE,
-                y = (topPos + 44.5) / HALF_SCALE,
-                ySpacing = 6 / HALF_SCALE,
-                colour = ColourLibrary.WHITE,
-                shadow = true
-            )
-            context.pose().popPose()
-
-            val recipe = selectedTM?.getClampedRecipe() ?: listOf()
+            val recipe = TechnicalMachines.moveToTM[moveTemplate]?.getClampedRecipe() ?: listOf()
             // Render material cost
             recipe.forEachIndexed { index, recipe ->
                 val itemX = (leftPos + 129 + (index * 18))
@@ -808,12 +801,156 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
                 context.renderItemDecorations(Minecraft.getInstance().font, itemStack, itemX, itemY)
 
                 if (
+                    menu.carried.isEmpty &&
                     mouseX >= itemX && mouseX < itemX + 16 &&
                     mouseY >= itemY && mouseY < itemY + 16
                 ) {
                     context.renderTooltip(Minecraft.getInstance().font, itemStack, mouseX, mouseY)
                 }
             }
+        }
+    }
+
+    fun renderHeldMoveInfoTooltip(context: GuiGraphics, mouseX: Int, mouseY: Int) {
+        heldStackMove?.let { moveTemplate ->
+            val matrices = context.pose()
+            val posX = mouseX + 10
+            val posY = mouseY - 49
+
+            matrices.pushPose()
+            matrices.translate(0.0F, 0.0F, 1000.0F)
+            blitk(
+                matrixStack = matrices,
+                texture = tooltipMoveInfo,
+                x = posX,
+                y = posY,
+                width = 96,
+                height = 98,
+                alpha = 0.96F
+            )
+
+            drawScaledText(
+                context = context,
+                text = moveTemplate.displayName.bold(),
+                x = posX + 6,
+                y = posY + 6,
+                shadow = true,
+                scale = HALF_SCALE
+            )
+
+            TypeIcon(posX + 81, posY + 3.5, moveTemplate.elementalType, small = true).render(context)
+
+            blitk(
+                matrixStack = matrices,
+                texture = MovesWidget.movesPowerIconResource,
+                x = posX + 8.5,
+                y = posY + 15.5,
+                width = 5,
+                height = 5
+            )
+
+            blitk(
+                matrixStack = matrices,
+                texture = MovesWidget.movesAccuracyIconResource,
+                x = posX + 8.5,
+                y = posY + 27.5,
+                width = 5,
+                height = 5
+            )
+
+            blitk(
+                matrixStack = matrices,
+                texture = MovesWidget.movesEffectIconResource,
+                x = posX + 8.5,
+                y = posY + 39.5,
+                width = 5,
+                height = 5
+            )
+
+            drawScaledText(
+                context = context,
+                text = lang("ui.power"),
+                x = posX + 15.5,
+                y = posY + 16,
+                shadow = true,
+                scale = HALF_SCALE
+            )
+
+            drawScaledText(
+                context = context,
+                text = lang("ui.accuracy"),
+                x = posX + 15.5,
+                y = posY + 28,
+                shadow = true,
+                scale = HALF_SCALE
+            )
+
+            drawScaledText(
+                context = context,
+                text = lang("ui.effect"),
+                x = posX + 15.5,
+                y = posY + 40,
+                shadow = true,
+                scale = HALF_SCALE
+            )
+
+            val movePower = if (moveTemplate.power.toInt() > 0) moveTemplate.power.toInt().toString().text() else "—".text()
+            drawScaledTextJustifiedRight(
+                context = context,
+                text = movePower,
+                x = posX + 88,
+                y = posY + 16,
+                shadow = true,
+                scale = HALF_SCALE
+            )
+
+            val moveAccuracy = MovesWidget.format(moveTemplate.accuracy).text()
+            drawScaledTextJustifiedRight(
+                context = context,
+                text = moveAccuracy,
+                x = posX + 88,
+                y = posY + 28,
+                shadow = true,
+                scale = HALF_SCALE
+            )
+
+            val moveEffect = MovesWidget.format(moveTemplate.effectChances.firstOrNull() ?: 0.0).text()
+            drawScaledTextJustifiedRight(
+                context = context,
+                text = moveEffect,
+                x = posX + 88,
+                y = posY + 40,
+                shadow = true,
+                scale = HALF_SCALE
+            )
+
+            matrices.pushPose()
+            matrices.scale(HALF_SCALE, HALF_SCALE, 1F)
+            MultiLineLabelK.create(
+                component = moveTemplate.description,
+                width = 79 / HALF_SCALE,
+                maxLines = 5
+            ).renderLeftAligned(
+                context = context,
+                x = (posX + 8.5) / HALF_SCALE,
+                y = (posY + 52.5) / HALF_SCALE,
+                ySpacing = 6 / HALF_SCALE,
+                colour = ColourLibrary.WHITE,
+                shadow = true
+            )
+            matrices.popPose()
+
+            drawScaledText(
+                context = context,
+                text = lang("ui.moves.pp", moveTemplate.pp).bold(),
+                x = posX + 6,
+                y = posY + 88,
+                scale = HALF_SCALE,
+                shadow = true
+            )
+            MoveCategoryIcon(x = posX + 78, y = posY + 86, category = moveTemplate.damageCategory).render(context)
+
+            matrices.popPose()
         }
     }
 
@@ -892,29 +1029,84 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         }
     }
 
+    private fun setPartySlotsClickable(clickable: Boolean) {
+        for (slot in partySlotList) slot.clickable = clickable
+    }
+
+    private fun updateHeldStackMove() {
+        val heldStack = menu.carried
+        val heldStackIsTm = heldStack.item == CobblemonItems.TECHNICAL_MACHINE
+
+        if (heldStackIsTm) {
+            // Store move of TM item picked up by player cursor
+            TMMoveComponent.getTMMove(heldStack)?.let { heldMove ->
+                if (heldStackMove != heldMove) heldStackMove = heldMove
+            }
+
+            if (::movesScrollingList.isInitialized) {
+                movesScrollingList.setDisabled(true, TechnicalMachines.moveToTM[heldStackMove])
+                if (mode == MOVE_SELECT_MODE) {
+                    val heldStackTm = TechnicalMachines.moveToTM[heldStackMove]
+                    setSelectedTM(if (tmList.get().contains(heldStackTm)) heldStackTm else null, false)
+
+                    // Scroll to move if moves list contains held TM move
+                    if (tmList.get().contains(heldStackTm)) {
+                        val moveListIndex = tmList.get().indexOf(heldStackTm)
+                        movesScrollingList.scrollAmount = (if (moveListIndex == tmList.get().lastIndex) 1.0 else (moveListIndex / tmList.get().size.toDouble()))* movesScrollingList.maxScroll
+                    }
+                }
+            }
+
+            if (::typesScrollList.isInitialized) {
+                typesScrollList.setDisabled(true, heldStackMove?.elementalType)
+            }
+
+            updatePartySlotStatus(heldStackMove)
+        } else if (heldStackMove != null) {
+            // Reset only if last held item was a TM
+            heldStackMove = null
+
+            // Reset selected move on move select screen
+            if (mode == MOVE_SELECT_MODE) setSelectedTM(null, false)
+            updatePartySlotStatus(selectedTM?.moveName)
+
+            if (::movesScrollingList.isInitialized) {
+                movesScrollingList.setDisabled(false)
+            }
+            if (::typesScrollList.isInitialized) {
+                typesScrollList.setDisabled(false)
+            }
+        }
+
+        setPartySlotsClickable(mode == TYPE_SELECT_MODE || heldStackIsTm)
+    }
+
     override fun mouseMoved(mouseX: Double, mouseY: Double) {
         ticksElapsed = 0
         super.mouseMoved(mouseX, mouseY)
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        ticksElapsed = 0
         if (resetScreenSaver()) return false
         return super.mouseClicked(mouseX, mouseY, button)
     }
 
     override fun slotClicked(slot: Slot?, slotId: Int, mouseButton: Int, type: ClickType) {
-        super.slotClicked(slot, slotId, mouseButton, type)
-        if (slot != null && slotId in 0 until Inventory.INVENTORY_SIZE && selectedTM != null) {
-            setSelectedTM(null, false)
+        if (slot != null) {
+            super.slotClicked(slot, slotId, mouseButton, type)
+            updateHeldStackMove()
         }
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, scrollX: Double, scrollY: Double): Boolean {
+        ticksElapsed = 0
         if (resetScreenSaver()) return false
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        ticksElapsed = 0
         if (resetScreenSaver()) return false
         val searchFocused = this::moveSearchWidget.isInitialized && moveSearchWidget.isFocused
 
@@ -978,17 +1170,6 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             y = topPos + 1
         )
 
-        if (mode == MOVE_SELECT_MODE && ::backButton.isInitialized) {
-            drawScaledText(
-                context = graphics,
-                font = CobblemonResources.DEFAULT_LARGE,
-                text = lang("ui.back").bold(),
-                x = backButton.x + backButton.width + - 8.0,
-                y = backButton.y,
-                shadow = true
-            )
-        }
-
         if (mode == TM_BURN_MODE) {
             blitk(
                 matrixStack = matrices,
@@ -1022,13 +1203,42 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             }
         }
 
-        renderScreenSaver(graphics)
-
         super.render(graphics, mouseX, mouseY, delta)
+
+        if (mode == TM_BURN_MODE && ::selectedMoveButton.isInitialized) {
+            selectedMoveButton.showOverlayBar = !selectedMoveButton.isHovered
+
+            if (selectedMoveButton.isHovered) {
+                blitk(
+                    matrixStack = matrices,
+                    texture = moveOverlayBar,
+                    x = selectedMoveButton.x + 85,
+                    y = selectedMoveButton.y + 13,
+                    width = 22,
+                    height = 8
+                )
+
+                blitk(
+                    matrixStack = matrices,
+                    texture = iconBack,
+                    x = (selectedMoveButton.x + 92) / HALF_SCALE,
+                    y = (selectedMoveButton.y + 13) / HALF_SCALE,
+                    width = 20,
+                    height = 18,
+                    textureHeight = 36,
+                    vOffset = 18,
+                    scale = HALF_SCALE
+                )
+            }
+        }
+
+        renderScreenSaver(graphics)
 
         renderMoveInfo(graphics, mouseX, mouseY)
 
         this.renderTooltip(graphics, mouseX, mouseY)
+
+        renderHeldMoveInfoTooltip(graphics, mouseX, mouseY)
     }
 
     override fun renderBlurredBackground(partialTick: Float) {}
@@ -1036,5 +1246,79 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
 
     fun playSound(soundEvent: SoundEvent) {
         Minecraft.getInstance().soundManager.play(SimpleSoundInstance.forUI(soundEvent, 1.0F))
+    }
+
+    class MoveDescriptionWidget(pX: Int, pY: Int, width: Int, height: Int) : ScrollingWidget<MoveDescriptionWidget.TextSlot>(
+        left = pX,
+        top = pY - height,
+        width = width,
+        height = height,
+        slotHeight = 6
+    ) {
+        fun setText(text: Collection<String>) {
+            clearEntries()
+            text.forEach { line ->
+                Minecraft.getInstance().font.splitter.splitLines(
+                    Component.literal(line),
+                    ((width - DESCRIPTION_SCROLLBAR_WIDTH - 5) / HALF_SCALE).toInt(),
+                    Style.EMPTY
+                ).stream()
+                    .map { it.string }
+                    .forEach { addEntry(TextSlot(it)) }
+            }
+            scrollAmount = 0.0
+        }
+
+        override fun renderScrollbar(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+            val xLeft = this.scrollbarPosition
+
+            val barHeight = this.bottom - y
+
+            var yBottom = ((barHeight * barHeight).toFloat() / this.maxPosition.toFloat()).toInt()
+            yBottom = Mth.clamp(yBottom, 16, barHeight - 6)
+            var yTop = scrollAmount.toInt() * (barHeight - yBottom) / this.maxScroll + y
+            if (yTop < y) yTop = y
+
+            // Scroll Track
+            blitk(
+                texture = scrollbarTrack,
+                matrixStack = context.pose(),
+                x = xLeft,
+                y = y,
+                width = 2,
+                height = height
+            )
+
+            // Scroll Slide
+            blitk(
+                texture = scrollbarSlide,
+                matrixStack = context.pose(),
+                x = xLeft,
+                y = yTop,
+                width = 2,
+                height = yBottom
+            )
+        }
+
+        override fun getScrollbarPosition(): Int {
+            return left + width - DESCRIPTION_SCROLLBAR_WIDTH
+        }
+
+        class TextSlot(val text: String) : Slot<TextSlot>() {
+            override fun render(context: GuiGraphics, index: Int, y: Int, x: Int, entryWidth: Int, entryHeight: Int, mouseX: Int, mouseY: Int, hovered: Boolean, tickDelta: Float) {
+                drawScaledText(
+                    context = context,
+                    text = text.text(),
+                    x = x + 2.5,
+                    y = y + 2.5,
+                    scale = HALF_SCALE,
+                    shadow = true
+                )
+            }
+
+            override fun getNarration(): Component {
+                return Component.literal(text)
+            }
+        }
     }
 }
