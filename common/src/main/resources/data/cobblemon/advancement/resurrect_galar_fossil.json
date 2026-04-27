@@ -1,5 +1,4 @@
 {
-  "parent": "cobblemon:resurrect_pokemon",
   "display": {
     "icon": {
       "id": "cobblemon:fossilized_fish"
@@ -11,6 +10,7 @@
       "translate": "advancements.cobblemon.resurrect_galar_fossil.description"
     }
   },
+  "parent": "cobblemon:resurrect_pokemon",
   "criteria": {
     "resurrected_dracozolt": {
       "trigger": "cobblemon:resurrect_pokemon",

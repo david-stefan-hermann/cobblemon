@@ -10,7 +10,7 @@
       "translate": "advancements.cobblemon.obtain_fossil.description"
     }
   },
-  "parent": "cobblemon:craft_poke_ball",
+  "parent": "cobblemon:root_geological",
   "criteria": {
     "check_inv": {
       "trigger": "minecraft:inventory_changed",

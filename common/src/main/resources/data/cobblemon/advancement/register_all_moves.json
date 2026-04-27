@@ -1,7 +1,7 @@
 {
   "display": {
     "icon": {
-      "id": "cobblemon:tm_shelf"
+      "id": "cobblemon:disc_shelf"
     },
     "title": {
       "translate": "advancements.cobblemon.register_all_moves"

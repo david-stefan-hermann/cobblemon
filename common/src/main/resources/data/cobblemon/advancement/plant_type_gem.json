@@ -10,7 +10,7 @@
       "translate": "advancements.cobblemon.plant_type_gem.description"
     }
   },
-  "parent": "cobblemon:root",
+  "parent": "cobblemon:root_geological",
   "criteria": {
     "plant_type_gem": {
       "trigger": "cobblemon:plant_type_gem"

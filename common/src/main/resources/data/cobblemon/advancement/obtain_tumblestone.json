@@ -10,7 +10,7 @@
       "translate": "advancements.cobblemon.obtain_tumblestone.description"
     }
   },
-  "parent": "cobblemon:root",
+  "parent": "cobblemon:root_geological",
   "criteria": {
     "check_inv": {
       "trigger": "minecraft:inventory_changed",
