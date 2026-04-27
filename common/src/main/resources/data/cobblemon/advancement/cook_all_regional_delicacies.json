@@ -10,7 +10,7 @@
       "translate": "advancements.cobblemon.cook_all_regional_delicacies.description"
     }
   },
-  "parent": "cobblemon:place_campfire_pot",
+  "parent": "cobblemon:cook_all_ev_mochi",
   "criteria": {
     "pewter_crunchies": {
       "trigger": "minecraft:inventory_changed",

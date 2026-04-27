@@ -11,7 +11,7 @@
     },
 	"hidden": true
   },
-  "parent": "cobblemon:first_catch",
+  "parent": "cobblemon:full_party",
   "criteria": {
 	"zangoose_seviper": {
       "trigger": "cobblemon:party",

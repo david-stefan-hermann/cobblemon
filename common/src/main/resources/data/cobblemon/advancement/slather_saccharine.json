@@ -1,5 +1,5 @@
 {
-  "parent": "cobblemon:any_plant",
+  "parent": "cobblemon:first_catch",
   "display": {
     "icon": {
       "id": "cobblemon:saccharine_sapling"

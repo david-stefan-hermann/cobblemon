@@ -14,7 +14,7 @@
 		},
 		"frame": "challenge"
 	},
-	"parent": "cobblemon:first_catch",
+	"parent": "cobblemon:full_party",
 	"criteria": {
 		"archipelago": {
 			"trigger": "cobblemon:aspects_collected",

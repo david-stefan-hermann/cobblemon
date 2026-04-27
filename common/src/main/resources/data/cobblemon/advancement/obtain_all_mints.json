@@ -11,7 +11,7 @@
     },
     "frame": "goal"
   },
-  "parent": "cobblemon:obtain_mint",
+  "parent": "cobblemon:any_plant",
   "criteria": {
     "obtain_red_mint_leaf": {
       "trigger": "minecraft:inventory_changed",

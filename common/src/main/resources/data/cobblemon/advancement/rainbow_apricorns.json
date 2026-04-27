@@ -1,5 +1,5 @@
 {
-	"parent": "cobblemon:harvest_apricorn_seed",
+	"parent": "cobblemon:harvest_apricorn",
 	"display": {
 		"icon": {
 			"id": "cobblemon:green_apricorn_seed"
