@@ -162,7 +162,7 @@
   - Shed Shell - Metapod, Kakuna, Ekans, Paras, Venonat, Krabby, Scyther, Kabuto, Dratini, Dragonair, Ledyba, Spinarak, Yanma, Pineco, Dunsparce, GLigar, Pupitar, Treecko, Grovyle, Silcoon, Cascoon, Surskit, Nincada, Trapinch, Vibrava, Corphish, Anorith, Bagon, Shelgon, Kricketot, Burmy, Combee, Skorupi, Swadloon, Whirlipede, Dwebble, Scraggy, Karrablast, Joltik, Larvesta, Spewpa, Clauncher, Helioptile, Charjabug, Crabrawler, Cutiefly, Dewpider, Salandit, Wimpod, Poipole, Sobble, Drizzile, Dottler, Silicobra, Toxel, Sizzlipede, Snom, Tarountula, Nymble, Rellor
 - Saccharine Leaves now drop Tart, Sweet, or Syrupy Apples, depending on their honey coating stage, instead of vanilla Apples
 - Fixed the height of the Tumblestone Bud items when held in hand, placed on head, viewed in a GUI, and placed in an Item Frame
-- Removed "There's a Leek in the Boat" advancement, and moved potion advancements to after "We Need To Cook"
+- Refactored all advancements, removing several deemed unnecessary. Due to this refactor, all previously obtained advancements will be reset besides the root (for picking a starter Pokemon). We are sorry for the inconvience, but it makes the tab cleaner and makes future advancements simpler.
 
 ### Fixes
 - Adjusted Croagunk's walkspeed
