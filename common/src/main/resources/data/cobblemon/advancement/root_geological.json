@@ -14,15 +14,60 @@
   },
   "parent": "cobblemon:root",
   "criteria": {
-    "check_inv": {
+    "core": {
       "trigger": "minecraft:inventory_changed",
       "conditions": {
         "items": [
-		  {
-            "items": "#cobblemon:plants"
+          {
+            "items": "cobblemon:deepslate_crystal_core"
+          }
+        ]
+      }
+    },
+    "fossils": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "#cobblemon:fossils"
+          }
+        ]
+      }
+    },
+    "tumblestones": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "#cobblemon:tumblestones"
+          }
+        ]
+      }
+    },
+    "evolution_stones": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "#cobblemon:evolution_stones"
+          }
+        ]
+      }
+    },
+    "type_gems": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "#cobblemon:type_gems"
           }
         ]
       }
     }
-  }
+  },
+  "requirements": [
+    [
+      "core", "fossils", "tumblestones", "evolution_stones", "type_gems"
+    ]
+  ]
 }
