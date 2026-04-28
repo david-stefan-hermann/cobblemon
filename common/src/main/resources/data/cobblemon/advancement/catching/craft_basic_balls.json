@@ -4,10 +4,10 @@
       "id": "cobblemon:premier_ball"
     },
     "title": {
-      "translate": "advancements.cobblemon.craft_base_balls"
+      "translate": "advancements.cobblemon.craft_basic_balls"
     },
     "description": {
-      "translate": "advancements.cobblemon.craft_base_balls.description"
+      "translate": "advancements.cobblemon.craft_basic_balls.description"
     }
   },
   "parent": "cobblemon:catching/root_catching",
