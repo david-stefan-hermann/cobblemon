@@ -669,7 +669,6 @@ open class PokemonProperties {
         if (this.scaleModifier == null) {
             pokemon.initializeScale()
         }
-        pokemon.assignSizeMarks() // check size of mon and assign marks to it
     }
 
     @JvmOverloads

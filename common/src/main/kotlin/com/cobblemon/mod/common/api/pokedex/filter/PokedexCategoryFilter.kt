@@ -17,11 +17,10 @@ import com.cobblemon.mod.common.api.tms.TechnicalMachines
 import com.cobblemon.mod.common.client.CobblemonClient
 import com.cobblemon.mod.common.pokemon.FormData
 import com.cobblemon.mod.common.util.asIdentifierDefaultingNamespace
-import net.minecraft.resources.ResourceLocation
 
 enum class PokedexCategoryFilterType {
     ALL,
-    CAUGHT,
+    OWNED,
     SEEN,
     UNREGISTERED,
     UNDISCOVERED_TM_MOVE,
@@ -36,20 +35,20 @@ class PokedexCategoryFilter(
     override fun test(entry: PokedexEntry): Boolean {
         return when (filterType) {
             PokedexCategoryFilterType.ALL -> true
-            PokedexCategoryFilterType.CAUGHT -> pokedexManager.getHighestKnowledgeFor(entry) >= PokedexEntryProgress.CAUGHT
-            PokedexCategoryFilterType.SEEN -> pokedexManager.getHighestKnowledgeFor(entry) >= PokedexEntryProgress.CAUGHT || pokedexManager.getHighestKnowledgeFor(entry) == PokedexEntryProgress.ENCOUNTERED
-            PokedexCategoryFilterType.UNREGISTERED -> pokedexManager.getHighestKnowledgeFor(entry) == PokedexEntryProgress.NONE
+            PokedexCategoryFilterType.OWNED -> pokedexManager.getHighestKnowledgeFor(entry) >= PokedexEntryProgress.OWNED
+            PokedexCategoryFilterType.SEEN -> pokedexManager.getHighestKnowledgeFor(entry) >= PokedexEntryProgress.OWNED || pokedexManager.getHighestKnowledgeFor(entry) == PokedexEntryProgress.SEEN
+            PokedexCategoryFilterType.UNREGISTERED -> pokedexManager.getHighestKnowledgeFor(entry) == PokedexEntryProgress.UNREGISTERED
             PokedexCategoryFilterType.UNDISCOVERED_TM_MOVE -> hasUndiscoveredLevelUpTM(entry)
             PokedexCategoryFilterType.RIDEABLE -> {
                 val species = PokemonSpecies.getByIdentifier(entry.speciesId)
                 species?.forms?.any { form -> !form.riding.behaviours.isNullOrEmpty() } == true
-                    && pokedexManager.getHighestKnowledgeFor(entry) >= PokedexEntryProgress.CAUGHT
+                    && pokedexManager.getHighestKnowledgeFor(entry) >= PokedexEntryProgress.OWNED
             }
         }
     }
 
     private fun hasUndiscoveredLevelUpTM(entry: PokedexEntry): Boolean {
-        if (pokedexManager.getHighestKnowledgeFor(entry) != PokedexEntryProgress.CAUGHT) return false
+        if (pokedexManager.getHighestKnowledgeFor(entry) != PokedexEntryProgress.OWNED) return false
         val species = PokemonSpecies.getByIdentifier(entry.speciesId) ?: return false
         val forms = pokedexManager.getCaughtForms(entry)
         val formData = if (forms.isEmpty()) {
@@ -92,38 +91,6 @@ class PokedexCategoryFilter(
         }
 
         return false
-    }
-
-    // todo remove this since it isn't needed anymore
-    private fun buildEvolutionMoveLevelIndex(form: FormData): Map<ResourceLocation, Map<String, Int>> {
-        val evolutionForms = collectEvolutionForms(form)
-        val levelsBySpecies = mutableMapOf<ResourceLocation, MutableMap<String, Int>>()
-
-        for (evolutionForm in evolutionForms) {
-            val speciesId = evolutionForm.species.resourceIdentifier
-            val moveLevels = levelsBySpecies.getOrPut(speciesId) { mutableMapOf() }
-            buildMoveLevelIndex(evolutionForm).forEach { (moveName, level) ->
-                val current = moveLevels[moveName]
-                if (current == null || level < current) {
-                    moveLevels[moveName] = level
-                }
-            }
-        }
-
-        return levelsBySpecies
-    }
-
-    private fun buildMoveLevelIndex(form: FormData): Map<String, Int> {
-        val levels = mutableMapOf<String, Int>()
-        form.moves.levelUpMoves.forEach { (level, moves) ->
-            moves.forEach { move ->
-                val current = levels[move.name]
-                if (current == null || level < current) {
-                    levels[move.name] = level
-                }
-            }
-        }
-        return levels
     }
 
     private fun collectEvolutionForms(rootForm: FormData): List<FormData> {

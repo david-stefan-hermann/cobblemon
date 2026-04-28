@@ -69,8 +69,6 @@ import com.cobblemon.mod.common.api.storage.StoreCoordinates
 import com.cobblemon.mod.common.api.storage.party.NPCPartyStore
 import com.cobblemon.mod.common.api.storage.party.PlayerPartyStore
 import com.cobblemon.mod.common.api.storage.pc.PCStore
-import com.cobblemon.mod.common.api.tms.TechnicalMachines
-import com.cobblemon.mod.common.api.tms.TMMoveManager
 import com.cobblemon.mod.common.api.types.ElementalType
 import com.cobblemon.mod.common.api.types.ElementalTypes
 import com.cobblemon.mod.common.api.types.tera.TeraType
@@ -119,7 +117,6 @@ import com.cobblemon.mod.common.util.playSoundServer
 import com.cobblemon.mod.common.util.server
 import com.cobblemon.mod.common.util.setPositionSafely
 import com.cobblemon.mod.common.util.toBlockPos
-import com.cobblemon.mod.common.util.tmList
 import com.google.gson.JsonObject
 import com.mojang.datafixers.util.Pair
 import com.mojang.serialization.Codec
@@ -134,6 +131,7 @@ import kotlin.math.absoluteValue
 import kotlin.math.atan2
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import net.minecraft.core.BlockPos
@@ -166,7 +164,6 @@ import net.minecraft.world.level.block.MagmaBlock
 import net.minecraft.world.level.block.SweetBerryBushBlock
 import net.minecraft.world.level.block.WitherRoseBlock
 import net.minecraft.world.phys.Vec3
-import kotlin.math.pow
 
 enum class OriginalTrainerType : StringRepresentable {
     NONE, PLAYER, NPC;
@@ -278,22 +275,6 @@ open class Pokemon : ShowdownIdentifiable {
         }
         val config = Cobblemon.config
         setIntrinsicScale(Random.nextBetween(config.pokemonIntrinsicSizeMin, config.pokemonIntrinsicSizeMax))
-    }
-
-    fun assignSizeMarks() {
-        //  this is where we should assign a mark based on min or max intrinsic scale
-        val miniMark = Marks.getByIdentifier(cobblemonResource("mark_mini"))!!
-        val jumboMark = Marks.getByIdentifier(cobblemonResource("mark_jumbo"))!!
-        val config = Cobblemon.config
-
-        if (scaleModifier == config.pokemonIntrinsicSizeMin) { // minimum size
-            exchangeMark(miniMark, true)
-            activeMark = miniMark
-        }
-        if (scaleModifier == config.pokemonIntrinsicSizeMax) { // maximum size
-            exchangeMark(jumboMark, true)
-            activeMark = jumboMark
-        }
     }
 
     fun hyperTrainIV(stat: Stat, value: Int) {
@@ -1932,9 +1913,9 @@ open class Pokemon : ShowdownIdentifiable {
     }
 
     @Deprecated(
-        message = "Will be removed within potentially 1 title update",
-        replaceWith = ReplaceWith("initializeMovesetFromDefault"),
-        level = DeprecationLevel.ERROR
+        message = "Will be removed with a title update, maybe as early as 1.9",
+        replaceWith = ReplaceWith("initializeMovesetFromDefault() or initializeMovesetFrom(movesetBuilder)"),
+        level = DeprecationLevel.WARNING
     )
     fun initializeMoveset(preferLatest: Boolean = true) {
         val possibleMoves = form.moves.getLevelUpMovesUpTo(level).toMutableList()
