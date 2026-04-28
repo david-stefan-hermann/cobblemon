@@ -1,6 +1,4 @@
 # Changelog
-## [1.7.4 (MONTH Nth, 2026)](#1-7-4)
-## [1.7.4 (MONTH Xth, 2026)](#1-7-4)
 ## [1.8.0 (MONTH Xth, 2026)](#1-8-0)
 
 ### Additions
@@ -148,12 +146,6 @@
 
 ### Changes
 - Dragonite's mailbag cosmetic can now also be obtained with a chest in the cosmetic slot
-
-### Fixes
-- Adjusted Croagunk's walkspeed
-- Fixed Blitzle's base scale being `1` rather than the intended `0.8`
-- Fixed Magnezone's emissive layer for the shiny having the wrong name, thus displaying wrongly
-- Fixed Litleo not blinking
 - Restructured Botany Pots integration folder structure
 - Decrease the default pastured mon wander radius to 32.
 - Factor in the weight of Pokémon when calculating pushing forces between hitboxes.
@@ -168,9 +160,12 @@
 - Added new shiny and Alpha chance configs
 
 ### Fixes
+- Fixed Croagunk's walkspeed
+- Fixed Blitzle's base scale being `1` rather than the intended `0.8`
+- Fixed Magnezone's emissive layer for the shiny having the wrong name, thus displaying wrongly
+- Fixed Litleo not blinking
 - Fixed Pokédex layout for genderless variations
 - Fixed odd stacking behaviour with the poke_bait item.
-- Fixed an occasional crash on retrieving revived fossils
 - Fixed a compatibility issue with World Game Rules which caused some log spam in specific cases.
 - Fixed improper validation of Pokémon when performing a trade.
 - Fixed an issue where particle like beam can disappear when you don't see the beginning of the beam, or you look away
