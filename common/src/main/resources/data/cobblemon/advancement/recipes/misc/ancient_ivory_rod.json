@@ -1,5 +1,5 @@
 {
-  "parent": "minecraft:recipes/misc",
+  "parent": "cobblemon:recipes/misc",
   "criteria": {
     "has_smithing_trim_template": {
       "conditions": {
