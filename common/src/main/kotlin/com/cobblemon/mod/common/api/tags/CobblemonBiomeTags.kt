@@ -45,7 +45,7 @@ object CobblemonBiomeTags {
     @JvmField
     val IS_END = create("is_end")
     @JvmField
-    val IS_STONY_SHORE = create("is_stony_shore")
+    val IS_STONY_BEACH = create("is_stony_beach")
     @JvmField
     val IS_SOUL_SAND = create("nether/is_soul_sand")
     @JvmField
