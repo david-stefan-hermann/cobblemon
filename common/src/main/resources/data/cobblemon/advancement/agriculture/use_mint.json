@@ -141,26 +141,6 @@
     }
   },
   "requirements": [
-	[ "use_serious_mint" ],
-	[ "use_lonely_mint" ],
-	[ "use_adamant_mint" ],
-	[ "use_naughty_mint" ],
-	[ "use_brave_mint" ],
-	[ "use_bold_mint" ],
-	[ "use_impish_mint" ],
-	[ "use_lax_mint" ],
-	[ "use_relaxed_mint" ],
-	[ "use_modest_mint" ],
-	[ "use_mild_mint" ],
-	[ "use_rash_mint" ],
-	[ "use_quiet_mint" ],
-	[ "use_calm_mint" ],
-	[ "use_gentle_mint" ],
-	[ "use_careful_mint" ],
-	[ "use_sassy_mint" ],
-	[ "use_timid_mint" ],
-	[ "use_hasty_mint" ],
-	[ "use_jolly_mint" ],
-	[ "use_naive_mint" ]
+	[ "use_serious_mint", "use_lonely_mint", "use_adamant_mint", "use_naughty_mint", "use_brave_mint", "use_bold_mint", "use_impish_mint", "use_lax_mint", "use_relaxed_mint", "use_modest_mint", "use_mild_mint", "use_rash_mint", "use_quiet_mint", "use_calm_mint", "use_gentle_mint", "use_careful_mint", "use_sassy_mint", "use_timid_mint", "use_hasty_mint", "use_jolly_mint", "use_naive_mint" ]
   ]
 }
