@@ -4,7 +4,7 @@
             "id": "minecraft:note_block"
         },
         "title": {
-            "translate": "advancements.adventure.construct_note_block_sequencer.title"
+            "translate": "advancements.cobblemon.construct_note_block_sequencer"
         },
         "description": {
             "translate": "advancements.cobblemon.construct_note_block_sequencer.description"
