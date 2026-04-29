@@ -2901,6 +2901,8 @@
   "advancements.cobblemon.obtain_ancient_tm.description": "Collect a powerful, ancient technique, either from ruins or an alpha",
   "advancements.cobblemon.register_all_tms": "Collector's Discography",
   "advancements.cobblemon.register_all_tms.description": "Register all possible moves to the TM Machine",
+  "advancements.cobblemon.construct_note_block_sequencer": "The Power of Science is Amazing",
+  "advancements.cobblemon.construct_note_block_sequencer.description": "Create an audio sequencer out of a Note Block and a Disc Shelf",
   "advancements.cobblemon.download_porygon": "Technical Difficulties",
   "advancements.cobblemon.download_porygon.description": "You wouldn't download a Porygon",
 
