@@ -150,23 +150,17 @@
 - Sharp Beak can now be crafted
 - Metal Alloy can now be crafted
 - Ability Capsules can now be brewed
-- The following items can now be obtained by brushing the following Pokemon:
+- The following items can now be obtained by brushing the following Pokémon:
   - Pink Wool - Wigglytuff
   - White Wool - Swablu, Altaria
   - Shed Shell - Ekans, Arbok, Dratini, Dragonair, Dunsparce, Treecko, Grovyle, Sceptile, Seviper, Scraggy, Scrafty, Helioptile, Heliolisk, Salandit, Salazzle, Sobble, Drizzile, Inteleon, Silicoblra, Sandaconda, Toxel, Toxtricity, Orthworm, Dudunsparce
   - Phantom Membrane - Dreepy, Drakloak, Dragapult
-- The following items can now be obtained by evolving the following Pokemon into any of their evolutions:
+- The following items can now be obtained by evolving the following Pokémon into any of their evolutions:
   - Turtle Scute - Squirtle, Wartortle, Turtwig, Grotle, Tirtouga, Chewtle
   - Shed Shell - Metapod, Kakuna, Ekans, Paras, Venonat, Krabby, Scyther, Kabuto, Dratini, Dragonair, Ledyba, Spinarak, Yanma, Pineco, Dunsparce, GLigar, Pupitar, Treecko, Grovyle, Silcoon, Cascoon, Surskit, Nincada, Trapinch, Vibrava, Corphish, Anorith, Bagon, Shelgon, Kricketot, Burmy, Combee, Skorupi, Swadloon, Whirlipede, Dwebble, Scraggy, Karrablast, Joltik, Larvesta, Spewpa, Clauncher, Helioptile, Charjabug, Crabrawler, Cutiefly, Dewpider, Salandit, Wimpod, Poipole, Sobble, Drizzile, Dottler, Silicobra, Toxel, Sizzlipede, Snom, Tarountula, Nymble, Rellor
 - Saccharine Leaves now drop Tart, Sweet, or Syrupy Apples, depending on their honey coating stage, instead of vanilla Apples
 - Fixed the height of the Tumblestone Bud items when held in hand, placed on head, viewed in a GUI, and placed in an Item Frame
-- Refactored all advancements, removing several deemed unnecessary. Due to this refactor, all previously obtained advancements will be reset besides the root (for picking a starter Pokemon). We are sorry for the inconvience, but it makes the tab cleaner and makes future advancements simpler.
-
-### Fixes
-- Adjusted Croagunk's walkspeed
-- Fixed Blitzle's base scale being `1` rather than the intended `0.8`
-- Fixed Magnezone's emissive layer for the shiny having the wrong name, thus displaying wrongly
-- Fixed Litleo not blinking
+- Refactored all advancements, removing several deemed unnecessary. Due to this refactor, all previously obtained advancements will be reset besides the root (for picking a starter Pokémon). We are sorry for the inconvience, but it makes the tab cleaner and simplifies future advancements.
 - Restructured Botany Pots integration folder structure
 - Decrease the default pastured mon wander radius to 32.
 - Factor in the weight of Pokémon when calculating pushing forces between hitboxes.
