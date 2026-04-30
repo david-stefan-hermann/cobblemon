@@ -38,7 +38,7 @@
               "function": "minecraft:set_components",
               "components": {
                 "cobblemon:tm_move": {
-                  "move": "grass_pledge"
+                  "move": "grasspledge"
                 }
               }
             }
