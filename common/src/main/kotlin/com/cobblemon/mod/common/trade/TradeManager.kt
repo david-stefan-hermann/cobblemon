@@ -119,17 +119,17 @@ object TradeManager : RequestManager<TradeManager.TradeRequest>() {
             party2.remove(pokemon2)
 
             // If player1 is the OT, keep track of the friendship
-            pokemon1.cacheFriendship(player1.uuid.toString())
+            pokemon1.cacheFriendship(player1.uuid)
             // If player2 is the OT, keep track of the friendship
-            pokemon2.cacheFriendship(player2.uuid.toString())
+            pokemon2.cacheFriendship(player2.uuid)
 
             // If pokemon2 was originally player1's, set the friendship back to what it was at point of trading
-            if ( !pokemon2.restoreFriendship(player1.uuid.toString()) ) {
+            if ( !pokemon2.restoreFriendship(player1.uuid) ) {
                 // Otherwise, reset the friendship
                 pokemon2.setFriendship(pokemon2.form.baseFriendship)
             }
             // If pokemon1 was originally player2's, set the friendship back to what it was at point of trading
-            if ( !pokemon1.restoreFriendship(player2.uuid.toString()) ) {
+            if ( !pokemon1.restoreFriendship(player2.uuid) ) {
                 // Otherwise, reset the friendship
                 pokemon1.setFriendship(pokemon1.form.baseFriendship)
             }
