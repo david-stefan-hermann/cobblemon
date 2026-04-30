@@ -109,9 +109,11 @@ import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.codec.internal.ClientPokemonP1
 import com.cobblemon.mod.common.util.codec.internal.ClientPokemonP2
 import com.cobblemon.mod.common.util.codec.internal.ClientPokemonP3
+import com.cobblemon.mod.common.util.codec.internal.ClientPokemonP4
 import com.cobblemon.mod.common.util.codec.internal.PokemonP1
 import com.cobblemon.mod.common.util.codec.internal.PokemonP2
 import com.cobblemon.mod.common.util.codec.internal.PokemonP3
+import com.cobblemon.mod.common.util.codec.internal.PokemonP4
 import com.cobblemon.mod.common.util.nextBetween
 import com.cobblemon.mod.common.util.playSoundServer
 import com.cobblemon.mod.common.util.server
@@ -2375,13 +2377,15 @@ open class Pokemon : ShowdownIdentifiable {
             instance.group(
                 PokemonP1.CODEC.forGetter(PokemonP1::from),
                 PokemonP2.CODEC.forGetter(PokemonP2::from),
-                PokemonP3.CODEC.forGetter(PokemonP3::from)
-            ).apply(instance) { p1, p2, p3->
+                PokemonP3.CODEC.forGetter(PokemonP3::from),
+                PokemonP4.CODEC.forGetter(PokemonP4::from)
+            ).apply(instance) { p1, p2, p3, p4 ->
                 val pokemon = Pokemon()
                 pokemon.isClient = false
                 p1.into(pokemon)
                 p2.into(pokemon)
                 p3.into(pokemon)
+                p4.into(pokemon)
                 pokemon.initialize()
             }
         }
@@ -2400,13 +2404,15 @@ open class Pokemon : ShowdownIdentifiable {
             instance.group(
                 ClientPokemonP1.CODEC.forGetter(ClientPokemonP1::from),
                 ClientPokemonP2.CODEC.forGetter(ClientPokemonP2::from),
-                ClientPokemonP3.CODEC.forGetter(ClientPokemonP3::from)
-            ).apply(instance) { p1, p2, p3->
+                ClientPokemonP3.CODEC.forGetter(ClientPokemonP3::from),
+                ClientPokemonP4.CODEC.forGetter(ClientPokemonP4::from)
+            ).apply(instance) { p1, p2, p3, p4 ->
                 val pokemon = Pokemon()
                 pokemon.isClient = true
                 p1.into(pokemon)
                 p2.into(pokemon)
                 p3.into(pokemon)
+                p4.into(pokemon)
                 pokemon.initialize()
             }
         }
