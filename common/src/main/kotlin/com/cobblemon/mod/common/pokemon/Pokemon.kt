@@ -2272,11 +2272,11 @@ open class Pokemon : ShowdownIdentifiable {
     }
 
     fun cacheFriendship(playerID: UUID) {
-        if (getOwnerUUID() == playerID) originalTrainerFriendship = friendship
+        if (UUID.fromString(originalTrainer) == playerID) originalTrainerFriendship = friendship
     }
 
     fun restoreFriendship(playerID: UUID) : Boolean {
-        if (getOwnerUUID() == playerID) {
+        if (UUID.fromString(originalTrainer) == playerID) {
             originalTrainerFriendship?.let { friendship = it }
             originalTrainerFriendship = null
             return true
