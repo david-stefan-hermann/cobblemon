@@ -153,6 +153,9 @@ class SnowstormParticle(
             ParticleMaterial.ADD -> RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE)
         }
 
+        // Non-camera-facing billboards (emitter_transform_*, lookat_xyz, etc.) need both faces visible.
+        RenderSystem.disableCull()
+
         RenderSystem.setShaderColor(1F, 1F, 1F, 1F)
 
         val vec3d = camera.position
