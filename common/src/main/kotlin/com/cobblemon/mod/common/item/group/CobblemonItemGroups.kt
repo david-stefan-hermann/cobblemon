@@ -250,6 +250,7 @@ object CobblemonItemGroups {
         entries.accept(CobblemonItems.HEALING_MACHINE)
         entries.accept(CobblemonItems.PASTURE)
         entries.accept(CobblemonItems.TM_MACHINE)
+        entries.accept(CobblemonItems.TM_SHELF)
 
         entries.accept(CobblemonItems.GILDED_CHEST)
         entries.accept(CobblemonItems.YELLOW_GILDED_CHEST)

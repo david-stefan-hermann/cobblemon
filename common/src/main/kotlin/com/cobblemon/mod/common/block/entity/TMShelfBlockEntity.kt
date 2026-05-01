@@ -102,8 +102,8 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
             // Face-local X where 0 = visual left and 1 = visual right.
             Direction.NORTH -> 1.0 - relative.x to relative.y
             Direction.SOUTH -> relative.x to relative.y
-            Direction.WEST  -> 1.0 - relative.z to relative.y
-            Direction.EAST  -> relative.z to relative.y
+            Direction.WEST  -> relative.z to relative.y
+            Direction.EAST  -> 1.0 - relative.z to relative.y
             else -> return OptionalInt.empty()
         }
 
