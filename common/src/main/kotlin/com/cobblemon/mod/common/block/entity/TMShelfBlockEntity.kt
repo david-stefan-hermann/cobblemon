@@ -58,8 +58,7 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
         items[slot] = stack.copyWithCount(1)
         stack.shrink(1)
         lastInteractedSlot = slot
-        updateBlockState(level, pos)
-        markUpdated()
+        onInventoryChanged(level, pos)
 
         return ItemInteractionResult.sidedSuccess(level.isClientSide)
     }
@@ -75,19 +74,16 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
         }
 
         lastInteractedSlot = slot
-        updateBlockState(level, pos)
+        onInventoryChanged(level, pos)
 
         return InteractionResult.sidedSuccess(level.isClientSide)
     }
 
-    private fun updateBlockState(level: Level, pos: BlockPos) {
-        val newState = TMShelfBlock.SLOT_OCCUPIED_PROPERTIES.fold(blockState) { acc, prop ->
-            val index = TMShelfBlock.SLOT_OCCUPIED_PROPERTIES.indexOf(prop)
-            acc.setValue(prop, !items[index].isEmpty)
-        }
-        level.setBlock(pos, newState, 3)
-        level.updateNeighbourForOutputSignal(pos, newState.block)
-        level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(newState))
+    private fun onInventoryChanged(level: Level, pos: BlockPos) {
+        setChanged()
+        level.updateNeighbourForOutputSignal(pos, blockState.block)
+        level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(blockState))
+        level.sendBlockUpdated(pos, blockState, blockState, 3)
     }
 
     private fun getHitSlot(hit: BlockHitResult, state: BlockState): OptionalInt {
@@ -179,12 +175,6 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
         }
     }
 
-    fun markUpdated() {
-        level?.setBlock(blockPos, blockState, 3)
-        level?.sendBlockUpdated(blockPos, blockState, blockState, 3)
-        setChanged()
-    }
-
     override fun clearContent() {
         var changed = false
         for (index in items.indices) {
@@ -194,8 +184,7 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
             }
         }
         if (changed) {
-            level?.let { updateBlockState(it, blockPos) }
-            markUpdated()
+            level?.let { onInventoryChanged(it, blockPos) }
         }
     }
 
@@ -214,8 +203,7 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
             if (items[slot].isEmpty) {
                 lastInteractedSlot = slot
             }
-            level?.let { updateBlockState(it, blockPos) }
-            markUpdated()
+            level?.let { onInventoryChanged(it, blockPos) }
         }
         return removed
     }
@@ -223,8 +211,7 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
     override fun removeItemNoUpdate(slot: Int): ItemStack {
         val removed = ContainerHelper.takeItem(items, slot)
         if (!removed.isEmpty) {
-            level?.let { updateBlockState(it, blockPos) }
-            markUpdated()
+            level?.let { onInventoryChanged(it, blockPos) }
         }
         return removed
     }
@@ -235,8 +222,7 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
 
         items[slot] = if (stack.isEmpty) ItemStack.EMPTY else stack.copyWithCount(1)
         lastInteractedSlot = slot
-        level?.let { updateBlockState(it, blockPos) }
-        markUpdated()
+        level?.let { onInventoryChanged(it, blockPos) }
     }
 
     override fun stillValid(player: Player): Boolean {
