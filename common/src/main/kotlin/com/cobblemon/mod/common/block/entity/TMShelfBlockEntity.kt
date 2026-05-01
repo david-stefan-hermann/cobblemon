@@ -175,7 +175,7 @@ class TMShelfBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cobblem
         NOTE_SLOT_TO_SEMITONE.forEach { (slot, semitone) ->
             if (items[slot].isEmpty) return@forEach
             val pitch = 2.0.pow((semitone + octaveShift) / 12.0).toFloat()
-            level.playSound(null, noteBlockPos, soundEvent, SoundSource.BLOCKS, 3.0f, pitch)
+            level.playSound(null, noteBlockPos, soundEvent, SoundSource.RECORDS, 3.0f, pitch)
         }
     }
 
