@@ -1,5 +1,5 @@
 {
-  "parent": "minecraft:item/generated",
+  "parent": "cobblemon:item/tm/tm",
   "textures": {
     "layer0": "cobblemon:item/tms/fighting_tm"
   }

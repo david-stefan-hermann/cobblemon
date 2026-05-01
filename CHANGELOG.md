@@ -52,6 +52,7 @@
 - The lush shipwreck cove structure itself has been slightly cleaned up to be less noisy with the blocks it is built out of.
 - All shipwreck coves' spawners have been adjusted to give compatible mobs enchanted iron or diamond armour and weapons while in its ominous state. The armour given to the mobs will also use the automaton trim. We upped the difficulty because it was too easy now that your Pokémon can fight for you.
 - One TM of the elemental hyper beams has been added as guaranteed loot to the main treasure chest in every shipwreck cove. (Magma cove gets blast burn, lush cove gets frenzy plant, and submerged cove gets hydro cannon)
+- Added 7 new advancements
 
 ### New rideable Pokémon
 - Drampa
@@ -146,6 +147,20 @@
 
 ### Changes
 - Dragonite's mailbag cosmetic can now also be obtained with a chest in the cosmetic slot
+- Sharp Beak can now be crafted
+- Metal Alloy can now be crafted
+- Ability Capsules can now be brewed
+- The following items can now be obtained by brushing the following Pokémon:
+  - Pink Wool - Wigglytuff
+  - White Wool - Swablu, Altaria
+  - Shed Shell - Ekans, Arbok, Dratini, Dragonair, Dunsparce, Treecko, Grovyle, Sceptile, Seviper, Scraggy, Scrafty, Helioptile, Heliolisk, Salandit, Salazzle, Sobble, Drizzile, Inteleon, Silicoblra, Sandaconda, Toxel, Toxtricity, Orthworm, Dudunsparce
+  - Phantom Membrane - Dreepy, Drakloak, Dragapult
+- The following items can now be obtained by evolving the following Pokémon into any of their evolutions:
+  - Turtle Scute - Squirtle, Wartortle, Turtwig, Grotle, Tirtouga, Chewtle
+  - Shed Shell - Metapod, Kakuna, Ekans, Paras, Venonat, Krabby, Scyther, Kabuto, Dratini, Dragonair, Ledyba, Spinarak, Yanma, Pineco, Dunsparce, GLigar, Pupitar, Treecko, Grovyle, Silcoon, Cascoon, Surskit, Nincada, Trapinch, Vibrava, Corphish, Anorith, Bagon, Shelgon, Kricketot, Burmy, Combee, Skorupi, Swadloon, Whirlipede, Dwebble, Scraggy, Karrablast, Joltik, Larvesta, Spewpa, Clauncher, Helioptile, Charjabug, Crabrawler, Cutiefly, Dewpider, Salandit, Wimpod, Poipole, Sobble, Drizzile, Dottler, Silicobra, Toxel, Sizzlipede, Snom, Tarountula, Nymble, Rellor
+- Saccharine Leaves now drop Tart, Sweet, or Syrupy Apples, depending on their honey coating stage, instead of vanilla Apples
+- Fixed the height of the Tumblestone Bud items when held in hand, placed on head, viewed in a GUI, and placed in an Item Frame
+- Refactored all advancements, removing several deemed unnecessary. Due to this refactor, all previously obtained advancements will be reset besides the root (for picking a starter Pokémon). We are sorry for the inconvience, but it makes the tab cleaner and simplifies future advancements.
 - Restructured Botany Pots integration folder structure
 - Decrease the default pastured mon wander radius to 32.
 - Factor in the weight of Pokémon when calculating pushing forces between hitboxes.
@@ -194,6 +209,7 @@
 - Resolved the niche issue where Structures would spawn in an incorrect location, creating very funky world gen.
 - Fixed Galarian Ponyta missing its cry.
 - Fixed various log warnings caused by redundant files and sound events.
+- Traded Pokémon will now retain the original friendship level when traded back to its OT
 
 ### Developer
 - Added `PokeSnackSpawnerFactory` which allows influence registration on PokeSnack encounters
@@ -221,6 +237,11 @@
 - Added `q.world.spawn_loot_table_items(loot_table_id, x, y, z)` which spawns the items from the loot table at the position. (Use type: "minecraft:chest" for the loot table.)
 - Added `q.pokemon.entity` to access the entity of Pokémon.
 - Flamethrower and Seismic Toss had their action effect JSON cleaned up
+- Ride sounds can now be set as exclusive to passengers
+- Ride sounds no longer play when submerged unless specified with a new setting
+- NPC Trainers can now call a `command` animation when issuing a command in battle.
+
+### Particles
 
 ### Localization
 - Updated translations for:

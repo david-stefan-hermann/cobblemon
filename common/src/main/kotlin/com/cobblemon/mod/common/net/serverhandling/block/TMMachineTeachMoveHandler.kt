@@ -48,7 +48,7 @@ object TMMachineTeachMoveHandler : ServerNetworkPacketHandler<TMMachineTeachMove
             inventory.setChanged()
             menu.broadcastChanges()
 
-            menu.tmMachineEntity?.playSound(CobblemonSounds.TM_USE)
+            menu.tmMachineEntity?.playSound(CobblemonSounds.TM_USE, volume = 0.25F)
         }
     }
 }
