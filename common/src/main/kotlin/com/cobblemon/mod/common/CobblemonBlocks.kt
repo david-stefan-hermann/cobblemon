@@ -294,41 +294,41 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     private val typeGemBlocks = mutableMapOf<ResourceLocation, Block>()
 
     @JvmField
-    val TYPE_GEM_BLOCK_NORMAL = typeGemBlock("normal_gem_block")
+    val TYPE_GEM_BLOCK_NORMAL = typeGemBlock("normal_gem_block", MapColor.QUARTZ)
     @JvmField
-    val TYPE_GEM_BLOCK_FIRE = typeGemBlock("fire_gem_block")
+    val TYPE_GEM_BLOCK_FIRE = typeGemBlock("fire_gem_block", MapColor.FIRE)
     @JvmField
-    val TYPE_GEM_BLOCK_WATER = typeGemBlock("water_gem_block")
+    val TYPE_GEM_BLOCK_WATER = typeGemBlock("water_gem_block", MapColor.WATER)
     @JvmField
-    val TYPE_GEM_BLOCK_ELECTRIC = typeGemBlock("electric_gem_block")
+    val TYPE_GEM_BLOCK_ELECTRIC = typeGemBlock("electric_gem_block", MapColor.COLOR_YELLOW)
     @JvmField
-    val TYPE_GEM_BLOCK_GRASS = typeGemBlock("grass_gem_block")
+    val TYPE_GEM_BLOCK_GRASS = typeGemBlock("grass_gem_block", MapColor.COLOR_GREEN)
     @JvmField
-    val TYPE_GEM_BLOCK_ICE = typeGemBlock("ice_gem_block")
+    val TYPE_GEM_BLOCK_ICE = typeGemBlock("ice_gem_block", MapColor.ICE)
     @JvmField
-    val TYPE_GEM_BLOCK_FIGHTING = typeGemBlock("fighting_gem_block")
+    val TYPE_GEM_BLOCK_FIGHTING = typeGemBlock("fighting_gem_block", MapColor.COLOR_RED)
     @JvmField
-    val TYPE_GEM_BLOCK_POISON = typeGemBlock("poison_gem_block")
+    val TYPE_GEM_BLOCK_POISON = typeGemBlock("poison_gem_block", MapColor.COLOR_PURPLE)
     @JvmField
-    val TYPE_GEM_BLOCK_GROUND = typeGemBlock("ground_gem_block")
+    val TYPE_GEM_BLOCK_GROUND = typeGemBlock("ground_gem_block", MapColor.DIRT)
     @JvmField
-    val TYPE_GEM_BLOCK_FLYING = typeGemBlock("flying_gem_block")
+    val TYPE_GEM_BLOCK_FLYING = typeGemBlock("flying_gem_block", MapColor.COLOR_LIGHT_BLUE)
     @JvmField
-    val TYPE_GEM_BLOCK_PSYCHIC = typeGemBlock("psychic_gem_block")
+    val TYPE_GEM_BLOCK_PSYCHIC = typeGemBlock("psychic_gem_block", MapColor.COLOR_MAGENTA)
     @JvmField
-    val TYPE_GEM_BLOCK_BUG = typeGemBlock("bug_gem_block")
+    val TYPE_GEM_BLOCK_BUG = typeGemBlock("bug_gem_block", MapColor.COLOR_LIGHT_GREEN)
     @JvmField
-    val TYPE_GEM_BLOCK_ROCK = typeGemBlock("rock_gem_block")
+    val TYPE_GEM_BLOCK_ROCK = typeGemBlock("rock_gem_block", MapColor.STONE)
     @JvmField
-    val TYPE_GEM_BLOCK_GHOST = typeGemBlock("ghost_gem_block")
+    val TYPE_GEM_BLOCK_GHOST = typeGemBlock("ghost_gem_block", MapColor.COLOR_GRAY)
     @JvmField
-    val TYPE_GEM_BLOCK_DRAGON = typeGemBlock("dragon_gem_block")
+    val TYPE_GEM_BLOCK_DRAGON = typeGemBlock("dragon_gem_block", MapColor.COLOR_BLUE)
     @JvmField
-    val TYPE_GEM_BLOCK_DARK = typeGemBlock("dark_gem_block")
+    val TYPE_GEM_BLOCK_DARK = typeGemBlock("dark_gem_block", MapColor.COLOR_BLACK)
     @JvmField
-    val TYPE_GEM_BLOCK_STEEL = typeGemBlock("steel_gem_block")
+    val TYPE_GEM_BLOCK_STEEL = typeGemBlock("steel_gem_block", MapColor.METAL)
     @JvmField
-    val TYPE_GEM_BLOCK_FAIRY = typeGemBlock("fairy_gem_block")
+    val TYPE_GEM_BLOCK_FAIRY = typeGemBlock("fairy_gem_block", MapColor.COLOR_PINK)
 
     private val typeGemClusters = mutableMapOf<ResourceLocation, TypeGemClusterBlock>()
 
@@ -1008,8 +1008,8 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
         return this.create(name, block)
     }
 
-    private fun typeGemBlock(name: String): Block {
-        val typeGemBlock = this.create(name, Block(BlockBehaviour.Properties.of().strength(3.0F, 6.0F).sound(CobblemonSounds.TYPE_GEM_BLOCK_SOUNDS)))
+    private fun typeGemBlock(name: String, mapColor: MapColor): Block {
+        val typeGemBlock = this.create(name, Block(BlockBehaviour.Properties.of().mapColor(mapColor).strength(3.0F, 6.0F).sound(CobblemonSounds.TYPE_GEM_BLOCK_SOUNDS)))
 
         val identifier = cobblemonResource(name)
         typeGemBlocks[identifier] = typeGemBlock
