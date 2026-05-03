@@ -31,6 +31,6 @@ enum class PokemonSizeCategory {
             return PokemonSizeCategory.entries[index]
         }
 
-        fun translationKey(category: PokemonSizeCategory) = "cobblemon.ui.size_category.${category.name.lowercase()}"
+        fun translationKey(category: PokemonSizeCategory) = "cobblemon.size_category.${category.name.lowercase()}"
     }
 }

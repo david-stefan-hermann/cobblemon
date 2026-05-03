@@ -20,7 +20,7 @@ import com.cobblemon.mod.common.util.asIdentifierDefaultingNamespace
 
 enum class PokedexCategoryFilterType {
     ALL,
-    CAUGHT,
+    OWNED,
     SEEN,
     UNREGISTERED,
     UNDISCOVERED_TM_MOVE,
@@ -35,20 +35,20 @@ class PokedexCategoryFilter(
     override fun test(entry: PokedexEntry): Boolean {
         return when (filterType) {
             PokedexCategoryFilterType.ALL -> true
-            PokedexCategoryFilterType.CAUGHT -> pokedexManager.getHighestKnowledgeFor(entry) >= PokedexEntryProgress.CAUGHT
-            PokedexCategoryFilterType.SEEN -> pokedexManager.getHighestKnowledgeFor(entry) >= PokedexEntryProgress.CAUGHT || pokedexManager.getHighestKnowledgeFor(entry) == PokedexEntryProgress.ENCOUNTERED
-            PokedexCategoryFilterType.UNREGISTERED -> pokedexManager.getHighestKnowledgeFor(entry) == PokedexEntryProgress.NONE
+            PokedexCategoryFilterType.OWNED -> pokedexManager.getHighestKnowledgeFor(entry) >= PokedexEntryProgress.OWNED
+            PokedexCategoryFilterType.SEEN -> pokedexManager.getHighestKnowledgeFor(entry) >= PokedexEntryProgress.OWNED || pokedexManager.getHighestKnowledgeFor(entry) == PokedexEntryProgress.SEEN
+            PokedexCategoryFilterType.UNREGISTERED -> pokedexManager.getHighestKnowledgeFor(entry) == PokedexEntryProgress.UNREGISTERED
             PokedexCategoryFilterType.UNDISCOVERED_TM_MOVE -> hasUndiscoveredLevelUpTM(entry)
             PokedexCategoryFilterType.RIDEABLE -> {
                 val species = PokemonSpecies.getByIdentifier(entry.speciesId)
                 species?.forms?.any { form -> !form.riding.behaviours.isNullOrEmpty() } == true
-                    && pokedexManager.getHighestKnowledgeFor(entry) >= PokedexEntryProgress.CAUGHT
+                    && pokedexManager.getHighestKnowledgeFor(entry) >= PokedexEntryProgress.OWNED
             }
         }
     }
 
     private fun hasUndiscoveredLevelUpTM(entry: PokedexEntry): Boolean {
-        if (pokedexManager.getHighestKnowledgeFor(entry) != PokedexEntryProgress.CAUGHT) return false
+        if (pokedexManager.getHighestKnowledgeFor(entry) != PokedexEntryProgress.OWNED) return false
         val species = PokemonSpecies.getByIdentifier(entry.speciesId) ?: return false
         val forms = pokedexManager.getCaughtForms(entry)
         val formData = if (forms.isEmpty()) {

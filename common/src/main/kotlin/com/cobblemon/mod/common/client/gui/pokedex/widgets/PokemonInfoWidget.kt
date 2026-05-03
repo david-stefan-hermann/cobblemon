@@ -263,7 +263,7 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
         val currentEntry = this.currentEntry ?: return
 
         val hasKnowledge =
-            CobblemonClient.clientPokedexData.getKnowledgeForSpecies(currentEntry.speciesId) != PokedexEntryProgress.NONE
+            CobblemonClient.clientPokedexData.getKnowledgeForSpecies(currentEntry.speciesId) != PokedexEntryProgress.UNREGISTERED
         val species = currentEntry.speciesId.let { PokemonSpecies.getByIdentifier(it) } ?: return
 
         val matrices = context.pose()
@@ -439,7 +439,7 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
             }
 
             if (hasKnowledge) {
-                if (gender != Gender.GENDERLESS) genderButton.render(context, mouseX, mouseY, delta)
+                if (genderButton.visible) genderButton.render(context, mouseX, mouseY, delta)
 
                 shinyButton.render(context, mouseX, mouseY, delta)
 
@@ -606,20 +606,22 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
         maleRatio = form.maleRatio
 
         val seenGenders = CobblemonClient.clientPokedexData.getSeenGenders(pokedexEntry, pokedexForm)
-        if (seenGenders.isEmpty()) {
+        val visibleGenders = seenGenders.filter { it != Gender.GENDERLESS }
+        if (visibleGenders.isEmpty()) {
+            gender = Gender.GENDERLESS
             genderButton.visible = false
             genderButton.active = false
         } else {
-            gender = seenGenders.first()
+            gender = visibleGenders.first()
             genderButton.visible = true
-            genderButton.active = seenGenders.size > 1
+            genderButton.active = visibleGenders.size > 1
         }
         genderButton.buttonX = pX + (if (shinyButton.visible) 114F else 126F)
 
-        if (CobblemonClient.clientPokedexData.getHighestKnowledgeFor(pokedexEntry) == PokedexEntryProgress.NONE) return
+        if (CobblemonClient.clientPokedexData.getHighestKnowledgeFor(pokedexEntry) == PokedexEntryProgress.UNREGISTERED) return
 
         var startPosition = if (shinyButton.visible) 1 else 0
-        startPosition += if (genderButton.visible || (species.maleRatio == -1F)) 1 else 0
+        startPosition += if (genderButton.visible) 1 else 0
 
         pokedexEntry.variations.forEachIndexed { index, variation ->
             val pos = possibleVariationButtonPositions[index + startPosition]
@@ -760,7 +762,7 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
         && !children.any { it.isMouseOver(mouseX, mouseY) && it is ScaledButton }
 
     private fun isSelectedPokemonOwned(): Boolean {
-        return currentEntry?.let { CobblemonClient.clientPokedexData.getKnowledgeForSpecies(it.speciesId) } == PokedexEntryProgress.CAUGHT
+        return currentEntry?.let { CobblemonClient.clientPokedexData.getKnowledgeForSpecies(it.speciesId) } == PokedexEntryProgress.OWNED
     }
 
     fun playSound(soundEvent: SoundEvent) {

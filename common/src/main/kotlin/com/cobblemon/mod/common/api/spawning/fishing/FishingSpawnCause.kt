@@ -70,6 +70,10 @@ class FishingSpawnCause(
             pokemonEntity.pokemon.applyPotentialMarks(1.0 + (effect.value / 100))
         }
 
+        fun alterSize(pokemonEntity: PokemonEntity, effect: SpawnBait.Effect) {
+            pokemonEntity.pokemon.scaleModifier *= effect.value.toFloat() / 1000.0f
+        }
+
         fun saveDropsReroll(pokemonEntity: PokemonEntity, effect: SpawnBait.Effect) {
             pokemonEntity.pokemon.forcedAspects += DROPS_REROLL_ASPECT
         }
@@ -142,6 +146,11 @@ class FishingSpawnCause(
             }
             pokemonEntity.pokemon.isAlpha = true
             pokemonEntity.pokemon.initializeMovesetWithRandomTm(2)
+            if (!pokemonEntity.level().isClientSide) {
+                // Alpha status is applied after entity creation in bait flows, so rebuild the brain
+                // to ensure alpha-only sensors/memories are actually attached.
+                pokemonEntity.remakeBrain()
+            }
             pokemonEntity.entityData.set(PokemonEntity.IS_ALPHA, true)
         }
 

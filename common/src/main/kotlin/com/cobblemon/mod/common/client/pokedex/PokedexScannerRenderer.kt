@@ -186,10 +186,10 @@ class PokedexScannerRenderer {
                                 ?.get(PokemonEntity.IS_ALPHA)
                             val isAlpha = entityAlpha ?: pokemon.isAlpha
                             val sizeText = if (isAlpha) {
-                                lang("ui.pokedex.scan.alpha").bold()
+                                lang("ui.pokemon.alpha").bold()
                             } else {
                                 val sizeCategoryText = PokemonSizeCategory.translationKey(pokemon.getSizeCategory()).text()
-                                lang("ui.pokedex.scan.size", sizeCategoryText).bold()
+                                lang("size_category.prefix", sizeCategoryText).bold()
                             }
                             drawScaledText(
                                 context = graphics,
