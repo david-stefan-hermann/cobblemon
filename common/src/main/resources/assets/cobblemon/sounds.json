@@ -648,9 +648,9 @@
   },
   "block.berry_bush.harvest": {
     "sounds": [
-      "cobblemon:block/berry/berry_bush_harvest_1",
-      "cobblemon:block/berry/berry_bush_harvest_2",
-      "cobblemon:block/berry/berry_bush_harvest_3"
+      { "name": "cobblemon:block/berry/berry_bush_harvest_1", "volume": 0.6 },
+      { "name": "cobblemon:block/berry/berry_bush_harvest_2", "volume": 0.6 },
+      { "name": "cobblemon:block/berry/berry_bush_harvest_3", "volume": 0.6 }
     ]
   },
   "block.big_root.break": {
