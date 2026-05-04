@@ -653,6 +653,13 @@
       { "name": "cobblemon:block/berry/berry_bush_harvest_3", "volume": 0.6 }
     ]
   },
+  "block.apricorn.harvest": {
+    "sounds": [
+      { "name": "cobblemon:block/berry/berry_bush_harvest_1", "volume": 0.6, "pitch": 1.5 },
+      { "name": "cobblemon:block/berry/berry_bush_harvest_2", "volume": 0.6, "pitch": 1.5 },
+      { "name": "cobblemon:block/berry/berry_bush_harvest_3", "volume": 0.6, "pitch": 1.5 }
+    ]
+  },
   "block.big_root.break": {
     "sounds": [
       "cobblemon:block/big_root/big_root_break_1",

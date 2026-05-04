@@ -264,6 +264,9 @@ object CobblemonSounds : PlatformRegistry<Registry<SoundEvent>, ResourceKey<Regi
     val BERRY_EAT_FULL = this.create("item.berry.eat.full")
 
     @JvmField
+    val APRICORN_HARVEST = this.create("block.apricorn.harvest")
+
+    @JvmField
     val BIG_ROOT_BREAK = this.create("block.big_root.break")
     @JvmField
     val ENERGY_ROOT_PLACE = this.create("block.energy_root.place")
