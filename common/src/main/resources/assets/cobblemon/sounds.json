@@ -481,9 +481,9 @@
   "block.type_gem_block.place": {
     "subtitle": "subtitles.block.generic.place",
     "sounds": [
-      { "name": "cobblemon:block/type_gem/type_gem_block_place_1", "volume": 0.7 },
-      { "name": "cobblemon:block/type_gem/type_gem_block_place_2", "volume": 0.7 },
-      { "name": "cobblemon:block/type_gem/type_gem_block_place_3", "volume": 0.7 }
+      { "name": "cobblemon:block/type_gem/type_gem_block_place_1", "volume": 0.5 },
+      { "name": "cobblemon:block/type_gem/type_gem_block_place_2", "volume": 0.5 },
+      { "name": "cobblemon:block/type_gem/type_gem_block_place_3", "volume": 0.5 }
     ]
   },
   "block.type_gem_block.step": {
