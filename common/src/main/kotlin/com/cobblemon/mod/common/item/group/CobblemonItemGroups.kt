@@ -515,12 +515,12 @@ object CobblemonItemGroups {
         entries.accept(CobblemonItems.PEWTER_CRUNCHIES)
         entries.accept(CobblemonItems.RAGE_CANDY_BAR)
         entries.accept(CobblemonItems.LAVA_COOKIE)
-        entries.accept(CobblemonItems.JUBILIFE_MUFFIN)
         entries.accept(CobblemonItems.OLD_GATEAU)
         entries.accept(CobblemonItems.CASTELIACONE)
         entries.accept(CobblemonItems.LUMIOSE_GALETTE)
         entries.accept(CobblemonItems.BIG_MALASADA)
         entries.accept(CobblemonItems.SMOKED_TAIL_CURRY)
+        entries.accept(CobblemonItems.JUBILIFE_MUFFIN)
         entries.accept(CobblemonItems.OPEN_FACED_SANDWICH)
 
         entries.accept(CobblemonItems.BERRY_JUICE)
