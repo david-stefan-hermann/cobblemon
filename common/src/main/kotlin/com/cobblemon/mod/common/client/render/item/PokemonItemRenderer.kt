@@ -19,8 +19,8 @@ import com.cobblemon.mod.common.util.math.fromEulerXYZDegrees
 import com.mojang.blaze3d.platform.Lighting
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
-import com.mojang.blaze3d.vertex.VertexMultiConsumer
-import net.minecraft.client.renderer.MultiBufferSource
+import com.cobblemon.mod.common.client.render.submitPosableModel
+import net.minecraft.client.renderer.SubmitNodeCollector
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.core.component.DataComponents
@@ -35,7 +35,7 @@ class PokemonItemRenderer : CobblemonBuiltinItemRenderer {
         it.put(RenderContext.DO_QUIRKS, false)
     }
 
-    override fun render(stack: ItemStack, mode: ItemDisplayContext, matrices: PoseStack, vertexConsumers: MultiBufferSource, light: Int, overlay: Int) {
+    override fun render(stack: ItemStack, mode: ItemDisplayContext, matrices: PoseStack, vertexConsumers: SubmitNodeCollector, light: Int, overlay: Int) {
         val pokemonItem = stack.item as? PokemonItem ?: return
         val (species, aspects) = pokemonItem.getSpeciesAndAspects(stack) ?: return
         val state = FloatingState()
@@ -70,16 +70,6 @@ class PokemonItemRenderer : CobblemonBuiltinItemRenderer {
 
         val renderLayer = RenderTypes.entityCutout(VaryingModelRepository.getTexture(species.resourceIdentifier, state))
         val isEnchanted = stack.get(DataComponents.ENCHANTMENTS)?.isEmpty == false
-        val vertexConsumer: VertexConsumer =
-            if (isEnchanted) {
-                // PT144: RenderTypes.entityGlintDirect removed in MC 26.1.x → use entityGlint()
-                VertexMultiConsumer.create(
-                    vertexConsumers.getBuffer(RenderTypes.entityGlint()),
-                    vertexConsumers.getBuffer(renderLayer),
-                )
-            } else {
-                vertexConsumers.getBuffer(renderLayer)
-            }
 
         matrices.pushPose()
         val packedLight = if (mode == ItemDisplayContext.GUI) {
@@ -96,7 +86,16 @@ class PokemonItemRenderer : CobblemonBuiltinItemRenderer {
             val tintBlue = (tint.z * 255).toInt()
             val tintAlpha = (tint.w * 255).toInt()
             val color = (tintAlpha shl 24) or (tintRed shl 16) or (tintGreen shl 8) or tintBlue
-            model.render(context, matrices, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, color)
+            // port/26.2: VertexMultiConsumer is gone. It fed the same geometry to two buffers at once, so
+            // an enchanted item submits the model a second time under the glint render type instead.
+            vertexConsumers.submitPosableModel(matrices, renderLayer) { stack, consumer ->
+                model.render(context, stack, consumer, packedLight, OverlayTexture.NO_OVERLAY, color)
+            }
+            if (isEnchanted) {
+                vertexConsumers.submitPosableModel(matrices, RenderTypes.entityGlint()) { stack, consumer ->
+                    model.render(context, stack, consumer, packedLight, OverlayTexture.NO_OVERLAY, color)
+                }
+            }
         }
 
         model.setDefault()

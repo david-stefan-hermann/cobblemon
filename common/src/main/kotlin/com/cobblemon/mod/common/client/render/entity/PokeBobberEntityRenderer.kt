@@ -23,7 +23,7 @@ import com.cobblemon.mod.common.client.render.itemRenderer
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.client.renderer.rendertype.RenderType
 import com.mojang.blaze3d.vertex.VertexConsumer
-import net.minecraft.client.renderer.MultiBufferSource
+import net.minecraft.client.renderer.SubmitNodeCollector
 import net.minecraft.client.renderer.entity.EntityRenderer
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import com.mojang.blaze3d.vertex.PoseStack
@@ -43,7 +43,7 @@ class PokeBobberEntityRenderer(context: EntityRendererProvider.Context) : Entity
     override fun createRenderState(): net.minecraft.client.renderer.entity.state.EntityRenderState = net.minecraft.client.renderer.entity.state.EntityRenderState()
 
     // PT144: EntityRenderer.render(...) removed in MC 26.1.x — deferred until submit pipeline migration.
-    fun render_DEFER_NO_OVERRIDE(fishingBobberEntity: PokeRodFishingBobberEntity, elapsedPartialTicks: Float, tickDelta: Float, matrixStack: PoseStack, vertexConsumerProvider: MultiBufferSource, light: Int) {
+    fun render_DEFER_NO_OVERRIDE(fishingBobberEntity: PokeRodFishingBobberEntity, elapsedPartialTicks: Float, tickDelta: Float, matrixStack: PoseStack, vertexConsumerProvider: SubmitNodeCollector, light: Int) {
         var playerPosXWorld: Double
         val eyeHeightOffset: Float
         val playerPosZWorld: Double
@@ -122,19 +122,21 @@ class PokeBobberEntityRenderer(context: EntityRendererProvider.Context) : Entity
         // Additional shift to the leeft
         val shiftHook = 0.045f // Adjust this value as needed to shift the geometry
 
-        val vertexConsumer = vertexConsumerProvider.getBuffer(PokeBobberEntityRenderer.Companion.LAYER)
+        // port/26.2: the quads are submitted to the collector, whose callback hands back exactly the
+        // captured pose and a consumer - the same pair this code already worked with.
+        vertexConsumerProvider.submitCustomGeometry(matrixStack, PokeBobberEntityRenderer.Companion.LAYER) { pose, vertexConsumer ->
+            // Adjusted and flipped vertices for one side, scaled by 75% and shifted
+            vertex(vertexConsumer, pose, light, (1.0f - 0.0f) * scale + 0.125f + shiftHook, (0.0f * scale + 0.125f), 0, 1)
+            vertex(vertexConsumer, pose, light, (1.0f - 1.0f) * scale + 0.125f + shiftHook, (0.0f * scale + 0.125f), 1, 1)
+            vertex(vertexConsumer, pose, light, (1.0f - 1.0f) * scale + 0.125f + shiftHook, (1.0f * scale + 0.125f), 1, 0)
+            vertex(vertexConsumer, pose, light, (1.0f - 0.0f) * scale + 0.125f + shiftHook, (1.0f * scale + 0.125f), 0, 0)
 
-        // Adjusted and flipped vertices for one side, scaled by 75% and shifted
-        vertex(vertexConsumer, entry, light, (1.0f - 0.0f) * scale + 0.125f + shiftHook, (0.0f * scale + 0.125f), 0, 1)
-        vertex(vertexConsumer, entry, light, (1.0f - 1.0f) * scale + 0.125f + shiftHook, (0.0f * scale + 0.125f), 1, 1)
-        vertex(vertexConsumer, entry, light, (1.0f - 1.0f) * scale + 0.125f + shiftHook, (1.0f * scale + 0.125f), 1, 0)
-        vertex(vertexConsumer, entry, light, (1.0f - 0.0f) * scale + 0.125f + shiftHook, (1.0f * scale + 0.125f), 0, 0)
-
-        // Adjusted and flipped vertices for the opposite side in reverse order, scaled by 75% and shifted
-        vertex(vertexConsumer, entry, light, (1.0f - 0.0f) * scale + 0.125f + shiftHook, (1.0f * scale + 0.125f), 0, 0)
-        vertex(vertexConsumer, entry, light, (1.0f - 1.0f) * scale + 0.125f + shiftHook, (1.0f * scale + 0.125f), 1, 0)
-        vertex(vertexConsumer, entry, light, (1.0f - 1.0f) * scale + 0.125f + shiftHook, (0.0f * scale + 0.125f), 1, 1)
-        vertex(vertexConsumer, entry, light, (1.0f - 0.0f) * scale + 0.125f + shiftHook, (0.0f * scale + 0.125f), 0, 1)
+            // Adjusted and flipped vertices for the opposite side in reverse order, scaled by 75% and shifted
+            vertex(vertexConsumer, pose, light, (1.0f - 0.0f) * scale + 0.125f + shiftHook, (1.0f * scale + 0.125f), 0, 0)
+            vertex(vertexConsumer, pose, light, (1.0f - 1.0f) * scale + 0.125f + shiftHook, (1.0f * scale + 0.125f), 1, 0)
+            vertex(vertexConsumer, pose, light, (1.0f - 1.0f) * scale + 0.125f + shiftHook, (0.0f * scale + 0.125f), 1, 1)
+            vertex(vertexConsumer, pose, light, (1.0f - 0.0f) * scale + 0.125f + shiftHook, (0.0f * scale + 0.125f), 0, 1)
+        }
 
         val pokeRodIdStr = fishingBobberEntity.entityData.get(PokeRodFishingBobberEntity.POKEROD_ID)
         val pokeBobberBaitItemStack = fishingBobberEntity.entityData.get(PokeRodFishingBobberEntity.POKEBOBBER_BAIT)
@@ -222,18 +224,18 @@ class PokeBobberEntityRenderer(context: EntityRendererProvider.Context) : Entity
         val deltaY = (playerPosYWorld - bobberPosY).toFloat() + eyeHeightOffset
         val deltaZ = (playerPosZWorld - bobberPosZ).toFloat()
         // PT145: RenderTypes.lineStrip removed in MC 26.1.x — use lines render type via RenderTypes (RenderType.lines no longer exists).
-        val vertexConsumer2 = vertexConsumerProvider.getBuffer(net.minecraft.client.renderer.rendertype.RenderTypes.lines())
-        val entry2 = matrixStack.last()
-        for (lineIndex in 0..16) {
-            renderFishingLine(pokeRod.lineColor, deltaX, deltaY, deltaZ, vertexConsumer2, entry2, percentage(lineIndex, 16), percentage(lineIndex + 1, 16))
+        vertexConsumerProvider.submitCustomGeometry(matrixStack, net.minecraft.client.renderer.rendertype.RenderTypes.lines()) { entry2, vertexConsumer2 ->
+            for (lineIndex in 0..16) {
+                renderFishingLine(pokeRod.lineColor, deltaX, deltaY, deltaZ, vertexConsumer2, entry2, percentage(lineIndex, 16), percentage(lineIndex + 1, 16))
+            }
+
+            // Iris Shader Compatibility: Keeps Iris from connecting the fishing lines of multiple players' Pokerods.
+            // Iris performs a mixin into FishingHookRenderer to achieve the same result.
+            // So we mimic their fix here.
+            vertexConsumer2.addVertex(0f, 0f, 0f).setColor(0, 0, 0, 255).setNormal(0f, 0f, 0f)
         }
 
         matrixStack.popPose() // close main rendering transforms
-
-        // Iris Shader Compatibility: Keeps Iris from connecting the fishing lines of multiple players' Pokerods.
-        // Iris performs a mixin into FishingHookRenderer to achieve the same result.
-        // So we mimic their fix here.
-        vertexConsumer2.addVertex(0f, 0f, 0f).setColor(0, 0, 0, 255).setNormal(0f, 0f, 0f);
 
         // PT144: super.render removed - submit pipeline now drives rendering.
         // super.render(fishingBobberEntity, elapsedPartialTicks, tickDelta, matrixStack, vertexConsumerProvider, light)

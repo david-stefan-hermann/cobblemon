@@ -8,7 +8,7 @@
 
 package com.cobblemon.mod.common.client.render.item
 
-import net.minecraft.client.renderer.MultiBufferSource
+import net.minecraft.client.renderer.SubmitNodeCollector
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.world.item.ItemDisplayContext
 import net.minecraft.world.item.ItemStack
@@ -22,6 +22,6 @@ import net.minecraft.world.item.ItemStack
  */
 interface CobblemonBuiltinItemRenderer {
 
-    fun render(stack: ItemStack, mode: ItemDisplayContext, matrices: PoseStack, vertexConsumers: MultiBufferSource, light: Int, overlay: Int)
+    fun render(stack: ItemStack, mode: ItemDisplayContext, matrices: PoseStack, vertexConsumers: SubmitNodeCollector, light: Int, overlay: Int)
 
 }

@@ -33,7 +33,8 @@ import com.mojang.math.Axis
 import java.util.UUID
 import net.minecraft.client.Minecraft
 import net.minecraft.client.model.player.PlayerModel
-import net.minecraft.client.renderer.MultiBufferSource
+import com.cobblemon.mod.common.client.render.submitPosableModel
+import net.minecraft.client.renderer.SubmitNodeCollector
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.entity.LivingEntityRenderer
 import net.minecraft.client.renderer.entity.RenderLayerParent
@@ -63,7 +64,7 @@ class PokemonOnShoulderRenderer<T : Player>(renderLayerParent: Any?) {
 
     fun render(
         matrixStack: PoseStack,
-        buffer: MultiBufferSource,
+        buffer: SubmitNodeCollector,
         packedLight: Int,
         livingEntity: T,
         limbSwing: Float,
@@ -96,7 +97,7 @@ class PokemonOnShoulderRenderer<T : Player>(renderLayerParent: Any?) {
 
     private fun render(
         matrixStack: PoseStack,
-        buffer: MultiBufferSource,
+        buffer: SubmitNodeCollector,
         packedLight: Int,
         livingEntity: T,
         limbSwing: Float,
@@ -157,7 +158,7 @@ class PokemonOnShoulderRenderer<T : Player>(renderLayerParent: Any?) {
             state.updatePartialTicks(partialTicks)
             context.put(RenderContext.POSABLE_STATE, state)
             state.currentModel = model
-            val vertexConsumer = buffer.getBuffer(RenderTypes.entityCutout(VaryingModelRepository.getTexture(shoulderData.species.resourceIdentifier, state)))
+            val shoulderTexture = VaryingModelRepository.getTexture(shoulderData.species.resourceIdentifier, state)
             // PT145: LivingEntityRenderer.getOverlayCoords(LivingEntity, Float) — replaced by state-based; default to NO_OVERLAY.
             val i = OverlayTexture.NO_OVERLAY
 
@@ -170,9 +171,11 @@ class PokemonOnShoulderRenderer<T : Player>(renderLayerParent: Any?) {
                 limbSwingAmount = limbSwingAmount,
                 ageInTicks = livingEntity.tickCount.toFloat()
             )
-            model.render(context, matrixStack, vertexConsumer, packedLight, i, -0x1)
-            model.withLayerContext(buffer, state, VaryingModelRepository.getLayers(shoulderData.species.resourceIdentifier, state)) {
-                model.render(context, matrixStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
+            buffer.submitPosableModel(matrixStack, RenderTypes.entityCutout(shoulderTexture)) { stack, consumer ->
+                model.render(context, stack, consumer, packedLight, i, -0x1)
+                model.withLayerContext(buffer, state, VaryingModelRepository.getLayers(shoulderData.species.resourceIdentifier, state)) {
+                    model.render(context, stack, consumer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
+                }
             }
 
             heldItemRenderer.renderOnModel(

@@ -20,7 +20,8 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.entity.EntityRenderer
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
-import net.minecraft.client.renderer.MultiBufferSource
+import com.cobblemon.mod.common.client.render.submitPosableModel
+import net.minecraft.client.renderer.SubmitNodeCollector
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.resources.Identifier
 import net.minecraft.util.Mth
@@ -43,8 +44,8 @@ class CobblemonBoatRenderer(ctx: EntityRendererProvider.Context, private val has
 
     override fun createRenderState(): net.minecraft.client.renderer.entity.state.EntityRenderState = net.minecraft.client.renderer.entity.state.EntityRenderState()
 
-    // PT144: EntityRenderer.render(Entity, Float, Float, PoseStack, MultiBufferSource, Int) removed in MC 26.1.x; deferred until submit pipeline migration.
-    fun render_DEFER_NO_OVERRIDE(entity: CobblemonBoatEntity, yaw: Float, tickDelta: Float, matrices: PoseStack, vertexConsumers: MultiBufferSource, light: Int) {
+    // PT144: EntityRenderer.render(Entity, Float, Float, PoseStack, SubmitNodeCollector, Int) removed in MC 26.1.x; deferred until submit pipeline migration.
+    fun render_DEFER_NO_OVERRIDE(entity: CobblemonBoatEntity, yaw: Float, tickDelta: Float, matrices: PoseStack, vertexConsumers: SubmitNodeCollector, light: Int) {
         matrices.pushPose()
         matrices.translate(0F, 0.375F, 0F)
         matrices.mulPose(Axis.YP.rotationDegrees(180F - yaw))
@@ -62,8 +63,9 @@ class CobblemonBoatRenderer(ctx: EntityRendererProvider.Context, private val has
         matrices.mulPose(Axis.YP.rotationDegrees(90F))
         // PT144: BoatModel.setupAnim(Entity, Float, Float, Float, Float, Float) deprecated — single-arg state form deferred.
         // entityModel.setupAnim(entity, tickDelta, 0F, -0.1F, 0F, 0F)
-        val vertexConsumer = vertexConsumers.getBuffer(entityModel.renderType(identifier))
-        entityModel.renderToBuffer(matrices, vertexConsumer, light, OverlayTexture.NO_OVERLAY, -0x1)
+        vertexConsumers.submitPosableModel(matrices, entityModel.renderType(identifier)) { stack, consumer ->
+            entityModel.renderToBuffer(stack, consumer, light, OverlayTexture.NO_OVERLAY, -0x1)
+        }
         // PT144: BoatModel.waterPatch() removed in MC 26.1.x — water mask rendering deferred.
         // if (!entity.isUnderWater) {
         //     val vertexConsumer2 = vertexConsumers.getBuffer(RenderTypes.waterMask())

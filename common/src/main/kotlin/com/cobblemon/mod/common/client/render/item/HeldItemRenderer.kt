@@ -21,7 +21,7 @@ import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
 import com.cobblemon.mod.common.client.render.itemRenderer
 import com.cobblemon.mod.common.client.render.CobblemonItemRenderer
-import net.minecraft.client.renderer.MultiBufferSource
+import net.minecraft.client.renderer.SubmitNodeCollector
 // port/26.2: ItemRenderer was replaced by the ItemModelResolver + ItemStackRenderState pipeline.
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.world.entity.LivingEntity
@@ -48,7 +48,7 @@ class HeldItemRenderer {
         item: ItemStack,
         state: PosableState,
         poseStack: PoseStack,
-        buffer: MultiBufferSource,
+        buffer: SubmitNodeCollector,
         light: Int = ((11) or ((7) shl 16)),
         frontLight: Boolean = false,
         entity: LivingEntity? = null
@@ -62,7 +62,7 @@ class HeldItemRenderer {
         item: ItemStack,
         state: PosableState,
         poseStack: org.joml.Matrix3x2fStack,
-        buffer: MultiBufferSource,
+        buffer: SubmitNodeCollector,
         light: Int = ((11) or ((7) shl 16)),
         frontLight: Boolean = false,
         entity: LivingEntity? = null
@@ -76,7 +76,7 @@ class HeldItemRenderer {
         state: PosableState,
         entity: LivingEntity?,
         poseStack: PoseStack,
-        buffer: MultiBufferSource,
+        buffer: SubmitNodeCollector,
         light: Int,
         seed: Int,
         frontLight: Boolean = false,
