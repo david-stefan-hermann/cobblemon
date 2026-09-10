@@ -9,6 +9,7 @@
 package com.cobblemon.mod.common.client
 
 import com.cobblemon.mod.common.util.hasShiftDown
+import com.cobblemon.mod.common.client.render.cutoutBlockSheet
 import net.minecraft.client.renderer.rendertype.RenderTypes
 
 import com.cobblemon.mod.common.Cobblemon.LOGGER
@@ -241,16 +242,15 @@ object CobblemonClient {
 
     private fun registerBlockRenderTypes() {
 
-        // PT145: RenderTypes.cutoutMipped()/cutout() removed in MC 26.1.x — use Sheets.cutoutBlockSheet() as fallback.
         this.implementation.registerBlockRenderType(
-            net.minecraft.client.renderer.Sheets.cutoutBlockSheet(),
+            cutoutBlockSheet(),
             CobblemonBlocks.APRICORN_LEAVES,
             CobblemonBlocks.SACCHARINE_LEAVES,
             CobblemonBlocks.POKE_CAKE
         )
 
         this.implementation.registerBlockRenderType(
-            net.minecraft.client.renderer.Sheets.cutoutBlockSheet(),
+            cutoutBlockSheet(),
             CobblemonBlocks.GILDED_CHEST,
             CobblemonBlocks.FOSSIL_ANALYZER,
             CobblemonBlocks.APRICORN_DOOR,

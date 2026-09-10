@@ -133,7 +133,7 @@ object ClientMoLangFunctions {
                 val maxPitch = params.getDoubleOrNull(3) ?: 45F
                 ObjectValue(
                     PitchTiltAnimation(
-                        bone = model.getPart(bone) as com.cobblemon.mod.common.client.render.models.blockbench.pose.Bone,
+                        bone = model.getPart(bone),
                         minPitch = minPitch.toFloat(),
                         maxPitch = maxPitch.toFloat(),
                         maxChangePerTick = maxChangePerTick.toFloat()
