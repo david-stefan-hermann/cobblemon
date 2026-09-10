@@ -22,7 +22,6 @@ import kotlin.math.min
 import kotlin.random.Random
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.Screen
-import com.cobblemon.mod.common.client.render.ModelResourceLocation
 import net.minecraft.core.BlockPos
 import net.minecraft.core.RegistryAccess
 import net.minecraft.core.registries.Registries
@@ -40,9 +39,6 @@ import org.joml.Vector4f
 import kotlin.jvm.optionals.getOrNull
 
 fun cobblemonResource(path: String): Identifier = Identifier.fromNamespaceAndPath(Cobblemon.MODID, path)
-fun cobblemonModel(path: String, variant: String) =
-    ModelResourceLocation(cobblemonResource(path), variant)
-
 fun String.asTranslated() = Component.translatable(this)
 fun String.asResource() = Identifier.parse(this)
 fun String.asTranslated(vararg data: Any) = Component.translatable(this, *data)

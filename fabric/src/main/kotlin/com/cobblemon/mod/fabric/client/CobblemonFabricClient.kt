@@ -11,6 +11,7 @@ package com.cobblemon.mod.fabric.client
 import com.cobblemon.mod.common.CobblemonClientImplementation
 import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.api.pokeball.PokeBalls
+import com.cobblemon.mod.common.client.CobblemonBakingOverrides
 import com.cobblemon.mod.common.client.CobblemonClient
 import com.cobblemon.mod.common.client.CobblemonClient.pokedexUsageContext
 import com.cobblemon.mod.common.client.CobblemonClient.reloadCodedAssets
@@ -38,7 +39,10 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
+import net.fabricmc.fabric.api.client.model.loading.v1.ExtraModelKey
+import net.fabricmc.fabric.api.client.model.loading.v1.FabricModelManager
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin
+import net.fabricmc.fabric.api.client.model.loading.v1.SimpleUnbakedExtraModel
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.BlockColorRegistry
@@ -58,6 +62,7 @@ import net.minecraft.client.model.geom.ModelLayerLocation
 import net.minecraft.client.model.geom.builders.LayerDefinition
 import net.minecraft.client.particle.ParticleProvider
 import net.minecraft.client.particle.SpriteSet
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState
 import net.minecraft.client.renderer.entity.EntityRendererProvider
@@ -96,10 +101,11 @@ class CobblemonFabricClient : ClientModInitializer, CobblemonClientImplementatio
         registerParticleFactory(CobblemonParticles.SNOWSTORM_PARTICLE_TYPE, SnowstormParticleType::Factory)
         CobblemonClient.initialize(this)
 
-        ModelLoadingPlugin.register {
-            PokeBalls.all().forEach { pokeBall -> it.addModels(pokeBall.model3d) }
+        ModelLoadingPlugin.register { context ->
+            registerBakingOverrides(context)
+            context.addModels(*PokeBalls.all().map { pokeBall -> pokeBall.model3d }.toTypedArray())
             PokedexType.entries.toList().forEach { pokedex ->
-                it.addModels(
+                context.addModels(
                     pokedex.getItemModelPath(),
                     pokedex.getItemModelPath("scanning"),
                     pokedex.getItemModelPath("flat"),
@@ -107,7 +113,7 @@ class CobblemonFabricClient : ClientModInitializer, CobblemonClientImplementatio
                     pokedex.getItemModelPath("off")
                 )
             }
-            CobblemonItems.wearables.forEach { wearable -> it.addModels(wearable.getModel3d()) }
+            CobblemonItems.wearables.forEach { wearable -> context.addModels(wearable.getModel3d()) }
         }
 
         CobblemonFabric.networkManager.registerClientHandlers()
@@ -178,6 +184,23 @@ class CobblemonFabricClient : ClientModInitializer, CobblemonClientImplementatio
         }
 
         CobblemonModelPredicateRegistry.registerPredicates()
+    }
+
+    /**
+     * port/26.2: models that belong to no block state used to be baked through a ModelResourceLocation
+     * registered by a model loader mixin. 26.2 removed that registry; fabric-api's replacement keys each
+     * extra model by an opaque ExtraModelKey, so each override gets a key here and is handed a resolver
+     * that looks the baked model up on demand. Lazy lookup matters because models are re-baked on every
+     * resource reload - a value captured once would go stale.
+     */
+    private fun registerBakingOverrides(context: ModelLoadingPlugin.Context) {
+        CobblemonBakingOverrides.models.forEach { override ->
+            val key = ExtraModelKey.create<BlockStateModel> { override.modelLocation.toString() }
+            context.addModel(key, SimpleUnbakedExtraModel.blockStateModel(override.modelLocation))
+            override.modelResolver = {
+                (Minecraft.getInstance().modelManager as FabricModelManager).getModel(key)
+            }
+        }
     }
 
     /**
