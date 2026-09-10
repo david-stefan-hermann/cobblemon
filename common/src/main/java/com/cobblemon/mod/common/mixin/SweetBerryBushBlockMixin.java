@@ -12,6 +12,7 @@ import com.bedrockk.molang.runtime.value.DoubleValue;
 import com.cobblemon.mod.common.entity.MoLangScriptingEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -24,8 +25,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(SweetBerryBushBlock.class)
 public abstract class SweetBerryBushBlockMixin {
 
+    // port/26.2: entityInside gained an InsideBlockEffectApplier and a boolean.
     @Inject(method = "entityInside", at = @At(value = "HEAD"), cancellable = true)
-    private void cobblemon$entityInside(BlockState state, Level level, BlockPos pos, Entity entity, CallbackInfo callbackInfo) {
+    private void cobblemon$entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier applier, boolean flag, CallbackInfo callbackInfo) {
         if (entity instanceof MoLangScriptingEntity) {
             if (((MoLangScriptingEntity) entity).getConfig().getMap().getOrDefault("immune_to_sweet_berry_bush_block", DoubleValue.ZERO).asDouble() == 1.0) {
                 callbackInfo.cancel();
