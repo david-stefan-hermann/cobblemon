@@ -95,3 +95,32 @@ fun GuiGraphicsExtractor.submitPosableModelToGui(
         )
     )
 }
+
+
+/**
+ * Submits a model to be drawn where the caller has translated the GUI stack to.
+ *
+ * Callers translate the GUI stack to the model's anchor and then draw, so the anchor is read back off
+ * that stack and the viewport is sized from the requested scale. That sizing is calibrated by eye
+ * rather than derived - it is the first thing to adjust if models sit slightly wrong in a screen.
+ */
+fun GuiGraphicsExtractor.submitModelAtCurrentPose(
+    scale: Float,
+    draw: (PoseStack, SubmitNodeCollector) -> Unit
+) {
+    val stack = this.pose()
+    val anchorX = stack.m20().toInt()
+    val anchorY = stack.m21().toInt()
+    val half = (scale * MODEL_VIEWPORT_SCALE).toInt().coerceAtLeast(1)
+    submitPosableModelToGui(
+        x0 = anchorX - half,
+        y0 = anchorY - half,
+        x1 = anchorX + half,
+        y1 = anchorY + half,
+        scale = scale,
+        draw = draw
+    )
+}
+
+/** How far the picture-in-picture viewport extends from the anchor, per unit of model scale. */
+const val MODEL_VIEWPORT_SCALE = 1.5F

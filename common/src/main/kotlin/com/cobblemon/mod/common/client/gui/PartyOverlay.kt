@@ -194,7 +194,7 @@ class PartyOverlay {
 
                 drawPosablePortrait(
                     identifier = pokemon.species.resourceIdentifier,
-                    matrixStack = matrices,
+                    context = context,
                     doQuirks = false,
                     partialTicks = if (shouldAnimate) partialDeltaTicks else 0F,
                     contextScale = pokemon.form.baseScale,

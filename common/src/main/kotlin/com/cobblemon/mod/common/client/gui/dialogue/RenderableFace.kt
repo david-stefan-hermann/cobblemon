@@ -87,7 +87,7 @@ class ReferenceRenderableFace(val entity: PosableEntity, override val isLeftSide
             drawPosablePortrait(
                 identifier = state.currentEntity.pokemon.species.resourceIdentifier,
                 contextScale = state.currentEntity.pokemon.form.baseScale,
-                matrixStack = GuiGraphicsExtractor.pose(),
+                context = GuiGraphicsExtractor,
                 state = state,
                 reversed = !isLeftSide,
                 partialTicks = 0F // It's already being rendered potentially so we don't need to tick the state.
@@ -99,7 +99,7 @@ class ReferenceRenderableFace(val entity: PosableEntity, override val isLeftSide
             val limbSwingAmount = entity.walkAnimation.speed(partialTicks)
             drawPosablePortrait(
                 identifier = state.npcEntity.resourceIdentifier,
-                matrixStack = GuiGraphicsExtractor.pose(),
+                context = GuiGraphicsExtractor,
                 state = state,
                 reversed = !isLeftSide,
                 partialTicks = 0F, // It's already being rendered potentially so we don't need to tick the state.
@@ -131,7 +131,7 @@ class ArtificialRenderableFace(
             }
             drawPosablePortrait(
                 identifier = species.resourceIdentifier,
-                matrixStack = GuiGraphicsExtractor.pose(),
+                context = GuiGraphicsExtractor,
                 contextScale = species.getForm(aspects).baseScale,
                 state = state,
                 reversed = !isLeftSide,
@@ -140,7 +140,7 @@ class ArtificialRenderableFace(
         } else if (modelType == "npc") {
             drawPosablePortrait(
                 identifier = identifier,
-                matrixStack = GuiGraphicsExtractor.pose(),
+                context = GuiGraphicsExtractor,
                 state = state,
                 reversed = !isLeftSide,
                 partialTicks = partialTicks

@@ -21,10 +21,13 @@ import com.cobblemon.mod.common.util.toHex
 import com.mojang.blaze3d.opengl.GlStateManager
 import com.mojang.blaze3d.platform.Lighting
 import com.mojang.blaze3d.systems.RenderSystem
+import com.cobblemon.mod.common.client.render.gui.submitModelAtCurrentPose
+import com.cobblemon.mod.common.client.render.submitPosableModel
 import com.mojang.blaze3d.vertex.PoseStack
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.renderer.SubmitNodeCollector
 import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.renderer.GameRenderer
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.texture.OverlayTexture
@@ -203,6 +206,7 @@ fun drawString(
 fun drawPosablePortrait(
     identifier: Identifier,
     matrixStack: PoseStack,
+    collector: SubmitNodeCollector,
     scale: Float = 13F,
     contextScale: Float = 1F,
     reversed: Boolean = false,
@@ -268,21 +272,18 @@ fun drawPosablePortrait(
         // RenderSystem.setShaderLights(light1, light2)
         quaternion1.conjugate()
 
-        val immediate = Minecraft.getInstance().renderBuffers().bufferSource()
-        val buffer = immediate.getBuffer(renderType)
+        // port/26.2: Minecraft.renderBuffers() is gone - the portrait is submitted to the collector the
+        // picture-in-picture renderer supplies.
         val packedLight = ((11) or ((7) shl 16))
-
         val colour = toHex(r, g, b, a)
-        model.withLayerContext(immediate, state, VaryingModelRepository.getLayers(identifier, state)) {
-            model.render(context, matrixStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, colour)
-            immediate.endBatch()
+        collector.submitPosableModel(matrixStack, renderType) { stack, consumer ->
+            model.withLayerContext(collector, state, VaryingModelRepository.getLayers(identifier, state)) {
+                model.render(context, stack, consumer, packedLight, OverlayTexture.NO_OVERLAY, colour)
+            }
         }
-
         model.setDefault()
-
-        Unit
     } else {
-        renderSprite(matrixStack, sprite)
+        renderSprite(matrixStack, collector, sprite)
     }
 
     matrixStack.popPose()
@@ -291,7 +292,7 @@ fun drawPosablePortrait(
 @JvmOverloads
 fun drawPosablePortrait(
     identifier: Identifier,
-    matrixStack: org.joml.Matrix3x2fStack,
+    context: GuiGraphicsExtractor,
     scale: Float = 13F,
     contextScale: Float = 1F,
     reversed: Boolean = false,
@@ -308,12 +309,34 @@ fun drawPosablePortrait(
     b: Float = 1F,
     a: Float = 1F
 ) {
-    // PT106: Matrix3x2fStack overload — GUI rendering pipeline rewrite pending, stub no-op for now.
+    // port/26.2: this had been left as an outright no-op, so portraits in the party and battle overlays
+    // and the dialogue faces drew nothing. It submits through picture-in-picture now, like the profile
+    // renderer.
+    context.submitModelAtCurrentPose(scale) { poseStack, collector ->
+        drawPosablePortrait(
+            identifier = identifier,
+            matrixStack = poseStack,
+            collector = collector,
+            scale = scale,
+            contextScale = contextScale,
+            reversed = reversed,
+            state = state,
+            partialTicks = partialTicks,
+            limbSwing = limbSwing,
+            limbSwingAmount = limbSwingAmount,
+            ageInTicks = ageInTicks,
+            headYaw = headYaw,
+            headPitch = headPitch,
+            doQuirks = doQuirks,
+            r = r, g = g, b = b, a = a
+        )
+    }
 }
 
 fun drawProfile(
     resourceIdentifier: Identifier,
     matrixStack: PoseStack,
+    collector: SubmitNodeCollector,
     state: PosableState,
     partialTicks: Float,
     scale: Float = 20F
@@ -358,52 +381,53 @@ fun drawProfile(
         val entityRenderDispatcher = Minecraft.getInstance().entityRenderDispatcher
         Unit
 
-        val bufferSource = Minecraft.getInstance().renderBuffers().bufferSource()
-        val buffer = bufferSource.getBuffer(renderType)
+        // port/26.2: submitted rather than drawn immediately; see drawPosablePortrait.
         val light1 = Vector3f(-1F, 1F, 1.0F)
         val light2 = Vector3f(1.3F, -1F, 1.0F)
         // PT137: setShaderLights now takes GpuBufferSlice in MC 26.1.x — deferred GPU buffer wiring
         // RenderSystem.setShaderLights(light1, light2)
         val packedLight = ((11) or ((7) shl 16))
 
-        model.withLayerContext(bufferSource, state, VaryingModelRepository.getLayers(resourceIdentifier, state)) {
-            model.render(context, matrixStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
-            bufferSource.endBatch()
+        collector.submitPosableModel(matrixStack, renderType) { stack, consumer ->
+            model.withLayerContext(collector, state, VaryingModelRepository.getLayers(resourceIdentifier, state)) {
+                model.render(context, stack, consumer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
+            }
         }
         model.setDefault()
-        Unit
-        Unit
     } else {
-        renderSprite(matrixStack, sprite)
+        renderSprite(matrixStack, collector, sprite)
     }
 }
 
 // PT128: Matrix3x2fStack overload — bridges MC 26.1 GuiGraphicsExtractor.pose() to legacy PoseStack drawProfile.
 fun drawProfile(
     resourceIdentifier: Identifier,
-    matrixStack: org.joml.Matrix3x2fStack,
+    context: GuiGraphicsExtractor,
     state: PosableState,
     partialTicks: Float,
     scale: Float = 20F
 ) {
-    val poseStack = PoseStack()
-    drawProfile(resourceIdentifier = resourceIdentifier, matrixStack = poseStack, state = state, partialTicks = partialTicks, scale = scale)
+    context.submitModelAtCurrentPose(scale) { poseStack, collector ->
+        drawProfile(
+            resourceIdentifier = resourceIdentifier,
+            matrixStack = poseStack,
+            collector = collector,
+            state = state,
+            partialTicks = partialTicks,
+            scale = scale
+        )
+    }
 }
 
-fun renderSprite(matrixStack: PoseStack, sprite: Identifier) {
-    val matrix: PoseStack.Pose = matrixStack.last()
-    matrix.pose().translate(-1f, 0f, 0f)
+// port/26.2: Tesselator batching is gone from this path - the quad is submitted to the collector, whose
+// callback supplies the pose and consumer this already worked with.
+fun renderSprite(matrixStack: PoseStack, collector: SubmitNodeCollector, sprite: Identifier) {
+    matrixStack.last().pose().translate(-1f, 0f, 0f)
 
-    Unit
-    Unit
-
-    val buffer = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS, com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_TEX)
-
-    buffer.addVertex(matrix, 2f, 0f, 0.0f).setUv(1f, 0f)
-    buffer.addVertex(matrix, 0f, 0f, 0.0f).setUv(0f, 0f)
-    buffer.addVertex(matrix, 0f, 2f, 0.0f).setUv(0f, 1f)
-    buffer.addVertex(matrix, 2f, 2f, 0.0f).setUv(1f, 1f)
-
-    // BufferUploader.drawWithShader removed in MC 26.1.x — pipeline must submit via RenderPass
-    buffer.buildOrThrow().close()
+    collector.submitCustomGeometry(matrixStack, RenderTypes.entityCutout(sprite)) { matrix, buffer ->
+        buffer.addVertex(matrix, 2f, 0f, 0.0f).setUv(1f, 0f)
+        buffer.addVertex(matrix, 0f, 0f, 0.0f).setUv(0f, 0f)
+        buffer.addVertex(matrix, 0f, 2f, 0.0f).setUv(0f, 1f)
+        buffer.addVertex(matrix, 2f, 2f, 0.0f).setUv(1f, 1f)
+    }
 }

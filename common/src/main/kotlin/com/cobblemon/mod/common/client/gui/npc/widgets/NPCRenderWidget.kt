@@ -50,7 +50,7 @@ class NPCRenderWidget(
 
         drawProfile(
             resourceIdentifier = identifier,
-            matrixStack = context.pose(),
+            context = context,
             partialTicks = delta,
             scale = 120F,
             state = state

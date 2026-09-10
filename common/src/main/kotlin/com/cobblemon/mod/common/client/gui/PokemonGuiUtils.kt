@@ -22,7 +22,7 @@ import com.cobblemon.mod.common.util.math.toEulerXYZDegrees
 import com.cobblemon.mod.common.util.toHex
 import com.mojang.blaze3d.platform.Lighting
 import com.mojang.blaze3d.systems.RenderSystem
-import com.cobblemon.mod.common.client.render.gui.submitPosableModelToGui
+import com.cobblemon.mod.common.client.render.gui.submitModelAtCurrentPose
 import com.cobblemon.mod.common.client.render.submitPosableModel
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.gui.GuiGraphicsExtractor
@@ -156,7 +156,7 @@ fun drawProfilePokemon(
         }
         model.setDefault()
     } else {
-        renderSprite(matrixStack, sprite)
+        renderSprite(matrixStack, collector, sprite)
     }
 }
 
@@ -169,26 +169,7 @@ fun drawProfilePokemon(
  * one part of this that is calibrated by eye rather than derived, so it is the first thing to adjust if
  * models sit slightly wrong in a screen.
  */
-private fun GuiGraphicsExtractor.submitModelAt(
-    stack: org.joml.Matrix3x2fStack,
-    scale: Float,
-    draw: (PoseStack, SubmitNodeCollector) -> Unit
-) {
-    val anchorX = stack.m20().toInt()
-    val anchorY = stack.m21().toInt()
-    val half = (scale * MODEL_VIEWPORT_SCALE).toInt().coerceAtLeast(1)
-    submitPosableModelToGui(
-        x0 = anchorX - half,
-        y0 = anchorY - half,
-        x1 = anchorX + half,
-        y1 = anchorY + half,
-        scale = scale,
-        draw = draw
-    )
-}
 
-/** How far the picture-in-picture viewport extends from the anchor, per unit of model scale. */
-private const val MODEL_VIEWPORT_SCALE = 1.5F
 fun drawProfilePokemon(
     renderablePokemon: RenderablePokemon,
     context: GuiGraphicsExtractor,
@@ -207,7 +188,7 @@ fun drawProfilePokemon(
     headPitch: Float = 0f,
     blockLight: Int = 13
 ) {
-    context.submitModelAt(context.pose(), scale) { poseStack, collector ->
+    context.submitModelAtCurrentPose(scale) { poseStack, collector ->
         drawProfilePokemon(
             renderablePokemon = renderablePokemon, matrixStack = poseStack, collector = collector,
             rotation = rotation,
@@ -237,7 +218,7 @@ fun drawProfilePokemon(
     headPitch: Float = 0f,
     blockLight: Int = 13
 ) {
-    context.submitModelAt(context.pose(), scale) { poseStack, collector ->
+    context.submitModelAtCurrentPose(scale) { poseStack, collector ->
         drawProfilePokemon(
             species = species, matrixStack = poseStack, collector = collector, rotation = rotation,
             poseType = poseType, state = state, partialTicks = partialTicks, scale = scale,

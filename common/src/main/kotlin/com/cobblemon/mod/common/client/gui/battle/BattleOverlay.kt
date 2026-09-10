@@ -317,7 +317,7 @@ class BattleOverlay : Schedulable {
         } else {
             drawPosablePortrait(
                 identifier = species.resourceIdentifier,
-                matrixStack = matrixStack,
+                context = context,
                 scale = 18F * (ballState?.scale ?: 1F) * if (isCompact) 0.65F else 1.0f,
                 contextScale = species.getForm(state.currentAspects).baseScale,
                 reversed = reversed,
