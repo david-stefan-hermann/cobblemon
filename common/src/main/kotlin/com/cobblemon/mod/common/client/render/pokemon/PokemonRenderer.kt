@@ -49,7 +49,10 @@ import com.mojang.math.Axis
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font.DisplayMode
-import net.minecraft.client.renderer.MultiBufferSource
+import com.cobblemon.mod.common.client.render.submitPosableModel
+import net.minecraft.client.renderer.SubmitNodeCollector
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState
+import net.minecraft.client.renderer.state.level.CameraRenderState
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.entity.MobRenderer
@@ -64,10 +67,19 @@ import net.minecraft.world.phys.Vec3
 import org.joml.*
 import kotlin.math.*
 
-// PT145: MobRenderer<T,S,M> requires 3 type-args in MC 26.1.x; render()/getTextureLocation(T) replaced by submit pipeline.
+/**
+ * port/26.2: entity rendering is two-phase. Cobblemon's drawing needs the live entity - its client
+ * delegate carries the animation clock, pose state and beam progress, none of which fits in a render
+ * state - so the entity is carried on the state itself rather than in a field on the renderer.
+ */
+class PokemonRenderState : LivingEntityRenderState() {
+    var entity: PokemonEntity? = null
+    var partialTicks: Float = 0F
+}
+
 class PokemonRenderer(
     context: EntityRendererProvider.Context
-) : MobRenderer<PokemonEntity, net.minecraft.client.renderer.entity.state.LivingEntityRenderState, PosablePokemonEntityModel>(context, PosablePokemonEntityModel(), 0.5f) {
+) : MobRenderer<PokemonEntity, PokemonRenderState, PosablePokemonEntityModel>(context, PosablePokemonEntityModel(), 0.5f) {
     companion object {
         val recallBeamColour = Vector4f(1F, 0.1F, 0.1F, 1F)
         fun ease(x: Double): Double {
@@ -91,11 +103,69 @@ class PokemonRenderer(
 
     private val heldItemRenderer = HeldItemRenderer()
 
-    override fun createRenderState(): net.minecraft.client.renderer.entity.state.LivingEntityRenderState =
-        net.minecraft.client.renderer.entity.state.LivingEntityRenderState()
+    override fun createRenderState(): PokemonRenderState = PokemonRenderState()
 
-    override fun getTextureLocation(state: net.minecraft.client.renderer.entity.state.LivingEntityRenderState): Identifier {
-        return com.cobblemon.mod.common.util.cobblemonResource("textures/entity/missing.png")
+    override fun getTextureLocation(state: PokemonRenderState): Identifier {
+        return state.entity?.let { getTextureLocationForEntity(it) }
+            ?: com.cobblemon.mod.common.util.cobblemonResource("textures/entity/missing.png")
+    }
+
+    override fun extractRenderState(entity: PokemonEntity, state: PokemonRenderState, partialTick: Float) {
+        super.extractRenderState(entity, state, partialTick)
+        state.entity = entity
+        state.partialTicks = partialTick
+    }
+
+    override fun submit(
+        state: PokemonRenderState,
+        poseStack: PoseStack,
+        collector: SubmitNodeCollector,
+        camera: CameraRenderState
+    ) {
+        val entity = state.entity ?: return
+        currentRenderState = state
+        render(entity, state.bodyRot, state.partialTicks, poseStack, collector, state.lightCoords)
+    }
+
+    /** The state currently being submitted, so the model draw can read the walk/age values off it. */
+    private var currentRenderState: PokemonRenderState? = null
+
+    /**
+     * port/26.2: replaces the LivingEntityRenderer.render call this used to delegate to. Vanilla's own
+     * submission would draw the wrapper model's empty root - Cobblemon's geometry hangs off
+     * posableModel - so the transforms vanilla applied are reproduced here and the real model is handed
+     * to the collector.
+     */
+    private fun submitPokemonModel(
+        entity: PokemonEntity,
+        entityYaw: Float,
+        partialTicks: Float,
+        poseMatrix: PoseStack,
+        collector: SubmitNodeCollector,
+        packedLight: Int
+    ) {
+        val state = currentRenderState
+        model.setupAnim(
+            entity,
+            state?.walkAnimationPos ?: 0F,
+            state?.walkAnimationSpeed ?: 0F,
+            state?.ageInTicks ?: 0F,
+            entityYaw,
+            state?.xRot ?: 0F
+        )
+
+        poseMatrix.pushPose()
+        poseMatrix.mulPose(Axis.YP.rotationDegrees(180F - entityYaw))
+        poseMatrix.scale(-1F, -1F, 1F)
+        applyEntityScale(entity, poseMatrix, partialTicks)
+        // Undone inside PosableEntityModel.renderToBufferLegacy, which re-adds 1.5 for living entities.
+        poseMatrix.translate(0.0, -1.501, 0.0)
+
+        val texture = getTextureLocationForEntity(entity)
+        collector.submitPosableModel(poseMatrix, RenderTypes.entityCutout(texture)) { stack, consumer ->
+            model.renderToBufferLegacy(stack, consumer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
+        }
+        poseMatrix.popPose()
     }
 
     fun getTextureLocationForEntity(entity: PokemonEntity): Identifier {
@@ -108,7 +178,7 @@ class PokemonRenderer(
         entityYaw: Float,
         partialTicks: Float,
         poseMatrix: PoseStack,
-        buffer: MultiBufferSource,
+        buffer: SubmitNodeCollector,
         packedLight: Int
     ) {
         val clientDelegate = entity.delegate as PokemonClientDelegate
@@ -157,8 +227,7 @@ class PokemonRenderer(
         if (entity.passengers.isNotEmpty()) {
             renderRiding(entity, entityYaw, partialTicks, poseMatrix, buffer, packedLight)
         } else {
-            // PT145: super.render removed in MC 26.1.x; deferred until submit pipeline migration.
-            // super.render(entity, entityYaw, partialTicks, poseMatrix, buffer, packedLight)
+            submitPokemonModel(entity, entityYaw, partialTicks, poseMatrix, buffer, packedLight)
         }
 
         // Call rendering for alpha eye trail
@@ -194,7 +263,7 @@ class PokemonRenderer(
         entityYaw: Float,
         partialTicks: Float,
         poseMatrix: PoseStack,
-        buffer: MultiBufferSource,
+        buffer: SubmitNodeCollector,
         packedLight: Int
     ) {
         val rollable = entity as? OrientationControllable ?: return
@@ -221,7 +290,7 @@ class PokemonRenderer(
             matrix.mul(transformationMatrix)
         }
 
-        // PT145: super.render removed in MC 26.1.x; deferred.
+        submitPokemonModel(entity, entityYaw, partialTicks, poseMatrix, buffer, packedLight)
         // super.render(entity, entityYaw, partialTicks, poseMatrix, buffer, packedLight)
         poseMatrix.popPose()
     }
@@ -232,7 +301,7 @@ class PokemonRenderer(
         entity: PokemonEntity,
         partialTicks: Float,
         poseMatrix: PoseStack,
-        buffer: MultiBufferSource,
+        buffer: SubmitNodeCollector,
         packedLight: Int,
         clientDelegate: PokemonClientDelegate
     ) {
@@ -310,8 +379,8 @@ class PokemonRenderer(
         }
     }
 
-    // PT145: LivingEntityRenderer.scale(LivingEntity,...) removed in MC 26.1.x — kept as helper.
-    fun scale_DEFER_NO_OVERRIDE(pEntity: PokemonEntity, pPoseStack: PoseStack, pPartialTickTime: Float) {
+    /** port/26.2: LivingEntityRenderer.scale is state-based now; this stays entity-based and is applied by hand. */
+    fun applyEntityScale(pEntity: PokemonEntity, pPoseStack: PoseStack, pPartialTickTime: Float) {
         val scale = pEntity.pokemon.form.baseScale * pEntity.pokemon.effectiveScale * (pEntity.delegate as PokemonClientDelegate).activeSendoutScale
         pPoseStack.scale(scale, scale, scale)
     }
@@ -326,7 +395,7 @@ class PokemonRenderer(
      * @param colour The colour of the beam.
      * @param buffer The vertex consumer provider.
      */
-    fun renderBeam(matrixStack: PoseStack, partialTicks: Float, entity: PokemonEntity, beamTarget: Entity, buffer: MultiBufferSource, offset: Vec3) {
+    fun renderBeam(matrixStack: PoseStack, partialTicks: Float, entity: PokemonEntity, beamTarget: Entity, buffer: SubmitNodeCollector, offset: Vec3) {
         val clientDelegate = entity.delegate as PokemonClientDelegate
         val pokemonPosition = entity.position().add(0.0, entity.bbHeight / 2.0 * clientDelegate.activeSendoutScale.toDouble(), 0.0)
         var beamSourcePosition = if (beamTarget is EmptyPokeBallEntity) {
@@ -425,7 +494,7 @@ class PokemonRenderer(
         entity: PokemonEntity,
         text: Component,
         matrices: PoseStack,
-        vertexConsumers: MultiBufferSource,
+        vertexConsumers: SubmitNodeCollector,
         light: Int,
         tickDelta: Float
     ) {
@@ -446,7 +515,8 @@ class PokemonRenderer(
             matrices.mulPose(Minecraft.getInstance().gameRenderer.mainCamera().rotation())
             matrices.translate(0.0, 0.0 + (offsetScale / 2), -(scale + offsetScale))
             matrices.scale((0.025 * sizeScale).toFloat(), (-0.025 * sizeScale).toFloat(), (1 * sizeScale).toFloat())
-            val matrix4f = matrices.last().pose()
+            // port/26.2: Font.drawInBatch is gone; text is submitted to the collector, which reads the
+            // matrix off the pose stack itself, so the separate matrix4f is no longer needed.
             val opacity = (Minecraft.getInstance().options.getBackgroundOpacity(0.25F) * 255.0F).toInt() shl 24
             val label = this.resolveBaseLabel(entity)
             if (ServerSettings.displayEntityLevelLabel && entity.labelLevel() > 0) {
@@ -461,15 +531,15 @@ class PokemonRenderer(
             var h = (-Minecraft.getInstance().font.width(label) / 2).toFloat()
             val y = 0F
             val packedLight = ((15) or ((15) shl 16))
-            Minecraft.getInstance().font.drawInBatch(label, h, y, 0x20FFFFFF, false, matrix4f, vertexConsumers, DisplayMode.SEE_THROUGH, opacity, packedLight)
-            Minecraft.getInstance().font.drawInBatch(label, h, y, -1, false, matrix4f, vertexConsumers, DisplayMode.NORMAL, 0, packedLight)
+            vertexConsumers.submitText(matrices, h, y, label.visualOrderText, false, DisplayMode.SEE_THROUGH, packedLight, 0x20FFFFFF, opacity, 0)
+            vertexConsumers.submitText(matrices, h, y, label.visualOrderText, false, DisplayMode.NORMAL, packedLight, -1, 0, 0)
 
             if (CobblemonClient.clientPlayerData.showChallengeLabel && entity.canBattle(player)) {
                 val sendOutBinding = PartySendBinding.boundKey().displayName
                 val battlePrompt = lang("challenge_label", sendOutBinding)
                 h = (-Minecraft.getInstance().font.width(battlePrompt) / 2).toFloat()
-                Minecraft.getInstance().font.drawInBatch(battlePrompt, h, y + 10, 0x20FFFFFF, false, matrix4f, vertexConsumers, DisplayMode.SEE_THROUGH, opacity, packedLight)
-                Minecraft.getInstance().font.drawInBatch(battlePrompt, h, y + 10, -1, false, matrix4f, vertexConsumers, DisplayMode.NORMAL, 0, packedLight)
+                vertexConsumers.submitText(matrices, h, y + 10, battlePrompt.visualOrderText, false, DisplayMode.SEE_THROUGH, packedLight, 0x20FFFFFF, opacity, 0)
+                vertexConsumers.submitText(matrices, h, y + 10, battlePrompt.visualOrderText, false, DisplayMode.NORMAL, packedLight, -1, 0, 0)
             }
             matrices.popPose()
         }
@@ -489,7 +559,7 @@ class PokemonRenderer(
         scale: Float = 5F,
         partialTicks: Float,
         reversed: Boolean = false,
-        buff: MultiBufferSource,
+        buff: SubmitNodeCollector,
         packedLight: Int,
         ball: PokeBall,
         distance: Int
@@ -516,10 +586,9 @@ class PokemonRenderer(
         ballContext.put(RenderContext.POSABLE_STATE, state)
         model.applyAnimations(null, state, 0F, 0F, 0F, 0F, 0F)
 //        model.animateModel(null, 0f, 0F, 0F)
-        // PT145: ItemRenderer.getFoilBufferDirect removed in MC 26.1.x — use direct buffer.
-        val buffer = buff.getBuffer(RenderTypes.entityCutout(texture))
-//        matrixStack.scale(scale, scale, scale)
-        model.render(ballContext, matrixStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
+        buff.submitPosableModel(matrixStack, RenderTypes.entityCutout(texture)) { stack, consumer ->
+            model.render(ballContext, stack, consumer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
+        }
         model.green = 1f
         model.blue = 1f
         model.red = 1f
@@ -531,7 +600,7 @@ class PokemonRenderer(
             matrixStack: PoseStack,
             entity: PokemonEntity,
             scale: Float = 1F,
-            buff: MultiBufferSource,
+            buff: SubmitNodeCollector,
             packedLight: Int,
             ) {
         val (modelResource, textureResource) = PlatformType.getModelWithTexture(entity.platform)
@@ -540,9 +609,9 @@ class PokemonRenderer(
         matrixStack.mulPose(Axis.ZP.rotationDegrees(180f))
         matrixStack.rotateAround(Axis.YP.rotationDegrees(entity.entityData.get(SPAWN_DIRECTION)), 0.0f, 0f, 0.0f)
         matrixStack.scale(scale, scale, scale)
-        // PT145: ItemRenderer.getFoilBufferDirect removed in MC 26.1.x — use direct buffer.
-        val buffer = buff.getBuffer(RenderTypes.entityCutout(textureResource))
-        model.render(matrixStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
+        buff.submitPosableModel(matrixStack, RenderTypes.entityCutout(textureResource)) { stack, consumer ->
+            model.render(stack, consumer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
+        }
 
         matrixStack.popPose()
     }
