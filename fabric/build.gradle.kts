@@ -52,7 +52,10 @@ dependencies {
     }
     // PT012 (port/26.1.x): fabric-loom 1.15.5 no-remap mode → mod*/modLocalRuntime configurations 미등록.
     // plain implementation/api/compileOnly/runtimeOnly 사용 (V36 fabric-example-mod 26.1.2 패턴).
-    runtimeOnly(libs.fabric.debugutils)
+    // port/26.2: debug utils, JEI and c2me sit in the dev runtime only and exist as 1.21.1 builds,
+    // so fabric-loader refuses to start runClient/runServer with them on the classpath. Restore them
+    // once 26.2 builds exist; the JEI integration still compiles against jei-api (compileOnly).
+    // runtimeOnly(libs.fabric.debugutils)
     implementation(libs.fabric.loader)
     api(libs.fabric.api)
     api(libs.bundles.fabric)
@@ -62,7 +65,7 @@ dependencies {
     }
 
     implementation(libs.bundles.fabric.integrations.implementation)
-    runtimeOnly(libs.bundles.fabric.integrations.runtimeOnly)
+    // runtimeOnly(libs.bundles.fabric.integrations.runtimeOnly)
     runtimeOnly(libs.bundles.mongo)
 
 //    implementation(libs.flywheelFabric)

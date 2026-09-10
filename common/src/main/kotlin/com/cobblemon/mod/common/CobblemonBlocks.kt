@@ -993,7 +993,12 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
 
     private fun berryBlock(name: String): BerryBlock {
         val identifier = cobblemonResource("${name}_berry")
-        val block = this.create(identifier.path, BerryBlock(identifier, blockProperties(identifier.path, Blocks.WHEAT).dynamicShape().sound(CobblemonSounds.BERRY_BUSH_SOUNDS).strength(0.2F)))
+        // port/26.2: wheat's map colour became a function of its own state - yellow once CropBlock.AGE
+        // reaches 6 - and ofFullCopy copies that function. BlockBehaviour evaluates it for every state
+        // while building the state definition, so a berry block, which has its own age property, dies
+        // with "Cannot get property age as it does not exist". Pinning the colour keeps what the copy
+        // meant before the change.
+        val block = this.create(identifier.path, BerryBlock(identifier, blockProperties(identifier.path, Blocks.WHEAT).mapColor(MapColor.PLANT).dynamicShape().sound(CobblemonSounds.BERRY_BUSH_SOUNDS).strength(0.2F)))
         this.berries[identifier] = block
         return block
     }
