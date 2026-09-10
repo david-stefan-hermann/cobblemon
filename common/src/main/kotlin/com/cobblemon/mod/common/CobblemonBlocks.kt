@@ -62,6 +62,9 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     /** port/26.2: no falling-leaf particles, matching the plain LeavesBlock these used to be. */
     private const val LEAF_PARTICLE_CHANCE = 0.0F
 
+    /** port/26.2: how long a wooden button stays pressed, matching vanilla's wooden buttons. */
+    private const val WOODEN_BUTTON_TICKS_PRESSED = 30
+
     override val registry: Registry<Block> = BuiltInRegistries.BLOCK
     override val resourceKey: ResourceKey<Registry<Block>> = Registries.BLOCK
 
@@ -989,7 +992,7 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     /** port/26.2: Blocks.woodenButton() is gone; ButtonBlock is built from the shared button properties. */
     private fun woodenButton(blockSetType: BlockSetType): Block = ButtonBlockInvoker.create(
         blockSetType,
-        ButtonBlockInvoker.WOODEN_TICKS_TO_STAY_PRESSED,
+        WOODEN_BUTTON_TICKS_PRESSED,
         BlocksInvoker.createButtonProperties()
     )
 
