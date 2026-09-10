@@ -9,9 +9,9 @@
 package com.cobblemon.mod.common.client.render.models.blockbench
 
 import com.cobblemon.mod.common.client.render.MatrixWrapper
-import com.cobblemon.mod.common.client.render.models.blockbench.pose.Bone
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
+import net.minecraft.client.model.geom.ModelPart
 import net.minecraft.world.entity.Entity
 
 /**
@@ -23,20 +23,20 @@ import net.minecraft.world.entity.Entity
  * @since February 10th, 2023
  */
 class LocatorAccess(
-    val joint: Bone,
-    val locators: Map<String, Bone> = mapOf(),
+    val joint: ModelPart,
+    val locators: Map<String, ModelPart> = mapOf(),
     val children: List<LocatorAccess> = listOf()
 ) {
     companion object {
         const val PREFIX = "internal_locator__"
 
-        fun resolve(part: Bone): LocatorAccess? {
-            // PT144: ModelPart.children no longer publicly exposed in MC 26.1.x — locator discovery deferred until accessor injection.
-            val emptyEntries: List<Map.Entry<String, net.minecraft.client.model.geom.ModelPart>> = emptyList()
+        fun resolve(part: ModelPart): LocatorAccess? {
+            // port/26.2: ModelPart.children became private; [childrenByName] reads it back through the
+            // Bone bridge that ModelPartMixin already installs, so locator discovery works as before.
             val (
                 locatorChildren,
                 nonLocatorChildren
-            ) = emptyEntries.partition { it.key.startsWith(PREFIX) }
+            ) = part.childrenByName.entries.partition { it.key.startsWith(PREFIX) }
 
             val locators = locatorChildren.associate { (namePrefixed, part) ->
                 namePrefixed.substringAfter(PREFIX) to part

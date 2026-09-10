@@ -443,7 +443,7 @@ class PokemonRenderer(
             matrices.pushPose()
             matrices.translate(0.0, entityHeight.toDouble(), 0.0)
             // PT145: EntityRenderDispatcher.cameraOrientation() removed in MC 26.1.x — use mainCamera.rotation().
-            matrices.mulPose(Minecraft.getInstance().gameRenderer.mainCamera.rotation())
+            matrices.mulPose(Minecraft.getInstance().gameRenderer.mainCamera().rotation())
             matrices.translate(0.0, 0.0 + (offsetScale / 2), -(scale + offsetScale))
             matrices.scale((0.025 * sizeScale).toFloat(), (-0.025 * sizeScale).toFloat(), (1 * sizeScale).toFloat())
             val matrix4f = matrices.last().pose()

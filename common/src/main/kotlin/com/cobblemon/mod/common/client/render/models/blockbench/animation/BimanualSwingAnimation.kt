@@ -46,10 +46,9 @@ class BimanualSwingAnimation(
     )
 
     override fun setupAnim(context: RenderContext, model: PosableModel, state: PosableState, limbSwing: Float, limbSwingAmount: Float, ageInTicks: Float, headYaw: Float, headPitch: Float, intensity: Float) {
-        // PT137: ModelPart→Bone mixin-injected extension fn — explicit cast required;
-        //         Mth.cos/sin in 26.1.x take Double (return Float); add .toDouble() at call sites.
-        val rightBone = rightArm as? Bone
-        val leftBone = leftArm as? Bone
+        // port/26.2: Mth.cos/sin take Double, hence the .toDouble() at the call sites below.
+        val rightBone = rightArm
+        val leftBone = leftArm
         // Movement swing
         rightBone?.addRotation(Y_AXIS, (Mth.cos((limbSwing * swingPeriodMultiplier).toDouble()) * limbSwingAmount * amplitudeMultiplier * intensity))
         leftBone?.addRotation(Y_AXIS, (Mth.cos((limbSwing * swingPeriodMultiplier).toDouble()) * limbSwingAmount * amplitudeMultiplier * intensity))

@@ -11,7 +11,7 @@ package com.cobblemon.mod.common.client.render.models.blockbench.animation
 import com.cobblemon.mod.common.client.render.models.blockbench.PosableModel
 import com.cobblemon.mod.common.client.render.models.blockbench.PosableState
 import com.cobblemon.mod.common.client.render.models.blockbench.addRotation
-import com.cobblemon.mod.common.client.render.models.blockbench.pose.Bone
+import net.minecraft.client.model.geom.ModelPart
 import com.cobblemon.mod.common.client.render.models.blockbench.repository.RenderContext
 import com.cobblemon.mod.common.util.math.geometry.toDegrees
 import com.cobblemon.mod.common.util.math.geometry.toRadians
@@ -26,7 +26,7 @@ import net.minecraft.util.Mth
  * @since August 9th, 2025
  */
 class PitchTiltAnimation(
-    val bone: Bone,
+    val bone: ModelPart,
     val maxChangePerTick: Float = 1F,
     val minPitch: Float = -45F,
     val maxPitch: Float = 45F,

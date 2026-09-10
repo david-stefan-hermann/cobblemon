@@ -26,8 +26,9 @@ public abstract class ModelPartMixin implements Bone {
 
     @Shadow public abstract void translateAndRotate(PoseStack matrixStack);
 
+    // port/26.2: ModelPart.children became private; a @Shadow must mirror the target's visibility.
     @Shadow @Final
-    public Map<String, ModelPart> children;
+    private Map<String, ModelPart> children;
 
     @NotNull
     @Override

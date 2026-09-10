@@ -51,10 +51,10 @@ class QuadrupedWalkAnimation(
 
     override fun setupAnim(context: RenderContext, model: PosableModel, state: PosableState, limbSwing: Float, limbSwingAmount: Float, ageInTicks: Float, headYaw: Float, headPitch: Float, intensity: Float) {
         // PT142: ModelPart→Bone via mixin at runtime; explicit cast for Kotlin static type
-        val hindRightLeg = (legBackRight ?: return) as Bone
-        val hindLeftLeg = (legBackLeft ?: return) as Bone
-        val foreRightLeg = (legFrontRight ?: return) as Bone
-        val foreLeftLeg = (legFrontLeft ?: return) as Bone
+        val hindRightLeg = (legBackRight ?: return)
+        val hindLeftLeg = (legBackLeft ?: return)
+        val foreRightLeg = (legFrontRight ?: return)
+        val foreLeftLeg = (legFrontLeft ?: return)
 
         hindRightLeg.addRotation(X_AXIS, (Mth.cos((limbSwing * periodMultiplier).toDouble()) * limbSwingAmount * amplitudeMultiplier * intensity))
         hindLeftLeg.addRotation(X_AXIS, (Mth.cos((limbSwing * periodMultiplier + Math.PI.toFloat()).toDouble()) * limbSwingAmount * amplitudeMultiplier * intensity))

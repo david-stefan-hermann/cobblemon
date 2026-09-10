@@ -54,7 +54,7 @@ import com.mojang.blaze3d.vertex.VertexFormat
 import com.mojang.math.Axis
 import net.minecraft.util.Util
 import net.minecraft.client.model.geom.ModelPart
-import net.minecraft.client.renderer.MultiBufferSource
+import net.minecraft.client.renderer.SubmitNodeCollector
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.resources.Identifier
@@ -170,7 +170,7 @@ open class PosableModel(root: ModelPart) : ModelFrame {
     var currentLayers: Iterable<ModelLayer> = listOf()
 
     @Transient
-    var bufferProvider: MultiBufferSource? = null
+    var bufferProvider: SubmitNodeCollector? = null
 
     @Transient
     var currentState: PosableState? = null
@@ -244,7 +244,7 @@ open class PosableModel(root: ModelPart) : ModelFrame {
     }
 
     fun withLayerContext(
-        buffer: MultiBufferSource,
+        buffer: SubmitNodeCollector,
         state: PosableState,
         layers: Iterable<ModelLayer>,
         action: () -> Unit
@@ -254,7 +254,7 @@ open class PosableModel(root: ModelPart) : ModelFrame {
         resetLayerContext()
     }
 
-    fun setLayerContext(buffer: MultiBufferSource, state: PosableState, layers: Iterable<ModelLayer>) {
+    fun setLayerContext(buffer: SubmitNodeCollector, state: PosableState, layers: Iterable<ModelLayer>) {
         currentLayers = layers
         bufferProvider = buffer
         currentState = state
@@ -387,24 +387,25 @@ open class PosableModel(root: ModelPart) : ModelFrame {
 
     /** Builds the [locatorAccess] based on the given root part. */
     fun initializeLocatorAccess() {
-        // PT144: Bone is a typealias for ModelPart in MC 26.1.x port.
         locatorAccess = LocatorAccess.resolve(rootPart) ?: LocatorAccess(rootPart)
     }
 
     fun getPart(name: String) = relevantPartsByName[name]!!
 
-    // PT144: Bone is a typealias of ModelPart — these two were originally distinct overloads, now collapsed to one.
-    // PT144: ModelPart.children is private in MC 26.1.x; iterate via createPartLookup keys harvested through reflection-free best effort.
-    fun registerPartAndAllNamedChildren(name: String, bone: Bone) {
+    fun registerPartAndAllNamedChildren(name: String, bone: ModelPart) {
         registerRelevantPart(name, bone)
         loadAllNamedChildren(bone)
     }
 
     fun loadAllNamedChildren(modelPart: ModelPart) {
-        // PT144: ModelPart.children no longer exposed; recursive traversal via getAllParts (flattened).
-        modelPart.allParts.drop(1).forEach { child ->
+        // port/26.2: ModelPart.children became private. The flattened getAllParts() walk this was
+        // reduced to lost the child names, which silently left relevantPartsByName empty and broke every
+        // getPart(name) lookup the animations rely on. [childrenByName] restores the named recursion.
+        for ((name, child) in modelPart.childrenByName) {
             val default = ModelPartTransformation.derive(child)
+            relevantPartsByName[name] = child
             defaultPositions.add(default)
+            loadAllNamedChildren(child)
         }
     }
 
@@ -457,7 +458,6 @@ open class PosableModel(root: ModelPart) : ModelFrame {
                 } else {
                     getLayer(texture, layer.emissive, layer.translucent, layer.translucent_cull)
                 }
-                val consumer = provider.getBuffer(renderLayer)
                 val tint = layer.tint
                 val tintRed = (tint.x * r2 * 255).toInt()
                 val tintGreen = (tint.y * g2 * 255).toInt()
@@ -466,8 +466,21 @@ open class PosableModel(root: ModelPart) : ModelFrame {
                 val tintColor = tintAlpha shl 24 or (tintRed shl 16) or (tintGreen shl 8) or tintBlue
 
                 stack.pushPose()
-                // PT144: 5-arg render fallback (context-aware variant was Mixin-only).
-                rootPart.render(stack, consumer, packedLight, packedOverlay, tintColor)
+                // port/26.2: MultiBufferSource is gone, so extra model layers can no longer grab a
+                // VertexConsumer and draw immediately. They are submitted to the collector instead, which
+                // draws them in the later render pass. Arguments are
+                // (part, pose, renderType, light, overlay, sprite, colour, crumbling, order).
+                provider.submitModelPart(
+                    rootPart,
+                    stack,
+                    renderLayer,
+                    packedLight,
+                    packedOverlay,
+                    null,
+                    tintColor,
+                    null,
+                    0
+                )
                 stack.popPose()
             }
         }

@@ -297,8 +297,8 @@ class MolangBoneValue(
     override fun resolve(time: Double, runtime: MoLangRuntime): Vec3 {
         val environment = runtime.environment
         environment.setSimpleVariable("anim_time", DoubleValue(time))
-        environment.setSimpleVariable("camera_rotation_x", DoubleValue(Minecraft.getInstance().gameRenderer.mainCamera.rotation().x.toDouble()))
-        environment.setSimpleVariable("camera_rotation_y", DoubleValue(Minecraft.getInstance().gameRenderer.mainCamera.rotation().y.toDouble()))
+        environment.setSimpleVariable("camera_rotation_x", DoubleValue(Minecraft.getInstance().gameRenderer.mainCamera().rotation().x.toDouble()))
+        environment.setSimpleVariable("camera_rotation_y", DoubleValue(Minecraft.getInstance().gameRenderer.mainCamera().rotation().y.toDouble()))
         return Vec3(
             runtime.resolveDouble(x),
             runtime.resolveDouble(y) * yMul,
