@@ -21,7 +21,16 @@ import com.cobblemon.mod.common.client.render.models.blockbench.setPosition
 import com.cobblemon.mod.common.util.math.geometry.Axis
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.Minecraft
-import net.minecraft.client.renderer.MultiBufferSource
+import com.cobblemon.mod.common.client.render.atlas.CobblemonAtlases
+import com.cobblemon.mod.common.client.render.blockStateModelOf
+import com.cobblemon.mod.common.client.render.cutoutBlockSheet
+import com.cobblemon.mod.common.client.render.submitBlockStateModel
+import net.minecraft.client.renderer.SubmitNodeCollector
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer
+import net.minecraft.client.renderer.state.level.CameraRenderState
+import net.minecraft.client.renderer.texture.OverlayTexture
+import net.minecraft.world.phys.Vec3
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
@@ -29,8 +38,36 @@ import net.minecraft.core.Direction
 import net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING
 import net.minecraft.world.level.block.state.properties.BlockStateProperties.LIT
 
-open class PokeSnackBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<PokeSnackBlockEntity, net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> {
-    fun render_DEFER_NO_OVERRIDE(blockEntity: PokeSnackBlockEntity, partialTick: Float, poseStack: PoseStack, bufferSource: MultiBufferSource, packedLight: Int, packedOverlay: Int) {
+/** port/26.2: the live block entity is carried on the state; the candle and berries are read off it. */
+class PokeSnackRenderState : BlockEntityRenderState() {
+    var entity: PokeSnackBlockEntity? = null
+    var partialTicks: Float = 0F
+}
+
+open class PokeSnackBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<PokeSnackBlockEntity, PokeSnackRenderState> {
+    override fun createRenderState(): PokeSnackRenderState = PokeSnackRenderState()
+
+    override fun extractRenderState(
+        entity: PokeSnackBlockEntity,
+        state: PokeSnackRenderState,
+        partialTick: Float,
+        cameraPos: Vec3,
+        crumbling: ModelFeatureRenderer.CrumblingOverlay?
+    ) {
+        BlockEntityRenderState.extractBase(entity, state, crumbling)
+        state.entity = entity
+        state.partialTicks = partialTick
+    }
+
+    override fun submit(
+        state: PokeSnackRenderState,
+        poseStack: PoseStack,
+        bufferSource: SubmitNodeCollector,
+        camera: CameraRenderState
+    ) {
+        val blockEntity = state.entity ?: return
+        val packedLight = state.lightCoords
+        val packedOverlay = OverlayTexture.NO_OVERLAY
         poseStack.pushPose()
 
         val facing = blockEntity.blockState.getValue(FACING)
@@ -52,23 +89,26 @@ open class PokeSnackBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context
         poseStack.popPose()
     }
 
-    fun renderCandle(blockEntity: PokeSnackBlockEntity, poseStack: PoseStack, bufferSource: MultiBufferSource, packedLight: Int, packedOverlay: Int): Boolean {
+    fun renderCandle(blockEntity: PokeSnackBlockEntity, poseStack: PoseStack, bufferSource: SubmitNodeCollector, packedLight: Int, packedOverlay: Int): Boolean {
         val candleId = blockEntity.blockState.getValue(CANDLE)
 
         if (candleId > 0) {
-            // PT143: Minecraft.blockRenderer accessor removed in MC 26.1.x.
-            // Candle visual rendering deferred; logic still reports presence.
+            // port/26.2: Minecraft.blockRenderer is gone; the candle's block state model comes from the
+            // model manager and is submitted, restoring the visual the reference diff had dropped while
+            // keeping the presence flag it still returned.
+            bufferSource.submitBlockStateModel(
+                blockStateModelOf(PokeSnackBlock.getCandleById(candleId).defaultBlockState()),
+                poseStack,
+                cutoutBlockSheet(),
+                packedLight,
+                packedOverlay
+            )
             return true
         }
         return false
     }
 
-    fun renderBerries(blockEntity: PokeSnackBlockEntity, poseStack: PoseStack, bufferSource: MultiBufferSource, packedLight: Int, packedOverlay: Int, hasCandle: Boolean) {
-        // PT143: RenderTypes.entityCutoutNoCull renamed/relocated in MC 26.1.x; identifier() accessor on TextureAtlas removed.
-        // PT144: VertexConsumer lives in com.mojang.blaze3d.vertex (not net.minecraft.client.renderer).
-        // Buffer is null-coerced to no-op until pipeline rewires.
-        val buffer: com.mojang.blaze3d.vertex.VertexConsumer? = null
-
+    fun renderBerries(blockEntity: PokeSnackBlockEntity, poseStack: PoseStack, bufferSource: SubmitNodeCollector, packedLight: Int, packedOverlay: Int, hasCandle: Boolean) {
         val berryIngredients = (blockEntity.ingredientComponent?.ingredientIds?.take(3) ?: listOf())
             .mapNotNull { Berries.getByIdentifier(it) }
 
@@ -135,17 +175,14 @@ open class PokeSnackBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context
                 }
             }
 
-            buffer?.let { model.render(poseStack, it, packedLight, packedOverlay) }
+            // port/26.2: the berry model is submitted against the berry atlas rather than drawn into a
+            // buffer that the reference diff had hardcoded to null.
+            bufferSource.submitCustomGeometry(
+                poseStack,
+                RenderTypes.entityCutout(CobblemonAtlases.BERRY_SPRITE_ATLAS.textureAtlas.location(), false)
+            ) { _, consumer ->
+                model.render(poseStack, consumer, packedLight, packedOverlay)
+            }
         }
     }
-
-    override fun createRenderState(): net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState =
-        net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState()
-
-    override fun submit(
-        state: net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState,
-        poseStack: com.mojang.blaze3d.vertex.PoseStack,
-        collector: net.minecraft.client.renderer.SubmitNodeCollector,
-        camera: net.minecraft.client.renderer.state.level.CameraRenderState
-    ) { /* PT129-DEFER */ }
 }
