@@ -11,6 +11,7 @@ package com.cobblemon.mod.fabric.client
 import com.cobblemon.mod.common.CobblemonClientImplementation
 import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.api.pokeball.PokeBalls
+import com.cobblemon.mod.common.api.snowstorm.ParticleMaterials
 import com.cobblemon.mod.common.client.CobblemonBakingOverrides
 import com.cobblemon.mod.common.client.CobblemonClient
 import com.cobblemon.mod.common.client.CobblemonClient.pokedexUsageContext
@@ -44,6 +45,7 @@ import net.fabricmc.fabric.api.client.model.loading.v1.FabricModelManager
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin
 import net.fabricmc.fabric.api.client.model.loading.v1.SimpleUnbakedExtraModel
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
+import net.fabricmc.fabric.api.client.particle.v1.ParticleGroupRegistry
 import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.AtlasRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.BlockColorRegistry
@@ -62,6 +64,7 @@ import net.minecraft.client.color.item.ItemTintSource
 import net.minecraft.client.model.geom.ModelLayerLocation
 import net.minecraft.client.model.geom.builders.LayerDefinition
 import net.minecraft.client.particle.ParticleProvider
+import net.minecraft.client.particle.QuadParticleGroup
 import net.minecraft.client.particle.SpriteSet
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
@@ -101,6 +104,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType
 class CobblemonFabricClient : ClientModInitializer, CobblemonClientImplementation {
     override fun onInitializeClient() {
         registerParticleFactory(CobblemonParticles.SNOWSTORM_PARTICLE_TYPE, SnowstormParticleType::Factory)
+        registerParticleGroups()
         CobblemonClient.initialize(this)
 
         ModelLoadingPlugin.register { context ->
@@ -189,6 +193,26 @@ class CobblemonFabricClient : ClientModInitializer, CobblemonClientImplementatio
         }
 
         CobblemonModelPredicateRegistry.registerPredicates()
+    }
+
+    /**
+     * port/26.2: Snowstorm particles report one of Cobblemon's own ParticleRenderTypes from getGroup().
+     * The engine keeps a particle group per render type and has no way to create one for a type it does
+     * not know, so each is registered here against QuadParticleGroup - Snowstorm particles are quads.
+     *
+     * This replaces the old CobblemonShaders/GameRendererMixin route, which registered a ShaderInstance
+     * per material. That concept no longer exists: blending is chosen by the SingleQuadParticle.Layer a
+     * particle draws under rather than by a shader bound to its render type.
+     */
+    private fun registerParticleGroups() {
+        listOf(
+            ParticleMaterials.ALPHA,
+            ParticleMaterials.ADD,
+            ParticleMaterials.BLEND,
+            ParticleMaterials.OPAQUE
+        ).forEach { renderType ->
+            ParticleGroupRegistry.register(renderType) { engine -> QuadParticleGroup(engine, renderType) }
+        }
     }
 
     /**
