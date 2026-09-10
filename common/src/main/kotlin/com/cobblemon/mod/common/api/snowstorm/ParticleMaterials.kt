@@ -17,10 +17,14 @@ import net.minecraft.client.particle.ParticleRenderType
  *
  * These four still have to be registered with the particle engine - see CobblemonFabricClient - or the
  * engine has no group to put Snowstorm particles in and they never draw.
+ *
+ * The name has to be a full identifier: fabric-api derives a render type's id from it, and for anything
+ * that is not one of the four vanilla types it parses the name directly. Vanilla's own uppercase names
+ * work only because they take a separate lower-casing branch.
  */
 object ParticleMaterials {
-    val ALPHA: ParticleRenderType = ParticleRenderType("ALPHA", "alpha")
-    val ADD: ParticleRenderType = ParticleRenderType("ADD", "add")
-    val BLEND: ParticleRenderType = ParticleRenderType("BLEND", "blend")
-    val OPAQUE: ParticleRenderType = ParticleRenderType("OPAQUE", "opaque")
+    val ALPHA: ParticleRenderType = ParticleRenderType("cobblemon:alpha", "alpha")
+    val ADD: ParticleRenderType = ParticleRenderType("cobblemon:add", "add")
+    val BLEND: ParticleRenderType = ParticleRenderType("cobblemon:blend", "blend")
+    val OPAQUE: ParticleRenderType = ParticleRenderType("cobblemon:opaque", "opaque")
 }
