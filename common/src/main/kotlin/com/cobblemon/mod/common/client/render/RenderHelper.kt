@@ -23,6 +23,10 @@ import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.renderer.SubmitNodeCollector
+import net.minecraft.client.renderer.block.BlockModelRenderState
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart
+import net.minecraft.util.RandomSource
 import net.minecraft.client.renderer.item.ItemStackRenderState
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.texture.OverlayTexture
@@ -481,3 +485,27 @@ inline fun SubmitNodeCollector.submitPosableModel(
 fun cutoutBlockSheet(): RenderType = RenderTypes.entityCutout(TextureAtlas.LOCATION_BLOCKS)
 
 fun translucentBlockSheet(): RenderType = RenderTypes.entityTranslucent(TextureAtlas.LOCATION_BLOCKS)
+
+
+/**
+ * port/26.2: draws a baked block model outside chunk rendering. Minecraft.blockRenderer is gone; a
+ * block state's model now comes from ModelManager.blockStateModelSet, and its parts are handed to the
+ * collector rather than written straight into a buffer. Does nothing if the model is not baked yet.
+ */
+fun SubmitNodeCollector.submitBlockStateModel(
+    model: BlockStateModel?,
+    poseStack: PoseStack,
+    renderType: RenderType,
+    light: Int,
+    overlay: Int
+) {
+    if (model == null) return
+    val parts = mutableListOf<BlockStateModelPart>()
+    model.collectParts(RandomSource.create(), parts)
+    if (parts.isEmpty()) return
+    submitBlockModel(poseStack, renderType, parts, BlockModelRenderState.EMPTY_TINTS, light, overlay, 0)
+}
+
+/** The baked model for a block state, or null before models have been baked. */
+fun blockStateModelOf(state: net.minecraft.world.level.block.state.BlockState): BlockStateModel? =
+    Minecraft.getInstance().modelManager?.blockStateModelSet?.get(state)

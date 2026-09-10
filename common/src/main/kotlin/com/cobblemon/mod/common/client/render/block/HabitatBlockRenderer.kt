@@ -27,7 +27,18 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.multiplayer.ClientLevel
 // import net.minecraft.client.renderer.ItemBlockRenderTypes — removed in MC 26.1.x
 import net.minecraft.client.renderer.LevelRenderer
-import net.minecraft.client.renderer.MultiBufferSource
+import com.cobblemon.mod.common.client.render.blockStateModelOf
+import com.cobblemon.mod.common.client.render.cutoutBlockSheet
+import com.cobblemon.mod.common.client.render.submitBlockStateModel
+import com.cobblemon.mod.common.client.render.translucentBlockSheet
+import net.minecraft.client.renderer.SubmitNodeCollector
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer
+import net.minecraft.client.renderer.state.level.CameraRenderState
+import net.minecraft.client.renderer.texture.OverlayTexture
+import net.minecraft.util.Brightness
+import net.minecraft.world.level.LightLayer
+import net.minecraft.world.phys.Vec3
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
@@ -36,7 +47,13 @@ import net.minecraft.resources.Identifier
 import net.minecraft.util.Mth
 import net.minecraft.world.level.block.state.BlockState
 
-class HabitatBlockRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<HabitatBlockEntity, net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> {
+/** port/26.2: the live block entity is carried on the state; the spawner visuals need it. */
+class HabitatRenderState : BlockEntityRenderState() {
+    var entity: HabitatBlockEntity? = null
+    var partialTicks: Float = 0F
+}
+
+class HabitatBlockRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<HabitatBlockEntity, HabitatRenderState> {
     private companion object {
         const val SPECIES_CYCLE_TICKS = 60L
         const val VISUAL_Y_OFFSET = 0.22
@@ -77,30 +94,42 @@ class HabitatBlockRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEnti
         return (chunkRenderDistance + 1) * 16
     }
 
-    fun render_DEFER_NO_OVERRIDE(
+    override fun createRenderState(): HabitatRenderState = HabitatRenderState()
+
+    override fun extractRenderState(
         entity: HabitatBlockEntity,
-        partialTicks: Float,
-        poseStack: PoseStack,
-        bufferSource: MultiBufferSource,
-        packedLight: Int,
-        packedOverlay: Int
+        state: HabitatRenderState,
+        partialTick: Float,
+        cameraPos: Vec3,
+        crumbling: ModelFeatureRenderer.CrumblingOverlay?
     ) {
+        BlockEntityRenderState.extractBase(entity, state, crumbling)
+        state.entity = entity
+        state.partialTicks = partialTick
+    }
+
+    override fun submit(
+        state: HabitatRenderState,
+        poseStack: PoseStack,
+        bufferSource: SubmitNodeCollector,
+        camera: CameraRenderState
+    ) {
+        val entity = state.entity ?: return
+        val partialTicks = state.partialTicks
+        val packedLight = state.lightCoords
+        val packedOverlay = OverlayTexture.NO_OVERLAY
         val player = Minecraft.getInstance().player
         val viewerHoldingHabitatBlock = (player?.mainHandItem ?: player?.offhandItem)?.item == CobblemonItems.HABITAT_BLOCK
         val stateToRender: BlockState = if (viewerHoldingHabitatBlock) entity.blockState else entity.mimickedState
         val level = entity.level ?: return
         val isSolidRender = if (viewerHoldingHabitatBlock) false else stateToRender.isSolidRender()
-        val renderType = if (viewerHoldingHabitatBlock) {
-            net.minecraft.client.renderer.Sheets.cutoutBlockSheet()
-        } else {
-            // ItemBlockRenderTypes.getChunkRenderType removed in MC 26.1.x — use Sheets fallback
-            if (isSolidRender) net.minecraft.client.renderer.Sheets.cutoutBlockSheet() else net.minecraft.client.renderer.Sheets.translucentBlockSheet()
-        }
+        val renderType = if (viewerHoldingHabitatBlock || isSolidRender) cutoutBlockSheet() else translucentBlockSheet()
 
+        // port/26.2: Minecraft.blockRenderer is gone. A block state's baked model comes from the model
+        // manager and its parts are submitted to the collector, which restores the mimicked block that
+        // the reference diff had reduced to a no-op.
         poseStack.pushPose()
-        // PT144: Minecraft.blockRenderer accessor removed in MC 26.1.x — block-state batched render stubbed.
-        // Visual fallback: rely on viewer-perspective inherent block render via vanilla mechanism.
-        Unit
+        bufferSource.submitBlockStateModel(blockStateModelOf(stateToRender), poseStack, renderType, packedLight, packedOverlay)
         poseStack.popPose()
 
         if (viewerHoldingHabitatBlock) {
@@ -112,7 +141,7 @@ class HabitatBlockRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEnti
         habitatEntity: HabitatBlockEntity,
         partialTicks: Float,
         poseStack: PoseStack,
-        bufferSource: MultiBufferSource,
+        bufferSource: SubmitNodeCollector,
         packedLight: Int
     ) {
         val level = habitatEntity.level as? ClientLevel ?: return
@@ -138,7 +167,9 @@ class HabitatBlockRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEnti
             habitatEntity.blockPos.y + VISUAL_Y_OFFSET + MODEL_Y_ADJUST + 0.4,
             habitatEntity.blockPos.z + 0.5
         )
-        val entityLight = LevelRenderer.getLightCoords(level, habitatEntity.blockPos.above())
+        // port/26.2: LevelRenderer.getLightCoords is gone; Brightness packs the two light layers.
+        val lightPos = habitatEntity.blockPos.above()
+        val entityLight = Brightness(level.getBrightness(LightLayer.BLOCK, lightPos), level.getBrightness(LightLayer.SKY, lightPos)).pack()
 
         poseStack.pushPose()
         poseStack.translate(0.5, VISUAL_Y_OFFSET + MODEL_Y_ADJUST, 0.5)
@@ -244,14 +275,4 @@ class HabitatBlockRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEnti
             spinState.spin = (spinState.spin + 1000.0 / (spinState.spawnDelay.toDouble() + 200.0)) % 360.0
         }
     }
-
-    override fun createRenderState(): net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState =
-        net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState()
-
-    override fun submit(
-        state: net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState,
-        poseStack: com.mojang.blaze3d.vertex.PoseStack,
-        collector: net.minecraft.client.renderer.SubmitNodeCollector,
-        camera: net.minecraft.client.renderer.state.level.CameraRenderState
-    ) { /* PT129-DEFER */ }
 }

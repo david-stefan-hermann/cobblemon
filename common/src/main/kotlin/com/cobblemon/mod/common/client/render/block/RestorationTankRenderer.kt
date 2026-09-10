@@ -26,6 +26,7 @@ import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import kotlin.math.pow
 import com.cobblemon.mod.common.client.render.cutoutBlockSheet
+import com.cobblemon.mod.common.client.render.submitBlockStateModel
 import com.cobblemon.mod.common.client.render.submitPosableModel
 import com.cobblemon.mod.common.client.render.translucentBlockSheet
 import net.minecraft.client.renderer.SubmitNodeCollector
@@ -95,7 +96,7 @@ class RestorationTankRenderer(ctx: BlockEntityRendererProvider.Context) : BlockE
 
         if (connectionDir != null) {
             matrices.pushPose()
-            submitBlockStateModel(CONNECTOR_OVERRIDE.getModel(), matrices, collector, cutoutBlockSheet(), light, overlay)
+            collector.submitBlockStateModel(CONNECTOR_OVERRIDE.getModel(), matrices, cutoutBlockSheet(), light, overlay)
             matrices.popPose()
         }
 
@@ -112,7 +113,7 @@ class RestorationTankRenderer(ctx: BlockEntityRendererProvider.Context) : BlockE
         val fluidOverride = if (struct.isRunning()) FLUID_OVERRIDES[8]
             else if (struct.hasCreatedPokemon) FLUID_OVERRIDES[7]
             else FLUID_OVERRIDES[fillLevel.coerceAtMost(FLUID_OVERRIDES.size - 1) - 1]
-        submitBlockStateModel(fluidOverride.getModel(), matrices, collector, translucentBlockSheet(), light, overlay)
+        collector.submitBlockStateModel(fluidOverride.getModel(), matrices, translucentBlockSheet(), light, overlay)
         matrices.popPose()
     }
 
@@ -237,30 +238,6 @@ class RestorationTankRenderer(ctx: BlockEntityRendererProvider.Context) : BlockE
         )
 
         val CONNECTOR_OVERRIDE = CobblemonBakingOverrides.RESTORATION_TANK_CONNECTOR
-
-        /** Collects a baked block model's parts and submits them, or does nothing if it isn't baked yet. */
-        fun submitBlockStateModel(
-            model: BlockStateModel?,
-            matrices: PoseStack,
-            collector: SubmitNodeCollector,
-            renderType: RenderType,
-            light: Int,
-            overlay: Int
-        ) {
-            if (model == null) return
-            val parts = mutableListOf<BlockStateModelPart>()
-            model.collectParts(RandomSource.create(), parts)
-            if (parts.isEmpty()) return
-            collector.submitBlockModel(
-                matrices,
-                renderType,
-                parts,
-                BlockModelRenderState.EMPTY_TINTS,
-                light,
-                overlay,
-                0
-            )
-        }
 
         val EMBRYO_IDENTIFIERS = listOf(
             cobblemonResource("embryo_stage1"),

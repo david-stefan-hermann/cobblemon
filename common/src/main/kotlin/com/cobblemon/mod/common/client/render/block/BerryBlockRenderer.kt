@@ -22,7 +22,13 @@ import com.cobblemon.mod.common.util.toVec3d
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
 import net.minecraft.client.Minecraft
-import net.minecraft.client.renderer.MultiBufferSource
+import com.cobblemon.mod.common.client.render.cutoutBlockSheet
+import com.cobblemon.mod.common.client.render.submitBlockStateModel
+import net.minecraft.client.renderer.SubmitNodeCollector
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer
+import net.minecraft.client.renderer.state.level.CameraRenderState
+import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
@@ -30,7 +36,12 @@ import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 
 
-class BerryBlockRenderer(private val context: BlockEntityRendererProvider.Context) : BlockEntityRenderer<BerryBlockEntity, net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> {
+/** port/26.2: the live block entity is carried on the state; the berry mesh is built from it. */
+class BerryRenderState : BlockEntityRenderState() {
+    var entity: BerryBlockEntity? = null
+}
+
+class BerryBlockRenderer(private val context: BlockEntityRendererProvider.Context) : BlockEntityRenderer<BerryBlockEntity, BerryRenderState> {
 
     val mulchModels = mutableMapOf(
         MulchVariant.COARSE to CobblemonBakingOverrides.COARSE_MULCH,
@@ -50,22 +61,41 @@ class BerryBlockRenderer(private val context: BlockEntityRendererProvider.Contex
         return super.shouldRender(blockEntity, pos)
     }
 
-    fun render_DEFER_NO_OVERRIDE(entity: BerryBlockEntity, tickDelta: Float, matrices: PoseStack, vertexConsumers: MultiBufferSource, light: Int, overlay: Int) {
+    override fun createRenderState(): BerryRenderState = BerryRenderState()
+
+    override fun extractRenderState(
+        entity: BerryBlockEntity,
+        state: BerryRenderState,
+        partialTick: Float,
+        cameraPos: Vec3,
+        crumbling: ModelFeatureRenderer.CrumblingOverlay?
+    ) {
+        BlockEntityRenderState.extractBase(entity, state, crumbling)
+        state.entity = entity
+    }
+
+    override fun submit(
+        state: BerryRenderState,
+        matrices: PoseStack,
+        vertexConsumers: SubmitNodeCollector,
+        camera: CameraRenderState
+    ) {
+        val entity = state.entity ?: return
+        val light = state.lightCoords
+        val overlay = OverlayTexture.NO_OVERLAY
         if (!shouldRender(entity, entity.blockPos.toVec3d())) return
-        val blockState = entity.blockState
         if (entity.renderState == null) {
             entity.renderState = BerryBlockEntityRenderState()
         }
 
-        // PT144: RenderTypes.entityCutoutNoCull removed in MC 26.1.x → entityCutout(id, false) no-cull variant.
-        // TextureAtlas.identifier() renamed to location().
-        val buffer = vertexConsumers.getBuffer(
-            RenderTypes.entityCutout(BERRY_SPRITE_ATLAS.textureAtlas.location(), false)
-        )
-
         val renderState = entity.renderState as BerryBlockEntityRenderState
-//        if (renderState.needsRebuild || renderState.vboLightLevel != light) {
+        // port/26.2: the berry quads are submitted rather than written into a buffer up front.
+        vertexConsumers.submitCustomGeometry(
+            matrices,
+            RenderTypes.entityCutout(BERRY_SPRITE_ATLAS.textureAtlas.location(), false)
+        ) { _, buffer ->
             renderToBuffer(entity, matrices, light, overlay, renderState, buffer)
+        }
 //            renderState.vboLightLevel = light
 //            (entity.renderState as BerryBlockEntityRenderState).needsRebuild = false
 //        }
@@ -88,17 +118,22 @@ class BerryBlockRenderer(private val context: BlockEntityRendererProvider.Contex
 
     private fun drawMulch(
         matrices: PoseStack,
-        vertexConsumers: MultiBufferSource,
+        vertexConsumers: SubmitNodeCollector,
         entity: BerryBlockEntity,
         light: Int,
         overlay: Int
     ) {
         matrices.pushPose()
-        //Mulch is rendered on a different layer than the actual berries so
-        val mulchBuf = vertexConsumers.getBuffer(net.minecraft.client.renderer.Sheets.cutoutBlockSheet())
-        val model = mulchModels[entity.mulchVariant]
-        // PT136-DEFER: BlockModel.getQuads + VertexConsumer.putBulkData removed in MC 26.1.x — needs SectionMesher/RenderType refactor
-        model?.let { /* mulch quads disabled until model API migrated */ }
+        // Mulch is rendered on a different layer than the actual berries.
+        // port/26.2: the mulch model is submitted as a block model instead of having its quads copied
+        // by hand, which is what the removed BlockModel.getQuads path used to do.
+        vertexConsumers.submitBlockStateModel(
+            mulchModels[entity.mulchVariant]?.getModel(),
+            matrices,
+            cutoutBlockSheet(),
+            light,
+            overlay
+        )
         matrices.popPose()
     }
 
@@ -169,14 +204,4 @@ class BerryBlockRenderer(private val context: BlockEntityRendererProvider.Contex
 //        VertexBuffer.unbind()
     }
 
-
-    override fun createRenderState(): net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState =
-        net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState()
-
-    override fun submit(
-        state: net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState,
-        poseStack: com.mojang.blaze3d.vertex.PoseStack,
-        collector: net.minecraft.client.renderer.SubmitNodeCollector,
-        camera: net.minecraft.client.renderer.state.level.CameraRenderState
-    ) { /* PT129-DEFER */ }
 }
