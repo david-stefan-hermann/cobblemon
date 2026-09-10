@@ -19,10 +19,11 @@ plugins {
     id("cobblemon.publish-conventions")
 }
 
-architectury {
-    platformSetupLoomIde()
-    fabric()
-}
+// PT011 (port/26.1.x): architectury-plugin 드롭. fabric-loom 1.15.5 직접 사용.
+// architectury {
+//     platformSetupLoomIde()
+//     fabric()
+// }
 
 val generatedResources = file("src/generated/resources")
 
@@ -41,26 +42,30 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":common", configuration = "namedElements")) {
+    // PT017 (port/26.1.x): fabric-loom 1.15.5 no-remap mode → `namedElements` configuration 미등록.
+    // 표준 Gradle Java variant (runtimeElements/apiElements) 사용 — :common project 디폴트 참조.
+    implementation(project(":common")) {
         isTransitive = false
     }
-    bundle(project(path = ":common", configuration = "transformProductionFabric")) {
+    bundle(project(":common")) {
         isTransitive = false
     }
-    modLocalRuntime(libs.fabric.debugutils)
-    modImplementation(libs.fabric.loader)
-    modApi(libs.fabric.api)
-    modApi(libs.bundles.fabric)
+    // PT012 (port/26.1.x): fabric-loom 1.15.5 no-remap mode → mod*/modLocalRuntime configurations 미등록.
+    // plain implementation/api/compileOnly/runtimeOnly 사용 (V36 fabric-example-mod 26.1.2 패턴).
+    runtimeOnly(libs.fabric.debugutils)
+    implementation(libs.fabric.loader)
+    api(libs.fabric.api)
+    api(libs.bundles.fabric)
 
-    modCompileOnly(libs.bundles.common.integrations.compileOnly) {
+    compileOnly(libs.bundles.common.integrations.compileOnly) {
         isTransitive = false
     }
 
-    modImplementation(libs.bundles.fabric.integrations.implementation)
-    modRuntimeOnly(libs.bundles.fabric.integrations.runtimeOnly)
-    modRuntimeOnly(libs.bundles.mongo)
+    implementation(libs.bundles.fabric.integrations.implementation)
+    runtimeOnly(libs.bundles.fabric.integrations.runtimeOnly)
+    runtimeOnly(libs.bundles.mongo)
 
-//    modImplementation(libs.flywheelFabric)
+//    implementation(libs.flywheelFabric)
 //    include(libs.flywheelFabric)
 
     listOf(
@@ -72,7 +77,7 @@ dependencies {
     }
 
     // Added to make graal available in dev
-    modRuntimeOnly(libs.bundles.graal)
+    runtimeOnly(libs.bundles.graal)
 
     include(libs.fabric.kotlin)
 
@@ -92,7 +97,8 @@ tasks {
     val copyAccessWidener by registering(Copy::class) {
         from(loom.accessWidenerPath)
         into(generatedResources)
-        dependsOn(checkLicenseMain)
+        // PT005/PT011: licenser plugin 비활성화로 `checkLicenseMain` task 미존재 → dependsOn 제거.
+        // dependsOn(checkLicenseMain)
     }
 
     processResources {
@@ -104,10 +110,11 @@ tasks {
         inputs.property("java_version", rootProject.property("java_version").toString())
 
         filesMatching("fabric.mod.json") {
+            // PT016: libs.*.get().version → String? — Kotlin DSL strict 타입 매칭으로 `!!` 강제.
             expand(
                 "version" to rootProject.version,
-                "fabric_loader_version" to libs.fabric.loader.get().version,
-                "fabric_api_version" to libs.fabric.api.get().version,
+                "fabric_loader_version" to (libs.fabric.loader.get().version ?: ""),
+                "fabric_api_version" to (libs.fabric.api.get().version ?: ""),
                 "minecraft_version" to rootProject.property("mc_version").toString(),
                 "java_version" to rootProject.property("java_version").toString()
             )

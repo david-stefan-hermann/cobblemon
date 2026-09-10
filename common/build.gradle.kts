@@ -16,16 +16,20 @@ import java.time.format.DateTimeFormatter
  */
 
 plugins {
+    // PT011: 적용 순서 변경 — fabric-loom을 base-conventions보다 먼저 적용해 configuration 등록을 보장.
+    id("net.fabricmc.fabric-loom")
+    id("net.nemerosa.versioning")
+
     id("cobblemon.base-conventions")
-    id("cobblemon.publish-conventions")
+    // PT011: :common은 P01 strict에서 Maven publish 불필요. architectury 드롭 후 remapJar 미등록 → publish-conventions 제거.
+    // id("cobblemon.publish-conventions")
 
     id("net.kyori.blossom")
     id("org.jetbrains.gradle.plugin.idea-ext")
 }
 
-architectury {
-    common("neoforge", "fabric")
-}
+// PT011 (port/26.1.x): architectury-plugin 드롭. P01 strict는 Fabric only.
+// architectury { common("neoforge", "fabric") }
 
 repositories {
     maven(url = "${rootProject.projectDir}/deps")
@@ -35,30 +39,32 @@ repositories {
     mavenLocal()
 }
 
+// PT012 (port/26.1.x): fabric-loom 1.15.5 `net.fabricmc.fabric-loom` plugin id는 LoomNoRemapGradlePlugin.
+// → disableObfuscation=true로 mod* configurations(modImplementation/modApi/modCompileOnly) 미등록.
+// fabric-example-mod 26.1.2 패턴대로 plain implementation/api/compileOnly 사용 (V36 검증).
+// Ref: https://github.com/FabricMC/fabric-loom/blob/1.15/src/main/java/net/fabricmc/loom/LoomNoRemapGradlePlugin.java
 dependencies {
     implementation(libs.bundles.kotlin)
-    modImplementation(libs.fabric.loader)
-    modApi(libs.molang)
+    implementation(libs.fabric.loader)
+    api(libs.molang)
 
     // Integrations
     compileOnlyApi(libs.jei.api)
-    modCompileOnly(libs.bundles.common.integrations.compileOnly) {
+    compileOnly(libs.bundles.common.integrations.compileOnly) {
         isTransitive = false
     }
     // LambDynamicLights is handled differently because we need the Mojang-mappings version of it.
-    modCompileOnly(libs.lambDynamicLights) {
+    compileOnly(libs.lambDynamicLights) {
         capabilities {
             requireCapability("dev.lambdaurora.lambdynamiclights:api-mojmap")
         }
     }
-    // Flywheel has no common dep so just pick one and don't use any platform specific code in common
-    // modCompileOnly(libs.flywheelFabric)
 
     // Showdown
-    modCompileOnly(libs.graal.core)
+    compileOnly(libs.graal.core)
 
     // Data Storage
-    modCompileOnly(libs.bundles.mongo)
+    compileOnly(libs.bundles.mongo)
 
     // Unit Testing
     testImplementation(libs.bundles.unitTesting)

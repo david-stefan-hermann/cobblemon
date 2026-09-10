@@ -8,6 +8,7 @@
 
 package com.cobblemon.mod.common.client.gui.pasture
 
+import net.minecraft.client.input.MouseButtonEvent
 import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.api.gui.blitk
 import com.cobblemon.mod.common.api.text.bold
@@ -19,7 +20,7 @@ import com.cobblemon.mod.common.client.render.drawScaledText
 import com.cobblemon.mod.common.net.messages.server.pasture.UnpastureAllPokemonPacket
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Component
 
 class PastureWidget(
@@ -48,7 +49,7 @@ class PastureWidget(
         parent = this
     )
 
-    override fun renderWidget(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         blitk(
             matrixStack = context.pose(),
             texture = baseResource,
@@ -67,14 +68,17 @@ class PastureWidget(
             centered = true
         )
 
-        pastureScrollList.render(context, mouseX, mouseY, delta)
+        pastureScrollList.extractRenderState(context, mouseX, mouseY, delta)
 
-        recallButton.render(context, mouseX, mouseY, delta)
+        recallButton.extractRenderState(context, mouseX, mouseY, delta)
     }
 
-    override fun mouseClicked(pMouseX: Double, pMouseY: Double, pButton: Int): Boolean {
-        if (recallButton.isHovered(pMouseX, pMouseY)) recallButton.mouseClicked(pMouseX, pMouseY, pButton)
-        if (pastureScrollList.isHovered(pMouseX, pMouseY)) pastureScrollList.mouseClicked(pMouseX, pMouseY, pButton)
-        return super.mouseClicked(pMouseX, pMouseY, pButton)
+    override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val pMouseX = event.x
+        val pMouseY = event.y
+        val pButton = event.button()
+        if (recallButton.isHovered(pMouseX, pMouseY)) recallButton.mouseClicked(event, fromOnClick)
+        if (pastureScrollList.isHovered(pMouseX, pMouseY)) pastureScrollList.mouseClicked(event, fromOnClick)
+        return super.mouseClicked(event, fromOnClick)
     }
 }

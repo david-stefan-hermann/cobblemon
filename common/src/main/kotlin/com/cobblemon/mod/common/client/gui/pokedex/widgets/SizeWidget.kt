@@ -8,6 +8,9 @@
 
 package com.cobblemon.mod.common.client.gui.pokedex.widgets
 
+import com.cobblemon.mod.common.util.translate
+import com.cobblemon.mod.common.util.scale
+
 import com.cobblemon.mod.common.api.gui.blitk
 import com.cobblemon.mod.common.api.text.bold
 import com.cobblemon.mod.common.client.CobblemonResources
@@ -24,7 +27,7 @@ import com.cobblemon.mod.common.pokemon.RenderablePokemon
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
 import com.cobblemon.mod.common.util.math.fromEulerXYZDegrees
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Component
 import org.joml.Quaternionf
 import org.joml.Vector3f
@@ -47,7 +50,7 @@ class SizeWidget(val pX: Int, val pY: Int) : SoundlessWidget(
     var pokemonHeight: Float = 0F
     var weight: Float = 0F
 
-    override fun renderWidget(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         val matrices = context.pose()
 
 //        drawScaledTextJustifiedRight(
@@ -77,12 +80,8 @@ class SizeWidget(val pX: Int, val pY: Int) : SoundlessWidget(
 
         val modelScale = 7.5F
 
-        matrices.pushPose()
-        matrices.translate(
-            pX.toDouble() + 50,
-            pY.toDouble() + (POKEMON_DESCRIPTION_HEIGHT / 2) + 18.5,
-            0.0
-        )
+        matrices.pushMatrix()
+        matrices.translate((pX.toDouble() + 50).toFloat(), (pY.toDouble() + (POKEMON_DESCRIPTION_HEIGHT / 2) + 18.5).toFloat())
         drawProfilePokemon(
             renderablePokemon = renderablePokemon!!,
             matrixStack =  matrices,
@@ -96,11 +95,11 @@ class SizeWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             g = 0F,
             b = 0F
         )
-        matrices.popPose()
+        matrices.popMatrix()
         context.disableScissor()
 
         // Ensure elements are not hidden behind Pokémon render
-        matrices.pushPose()
+        matrices.pushMatrix()
         matrices.translate(0.0, 0.0, 100.0)
 
         blitk(
@@ -145,6 +144,6 @@ class SizeWidget(val pX: Int, val pY: Int) : SoundlessWidget(
             scale = SCALE
         )
 
-        matrices.popPose()
+        matrices.popMatrix()
     }
 }

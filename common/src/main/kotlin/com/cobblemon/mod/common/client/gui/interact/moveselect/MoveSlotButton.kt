@@ -22,7 +22,7 @@ import com.cobblemon.mod.common.client.render.drawScaledText
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
 import com.cobblemon.mod.common.util.math.toRGB
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.sounds.SoundManager
 import net.minecraft.network.chat.Component
@@ -49,7 +49,7 @@ class MoveSlotButton(
         const val HEIGHT = 22
     }
 
-    override fun renderWidget(context: GuiGraphics, mouseX: Int, mouseY: Int, pPartialTicks: Float) {
+    override fun extractContents(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, pPartialTicks: Float) {
         move?.let {
             isHovered = isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && enabled
             val rgb = it.elementalType.hue.toRGB()

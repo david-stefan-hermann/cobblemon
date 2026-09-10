@@ -19,7 +19,7 @@ import java.util.UUID
 import net.minecraft.world.item.ItemStack
 import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.network.chat.MutableComponent
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 /**
  * A packet that initializes a trade with a player. Information about the other party is included.
@@ -36,7 +36,7 @@ class TradeStartedPacket(
 ) : NetworkPacket<TradeStartedPacket> {
     class TradeablePokemon(
         val pokemonId: UUID,
-        val species: ResourceLocation,
+        val species: Identifier,
         val aspects: Set<String>,
         val level: Int,
         val gender: Gender,
@@ -86,7 +86,8 @@ class TradeStartedPacket(
         fun decode(buffer: RegistryFriendlyByteBuf) = TradeStartedPacket(
             buffer.readUUID(),
             buffer.readText().copy(),
-            buffer.readList { buffer.readNullable { TradeablePokemon.decode(buffer) } }
+            // PT144: readList<T> requires non-null T in MC 26.1.x; iterate manually to preserve null entries.
+            buffer.readVarInt().let { size -> List(size) { buffer.readNullable<TradeablePokemon> { TradeablePokemon.decode(buffer) } } }
         )
     }
 

@@ -17,7 +17,7 @@ import com.cobblemon.mod.common.block.TypeGemCoreBlock
 import com.cobblemon.mod.common.util.random
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.tags.BlockTags
 import net.minecraft.world.level.WorldGenLevel
 import net.minecraft.world.level.block.Block.UPDATE_ALL
@@ -26,7 +26,7 @@ import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext
 import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfiguration
 
 class TypeGemFeature : Feature<BlockStateConfiguration>(BlockStateConfiguration.CODEC) {
-    override fun place(context: FeaturePlaceContext<BlockStateConfiguration?>): Boolean {
+    override fun place(context: FeaturePlaceContext<BlockStateConfiguration>): Boolean {
         val worldGenLevel = context.level()
         val random = context.random()
         val origin = context.origin()
@@ -63,7 +63,7 @@ class TypeGemFeature : Feature<BlockStateConfiguration>(BlockStateConfiguration.
         val airBlocks = mutableListOf<BlockPos>()
 
         for (direction: Direction in Direction.entries) {
-            val pos = origin.offset(direction.normal)
+            val pos = origin.offset(direction.unitVec3i)
             val blockState = worldGenLevel.getBlockState(pos)
             if (blockState.isAir) {
                 airBlocks.add(pos)

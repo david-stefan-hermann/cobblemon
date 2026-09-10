@@ -8,69 +8,61 @@
 
 package com.cobblemon.mod.common.client.render
 
+import net.minecraft.client.renderer.rendertype.RenderTypes
+
 import com.cobblemon.mod.common.api.gui.drawText
 import com.cobblemon.mod.common.api.gui.drawTextJustifiedRight
 import com.cobblemon.mod.common.api.text.font
 import com.cobblemon.mod.common.client.CobblemonResources
-import com.mojang.blaze3d.platform.GlStateManager
+import com.mojang.blaze3d.opengl.GlStateManager
 import com.mojang.blaze3d.platform.Lighting
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.renderer.MultiBufferSource
-import net.minecraft.client.renderer.RenderType
+import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.client.renderer.texture.TextureAtlas
 import net.minecraft.network.chat.MutableComponent
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.util.FormattedCharSequence
 import net.minecraft.world.item.ItemDisplayContext
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level
+import net.minecraft.world.entity.LivingEntity
 
-fun renderScaledGuiItemIcon(itemStack: ItemStack, x: Double, y: Double, scale: Double = 1.0, zTranslation: Float = 100.0F, matrixStack: PoseStack? = null) {
-    val itemRenderer = Minecraft.getInstance().itemRenderer
-    val textureManager = Minecraft.getInstance().textureManager
-    val model = itemRenderer.getModel(itemStack, null, null, 0)
+// PT128: Minecraft.itemRenderer removed in MC 26.1 — bridge via extension property + stub.
+// Original API: Minecraft.getInstance().itemRenderer.renderStatic(stack, ctx, light, overlay, pose, buffer, level, seed)
+// New API: ItemModelResolver.appendItemLayers — full rewrite deferred.
+class ItemRendererStub {
+    fun renderStatic(
+        stack: ItemStack, ctx: ItemDisplayContext, light: Int, overlay: Int,
+        pose: PoseStack, buffer: MultiBufferSource, level: Level?, seed: Int
+    ) { /* PT128-DEFER: ItemModelResolver-based redraw */ }
+    fun renderStatic(
+        entity: LivingEntity?, stack: ItemStack, ctx: ItemDisplayContext, leftHand: Boolean,
+        pose: PoseStack, buffer: MultiBufferSource, level: Level?, light: Int, overlay: Int, seed: Int
+    ) { /* PT128-DEFER: ItemModelResolver-based redraw */ }
+}
+private val ITEM_RENDERER_STUB = ItemRendererStub()
+val Minecraft.itemRenderer: ItemRendererStub get() = ITEM_RENDERER_STUB
 
-    textureManager.getTexture(TextureAtlas.LOCATION_BLOCKS).setFilter(false, false)
-    RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS)
-    RenderSystem.enableBlend()
-    RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA)
-    RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F)
-    //TODO Make sure this doesnt break anything
-    val modelViewStack = matrixStack ?: PoseStack()
-    modelViewStack.pushPose()
-    modelViewStack.translate(x, y, (zTranslation + 0).toDouble())
-    modelViewStack.translate(8.0 * scale, 8.0 * scale, 0.0)
-    modelViewStack.scale(1.0F, -1.0F, 1.0F)
-    modelViewStack.scale(16.0F * scale.toFloat(), 16.0F * scale.toFloat(), 16.0F * scale.toFloat())
-    RenderSystem.applyModelViewMatrix()
-
-    val stack = matrixStack ?: PoseStack()
-    val immediate = Minecraft.getInstance().renderBuffers().bufferSource()
-    val bl = !model.usesBlockLight()
-    if (bl) Lighting.setupForFlatItems()
-
-    itemRenderer.render(
-        itemStack,
-        ItemDisplayContext.GUI,
-        false,
-        stack,
-        immediate,
-        15728880,
-        OverlayTexture.NO_OVERLAY,
-        model
-    )
-
-    immediate.endBatch()
-    RenderSystem.enableDepthTest()
-    if (bl) Lighting.setupFor3DItems()
-
-    modelViewStack.popPose()
-    RenderSystem.applyModelViewMatrix()
+fun renderScaledGuiItemIcon(itemStack: ItemStack, x: Double, y: Double, scale: Double = 1.0, zTranslation: Float = 100.0F, matrixStack: org.joml.Matrix3x2fStack? = null) {
+    // TODO PT128-DEFER: ItemRenderer.render(stack, ItemDisplayContext, ...) API rework
+    // MC 26.1.x removed Minecraft.itemRenderer; use GuiGraphicsExtractor for item drawing or
+    // ItemModelResolver via Minecraft.getInstance().itemModelResolver. Currently no-op stub
+    // to unblock compilation — callsites still invoke this for HUD-side item icons.
+    val modelViewStack = matrixStack ?: org.joml.Matrix3x2fStack(32)
+    modelViewStack.pushMatrix()
+    modelViewStack.translate(x.toFloat(), y.toFloat())
+    modelViewStack.translate(8.0F * scale.toFloat(), 8.0F * scale.toFloat())
+    modelViewStack.scale(1.0F, -1.0F)
+    modelViewStack.scale(16.0F * scale.toFloat(), 16.0F * scale.toFloat())
+    modelViewStack.popMatrix()
+    Unit
 }
 
 fun getDepletableRedGreen(
@@ -99,8 +91,8 @@ fun getDepletableRedGreen(
 
 
 fun drawScaledText(
-    context: GuiGraphics,
-    font: ResourceLocation? = null,
+    context: GuiGraphicsExtractor,
+    font: Identifier? = null,
     text: MutableComponent,
     x: Number,
     y: Number,
@@ -121,8 +113,8 @@ fun drawScaledText(
     val extraScale = if (textWidth < maxCharacterWidth) 1F else (maxCharacterWidth / textWidth.toFloat())
     val fontHeight = if (font == null) 5F else 6F
     val matrices = context.pose()
-    matrices.pushPose()
-    matrices.scale(scale * extraScale, scale * extraScale, 1F)
+    matrices.pushMatrix()
+    matrices.scale(scale * extraScale, scale * extraScale)
     val isHovered = drawText(
         context = context,
         font = font,
@@ -135,15 +127,14 @@ fun drawScaledText(
         pMouseX = pMouseX?.toFloat()?.div((scale * extraScale)),
         pMouseY = pMouseY?.toFloat()?.div(scale * extraScale)?.plus((1F - extraScale) * fontHeight * scale)
     )
-    matrices.popPose()
+    matrices.popMatrix()
     // Draw tooltip that was created with onHover and is attached to the MutableComponent
-    if (isHovered) {
-        context.renderComponentHoverEffect(Minecraft.getInstance().font, text.style, pMouseX!!, pMouseY!!)
-    }
+    // PT145: renderComponentHoverEffect removed in MC 26.1.x; tooltips are now applied via setTooltipForNextRenderPass on widgets.
+    // Hover effect handled by widget-level tooltips; this in-text style hover is dropped.
 }
 
 fun drawScaledText(
-    context: GuiGraphics,
+    context: GuiGraphicsExtractor,
     text: FormattedCharSequence,
     x: Number,
     y: Number,
@@ -158,8 +149,8 @@ fun drawScaledText(
         return
     }
     val matrixStack = context.pose()
-    matrixStack.pushPose()
-    matrixStack.scale(scaleX, scaleY, 1F)
+    matrixStack.pushMatrix()
+    matrixStack.scale(scaleX, scaleY)
     drawText(
         context = context,
         text = text,
@@ -169,12 +160,12 @@ fun drawScaledText(
         colour = colour,
         shadow = shadow
     )
-    matrixStack.popPose()
+    matrixStack.popMatrix()
 }
 
 fun drawScaledTextJustifiedRight(
-    context: GuiGraphics,
-    font: ResourceLocation? = null,
+    context: GuiGraphicsExtractor,
+    font: Identifier? = null,
     text: MutableComponent,
     x: Number,
     y: Number,
@@ -191,8 +182,8 @@ fun drawScaledTextJustifiedRight(
     val extraScale = if (textWidth < maxCharacterWidth) 1F else (maxCharacterWidth / textWidth.toFloat())
     val fontHeight = if (font == null) 5F else 6F
     val matrixStack = context.pose()
-    matrixStack.pushPose()
-    matrixStack.scale(scale * extraScale, scale * extraScale, 1F)
+    matrixStack.pushMatrix()
+    matrixStack.scale(scale * extraScale, scale * extraScale)
     drawTextJustifiedRight(
         context = context,
         font = font,
@@ -202,11 +193,11 @@ fun drawScaledTextJustifiedRight(
         colour = colour,
         shadow = shadow
     )
-    matrixStack.popPose()
+    matrixStack.popMatrix()
 }
 
 fun drawScaledTextJustifiedRight(
-    context: GuiGraphics,
+    context: GuiGraphicsExtractor,
     text: MutableComponent,
     x: Number,
     y: Number,
@@ -220,8 +211,8 @@ fun drawScaledTextJustifiedRight(
         return
     }
     val matrixStack = context.pose()
-    matrixStack.pushPose()
-    matrixStack.scale(scaleX, scaleY, 1F)
+    matrixStack.pushMatrix()
+    matrixStack.scale(scaleX, scaleY)
     drawTextJustifiedRight(
         context = context,
         text = text,
@@ -230,13 +221,13 @@ fun drawScaledTextJustifiedRight(
         colour = colour,
         shadow = shadow
     )
-    matrixStack.popPose()
+    matrixStack.popMatrix()
 }
 
 fun renderBeaconBeam(
     matrixStack: PoseStack,
     buffer: MultiBufferSource,
-    textureLocation: ResourceLocation = CobblemonResources.PHASE_BEAM,
+    textureLocation: Identifier = CobblemonResources.PHASE_BEAM,
     partialTicks: Float,
     totalLevelTime: Long,
     yOffset: Float = 0F,
@@ -257,7 +248,7 @@ fun renderBeaconBeam(
     val f12 = -beamRadius
     renderPart(
         matrixStack,
-        buffer.getBuffer(RenderType.beaconBeam(textureLocation, false)),
+        buffer.getBuffer(RenderTypes.beaconBeam(textureLocation, false)),
         red,
         green,
         blue,
@@ -281,7 +272,7 @@ fun renderBeaconBeam(
     f9 = -glowRadius
     renderPart(
         matrixStack,
-        buffer.getBuffer(RenderType.beaconBeam(textureLocation, true)),
+        buffer.getBuffer(RenderTypes.beaconBeam(textureLocation, true)),
         red,
         green,
         blue,

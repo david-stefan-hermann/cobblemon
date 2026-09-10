@@ -35,12 +35,13 @@ import com.cobblemon.mod.common.pokemon.RenderablePokemon
 import com.cobblemon.mod.common.util.asTranslated
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
+import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.toasts.Toast
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.sounds.SoundEvent
 import java.io.FileNotFoundException
 
@@ -75,9 +76,9 @@ class StarterSelectionScreen(private val categories: List<RenderableStarterCateg
     var ticksElapsed = 0
     var currentBallBackgroundFrame = 0
 
-    override fun renderBlurredBackground(delta: Float) {}
+    override fun extractBlurredBackground(graphics: net.minecraft.client.gui.GuiGraphicsExtractor) {}
 
-    override fun renderMenuBackground(context: GuiGraphics) {}
+    override fun extractMenuBackground(context: GuiGraphicsExtractor) {}
 
     override fun init() {
         super.init()
@@ -152,7 +153,7 @@ class StarterSelectionScreen(private val categories: List<RenderableStarterCateg
         ))
     }
 
-    override fun render(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         val matrices = context.pose()
         val x = (width - BASE_WIDTH) / 2
         val y = (height - BASE_HEIGHT) / 2
@@ -289,8 +290,8 @@ class StarterSelectionScreen(private val categories: List<RenderableStarterCateg
         //Description Text
         val smallTextScale = 0.5F
 
-        matrices.pushPose()
-        matrices.scale(smallTextScale, smallTextScale, 1F)
+        matrices.pushMatrix()
+        matrices.scale(smallTextScale, smallTextScale)
         MultiLineLabelK.create(
             component = currentPokemon.form.pokedex.first().asTranslated(),
             width = 114 / smallTextScale,
@@ -303,12 +304,12 @@ class StarterSelectionScreen(private val categories: List<RenderableStarterCateg
             colour = ColourLibrary.WHITE,
             shadow = true
         )
-        matrices.popPose()
+        matrices.popMatrix()
 
-        super.render(context, mouseX, mouseY, delta)
+        super.extractRenderState(context, mouseX, mouseY, delta)
     }
 
-    fun getPlatformResource(type: ElementalType): ResourceLocation? {
+    fun getPlatformResource(type: ElementalType): Identifier? {
         return try {
             cobblemonResource("textures/gui/starterselection/starter_platform_base_${type.showdownId}.png")
         } catch (error: FileNotFoundException) {
@@ -332,13 +333,17 @@ class StarterSelectionScreen(private val categories: List<RenderableStarterCateg
         if (currentBallBackgroundFrame == 16) currentBallBackgroundFrame = 0
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        if (minecraft?.options?.keyInventory?.matches(keyCode, scanCode) == true) {
+    override fun keyPressed(event: KeyEvent): Boolean {
+        val keyCode = event.key()
+        val scanCode = event.scancode()
+        val modifiers = event.modifiers()
+        // PT144: KeyMapping.matches now takes KeyEvent in MC 26.1.x.
+        if (minecraft?.options?.keyInventory?.matches(event) == true) {
             Minecraft.getInstance().setScreen(null)
             return true
         }
 
-        return super.keyPressed(keyCode, scanCode, modifiers)
+        return super.keyPressed(event)
     }
 
     override fun isPauseScreen() = true

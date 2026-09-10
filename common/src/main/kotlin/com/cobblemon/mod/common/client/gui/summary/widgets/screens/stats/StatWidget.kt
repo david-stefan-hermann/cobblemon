@@ -8,6 +8,7 @@
 
 package com.cobblemon.mod.common.client.gui.summary.widgets.screens.stats
 
+import net.minecraft.client.input.MouseButtonEvent
 import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.api.gui.blitk
 import com.cobblemon.mod.common.api.pokemon.feature.SpeciesFeatures
@@ -31,13 +32,13 @@ import com.cobblemon.mod.common.pokemon.Pokemon
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
 import com.mojang.blaze3d.systems.RenderSystem
-import com.mojang.blaze3d.vertex.BufferUploader
+// PT144: BufferUploader removed in MC 26.1.x (replaced by RenderPipeline state model).
 import com.mojang.blaze3d.vertex.DefaultVertexFormat
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.Tesselator
 import com.mojang.blaze3d.vertex.VertexFormat
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
@@ -178,14 +179,15 @@ class StatWidget(
     }
 
     private fun drawTriangle(colour: Vector3f, v1: Vec2, v2: Vec2, v3: Vec2, opacity: Float = 0.6F) {
-        CobblemonResources.WHITE.let { RenderSystem.setShaderTexture(0, it) }
-        RenderSystem.setShaderColor(colour.x, colour.y, colour.z, opacity)
+        CobblemonResources.WHITE.let { Unit }
+        Unit
         val bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION)
         bufferBuilder.addVertex(v1.x, v1.y, 10F)
         bufferBuilder.addVertex(v2.x, v2.y, 10F)
         bufferBuilder.addVertex(v3.x, v3.y, 10F)
-        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow())
-        RenderSystem.setShaderColor(1F, 1F, 1F, 1F)
+        // BufferUploader.drawWithShader removed in MC 26.1.x
+        bufferBuilder.buildOrThrow().close()
+        Unit
     }
 
     /**
@@ -233,15 +235,14 @@ class StatWidget(
         val centerPoint = Vec2(centerX, centerY)
 
         // Draw triangles between each vertex and the next clockwise starting from top vertex
-        RenderSystem.disableDepthTest()
+        // PT144: RenderSystem.disableDepthTest/enableDepthTest removed in MC 26.1.x (RenderPipeline state model).
         for (i in vertices.indices) {
             val nextIndex = (i + 1) % vertices.size
             drawTriangle(colour, vertices[i], centerPoint, vertices[nextIndex])
         }
-        RenderSystem.enableDepthTest()
     }
 
-    override fun renderWidget(context: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {
         val renderOtherStats = statOptions.get(statTabIndex) == OTHER
         val renderPentagonStats = statOptions.get(statTabIndex) == RIDE
         val matrices = context.pose()
@@ -294,8 +295,8 @@ class StatWidget(
                     width = 134,
                     height = 115
                 )
-                otherStatLeftButton?.renderWidget(context, pMouseX, pMouseY, pPartialTicks)
-                otherStatRightButton?.renderWidget(context, pMouseX, pMouseY, pPartialTicks)
+                otherStatLeftButton?.extractRenderState(context, pMouseX, pMouseY, pPartialTicks)
+                otherStatRightButton?.extractRenderState(context, pMouseX, pMouseY, pPartialTicks)
             }
         } else {
             if (renderPentagonStats) {
@@ -373,7 +374,7 @@ class StatWidget(
                     )
 
                     if (pMouseX >= (x + 59) && pMouseY >= (y + 62.5) && pMouseX <= ((x + 59) + (RIDE_ICON_SIZE * SCALE)) && pMouseY <= ((y + 62.5) + (RIDE_ICON_SIZE * SCALE))) {
-                        context.renderTooltip(
+                        context.setTooltipForNextFrame(
                             Minecraft.getInstance().font,
                             lang("ui.ride_style.${selectedBehaviour.key.toString().lowercase()}.${rideStyle}")
                                 .append(" | ").append(lang("ui.ride_style.${selectedBehaviour.key.toString().lowercase()}")),
@@ -490,7 +491,10 @@ class StatWidget(
         )
     }
 
-    override fun mouseClicked(pMouseX: Double, pMouseY: Double, pButton: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val pMouseX = event.x
+        val pMouseY = event.y
+        val pButton = event.button()
         val index = getTabIndexFromPos(pMouseX, pMouseY)
         // Only play sound here as the rest of the widget is meant to be silent
         if (index in 0 until statOptions.size && statTabIndex != index) {
@@ -503,7 +507,7 @@ class StatWidget(
             Minecraft.getInstance().soundManager.play(SimpleSoundInstance.forUI(CobblemonSounds.GUI_CLICK, 1.0F))
         }
 
-        return super.mouseClicked(pMouseX, pMouseY, pButton)
+        return super.mouseClicked(event, fromOnClick)
     }
 
     private fun statValuesAsText(stats: List<Stat>, asPercent: Boolean): List<MutableComponent> {
@@ -527,7 +531,8 @@ class StatWidget(
         }
     }
 
-    private fun renderModifiedStatIcon(pPoseStack: PoseStack, stat: Stat?, increasedStat: Boolean) {
+    // PT128: PoseStack→Matrix3x2fStack for MC 26.1 GuiGraphicsExtractor.pose() return type.
+    private fun renderModifiedStatIcon(pPoseStack: org.joml.Matrix3x2fStack, stat: Stat?, increasedStat: Boolean) {
         if (stat != null) {
             var posX = x.toDouble()
             var posY = y.toDouble()
@@ -563,7 +568,7 @@ class StatWidget(
         return WHITE
     }
 
-    private fun renderPolygonLabels(context: GuiGraphics, labels: List<MutableComponent>, verticesOffset: List<Pair<Double, Double>>, offsetY: Double = 0.0, labelColours: List<Int>? = null, enableColour: Boolean = false) {
+    private fun renderPolygonLabels(context: GuiGraphicsExtractor, labels: List<MutableComponent>, verticesOffset: List<Pair<Double, Double>>, offsetY: Double = 0.0, labelColours: List<Int>? = null, enableColour: Boolean = false) {
         if (labels.size != verticesOffset.size) return
 
         labels.forEachIndexed { index, label ->

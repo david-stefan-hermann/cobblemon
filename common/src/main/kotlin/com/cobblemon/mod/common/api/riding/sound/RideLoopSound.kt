@@ -17,7 +17,7 @@ import com.cobblemon.mod.common.util.resolveDouble
 import net.minecraft.client.Minecraft
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance
 import net.minecraft.client.resources.sounds.SoundInstance
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundSource
 import net.minecraft.util.Mth
@@ -124,7 +124,8 @@ class RideLoopSound(val ride: PokemonEntity, val soundSettings: RideSoundSetting
     }
 
     fun outOfRange(): Boolean {
-        val attenDist = this.sound.attenuationDistance
+        // PT143: SoundInstance.getSound() returns nullable Sound in MC 26.1.x.
+        val attenDist = this.sound?.attenuationDistance ?: 16
         val listenerPosition = Minecraft.getInstance().player?.eyePosition ?: return false
         return listenerPosition.distanceTo(ride.position()) > attenDist
     }
@@ -157,7 +158,8 @@ class RideLoopSound(val ride: PokemonEntity, val soundSettings: RideSoundSetting
     fun soundOcclusion(): Float {
         val listener = Minecraft.getInstance().player ?: return 0.0f
         val level = listener.level()
-        val maxAttenDist = this.sound.attenuationDistance
+        // PT143: SoundInstance.getSound() returns nullable Sound in MC 26.1.x.
+        val maxAttenDist = this.sound?.attenuationDistance ?: 16
 
         var totalMuffle = 0.0
 

@@ -8,6 +8,8 @@
 
 package com.cobblemon.mod.common.client.gui.pokedex.widgets
 
+import com.cobblemon.mod.common.client.gui.pokedex.setTooltipForNextFrame
+
 import com.cobblemon.mod.common.api.gui.blitk
 import com.cobblemon.mod.common.api.pokemon.stats.Stat
 import com.cobblemon.mod.common.api.pokemon.stats.Stats
@@ -20,15 +22,15 @@ import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.HALF_OVER
 import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.POKEMON_DESCRIPTION_HEIGHT
 import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.SCALE
 import com.cobblemon.mod.common.client.gui.pokedex.ScaledButton
-import com.cobblemon.mod.common.client.gui.pokedex.renderTooltip
+// PT136: orphaned import — renderTooltip helper removed/missing
 import com.cobblemon.mod.common.client.gui.summary.widgets.SoundlessWidget
 import com.cobblemon.mod.common.client.render.drawScaledText
 import com.cobblemon.mod.common.client.render.drawScaledTextJustifiedRight
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Component
-import net.minecraft.util.FastColor
+import net.minecraft.util.ARGB
 
 class StatsWidget(val pX: Int, val pY: Int) : SoundlessWidget(
     pX,
@@ -142,7 +144,7 @@ class StatsWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         }
     }
 
-    override fun renderWidget(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         when (selectedStatTypeIndex) {
             STAT_TYPE_BASE -> {
                 renderBaseStats(context)
@@ -153,7 +155,7 @@ class StatsWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         }
     }
 
-    private fun renderBaseStats(context: GuiGraphics) {
+    private fun renderBaseStats(context: GuiGraphicsExtractor) {
         if (baseStats == null) return
 
         drawScaledText(
@@ -207,7 +209,7 @@ class StatsWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         }
     }
 
-    private fun renderRideStats(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    private fun renderRideStats(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         rideProperties?.behaviours?.let { behaviours ->
             val selectedBehaviour = behaviours.entries.toList()[selectedRideBehavioursIndex]
             val behaviourStats = selectedBehaviour.value.stats
@@ -262,9 +264,9 @@ class StatsWidget(val pX: Int, val pY: Int) : SoundlessWidget(
                 behaviourStats[stat]?.let { range ->
                     val startPosY = pY + 10 + (6F * index)
 
-                    val red = FastColor.ARGB32.red(stat.flavour.colour) / 255F
-                    val green = FastColor.ARGB32.green(stat.flavour.colour) / 255F
-                    val blue = FastColor.ARGB32.blue(stat.flavour.colour) / 255F
+                    val red = ARGB.red(stat.flavour.colour) / 255F
+                    val green = ARGB.green(stat.flavour.colour) / 255F
+                    val blue = ARGB.blue(stat.flavour.colour) / 255F
 
                     val barStart = pX + 55F
                     val baseStatWidth = (range.start / 100F) * MAX_BAR_WIDTH
@@ -306,7 +308,7 @@ class StatsWidget(val pX: Int, val pY: Int) : SoundlessWidget(
                         alpha = if (isBoostedStatHovered) 1F else 0.5F
                     )
 
-                    if (isBoostedStatHovered) renderTooltip(
+                    if (isBoostedStatHovered) setTooltipForNextFrame(
                         context,
                         lang("ui.stats.ride.boost_maximum").bold(),
                         mouseX,

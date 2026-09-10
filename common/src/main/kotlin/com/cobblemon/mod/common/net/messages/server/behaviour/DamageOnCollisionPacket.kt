@@ -18,13 +18,16 @@ class DamageOnCollisionPacket(
 ) : NetworkPacket<DamageOnCollisionPacket> {
     companion object {
         val ID = cobblemonResource("c2s_on_collision_damage")
+        // PT136: FriendlyByteBuf.read/writeVec3 removed in MC 26.1.x — encode components manually
         fun decode(buffer: RegistryFriendlyByteBuf): DamageOnCollisionPacket = DamageOnCollisionPacket(
-            impactVec = buffer.readVec3()
+            impactVec = Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble())
         )
     }
 
     override val id = ID
     override fun encode(buffer: RegistryFriendlyByteBuf) {
-        buffer.writeVec3(impactVec)
+        buffer.writeDouble(impactVec.x)
+        buffer.writeDouble(impactVec.y)
+        buffer.writeDouble(impactVec.z)
     }
 }

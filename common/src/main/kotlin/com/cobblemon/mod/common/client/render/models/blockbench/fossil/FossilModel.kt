@@ -22,10 +22,10 @@ import net.minecraft.client.model.geom.ModelPart
  * @author Hiroku
  * @since October 30th, 2023
  */
-class FossilModel(root: Bone) : PosableModel(root) {
+class FossilModel(root: ModelPart) : PosableModel(root) {
     @Transient
     @SerializedName("Something that isn't root part. Gson thinks they're the same as the root field and so field duplication. Stupid.")
-    override val rootPart = (root as ModelPart).registerChildWithAllChildren(root.children.entries.first().key)
+    override val rootPart: ModelPart = root.registerChildWithAllChildren(root.children.entries.first().key)
     // Represents a very rough middle of the model
     // The reason to do this is to
     // 1. The embryo is aligned with the center of the model

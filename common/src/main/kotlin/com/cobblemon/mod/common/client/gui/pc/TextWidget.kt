@@ -8,18 +8,23 @@
 
 package com.cobblemon.mod.common.client.gui.pc
 
+import com.cobblemon.mod.common.util.hasShiftDown
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.renderer.rendertype.RenderTypes
+
 import com.cobblemon.mod.common.api.text.bold
 import com.cobblemon.mod.common.api.text.font
 import com.cobblemon.mod.common.api.text.text
 import com.cobblemon.mod.common.client.CobblemonResources
 import com.cobblemon.mod.common.client.gui.CobblemonRenderable
 import com.mojang.blaze3d.platform.InputConstants
-import net.minecraft.Util
+import net.minecraft.util.Util
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.screens.Screen
-import net.minecraft.client.renderer.RenderType
+import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
 
@@ -50,11 +55,11 @@ abstract class TextWidget(
         else (if(string.isEmpty()) placeholder else string.text())
     }
 
-    fun renderCursor(context: GuiGraphics, text: MutableComponent) {
+    fun renderCursor(context: GuiGraphicsExtractor, text: MutableComponent) {
         if (showCursor && !value.isEmpty() && cursorPosition != value.length) {
             val startToCursorWidth = Minecraft.getInstance().font.width((text.getString(cursorPosition).text().bold()).font(CobblemonResources.DEFAULT_LARGE))
+            // PT144: context.fill 6-arg overload requires RenderPipeline; drop legacy RenderType arg.
             context.fill(
-                RenderType.guiTextHighlight(),
                 startPosX + startToCursorWidth - 1,
                 y + 2,
                 startPosX + startToCursorWidth,
@@ -73,10 +78,13 @@ abstract class TextWidget(
         super.setFocused(focused)
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
         if (isFocused && !isMouseOver(mouseX, mouseY)) unfocused()
 
-        val result = super.mouseClicked(mouseX, mouseY, button)
+        val result = super.mouseClicked(event, fromOnClick)
 
         if (mouseX > startPosX + Minecraft.getInstance().font.width(value.text().bold().font(CobblemonResources.DEFAULT_LARGE))) {
             moveCursorToEnd(false)
@@ -87,13 +95,16 @@ abstract class TextWidget(
                 val startToLineWidth = Minecraft.getInstance().font.width(lineSubstring.text().bold().font(CobblemonResources.DEFAULT_LARGE))
                 if ((mouseX - startPosX) <= startToLineWidth) break
             }
-            moveCursorTo(maxOf(0, lineSubstring.length - 1), Screen.hasShiftDown())
+            moveCursorTo(maxOf(0, lineSubstring.length - 1), hasShiftDown())
         }
         return result
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+    override fun keyPressed(event: KeyEvent): Boolean {
+        val keyCode = event.key()
+        val scanCode = event.scancode()
+        val modifiers = event.modifiers()
         if (isFocused && (keyCode == InputConstants.KEY_RETURN || keyCode == InputConstants.KEY_NUMPADENTER)) unfocused()
-        return super.keyPressed(keyCode, scanCode, modifiers)
+        return super.keyPressed(event)
     }
 }

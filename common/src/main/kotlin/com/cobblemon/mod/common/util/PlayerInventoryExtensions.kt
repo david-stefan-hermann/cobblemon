@@ -14,19 +14,18 @@ import java.util.function.Predicate
 import java.util.stream.Collectors
 
 fun Inventory.removeAmountIf(amount: Int, rule: Predicate<ItemStack>) {
-    this.compartments.forEach {
-        var index = 0
-        val matches = it.stream()
-            .map { a -> Pair(index++, a) }
-            .filter { rule.test(it.second) }
-            .collect(Collectors.toList())
+    val items = this.nonEquipmentItems
+    var index = 0
+    val matches = items.stream()
+        .map { a -> Pair(index++, a) }
+        .filter { rule.test(it.second) }
+        .collect(Collectors.toList())
 
-        var remaining = amount
-        while (remaining > 0) {
-            val element = matches.removeFirstOrNull() ?: return@forEach
+    var remaining = amount
+    while (remaining > 0) {
+        val element = matches.removeFirstOrNull() ?: return
 
-            val result = this.removeItem(element.first, amount)
-            remaining -= result.count
-        }
+        val result = this.removeItem(element.first, amount)
+        remaining -= result.count
     }
 }

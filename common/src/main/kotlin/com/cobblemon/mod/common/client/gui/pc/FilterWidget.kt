@@ -17,8 +17,9 @@ import com.cobblemon.mod.common.client.CobblemonResources
 import com.cobblemon.mod.common.client.render.drawScaledText
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
+import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.network.chat.Component
 
@@ -37,7 +38,7 @@ class FilterWidget(
         private val labelFilter = Component.translatable("cobblemon.ui.pc.filter")
     }
 
-    override fun renderWidget(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         blitk(
             matrixStack = context.pose(),
             x = (x - 9) / SCALE,
@@ -66,17 +67,19 @@ class FilterWidget(
         renderCursor(context, input)
 
         if (iconHovered(mouseX, mouseY)) {
-            context.renderTooltip(Minecraft.getInstance().font, lang("ui.pc.filter.tooltip"), mouseX, mouseY)
+            context.setTooltipForNextFrame(Minecraft.getInstance().font, lang("ui.pc.filter.tooltip"), mouseX, mouseY)
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
         if (iconHovered(mouseX.toInt(), mouseY.toInt())) {
             Minecraft.getInstance().soundManager.play(SimpleSoundInstance.forUI(CobblemonSounds.PC_CLICK, 1.0F, 0.25F))
-            // Simulate clicking on text area if icon is clicked
-            if (!isFocused) return super.mouseClicked(x + (width / 2.0), y + (height / 2.0), button)
+            // PT144: mouseClicked(double,double,int) removed in MC 26.1.x. Focus delegation now via super event only.
+            if (!isFocused) return super.mouseClicked(event, fromOnClick)
         }
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(event, fromOnClick)
     }
 
     fun iconHovered(mouseX: Int, mouseY: Int): Boolean = mouseX >= (x - 9) && mouseY >= (y + 3)

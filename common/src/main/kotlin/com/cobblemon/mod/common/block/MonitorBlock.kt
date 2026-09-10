@@ -19,7 +19,6 @@ import net.minecraft.core.Direction
 import net.minecraft.util.StringRepresentable
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
-import net.minecraft.world.ItemInteractionResult
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.context.BlockPlaceContext
@@ -85,26 +84,26 @@ class MonitorBlock(settings: Properties) : MultiblockBlock(settings) {
         player: Player,
         hand: InteractionHand,
         hit: BlockHitResult
-    ): ItemInteractionResult {
+    ): InteractionResult {
         val entity = level.getBlockEntity(pos) as? FossilMultiblockEntity
-            ?: return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION
+            ?: return InteractionResult.SUCCESS_SERVER
         val result = entity.handleUseItem(stack, state, level, pos, player, hand)
-        if (result == ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION) {
+        if (result == InteractionResult.PASS) {
             return if (entity.handleUseWithoutItem(state, level, pos, player).consumesAction()) {
-                ItemInteractionResult.sidedSuccess(level.isClientSide)
+                (if (level.isClientSide) InteractionResult.SUCCESS else InteractionResult.SUCCESS_SERVER)
             } else {
-                ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
+                InteractionResult.PASS
             }
         }
         return result
     }
 
-    override fun onRemove(state: BlockState, level: Level, pos: BlockPos, newState: BlockState, movedByPiston: Boolean) {
-        if (state.block != newState.block && !level.isClientSide && !movedByPiston) {
+    override fun affectNeighborsAfterRemoval(state: BlockState, level: net.minecraft.server.level.ServerLevel, pos: BlockPos, movedByPiston: Boolean) {
+        if (!movedByPiston) {
             val entity = level.getBlockEntity(pos) as? FossilMultiblockEntity
             entity?.dropDisk(level, pos, state)
         }
-        super.onRemove(state, level, pos, newState, movedByPiston)
+        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston)
     }
 
     override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
@@ -117,7 +116,7 @@ class MonitorBlock(settings: Properties) : MultiblockBlock(settings) {
         return true
     }
 
-    override fun getAnalogOutputSignal(state: BlockState, world: Level, pos: BlockPos): Int {
+    override fun getAnalogOutputSignal(state: BlockState, world: Level, pos: BlockPos, direction: Direction): Int {
         val monitorEntity = world.getBlockEntity(pos) as? MultiblockEntity
         val multiBlockEntity = monitorEntity?.multiblockStructure
         if(multiBlockEntity != null) {
@@ -140,7 +139,7 @@ class MonitorBlock(settings: Properties) : MultiblockBlock(settings) {
         }
     }
 
-    override fun <T: BlockEntity?> getTicker(level: Level, state: BlockState, type: BlockEntityType<T>): BlockEntityTicker<T>? {
+    override fun <T: BlockEntity> getTicker(level: Level, state: BlockState, type: BlockEntityType<T>): BlockEntityTicker<T>? {
         return if (type == CobblemonBlockEntities.FOSSIL_MULTIBLOCK) {
             FossilMultiblockEntity.TICKER as BlockEntityTicker<T>
         } else {

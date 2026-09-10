@@ -14,6 +14,8 @@ import com.cobblemon.mod.common.util.giveOrDropItemStack
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.core.HolderLookup
+import net.minecraft.world.level.storage.ValueInput
+import net.minecraft.world.level.storage.ValueOutput
 import net.minecraft.core.NonNullList
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.protocol.Packet
@@ -56,14 +58,14 @@ class DisplayCaseBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cob
         if (playerStack.isEmpty && !getStack().isEmpty) {
             if (!player.isCreative) player.setItemInHand(hand, getStack())
             setCaseStack(ItemStack.EMPTY)
-            return InteractionResult.sidedSuccess(true)
+            return (if (true) InteractionResult.SUCCESS else InteractionResult.SUCCESS_SERVER)
         }
 
         // Case is empty, player's hand is not - put playerStack in the case
         if (getStack().isEmpty && !playerStack.isEmpty) {
             setCaseStack(playerStack.copy())
             playerStack.consume(1, player)
-            return InteractionResult.sidedSuccess(true)
+            return (if (true) InteractionResult.SUCCESS else InteractionResult.SUCCESS_SERVER)
         }
 
         // Player has item, case has item - swap items
@@ -98,15 +100,15 @@ class DisplayCaseBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(Cob
         onItemUpdated(level, oldState, level.getBlockState(blockPos))
     }
 
-    override fun saveAdditional(nbt: CompoundTag, registryLookup: HolderLookup.Provider) {
-        super.saveAdditional(nbt, registryLookup)
-        ContainerHelper.saveAllItems(nbt, inv, true, registryLookup)
+    override fun saveAdditional(output: ValueOutput) {
+        super.saveAdditional(output)
+        ContainerHelper.saveAllItems(output, inv, true)
     }
 
-    override fun loadAdditional(nbt: CompoundTag, registryLookup: HolderLookup.Provider) {
-        super.loadAdditional(nbt, registryLookup)
+    override fun loadAdditional(input: ValueInput) {
+        super.loadAdditional(input)
         inv.clear()
-        ContainerHelper.loadAllItems(nbt, inv, registryLookup)
+        ContainerHelper.loadAllItems(input, inv)
     }
 
     override fun getUpdatePacket(): Packet<ClientGamePacketListener>? {

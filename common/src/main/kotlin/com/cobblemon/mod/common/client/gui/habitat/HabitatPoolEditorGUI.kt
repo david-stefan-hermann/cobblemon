@@ -19,7 +19,7 @@ import com.cobblemon.mod.common.util.adapters.IntRangesAdapter
 import com.cobblemon.mod.common.util.lang
 import java.awt.Color
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.screens.Screen
@@ -171,11 +171,11 @@ class HabitatPoolEditorGUI(
         return true
     }
 
-    override fun render(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
+    override fun extractRenderState(guiGraphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
         guiGraphics.fill(0, 0, width, height, Color(0, 0, 0, 100).rgb)
         guiGraphics.fill(0, 0, width, headerHeight, Color(0, 0, 0, 150).rgb)
         guiGraphics.fill(0, getFooterTop(), width, height, Color(0, 0, 0, 150).rgb)
-        guiGraphics.drawCenteredString(font, title, width / 2, 8, 0xFFFFFF)
+        guiGraphics.centeredText(font, title, width / 2, 8, 0xFFFFFF)
         
         val buttonWidth = getScaledWidth() - 20
         val colWidth = if (isActivated) buttonWidth / 5 else buttonWidth / 6
@@ -188,7 +188,7 @@ class HabitatPoolEditorGUI(
         headers.forEach { (header, x) ->
             val y = optionsTop + 5 + scrollOffset.toInt()
             if (y >= optionsTop && y + font.lineHeight <= optionsBottom) {
-                guiGraphics.drawString(font, header, x, y, 0xFFFFFF)
+                guiGraphics.text(font, header, x, y, 0xFFFFFF)
             }
         }
         
@@ -196,29 +196,29 @@ class HabitatPoolEditorGUI(
         spawnRows.forEach { row ->
             if (row.y < optionsTop || row.y + 20 > optionsBottom) return@forEach
             var x = 10
-            guiGraphics.drawString(font, row.species, x, row.y + 5, 0xFFFFFF)
+            guiGraphics.text(font, row.species, x, row.y + 5, 0xFFFFFF)
             x += colWidth
-            guiGraphics.drawString(font, row.levels, x, row.y + 5, 0xFFFFFF)
+            guiGraphics.text(font, row.levels, x, row.y + 5, 0xFFFFFF)
             x += colWidth
-            guiGraphics.drawString(font, row.phases, x, row.y + 5, 0xFFFFFF)
+            guiGraphics.text(font, row.phases, x, row.y + 5, 0xFFFFFF)
             x += colWidth
-            guiGraphics.drawString(font, row.position, x, row.y + 5, 0xFFFFFF)
+            guiGraphics.text(font, row.position, x, row.y + 5, 0xFFFFFF)
             x += colWidth
-            guiGraphics.drawString(font, row.weight, x, row.y + 5, 0xFFFFFF)
+            guiGraphics.text(font, row.weight, x, row.y + 5, 0xFFFFFF)
             if (row.bucket != null) {
                 x += colWidth - 10
-                guiGraphics.drawString(font, row.bucket, x, row.y + 5, 0xFFFFFF)
+                guiGraphics.text(font, row.bucket, x, row.y + 5, 0xFFFFFF)
             }
         }
 
         optionWidgets.forEach { widget ->
-            widget.render(guiGraphics, mouseX, mouseY, partialTick)
+            widget.extractRenderState(guiGraphics, mouseX, mouseY, partialTick)
         }
 
         guiGraphics.disableScissor()
 
         footerWidgets.forEach { widget ->
-            widget.render(guiGraphics, mouseX, mouseY, partialTick)
+            widget.extractRenderState(guiGraphics, mouseX, mouseY, partialTick)
         }
     }
 

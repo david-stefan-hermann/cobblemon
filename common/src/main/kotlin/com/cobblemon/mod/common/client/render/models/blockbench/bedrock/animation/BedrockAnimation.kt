@@ -32,7 +32,7 @@ import net.minecraft.client.model.geom.ModelPart
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.client.resources.sounds.EntityBoundSoundInstance
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.phys.Vec3
@@ -105,7 +105,7 @@ class BedrockParticleKeyframe(
 
 class BedrockSoundKeyframe(
     seconds: Float,
-    val sound: ResourceLocation
+    val sound: Identifier
 ): BedrockEffectKeyframe(seconds) {
     override fun run(entity: Entity?, state: PosableState) {
         val soundEvent = SoundEvent.createVariableRangeEvent(sound) // Means we don't need to setup a sound registry entry for every single thing
@@ -185,7 +185,7 @@ data class BedrockAnimation(
     fun run(
         context: RenderContext?,
         relevantPartsByName: Map<String, ModelPart>,
-        rootPart: Bone?,
+        rootPart: ModelPart?,
         state: PosableState,
         animationSeconds: Float,
         limbSwing: Float,

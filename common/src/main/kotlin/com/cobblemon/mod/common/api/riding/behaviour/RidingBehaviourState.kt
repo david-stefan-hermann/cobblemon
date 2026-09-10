@@ -45,12 +45,17 @@ open class RidingBehaviourState {
     }
 
     open fun encode(buffer: FriendlyByteBuf) {
-        buffer.writeVec3(rideVelocity.get())
+        // PT135: FriendlyByteBuf.writeVec3 removed in MC 26.1.x — encode components manually
+        val vel = rideVelocity.get()
+        buffer.writeDouble(vel.x)
+        buffer.writeDouble(vel.y)
+        buffer.writeDouble(vel.z)
         buffer.writeFloat(stamina.get())
     }
 
     open fun decode(buffer: FriendlyByteBuf) {
-        rideVelocity.set(buffer.readVec3(), true)
+        // PT135: FriendlyByteBuf.readVec3 removed in MC 26.1.x — decode components manually
+        rideVelocity.set(net.minecraft.world.phys.Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()), true)
         stamina.set(buffer.readFloat(), true)
     }
 }

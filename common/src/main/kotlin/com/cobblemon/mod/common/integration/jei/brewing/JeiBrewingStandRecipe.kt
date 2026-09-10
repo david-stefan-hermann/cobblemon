@@ -10,20 +10,20 @@ package com.cobblemon.mod.common.integration.jei.brewing
 
 import com.cobblemon.mod.common.item.crafting.brewingstand.BrewingStandRecipe
 import mezz.jei.api.recipe.vanilla.IJeiBrewingRecipe
-import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.ItemStack
 
 class JeiBrewingStandRecipe(
     private val recipe: BrewingStandRecipe,
-    private val id: ResourceLocation
+    private val id: Any
 ) : IJeiBrewingRecipe {
 
     override fun getPotionInputs(): List<ItemStack> {
-        return recipe.bottle.items.asList()
+        // PT137: Ingredient.items() now returns Stream<Holder<Item>>
+        return recipe.bottle.items().map { it.value().defaultInstance }.toList()
     }
 
     override fun getIngredients(): List<ItemStack> {
-        return recipe.input.items.asList()
+        return recipe.input.items().map { it.value().defaultInstance }.toList()
     }
 
     override fun getPotionOutput(): ItemStack {
@@ -34,7 +34,6 @@ class JeiBrewingStandRecipe(
         return 1
     }
 
-    override fun getUid(): ResourceLocation {
-        return id
-    }
+    // PT145: getUid() abstract member added in MC 26.1.x.
+    override fun getUid(): net.minecraft.resources.Identifier? = id as? net.minecraft.resources.Identifier
 }

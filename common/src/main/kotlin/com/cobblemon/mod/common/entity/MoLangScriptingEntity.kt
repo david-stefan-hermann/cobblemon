@@ -20,7 +20,7 @@ import com.mojang.serialization.Dynamic
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.ListTag
 import net.minecraft.nbt.StringTag
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.ai.Brain
@@ -36,7 +36,7 @@ import net.minecraft.world.entity.ai.sensing.SensorType
  */
 interface MoLangScriptingEntity {
     var behavioursAreCustom: Boolean
-    val behaviours: MutableList<ResourceLocation>
+    val behaviours: MutableList<Identifier>
     val registeredVariables: MutableList<MoLangConfigVariable>
     /** Configuration properties that are managed and reset prior to entity behaviour initialization. */
     var config: VariableStruct
@@ -63,7 +63,7 @@ interface MoLangScriptingEntity {
      * doesn't require this function, wow me. - Hiro
      */
     fun assignNewBrainWithMemoriesAndSensors(
-        dynamic: Dynamic<*>,
+        packed: Brain.Packed,
         memories: Set<MemoryModuleType<*>>,
         sensors: Set<SensorType<*>>
     ): Brain<out LivingEntity>
@@ -82,18 +82,20 @@ interface MoLangScriptingEntity {
     fun saveScriptingToNBT(nbt: CompoundTag) {
         nbt.putBoolean(DataKeys.SCRIPTED_BEHAVIOURS_ARE_CUSTOM, behavioursAreCustom)
         nbt.put(DataKeys.SCRIPTED_BEHAVIOURS, ListTag().also { it.addAll(behaviours.map { StringTag.valueOf(it.toString()) }) })
-        nbt.put(DataKeys.SCRIPTED_DATA, MoLangFunctions.writeMoValueToNBT(data))
-        nbt.put(DataKeys.SCRIPTED_CONFIG, MoLangFunctions.writeMoValueToNBT(config))
+        // PT137: writeMoValueToNBT may return null Tag; CompoundTag.put requires non-null. Skip if null.
+        MoLangFunctions.writeMoValueToNBT(data)?.let { nbt.put(DataKeys.SCRIPTED_DATA, it) }
+        MoLangFunctions.writeMoValueToNBT(config)?.let { nbt.put(DataKeys.SCRIPTED_CONFIG, it) }
     }
 
     fun loadScriptingFromNBT(nbt: CompoundTag) {
-        behavioursAreCustom = nbt.getBoolean(DataKeys.SCRIPTED_BEHAVIOURS_ARE_CUSTOM)
+        behavioursAreCustom = nbt.getBooleanOr(DataKeys.SCRIPTED_BEHAVIOURS_ARE_CUSTOM, false)
         behaviours.clear()
-        behaviours.addAll(nbt.getList(DataKeys.SCRIPTED_BEHAVIOURS, ListTag.TAG_STRING.toInt()).map { ResourceLocation.parse(it.asString) })
+        // PT137: CompoundTag.getList(name, type) → getList(name):Optional<ListTag> (type filter removed)
+        behaviours.addAll(nbt.getList(DataKeys.SCRIPTED_BEHAVIOURS).orElse(ListTag()).map { Identifier.parse(it.asString().orElse("")) })
         val dataKey = if (nbt.contains(DataKeys.SCRIPTED_DATA)) DataKeys.SCRIPTED_DATA else "Data" // migrate old use of "Data"
-        data = MoLangFunctions.readMoValueFromNBT(nbt.getCompound(dataKey)) as VariableStruct
+        data = MoLangFunctions.readMoValueFromNBT(nbt.getCompoundOrEmpty(dataKey)) as VariableStruct
         val configKey = if (nbt.contains(DataKeys.SCRIPTED_CONFIG)) DataKeys.SCRIPTED_CONFIG else "Config" // migrate old use of "Config"
-        config = if (nbt.contains(configKey)) MoLangFunctions.readMoValueFromNBT(nbt.getCompound(configKey)) as VariableStruct else VariableStruct()
+        config = if (nbt.contains(configKey)) MoLangFunctions.readMoValueFromNBT(nbt.getCompoundOrEmpty(configKey)) as VariableStruct else VariableStruct()
     }
 
     fun registerFunctionsForScripting(struct: QueryStruct) {
@@ -102,7 +104,7 @@ interface MoLangScriptingEntity {
         struct.addFunction("has_variable") { params -> DoubleValue(registeredVariables.any { it.variableName == params.getString(0) }) }
     }
 
-    fun updateBehaviours(behaviours: Collection<ResourceLocation>) {
+    fun updateBehaviours(behaviours: Collection<Identifier>) {
         val removingBehaviours = this@MoLangScriptingEntity.behaviours.filterNot(behaviours::contains).mapNotNull(CobblemonBehaviours.behaviours::get)
         removingBehaviours.forEach { behaviour ->
             behaviour.onRemove(this as LivingEntity)

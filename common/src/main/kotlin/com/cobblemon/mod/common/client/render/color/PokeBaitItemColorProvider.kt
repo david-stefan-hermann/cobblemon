@@ -9,24 +9,21 @@
 package com.cobblemon.mod.common.client.render.color
 
 import com.cobblemon.mod.common.CobblemonItemComponents
-import net.minecraft.client.color.item.ItemColor
+import net.minecraft.client.color.item.ItemTintSource
+import net.minecraft.client.multiplayer.ClientLevel
+import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.item.ItemStack
 
-object PokeBaitItemColorProvider : ItemColor {
-    override fun getColor(stack: ItemStack, layer: Int): Int {
+object PokeBaitItemColorProvider : ItemTintSource {
+    override fun calculate(stack: ItemStack, level: ClientLevel?, entity: LivingEntity?): Int {
         val colourComponent = stack.get(CobblemonItemComponents.FOOD_COLOUR) ?: return -1
 
         val primaryColor = colourComponent.colours.getOrNull(0)
-        val secondaryColor = colourComponent.colours.getOrNull(1)
-        val tertiaryColor = colourComponent.colours.getOrNull(2)
 
-        val colour = when (layer) {
-            0 -> primaryColor?.textureDiffuseColor
-            1 -> secondaryColor?.textureDiffuseColor
-            2 -> tertiaryColor?.textureDiffuseColor
-            else -> -1
-        } ?: -1
-
-        return colour
+        return primaryColor?.textureDiffuseColor ?: -1
     }
+
+    // PT144: ItemTintSource.type() abstract member added in MC 26.1.x.
+    override fun type(): com.mojang.serialization.MapCodec<out ItemTintSource> =
+        com.mojang.serialization.MapCodec.unit(this)
 }

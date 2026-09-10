@@ -8,71 +8,13 @@
 
 package com.cobblemon.mod.common.api.snowstorm
 
-import com.cobblemon.mod.common.client.render.shader.CobblemonShaders
-import com.mojang.blaze3d.platform.GlStateManager
-import com.mojang.blaze3d.systems.RenderSystem
-import com.mojang.blaze3d.vertex.BufferBuilder
-import com.mojang.blaze3d.vertex.DefaultVertexFormat
-import com.mojang.blaze3d.vertex.Tesselator
-import com.mojang.blaze3d.vertex.VertexFormat
 import net.minecraft.client.particle.ParticleRenderType
-import net.minecraft.client.renderer.texture.TextureAtlas
-import net.minecraft.client.renderer.texture.TextureManager
 
+// PT131: ParticleRenderType became `final class extends Record` in MC 26.1 — cannot be subclassed.
+// Use plain record-style instances; rendering pipeline migrated to GpuRenderPipeline (begin/depthMask/cull are no-ops).
 object ParticleMaterials {
-    val ALPHA = object : ParticleRenderType {
-        override fun begin(tessellator: Tesselator, textureManager: TextureManager): BufferBuilder {
-            RenderSystem.enableBlend()
-            RenderSystem.enableCull()
-            RenderSystem.depthMask(true)
-            RenderSystem.setShader { CobblemonShaders.PARTICLE_CUTOUT }
-            RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES)
-            RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA)
-            return tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE)
-        }
-
-        override fun toString() = "ALPHA"
-    }
-
-    val ADD = object : ParticleRenderType {
-        override fun begin(tessellator: Tesselator, textureManager: TextureManager): BufferBuilder {
-            RenderSystem.enableBlend()
-            RenderSystem.disableCull()
-            RenderSystem.depthMask(true)
-            RenderSystem.setShader { CobblemonShaders.PARTICLE_BLEND }
-            RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES)
-            RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE)
-            return tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE)
-        }
-
-        override fun toString() = "ADD"
-    }
-
-    val BLEND = object : ParticleRenderType {
-        override fun begin(tessellator: Tesselator, textureManager: TextureManager): BufferBuilder {
-            RenderSystem.enableBlend()
-            RenderSystem.disableCull()
-            RenderSystem.depthMask(true)
-            RenderSystem.setShader { CobblemonShaders.PARTICLE_BLEND }
-            RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES)
-            RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA)
-            return tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE)
-        }
-
-        override fun toString() = "BLEND"
-    }
-
-    val OPAQUE = object : ParticleRenderType {
-        override fun begin(tessellator: Tesselator, textureManager: TextureManager): BufferBuilder {
-            RenderSystem.enableBlend()
-            RenderSystem.enableCull()
-            RenderSystem.depthMask(true)
-            RenderSystem.setShader { CobblemonShaders.PARTICLE_BLEND }
-            RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES)
-            RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_COLOR, GlStateManager.DestFactor.ZERO)
-            return tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE)
-        }
-
-        override fun toString() =  "OPAQUE"
-    }
+    val ALPHA: ParticleRenderType = ParticleRenderType("ALPHA")
+    val ADD: ParticleRenderType = ParticleRenderType("ADD")
+    val BLEND: ParticleRenderType = ParticleRenderType("BLEND")
+    val OPAQUE: ParticleRenderType = ParticleRenderType("OPAQUE")
 }

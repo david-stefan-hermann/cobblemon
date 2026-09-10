@@ -8,6 +8,9 @@
 
 package com.cobblemon.mod.common.client.gui.pc
 
+import com.cobblemon.mod.common.util.translate
+import com.cobblemon.mod.common.util.scale
+
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.api.gui.blitk
 import com.cobblemon.mod.common.client.gui.CobblemonRenderable
@@ -22,8 +25,9 @@ import com.cobblemon.mod.common.pokemon.Pokemon
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
 import com.cobblemon.mod.common.util.math.fromEulerXYZDegrees
+import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.sounds.SoundManager
 import net.minecraft.network.chat.Component
@@ -53,13 +57,13 @@ open class StorageSlot(
     override fun playDownSound(soundManager: SoundManager) {
     }
 
-    override fun renderWidget(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractContents(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         if (shouldRender()) {
             renderSlot(context, x, y, delta)
         }
     }
 
-    fun renderSlot(context: GuiGraphics, posX: Int, posY: Int, partialTicks: Float) {
+    fun renderSlot(context: GuiGraphicsExtractor, posX: Int, posY: Int, partialTicks: Float) {
         val pokemon = getPokemon() ?: return
         val matrices = context.pose()
         context.enableScissor(
@@ -70,9 +74,9 @@ open class StorageSlot(
         )
 
         // Render Pokémon
-        matrices.pushPose()
-        matrices.translate(posX + (SIZE / 2.0), posY + 1.0, 0.0)
-        matrices.scale(2.5F, 2.5F, 1F)
+        matrices.pushMatrix()
+        matrices.translate((posX + (SIZE / 2.0)).toFloat(), (posY + 1.0).toFloat())
+        matrices.scale(2.5F, 2.5F)
 
         val animationConfig = if (this is PartyStorageSlot) Cobblemon.config.summaryProfileAnimations else Cobblemon.config.pcProfileAnimations
         val shouldAnimate = when (animationConfig) {
@@ -89,13 +93,13 @@ open class StorageSlot(
             partialTicks = if (shouldAnimate) partialTicks else 0F,
             scale = 4.5F
         )
-        matrices.popPose()
+        matrices.popMatrix()
 
         context.disableScissor()
 
         if (!isSlotSelected) {
             // Ensure elements are not hidden behind Pokémon render
-            matrices.pushPose()
+            matrices.pushMatrix()
             matrices.translate(0.0, 0.0, 100.0)
             // Level
             drawScaledText(
@@ -130,11 +134,11 @@ open class StorageSlot(
                     matrixStack = matrices
                 )
             }
-            matrices.popPose()
+            matrices.popMatrix()
         }
 
         // Ensure overlay elements are on top
-        matrices.pushPose()
+        matrices.pushMatrix()
         matrices.translate(0.0, 0.0, 500.0)
 
         val config = parent.pcGui.configuration
@@ -205,7 +209,7 @@ open class StorageSlot(
                 scale = PCGUI.SCALE
             )
         }
-        matrices.popPose()
+        matrices.popMatrix()
     }
 
     open fun isStationary(): Boolean {
@@ -228,8 +232,11 @@ open class StorageSlot(
         return getPokemon() == null || parent.pcGui.search.passes(getPokemon())
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return if (clickable()) super.mouseClicked(mouseX, mouseY, button) else false
+    override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
+        return if (clickable()) super.mouseClicked(event, fromOnClick) else false
     }
 
     fun isHovered(mouseX: Int, mouseY: Int) = mouseX.toFloat() in (x.toFloat()..(x.toFloat() + SIZE)) && mouseY.toFloat() in (y.toFloat()..(y.toFloat() + SIZE))

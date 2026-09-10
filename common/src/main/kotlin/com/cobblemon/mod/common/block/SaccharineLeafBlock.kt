@@ -24,7 +24,7 @@ import net.minecraft.util.Mth
 import net.minecraft.util.RandomSource
 import net.minecraft.world.Containers
 import net.minecraft.world.InteractionHand
-import net.minecraft.world.ItemInteractionResult
+import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
@@ -52,8 +52,17 @@ import net.minecraft.world.phys.shapes.EntityCollisionContext
 import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
 
-class SaccharineLeafBlock(settings: Properties) : LeavesBlock(settings) {
+// PT143/144: LeavesBlock requires saplingChance Float + abstract codec() + spawnFallingLeavesParticle in MC 26.1.x.
+class SaccharineLeafBlock(settings: Properties) : LeavesBlock(0.01f, settings) {
+
+    override fun codec(): com.mojang.serialization.MapCodec<out LeavesBlock> = CODEC
+
+    override fun spawnFallingLeavesParticle(level: Level, pos: BlockPos, random: RandomSource) {
+        // PT144: no-op — honey particles handled in animateTick instead.
+    }
+
     companion object {
+        val CODEC: com.mojang.serialization.MapCodec<SaccharineLeafBlock> = simpleCodec(::SaccharineLeafBlock)
         val AGE: IntegerProperty = BlockStateProperties.AGE_2
         val DISTANCE: IntegerProperty = BlockStateProperties.DISTANCE
         val PERSISTENT: BooleanProperty = BlockStateProperties.PERSISTENT
@@ -138,7 +147,7 @@ class SaccharineLeafBlock(settings: Properties) : LeavesBlock(settings) {
         level: BlockGetter,
         pos: BlockPos,
         context: CollisionContext
-    ): VoxelShape? {
+    ): VoxelShape {
 
         if (context is EntityCollisionContext) {
             val entity = context.entity
@@ -230,7 +239,7 @@ class SaccharineLeafBlock(settings: Properties) : LeavesBlock(settings) {
                     val blockState = level.getBlockState(blockPos)
                     val voxelShape2 = blockState.getCollisionShape(level, blockPos)
                     val f = voxelShape2.max(Direction.Axis.Y)
-                    if ((f < 1.0 || !blockState.isSolidRender(level, blockPos)) && blockState.fluidState.isEmpty) {
+                    if ((f < 1.0 || !blockState.isSolidRender()) && blockState.fluidState.isEmpty) {
                         this.addHoneyParticle(level, pos, voxelShape, pos.y.toDouble() - 0.05)
                     }
                 }
@@ -270,14 +279,14 @@ class SaccharineLeafBlock(settings: Properties) : LeavesBlock(settings) {
         player: Player,
         hand: InteractionHand,
         hit: BlockHitResult
-    ): ItemInteractionResult {
+    ): InteractionResult {
         if (!state.getValue(WATERLOGGED)) {
             val itemStack = player.getItemInHand(hand)
             val isGlassBottle = itemStack.`is`(Items.GLASS_BOTTLE)
             val isHoneyBottle = itemStack.`is`(Items.HONEY_BOTTLE)
 
             if (isGlassBottle && isAtMaxAge(state)) {
-                if (level.isClientSide) return ItemInteractionResult.SUCCESS
+                if (level.isClientSide) return InteractionResult.SUCCESS
                 // Decrement stack if not in creative mode
                 itemStack.consume(1, player)
 
@@ -292,9 +301,9 @@ class SaccharineLeafBlock(settings: Properties) : LeavesBlock(settings) {
                 level.playSound(null, pos, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS)
                 level.setBlock(pos, state.setValue(AGE, 0), UPDATE_CLIENTS)
                 level.gameEvent(null, GameEvent.BLOCK_CHANGE, pos)
-                return ItemInteractionResult.SUCCESS
+                return InteractionResult.SUCCESS
             } else if (isHoneyBottle && !isAtMaxAge(state)) {
-                if (level.isClientSide) return ItemInteractionResult.SUCCESS
+                if (level.isClientSide) return InteractionResult.SUCCESS
 
                 // Decrement stack if not in creative mode
                 if (!player.isCreative) {
@@ -310,7 +319,7 @@ class SaccharineLeafBlock(settings: Properties) : LeavesBlock(settings) {
                 level.playSound(null, pos, SoundEvents.HONEY_BLOCK_PLACE, SoundSource.BLOCKS)
                 level.setBlock(pos, state.setValue(AGE, 2), UPDATE_CLIENTS)
                 level.gameEvent(null, GameEvent.BLOCK_CHANGE, pos)
-                return ItemInteractionResult.SUCCESS
+                return InteractionResult.SUCCESS
             }
         }
 

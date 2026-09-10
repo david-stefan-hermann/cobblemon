@@ -13,6 +13,7 @@ import com.cobblemon.mod.common.client.render.models.blockbench.PosableState
 import com.cobblemon.mod.common.client.render.models.blockbench.addRotation
 import com.cobblemon.mod.common.client.render.models.blockbench.frame.BimanualFrame
 import com.cobblemon.mod.common.client.render.models.blockbench.pose.Bone
+import net.minecraft.client.model.geom.ModelPart
 import com.cobblemon.mod.common.client.render.models.blockbench.pose.ModelPartTransformation.Companion.Y_AXIS
 import com.cobblemon.mod.common.client.render.models.blockbench.pose.ModelPartTransformation.Companion.Z_AXIS
 import com.cobblemon.mod.common.client.render.models.blockbench.repository.RenderContext
@@ -30,8 +31,8 @@ class BimanualSwingAnimation(
     val swingPeriodMultiplier: Float = 0.6662F,
     /** The multiplier to apply to the swing of the entity. The larger this is, the further the arms move. */
     val amplitudeMultiplier: Float = 1F,
-    val leftArm: Bone?,
-    val rightArm: Bone?
+    val leftArm: ModelPart?,
+    val rightArm: ModelPart?,
 ) : PoseAnimation() {
     constructor(
         frame: BimanualFrame,
@@ -45,14 +46,18 @@ class BimanualSwingAnimation(
     )
 
     override fun setupAnim(context: RenderContext, model: PosableModel, state: PosableState, limbSwing: Float, limbSwingAmount: Float, ageInTicks: Float, headYaw: Float, headPitch: Float, intensity: Float) {
+        // PT137: ModelPart→Bone mixin-injected extension fn — explicit cast required;
+        //         Mth.cos/sin in 26.1.x take Double (return Float); add .toDouble() at call sites.
+        val rightBone = rightArm as? Bone
+        val leftBone = leftArm as? Bone
         // Movement swing
-        rightArm?.addRotation(Y_AXIS, Mth.cos(limbSwing * swingPeriodMultiplier) * limbSwingAmount * amplitudeMultiplier * intensity)
-        leftArm?.addRotation(Y_AXIS, Mth.cos(limbSwing * swingPeriodMultiplier) * limbSwingAmount * amplitudeMultiplier * intensity)
+        rightBone?.addRotation(Y_AXIS, (Mth.cos((limbSwing * swingPeriodMultiplier).toDouble()) * limbSwingAmount * amplitudeMultiplier * intensity))
+        leftBone?.addRotation(Y_AXIS, (Mth.cos((limbSwing * swingPeriodMultiplier).toDouble()) * limbSwingAmount * amplitudeMultiplier * intensity))
 
         // Idle sway
-        rightArm?.addRotation(Z_AXIS, 1.0f * (Mth.cos(ageInTicks * 0.09f) * 0.05f + 0.05f) * intensity)
-        rightArm?.addRotation(Y_AXIS, Mth.sin(ageInTicks * 0.067f) * 0.05f * intensity)
-        leftArm?.addRotation(Z_AXIS, -1.0f * (Mth.cos(ageInTicks * 0.09f) * 0.05f + 0.05f) * intensity)
-        leftArm?.addRotation(Y_AXIS, -1.0f * Mth.sin(ageInTicks * 0.067f) * 0.05f * intensity)
+        rightBone?.addRotation(Z_AXIS, 1.0f * (Mth.cos((ageInTicks * 0.09f).toDouble()) * 0.05f + 0.05f) * intensity)
+        rightBone?.addRotation(Y_AXIS, Mth.sin((ageInTicks * 0.067f).toDouble()) * 0.05f * intensity)
+        leftBone?.addRotation(Z_AXIS, -1.0f * (Mth.cos((ageInTicks * 0.09f).toDouble()) * 0.05f + 0.05f) * intensity)
+        leftBone?.addRotation(Y_AXIS, -1.0f * Mth.sin((ageInTicks * 0.067f).toDouble()) * 0.05f * intensity)
     }
 }

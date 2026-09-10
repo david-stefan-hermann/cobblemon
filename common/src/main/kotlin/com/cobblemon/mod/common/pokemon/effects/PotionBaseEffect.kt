@@ -113,7 +113,8 @@ class PotionBaseEffect(
             return false
         }
 
-        override fun tick(entity: LivingEntity, overwriteCallback: Runnable): Boolean {
+        // PT137: MobEffectInstance.tick(LivingEntity, Runnable) split → tickServer(ServerLevel, LivingEntity, Runnable) + tickClient()
+        override fun tickServer(level: net.minecraft.server.level.ServerLevel, entity: LivingEntity, overwriteCallback: Runnable): Boolean {
             if (this.effect.value().shouldApplyEffectTickThisTick(entity.tickCount, this.amplifier)) {
                 this.onEffectStarted(entity)
             }
@@ -127,7 +128,9 @@ class PotionBaseEffect(
         }
 
         override fun onEffectStarted(entity: LivingEntity) {
-            this.effect.value().applyEffectTick(entity, this.upgrade?.amplifier ?: this.amplifier)
+            // PT137: MobEffect.applyEffectTick(ServerLevel, LivingEntity, Int)
+            val sl = (entity.level() as? net.minecraft.server.level.ServerLevel) ?: return
+            this.effect.value().applyEffectTick(sl, entity, this.upgrade?.amplifier ?: this.amplifier)
         }
 
         @Suppress("CAST_NEVER_SUCCEEDS")

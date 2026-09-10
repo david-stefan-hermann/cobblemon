@@ -8,6 +8,8 @@
 
 package com.cobblemon.mod.common.api.gui
 
+import net.minecraft.client.renderer.rendertype.RenderTypes
+
 import com.cobblemon.mod.common.api.text.font
 import com.cobblemon.mod.common.client.gui.battle.BattleOverlay.Companion.PORTRAIT_DIAMETER
 import com.cobblemon.mod.common.client.render.SpriteType
@@ -16,32 +18,27 @@ import com.cobblemon.mod.common.client.render.models.blockbench.repository.Rende
 import com.cobblemon.mod.common.client.render.models.blockbench.repository.VaryingModelRepository
 import com.cobblemon.mod.common.entity.PoseType
 import com.cobblemon.mod.common.util.toHex
-import com.mojang.blaze3d.platform.GlStateManager
+import com.mojang.blaze3d.opengl.GlStateManager
 import com.mojang.blaze3d.platform.Lighting
 import com.mojang.blaze3d.systems.RenderSystem
-import com.mojang.blaze3d.vertex.BufferUploader
-import com.mojang.blaze3d.vertex.DefaultVertexFormat
 import com.mojang.blaze3d.vertex.PoseStack
-import com.mojang.blaze3d.vertex.Tesselator
-import com.mojang.blaze3d.vertex.VertexFormat
 import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.renderer.GameRenderer
-import net.minecraft.client.renderer.LightTexture
-import net.minecraft.client.renderer.RenderType
+import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.util.FormattedCharSequence
 import org.joml.Matrix4f
 import org.joml.Vector3f
 
 @JvmOverloads
 fun blitk(
-    matrixStack: PoseStack,
-    texture: ResourceLocation? = null,
+    matrixStack: org.joml.Matrix3x2fStack,
+    texture: Identifier? = null,
     x: Number,
     y: Number,
     height: Number = 0,
@@ -58,25 +55,31 @@ fun blitk(
     blend: Boolean = true,
     scale: Float = 1F
 ) {
-    RenderSystem.setShader { GameRenderer.getPositionTexShader() }
-    texture?.run { RenderSystem.setShaderTexture(0, this) }
-    if (blend) {
-        RenderSystem.enableBlend()
-        RenderSystem.defaultBlendFunc()
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA)
-    }
-    RenderSystem.setShaderColor(red.toFloat(), green.toFloat(), blue.toFloat(), alpha.toFloat())
-    matrixStack.pushPose()
-    matrixStack.scale(scale, scale, 1F)
-    drawRectangle(
-        matrixStack.last().pose(),
-        x.toFloat(), y.toFloat(), x.toFloat() + width.toFloat(), y.toFloat() + height.toFloat(),
-        blitOffset.toFloat(),
-        uOffset.toFloat() / textureWidth.toFloat(), (uOffset.toFloat() + width.toFloat()) / textureWidth.toFloat(),
-        vOffset.toFloat() / textureHeight.toFloat(), (vOffset.toFloat() + height.toFloat()) / textureHeight.toFloat()
-    )
-    matrixStack.popPose()
-    RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
+    // PT104: stub for MC 26.1 — original PoseStack/BufferUploader/Tesselator approach removed.
+    // TODO: rewrite using GuiGraphicsExtractor.blit RenderPipeline path.
+}
+
+@JvmOverloads
+fun blitk(
+    matrixStack: PoseStack,
+    texture: Identifier? = null,
+    x: Number,
+    y: Number,
+    height: Number = 0,
+    width: Number = 0,
+    uOffset: Number = 0,
+    vOffset: Number = 0,
+    textureWidth: Number = width,
+    textureHeight: Number = height,
+    blitOffset: Number = 0,
+    red: Number = 1,
+    green: Number = 1,
+    blue: Number = 1,
+    alpha: Number = 1F,
+    blend: Boolean = true,
+    scale: Float = 1F
+) {
+    // PT105: PoseStack overload — accepts legacy callers, delegates to no-op stub above.
 }
 
 fun drawRectangle(
@@ -91,18 +94,13 @@ fun drawRectangle(
     minV: Float,
     maxV: Float
 ) {
-    val bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX)
-    bufferbuilder.addVertex(matrix, x, endY, blitOffset).setUv(minU, maxV)
-    bufferbuilder.addVertex(matrix, endX, endY, blitOffset).setUv(maxU, maxV)
-    bufferbuilder.addVertex(matrix, endX, y, blitOffset).setUv(maxU, minV)
-    bufferbuilder.addVertex(matrix, x, y, blitOffset).setUv(minU, minV)
-    BufferUploader.drawWithShader(bufferbuilder.buildOrThrow())
+    // PT104: stub for MC 26.1 — BufferUploader.drawWithShader removed.
 }
 
 @JvmOverloads
 fun drawCenteredText(
-    context: GuiGraphics,
-    font: ResourceLocation? = null,
+    context: GuiGraphicsExtractor,
+    font: Identifier? = null,
     text: Component,
     x: Number,
     y: Number,
@@ -111,13 +109,13 @@ fun drawCenteredText(
 ) {
     val comp = (text as MutableComponent).let { if (font != null) it.font(font) else it }
     val textRenderer = Minecraft.getInstance().font
-    context.drawString(textRenderer, comp, x.toInt() - textRenderer.width(comp) / 2, y.toInt(), colour, shadow)
+    context.text(textRenderer, comp, x.toInt() - textRenderer.width(comp) / 2, y.toInt(), colour, shadow)
 }
 
 @JvmOverloads
 fun drawText(
-    context: GuiGraphics,
-    font: ResourceLocation? = null,
+    context: GuiGraphicsExtractor,
+    font: Identifier? = null,
     text: MutableComponent,
     x: Number,
     y: Number,
@@ -127,14 +125,15 @@ fun drawText(
     pMouseX: Number? = null,
     pMouseY: Number? = null
 ): Boolean {
-    val comp = if (font == null) text else text.setStyle(text.style.withFont(font))
+    // PT137: Style.withFont(Identifier) → withFont(FontDescription) in MC 26.1.x
+    val comp = if (font == null) text else text.setStyle(text.style.withFont(net.minecraft.network.chat.FontDescription.Resource(font)))
     val textRenderer = Minecraft.getInstance().font
     var x = x
     val width = textRenderer.width(comp)
     if (centered) {
         x = x.toDouble() - width / 2
     }
-    context.drawString(textRenderer, comp, x.toInt(), y.toInt(), colour, shadow)
+    context.text(textRenderer, comp, x.toInt(), y.toInt(), colour, shadow)
     var isHovered = false
     if (pMouseY != null && pMouseX != null) {
         if (pMouseX.toInt() >= x.toInt() && pMouseX.toInt() <= x.toInt() + width &&
@@ -148,8 +147,8 @@ fun drawText(
 
 @JvmOverloads
 fun drawTextJustifiedRight(
-    context: GuiGraphics,
-    font: ResourceLocation? = null,
+    context: GuiGraphicsExtractor,
+    font: Identifier? = null,
     text: MutableComponent,
     x: Number,
     y: Number,
@@ -158,12 +157,12 @@ fun drawTextJustifiedRight(
 ) {
     val comp = text.let { if (font != null) it.font(font) else it }
     val font = Minecraft.getInstance().font
-    context.drawString(font, comp, x.toInt() - font.width(comp), y.toInt(), colour, shadow)
+    context.text(font, comp, x.toInt() - font.width(comp), y.toInt(), colour, shadow)
 }
 
 @JvmOverloads
 fun drawText(
-    context: GuiGraphics,
+    context: GuiGraphicsExtractor,
     text: FormattedCharSequence,
     x: Number,
     y: Number,
@@ -177,31 +176,32 @@ fun drawText(
         val width = textRenderer.width(text)
         tweakedX = tweakedX.toDouble() - width / 2
     }
-    context.drawString(textRenderer, text, tweakedX.toInt(), y.toInt(), colour, shadow)
+    context.text(textRenderer, text, tweakedX.toInt(), y.toInt(), colour, shadow)
 }
 
 @JvmOverloads
 fun drawString(
-    context: GuiGraphics,
+    context: GuiGraphicsExtractor,
     text: String,
     x: Number,
     y: Number,
     colour: Int,
     shadow: Boolean = true,
-    font: ResourceLocation? = null
+    font: Identifier? = null
 ) {
+    // PT137: Style.withFont(Identifier) → withFont(FontDescription) in MC 26.1.x
     val comp = Component.literal(text).also {
         font?.run {
-            it.toFlatList(it.style.withFont(this))
+            it.toFlatList(it.style.withFont(net.minecraft.network.chat.FontDescription.Resource(this)))
         }
     }
     val textRenderer = Minecraft.getInstance().font
-    context.drawString(textRenderer, comp, x.toInt(), y.toInt(), colour, shadow)
+    context.text(textRenderer, comp, x.toInt(), y.toInt(), colour, shadow)
 }
 
 @JvmOverloads
 fun drawPosablePortrait(
-    identifier: ResourceLocation,
+    identifier: Identifier,
     matrixStack: PoseStack,
     scale: Float = 13F,
     contextScale: Float = 1F,
@@ -219,9 +219,10 @@ fun drawPosablePortrait(
     b: Float = 1F,
     a: Float = 1F
 ) {
-    RenderSystem.applyModelViewMatrix()
+    Unit
     matrixStack.pushPose()
-    matrixStack.translate(0.0, PORTRAIT_DIAMETER.toDouble() + 2.0, 0.0)
+    // PT137: PoseStack.translate is 3-arg(x,y,z) — 2-arg variant belongs to Matrix3x2fStack
+    matrixStack.translate(0.0f, (PORTRAIT_DIAMETER + 2.0).toFloat(), 0.0f)
     matrixStack.scale(scale, scale, -scale)
     matrixStack.translate(0.0, -PORTRAIT_DIAMETER / 18.0, 0.0)
 
@@ -241,7 +242,7 @@ fun drawPosablePortrait(
         context.put(RenderContext.POSABLE_STATE, state)
         context.put(RenderContext.DO_QUIRKS, doQuirks)
 
-        val renderType = RenderType.entityCutout(texture)
+        val renderType = RenderTypes.entityCutout(texture)
 
         val quaternion1 = Axis.YP.rotationDegrees(-32F * if (reversed) -1F else 1F)
         val quaternion2 = Axis.XP.rotationDegrees(5F)
@@ -263,12 +264,13 @@ fun drawPosablePortrait(
 
         val light1 = Vector3f(0.2F, 1.0F, -1.0F)
         val light2 = Vector3f(0.1F, 0.0F, 8.0F)
-        RenderSystem.setShaderLights(light1, light2)
+        // PT137: setShaderLights now takes GpuBufferSlice in MC 26.1.x — deferred GPU buffer wiring
+        // RenderSystem.setShaderLights(light1, light2)
         quaternion1.conjugate()
 
         val immediate = Minecraft.getInstance().renderBuffers().bufferSource()
         val buffer = immediate.getBuffer(renderType)
-        val packedLight = LightTexture.pack(11, 7)
+        val packedLight = ((11) or ((7) shl 16))
 
         val colour = toHex(r, g, b, a)
         model.withLayerContext(immediate, state, VaryingModelRepository.getLayers(identifier, state)) {
@@ -278,7 +280,7 @@ fun drawPosablePortrait(
 
         model.setDefault()
 
-        Lighting.setupFor3DItems()
+        Unit
     } else {
         renderSprite(matrixStack, sprite)
     }
@@ -286,14 +288,37 @@ fun drawPosablePortrait(
     matrixStack.popPose()
 }
 
+@JvmOverloads
+fun drawPosablePortrait(
+    identifier: Identifier,
+    matrixStack: org.joml.Matrix3x2fStack,
+    scale: Float = 13F,
+    contextScale: Float = 1F,
+    reversed: Boolean = false,
+    state: PosableState,
+    partialTicks: Float,
+    limbSwing: Float = 0F,
+    limbSwingAmount: Float = 0F,
+    ageInTicks: Float = 0F,
+    headYaw: Float = 0F,
+    headPitch: Float = 0F,
+    doQuirks: Boolean = true,
+    r: Float = 1F,
+    g: Float = 1F,
+    b: Float = 1F,
+    a: Float = 1F
+) {
+    // PT106: Matrix3x2fStack overload — GUI rendering pipeline rewrite pending, stub no-op for now.
+}
+
 fun drawProfile(
-    resourceIdentifier: ResourceLocation,
+    resourceIdentifier: Identifier,
     matrixStack: PoseStack,
     state: PosableState,
     partialTicks: Float,
     scale: Float = 20F
 ) {
-    RenderSystem.applyModelViewMatrix()
+    Unit
     matrixStack.scale(scale, scale, -scale)
 
     val sprite = VaryingModelRepository.getSprite(resourceIdentifier, state, SpriteType.PROFILE)
@@ -312,7 +337,7 @@ fun drawProfile(
         context.put(RenderContext.POSABLE_STATE, state)
         state.currentModel = model
 
-        val renderType = RenderType.entityCutout(texture)//model.getLayer(texture)
+        val renderType = RenderTypes.entityCutout(texture)//model.getLayer(texture)
 
         state.setPoseToFirstSuitable(PoseType.PORTRAIT)
         state.updatePartialTicks(partialTicks)
@@ -328,42 +353,57 @@ fun drawProfile(
         val quaternion2 = Axis.XP.rotationDegrees(5F)
         matrixStack.mulPose(quaternion1)
         matrixStack.mulPose(quaternion2)
-        Lighting.setupForEntityInInventory()
+        // PT137: Lighting.setupForEntityInInventory() removed in MC 26.1.x — replaced by setupFor(Entry) GPU buffer
+        // Lighting.setupForEntityInInventory()
         val entityRenderDispatcher = Minecraft.getInstance().entityRenderDispatcher
-        entityRenderDispatcher.setRenderShadow(true)
+        Unit
 
         val bufferSource = Minecraft.getInstance().renderBuffers().bufferSource()
         val buffer = bufferSource.getBuffer(renderType)
         val light1 = Vector3f(-1F, 1F, 1.0F)
         val light2 = Vector3f(1.3F, -1F, 1.0F)
-        RenderSystem.setShaderLights(light1, light2)
-        val packedLight = LightTexture.pack(11, 7)
+        // PT137: setShaderLights now takes GpuBufferSlice in MC 26.1.x — deferred GPU buffer wiring
+        // RenderSystem.setShaderLights(light1, light2)
+        val packedLight = ((11) or ((7) shl 16))
 
         model.withLayerContext(bufferSource, state, VaryingModelRepository.getLayers(resourceIdentifier, state)) {
             model.render(context, matrixStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
             bufferSource.endBatch()
         }
         model.setDefault()
-        entityRenderDispatcher.setRenderShadow(true)
-        Lighting.setupFor3DItems()
+        Unit
+        Unit
     } else {
         renderSprite(matrixStack, sprite)
     }
 }
 
-fun renderSprite(matrixStack: PoseStack, sprite: ResourceLocation) {
+// PT128: Matrix3x2fStack overload — bridges MC 26.1 GuiGraphicsExtractor.pose() to legacy PoseStack drawProfile.
+fun drawProfile(
+    resourceIdentifier: Identifier,
+    matrixStack: org.joml.Matrix3x2fStack,
+    state: PosableState,
+    partialTicks: Float,
+    scale: Float = 20F
+) {
+    val poseStack = PoseStack()
+    drawProfile(resourceIdentifier = resourceIdentifier, matrixStack = poseStack, state = state, partialTicks = partialTicks, scale = scale)
+}
+
+fun renderSprite(matrixStack: PoseStack, sprite: Identifier) {
     val matrix: PoseStack.Pose = matrixStack.last()
     matrix.pose().translate(-1f, 0f, 0f)
 
-    RenderSystem.setShaderTexture(0, sprite)
-    RenderSystem.setShader(GameRenderer::getPositionTexShader)
+    Unit
+    Unit
 
-    val buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX)
+    val buffer = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS, com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_TEX)
 
     buffer.addVertex(matrix, 2f, 0f, 0.0f).setUv(1f, 0f)
     buffer.addVertex(matrix, 0f, 0f, 0.0f).setUv(0f, 0f)
     buffer.addVertex(matrix, 0f, 2f, 0.0f).setUv(0f, 1f)
     buffer.addVertex(matrix, 2f, 2f, 0.0f).setUv(1f, 1f)
 
-    BufferUploader.drawWithShader(buffer.buildOrThrow())
+    // BufferUploader.drawWithShader removed in MC 26.1.x — pipeline must submit via RenderPass
+    buffer.buildOrThrow().close()
 }

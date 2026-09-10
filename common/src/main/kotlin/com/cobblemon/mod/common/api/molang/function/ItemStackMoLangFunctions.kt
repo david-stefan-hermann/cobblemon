@@ -24,7 +24,7 @@ object ItemStackMoLangFunctions : AbstractMoLangFunctionHolder<Pair<ItemStack, R
     override fun Pair<ItemStack, RegistryAccess>.moLangFunctions(): MutableMap<String, (MoParams) -> Any> {
         val stack = this.first
         val registryAccess = this.second
-        val itemRegistry = registryAccess.registryOrThrow(Registries.ITEM)
+        val itemRegistry = registryAccess.lookupOrThrow(Registries.ITEM)
         val holder = itemRegistry.wrapAsHolder(stack.item)
 
         val map = hashMapOf<String, (MoParams) -> Any>()
@@ -57,9 +57,9 @@ object ItemStackMoLangFunctions : AbstractMoLangFunctionHolder<Pair<ItemStack, R
         map["has_enchantment"] = put@{ params ->
             val enchantmentId = params.getString(0).asIdentifierDefaultingNamespace()
             val minLevel = params.getIntOrNull(1) ?: 1
-            val enchantmentRegistry = registryAccess.registryOrThrow(Registries.ENCHANTMENT)
+            val enchantmentRegistry = registryAccess.lookupOrThrow(Registries.ENCHANTMENT)
             val holder =
-                enchantmentRegistry.getHolder(enchantmentId).orElse(null) ?: return@put DoubleValue.ZERO
+                enchantmentRegistry.get(enchantmentId).orElse(null) ?: return@put DoubleValue.ZERO
             val level = EnchantmentHelper.getItemEnchantmentLevel(holder, stack)
             return@put DoubleValue(level >= minLevel)
         }

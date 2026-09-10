@@ -12,10 +12,12 @@ import com.cobblemon.mod.common.CobblemonEntities
 import net.minecraft.core.NonNullList
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.resources.ResourceKey
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.Containers
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.world.entity.ContainerUser
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.HasCustomInventoryScreen
 import net.minecraft.world.entity.SlotAccess
@@ -30,6 +32,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.gameevent.GameEvent
 import net.minecraft.world.level.storage.loot.LootTable
+import net.minecraft.world.phys.Vec3
 
 @Suppress("unused")
 class CobblemonChestBoatEntity(entityType: EntityType<CobblemonChestBoatEntity>, world: Level) : CobblemonBoatEntity(entityType, world), HasCustomInventoryScreen, ContainerEntity {
@@ -50,27 +53,30 @@ class CobblemonChestBoatEntity(entityType: EntityType<CobblemonChestBoatEntity>,
 
     override fun openCustomInventoryScreen(player: Player) {
         player.openMenu(this)
-        if (!player.level().isClientSide) {
+        val level = player.level()
+        if (level is ServerLevel) {
             this.gameEvent(GameEvent.CONTAINER_OPEN, player)
-            PiglinAi.angerNearbyPiglins(player, true)
+            PiglinAi.angerNearbyPiglins(level, player, true)
         }
     }
 
     override fun getMaxPassengers() = 1
 
-    override fun addAdditionalSaveData(compound: CompoundTag) {
-        super.addAdditionalSaveData(compound)
-        this.addChestVehicleSaveData(compound, this.registryAccess())
+    // PT142: Entity save API → ValueInput/ValueOutput in MC 26.1.x; chest vehicle save data no longer takes RegistryAccess
+    override fun addAdditionalSaveData(output: net.minecraft.world.level.storage.ValueOutput) {
+        super.addAdditionalSaveData(output)
+        this.addChestVehicleSaveData(output)
     }
 
-    override fun readAdditionalSaveData(compound: CompoundTag) {
-        super.readAdditionalSaveData(compound)
-        this.readChestVehicleSaveData(compound, this.registryAccess())
+    override fun readAdditionalSaveData(input: net.minecraft.world.level.storage.ValueInput) {
+        super.readAdditionalSaveData(input)
+        this.readChestVehicleSaveData(input)
     }
 
-    public override fun destroy(source: DamageSource) {
-        this.destroy(this.getDropItem())
-        this.chestVehicleDestroyed(source, this.level(), this)
+    // PT142: VehicleEntity.destroy(ServerLevel, DamageSource) in MC 26.1.x
+    override fun destroy(serverLevel: ServerLevel, source: DamageSource) {
+        this.destroy(serverLevel, this.boatType.chestBoatItem)
+        this.chestVehicleDestroyed(source, serverLevel, this)
     }
 
     override fun remove(reason: RemovalReason) {
@@ -81,9 +87,10 @@ class CobblemonChestBoatEntity(entityType: EntityType<CobblemonChestBoatEntity>,
         super.remove(reason)
     }
 
-    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+    // PT142: Entity.interact(Player, InteractionHand, Vec3) in MC 26.1.x
+    override fun interact(player: Player, hand: InteractionHand, location: Vec3): InteractionResult {
         if (!player.isSecondaryUseActive) {
-            val interactionResult = super.interact(player, hand)
+            val interactionResult = super.interact(player, hand, location)
             if (interactionResult != InteractionResult.PASS) {
                 return interactionResult
             }
@@ -95,7 +102,10 @@ class CobblemonChestBoatEntity(entityType: EntityType<CobblemonChestBoatEntity>,
             val interactionResult: InteractionResult = this.interactWithContainerVehicle(player)
             if (interactionResult.consumesAction()) {
                 this.gameEvent(GameEvent.CONTAINER_OPEN, player)
-                PiglinAi.angerNearbyPiglins(player, true)
+                val serverLevel = this.level() as? ServerLevel
+                if (serverLevel != null) {
+                    PiglinAi.angerNearbyPiglins(serverLevel, player, true)
+                }
             }
 
             return interactionResult
@@ -129,15 +139,16 @@ class CobblemonChestBoatEntity(entityType: EntityType<CobblemonChestBoatEntity>,
         return ChestMenu.threeRows(syncId, playerInventory, this)
     }
 
-    override fun getLootTable() = lootTableId
+    // PT142: ContainerEntity loot table accessors renamed to getContainerLootTable/setContainerLootTable in MC 26.1.x
+    override fun getContainerLootTable(): ResourceKey<LootTable>? = lootTableId
 
-    override fun setLootTable(lootTable: ResourceKey<LootTable>?) {
+    override fun setContainerLootTable(lootTable: ResourceKey<LootTable>?) {
         this.lootTableId = lootTable
     }
 
-    override fun getLootTableSeed(): Long = this.lootTableSeed
+    override fun getContainerLootTableSeed(): Long = this.lootTableSeed
 
-    override fun setLootTableSeed(lootTableSeed: Long) {
+    override fun setContainerLootTableSeed(lootTableSeed: Long) {
         this.lootTableSeed = lootTableSeed
     }
 
@@ -147,12 +158,14 @@ class CobblemonChestBoatEntity(entityType: EntityType<CobblemonChestBoatEntity>,
         this.inventory = this.emptyInventory()
     }
 
-    override fun getDropItem(): Item = this.boatType.chestBoatItem
+    // PT142: getDropItem is final in AbstractBoat — drop item passed via Supplier in super ctor; expose as non-override
+    fun cobblemonChestDropItem(): Item = this.boatType.chestBoatItem
 
     private fun emptyInventory(): NonNullList<ItemStack> = NonNullList.withSize(INVENTORY_SLOTS, ItemStack.EMPTY)
 
-    override fun stopOpen(player: Player) {
-        this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of(player))
+    // PT142: stopOpen(ContainerUser) in MC 26.1.x
+    override fun stopOpen(user: ContainerUser) {
+        this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of(user.livingEntity))
     }
 
     companion object {

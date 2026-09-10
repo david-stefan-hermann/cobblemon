@@ -17,22 +17,23 @@ import com.cobblemon.mod.common.item.PokedexItem
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
+import com.cobblemon.mod.common.client.render.itemRenderer
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
-import net.minecraft.client.resources.model.ModelResourceLocation
+import com.cobblemon.mod.common.client.render.ModelResourceLocation
 import net.minecraft.core.Direction
 import net.minecraft.world.item.*
 import net.minecraft.world.level.block.HorizontalDirectionalBlock
 import net.minecraft.world.level.block.state.BlockState
 import org.spongepowered.asm.mixin.Unique
 
-class LecternBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<LecternBlockEntity> {
+class LecternBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<LecternBlockEntity, net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> {
 
     @Unique
     private val MODEL_PATH = if (Cobblemon.implementation.modAPI == ModAPI.FABRIC) "fabric_resource" else "standalone"
 
-    override fun render(blockEntity: LecternBlockEntity, tickDelta: Float, poseStack: PoseStack, multiBufferSource: MultiBufferSource, light: Int, overlay: Int ) {
+    fun render_DEFER_NO_OVERRIDE(blockEntity: LecternBlockEntity, tickDelta: Float, poseStack: PoseStack, multiBufferSource: MultiBufferSource, light: Int, overlay: Int ) {
         if (blockEntity !is LecternBlockEntity) return
         if (!blockEntity.isEmpty()) {
             val blockState = if (blockEntity.level != null) blockEntity.blockState
@@ -45,15 +46,21 @@ class LecternBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : Blo
             poseStack.mulPose(Axis.XP.rotationDegrees(22.5F))
             poseStack.translate(0.0, 0.0, 0.13)
 
-            if (blockEntity.getItemStack().item is PokedexItem) {
-                val resourceLocation = (blockEntity.getItemStack().item as PokedexItem).type.getItemModelPath(if (blockEntity.hasViewer()) "flat" else "flat_off")
-                val model = Minecraft.getInstance().itemRenderer.itemModelShaper.getModelManager().getModel(ModelResourceLocation(resourceLocation, MODEL_PATH))
-                Minecraft.getInstance().itemRenderer.render(blockEntity.getItemStack(), ItemDisplayContext.GROUND, false, poseStack, multiBufferSource, light, overlay, model)
-            } else {
-                Minecraft.getInstance().itemRenderer.renderStatic(blockEntity.getItemStack(), ItemDisplayContext.GROUND, light, overlay, poseStack, multiBufferSource, blockEntity.level, 0)
-            }
+            // PT144: ItemRenderer.itemModelShaper + 9-arg render() removed in MC 26.1.x submit pipeline.
+            // Defer Pokedex-specific model lookup; render via renderStatic for all paths until submit migration.
+            Minecraft.getInstance().itemRenderer.renderStatic(blockEntity.getItemStack(), ItemDisplayContext.GROUND, light, overlay, poseStack, multiBufferSource, blockEntity.level, 0)
 
             poseStack.popPose()
         }
     }
+
+    override fun createRenderState(): net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState =
+        net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState()
+
+    override fun submit(
+        state: net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState,
+        poseStack: com.mojang.blaze3d.vertex.PoseStack,
+        collector: net.minecraft.client.renderer.SubmitNodeCollector,
+        camera: net.minecraft.client.renderer.state.level.CameraRenderState
+    ) { /* PT129-DEFER */ }
 }

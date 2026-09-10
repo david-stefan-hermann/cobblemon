@@ -20,7 +20,9 @@ import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
 import org.joml.Vector4f
 
-class PokemonItem : CobblemonItem(Properties().stacksTo(1).component(CobblemonItemComponents.POKEMON_ITEM, null)) {
+// PT143: Item.Properties.component<T>(type, T) — T non-nullable in MC 26.1.x; cannot pass null.
+// Component is set per-stack at use time (see species()/aspects() extension).
+class PokemonItem : CobblemonItem(Properties().stacksTo(1)) {
 
     override fun getName(stack: ItemStack): Component = this.species(stack)?.translatedName ?: super.getName(stack)
 

@@ -85,7 +85,8 @@ object EntityMoLangFunctions : AbstractMoLangFunctionHolder<Entity>() {
             "is_sprinting" to { _ -> DoubleValue(thisEntity.isSprinting) },
             "is_in_water" to { _ -> DoubleValue(thisEntity.isUnderWater) },
             "is_in_rain" to { _ -> DoubleValue(thisEntity.isInWaterOrRain && !thisEntity.isInWater) },
-            "is_touching_water_or_rain" to { _ -> DoubleValue(thisEntity.isInWaterRainOrBubble) },
+            // PT137: Entity.isInWaterRainOrBubble removed in MC 26.1.x — closest replacement isInWaterOrRain
+            "is_touching_water_or_rain" to { _ -> DoubleValue(thisEntity.isInWaterOrRain) },
             "is_touching_water" to { _ -> DoubleValue(thisEntity.isInWater) },
             "is_underwater" to { DoubleValue(thisEntity.getIsSubmerged()) },
             "is_in_lava" to { _ -> DoubleValue(thisEntity.isInLava) },
@@ -100,8 +101,8 @@ object EntityMoLangFunctions : AbstractMoLangFunctionHolder<Entity>() {
             "damage" to { params ->
                 val amount = params.getDouble(0)
                 val source = DamageSource(
-                    thisEntity.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE)
-                        .getHolder(DamageTypes.GENERIC).get()
+                    thisEntity.level().registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE)
+                        .get(DamageTypes.GENERIC).get()
                 )
                 thisEntity.hurt(source, amount.toFloat())
             },
@@ -122,7 +123,8 @@ object EntityMoLangFunctions : AbstractMoLangFunctionHolder<Entity>() {
                     .asArrayValue(::DoubleValue)
             },
             "tags" to {
-                val tags = thisEntity.tags
+                // PT137: Entity.tags field private in MC 26.1.x — use entityTags() public accessor
+                val tags = thisEntity.entityTags().toList()
                 val array = ArrayStruct(hashMapOf())
                 tags.forEachIndexed { index, tag -> array.setDirectly("$index", StringValue(tag)) }
                 array
@@ -139,7 +141,8 @@ object EntityMoLangFunctions : AbstractMoLangFunctionHolder<Entity>() {
             },
             "has_tag" to { params ->
                 val tag = params.getString(0)
-                DoubleValue(thisEntity.tags.contains(tag))
+                // PT137: Entity.tags field private in MC 26.1.x — use entityTags() accessor
+                DoubleValue(thisEntity.entityTags().contains(tag))
             },
             "distance_to_pos" to { params ->
                 val x = params.getDouble(0)
@@ -148,7 +151,8 @@ object EntityMoLangFunctions : AbstractMoLangFunctionHolder<Entity>() {
                 DoubleValue(sqrt(thisEntity.distanceToSqr(Vec3(x, y, z))))
             },
             "type" to { _ ->
-                thisEntity.registryAccess().registry(Registries.ENTITY_TYPE).get().getKey(thisEntity.type)?.toString()?.let {
+                // PT137: RegistryAccess.registry() removed in MC 26.1.x — use lookupOrThrow + getKey()
+                thisEntity.registryAccess().lookupOrThrow(Registries.ENTITY_TYPE).getKey(thisEntity.type)?.toString()?.let {
                     StringValue(it)
                 } ?: DoubleValue.ZERO
             },
@@ -166,7 +170,8 @@ object EntityMoLangFunctions : AbstractMoLangFunctionHolder<Entity>() {
                     )
                 )
                     .filter { blockPosPair ->
-                        blockPosPair.first.blockHolder.let {
+                        // PT136: BlockState.blockHolder renamed to typeHolder() in MC 26.1.x
+                        blockPosPair.first.typeHolder().let {
                             if (isTag) it.`is`(
                                 TagKey.create(
                                     Registries.BLOCK,

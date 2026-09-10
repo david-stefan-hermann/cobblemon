@@ -20,7 +20,7 @@ public class TameableEntityMixin {
 
     @Redirect(method = "die", at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/Level;isClientSide:Z"))
     public boolean cobblemon$checkIfPokemonBeforeSendingMessage(Level world) {
-        return world.isClientSide || (this.getClass().isAssignableFrom(PokemonEntity.class));
+        return world.isClientSide() || (this.getClass().isAssignableFrom(PokemonEntity.class));
     }
 
 }

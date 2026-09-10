@@ -12,19 +12,19 @@ import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.api.gui.blitk
 import com.cobblemon.mod.common.client.gui.CobblemonRenderable
 import com.cobblemon.mod.common.util.cobblemonResource
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.client.sounds.SoundManager
 import net.minecraft.network.chat.Component
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 class BattleRequestNavigationButton(
     pX: Number, pY: Number,
     private val clickHeight: Int = HEIGHT,
     private val forward: Boolean,
-    private val forwardIcon: ResourceLocation = forwardButtonResource,
-    private val backwardIcon: ResourceLocation = backwardsButtonResource,
+    private val forwardIcon: Identifier = forwardButtonResource,
+    private val backwardIcon: Identifier = backwardsButtonResource,
     onPress: OnPress
 ): Button(pX.toInt(), pY.toInt(), (WIDTH * SCALE).toInt(), (clickHeight * SCALE).toInt(), Component.literal("Navigation"), onPress, DEFAULT_NARRATION), CobblemonRenderable {
 
@@ -37,7 +37,7 @@ class BattleRequestNavigationButton(
         private val backwardsButtonResource = cobblemonResource("textures/gui/interact/request/arrow_left.png")
     }
 
-    override fun renderWidget(context: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {
+    override fun extractContents(context: GuiGraphicsExtractor, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {
         if (!isActive) {
             return
         }

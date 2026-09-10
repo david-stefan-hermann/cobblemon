@@ -13,6 +13,7 @@ import com.cobblemon.mod.common.block.entity.HealingMachineBlockEntity
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
+import com.cobblemon.mod.common.client.render.itemRenderer
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
@@ -23,7 +24,7 @@ import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
 
 @Suppress("UNUSED_PARAMETER")
-class HealingMachineRenderer<T: BlockEntity>(ctx: BlockEntityRendererProvider.Context): BlockEntityRenderer<T> {
+class HealingMachineRenderer<T: BlockEntity>(ctx: BlockEntityRendererProvider.Context): BlockEntityRenderer<T, net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> {
     companion object {
         private val offsets = listOf(
             0.2 to 0.385,
@@ -35,7 +36,7 @@ class HealingMachineRenderer<T: BlockEntity>(ctx: BlockEntityRendererProvider.Co
         )
     }
 
-    override fun render(blockEntity: T, tickDelta: Float, poseStack: PoseStack, multiBufferSource: MultiBufferSource, light: Int, overlay: Int) {
+    fun render_DEFER_NO_OVERRIDE(blockEntity: T, tickDelta: Float, poseStack: PoseStack, multiBufferSource: MultiBufferSource, light: Int, overlay: Int) {
         if (blockEntity !is HealingMachineBlockEntity) return
 
         poseStack.pushPose()
@@ -59,4 +60,14 @@ class HealingMachineRenderer<T: BlockEntity>(ctx: BlockEntityRendererProvider.Co
         }
         poseStack.popPose()
     }
+
+    override fun createRenderState(): net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState =
+        net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState()
+
+    override fun submit(
+        state: net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState,
+        poseStack: com.mojang.blaze3d.vertex.PoseStack,
+        collector: net.minecraft.client.renderer.SubmitNodeCollector,
+        camera: net.minecraft.client.renderer.state.level.CameraRenderState
+    ) { /* PT129-DEFER */ }
 }

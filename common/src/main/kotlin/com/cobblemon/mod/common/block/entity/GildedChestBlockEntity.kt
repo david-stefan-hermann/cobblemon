@@ -15,6 +15,8 @@ import com.cobblemon.mod.common.block.chest.GildedState
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.core.HolderLookup
+import net.minecraft.world.level.storage.ValueInput
+import net.minecraft.world.level.storage.ValueOutput
 import net.minecraft.core.NonNullList
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
@@ -77,15 +79,20 @@ class GildedChestBlockEntity(pos: BlockPos, state: BlockState, val type: Type = 
 
     override fun getItems() = inventoryContents
 
-    override fun startOpen(player: Player) {
-        if (!this.remove && !player.isSpectator && type != Type.FAKE) {
-            stateManager.incrementOpeners(player, level, blockPos, blockState)
+    // PT137: Container.startOpen/stopOpen now takes ContainerUser (single arg); ContainerOpenersCounter.incrementOpeners adds 5th double maxInteractionRange
+    override fun startOpen(user: net.minecraft.world.entity.ContainerUser) {
+        val living = user.livingEntity ?: return
+        val lvl = level ?: return
+        if (!this.remove && !living.isSpectator && type != Type.FAKE) {
+            stateManager.incrementOpeners(living, lvl, blockPos, blockState, user.containerInteractionRange)
         }
     }
 
-    override fun stopOpen(player: Player) {
-        if (!this.remove && !player.isSpectator) {
-            stateManager.decrementOpeners(player, level, blockPos, blockState)
+    override fun stopOpen(user: net.minecraft.world.entity.ContainerUser) {
+        val living = user.livingEntity ?: return
+        val lvl = level ?: return
+        if (!this.remove && !living.isSpectator) {
+            stateManager.decrementOpeners(living, lvl, blockPos, blockState)
         }
     }
 
@@ -151,24 +158,26 @@ class GildedChestBlockEntity(pos: BlockPos, state: BlockState, val type: Type = 
         world.blockEvent(pos, block, 1, newViewerCount)
     }
 
-    override fun saveAdditional(nbt: CompoundTag, registryLookup: HolderLookup.Provider) {
-        super.saveAdditional(nbt, registryLookup)
-        if (!trySaveLootTable(nbt)) {
-            ContainerHelper.saveAllItems(nbt, inventoryContents, registryLookup)
+    override fun saveAdditional(output: ValueOutput) {
+        super.saveAdditional(output)
+        if (!trySaveLootTable(output)) {
+            ContainerHelper.saveAllItems(output, inventoryContents)
         }
     }
 
-    override fun loadAdditional(nbt: CompoundTag, registryLookup: HolderLookup.Provider) {
-        super.loadAdditional(nbt, registryLookup)
+    override fun loadAdditional(input: ValueInput) {
+        super.loadAdditional(input)
         inventoryContents= NonNullList.withSize(containerSize, ItemStack.EMPTY)
-        if (!tryLoadLootTable(nbt)) {
-            ContainerHelper.loadAllItems(nbt, inventoryContents, registryLookup)
+        if (!tryLoadLootTable(input)) {
+            ContainerHelper.loadAllItems(input, inventoryContents)
         }
     }
 
     fun tick() {
+        // PT137: BlockEntity.level is Level? — need non-null
+        val lvl = level ?: return
         if (!this.remove) {
-            stateManager.recheckOpeners(level, blockPos, this.blockState)
+            stateManager.recheckOpeners(lvl, blockPos, this.blockState)
         }
     }
 }

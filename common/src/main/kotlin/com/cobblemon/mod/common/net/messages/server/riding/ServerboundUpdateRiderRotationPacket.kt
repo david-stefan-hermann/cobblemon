@@ -20,9 +20,12 @@ class ServerboundUpdateRiderRotationPacket internal constructor(
 ) : NetworkPacket<ServerboundUpdateRiderRotationPacket> {
     override val id = ID
     override fun encode(buffer: RegistryFriendlyByteBuf) {
+        // PT136: FriendlyByteBuf.write/readVec3 removed in MC 26.1.x — encode components manually
         buffer.writeFloat(riderXRot)
         buffer.writeFloat(riderYRot)
-        buffer.writeVec3(rideEyePos)
+        buffer.writeDouble(rideEyePos.x)
+        buffer.writeDouble(rideEyePos.y)
+        buffer.writeDouble(rideEyePos.z)
     }
 
     companion object {
@@ -30,7 +33,7 @@ class ServerboundUpdateRiderRotationPacket internal constructor(
         fun decode(buffer: RegistryFriendlyByteBuf): ServerboundUpdateRiderRotationPacket {
             val riderXRot = buffer.readFloat()
             val riderYRot = buffer.readFloat()
-            val rideEyePos = buffer.readVec3()
+            val rideEyePos = Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble())
             return ServerboundUpdateRiderRotationPacket(riderXRot, riderYRot, rideEyePos)
         }
     }

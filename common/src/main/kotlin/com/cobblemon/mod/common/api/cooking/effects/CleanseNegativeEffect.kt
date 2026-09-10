@@ -15,7 +15,8 @@ import net.minecraft.world.entity.LivingEntity
 
 class CleanseNegativeEffect : MobEffect(MobEffectCategory.BENEFICIAL, 0xFFFFFF) {
     override fun isInstantenous() = true
-    override fun applyInstantenousEffect(source: Entity?, indirect: Entity?, target: LivingEntity, amplifier: Int, proximity: Double) {
+    // PT143: MC 26.1.x added ServerLevel as the first arg to applyInstantenousEffect.
+    override fun applyInstantenousEffect(level: net.minecraft.server.level.ServerLevel, source: Entity?, indirect: Entity?, target: LivingEntity, amplifier: Int, proximity: Double) {
         val snapshot = target.activeEffects.toList()
         for (ei in snapshot) {
             if (ei.effect.value().category == MobEffectCategory.HARMFUL) {

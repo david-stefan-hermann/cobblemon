@@ -13,6 +13,7 @@ import com.cobblemon.mod.common.api.text.italicise
 import com.cobblemon.mod.common.api.text.onHover
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.cobblemon.mod.common.util.asTranslated
+import com.cobblemon.mod.common.util.description
 import net.minecraft.network.chat.MutableComponent
 
 

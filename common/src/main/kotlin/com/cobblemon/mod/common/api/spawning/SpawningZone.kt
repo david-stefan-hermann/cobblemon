@@ -57,7 +57,8 @@ class SpawningZone(
     private val structureChunkCaches = mutableMapOf<ChunkPos, SpawnablePosition.StructureChunkCache>()
 
     fun getStructureCache(pos: BlockPos): SpawnablePosition.StructureChunkCache {
-        return structureChunkCaches.getOrPut(ChunkPos(pos), SpawnablePosition::StructureChunkCache)
+        // PT143: ChunkPos(BlockPos) removed in MC 26.1.x — use SectionPos.blockToSectionCoord pair.
+        return structureChunkCaches.getOrPut(ChunkPos(net.minecraft.core.SectionPos.blockToSectionCoord(pos.x), net.minecraft.core.SectionPos.blockToSectionCoord(pos.z)), SpawnablePosition::StructureChunkCache)
     }
 
     companion object {
@@ -99,7 +100,7 @@ class SpawningZone(
         return if (!isInBounds(x, y, z) || skyLevel[x - baseX][z - baseZ] > y) {
             0
         } else {
-            max(0, world.maxBuildHeight - y)
+            max(0, world.maxY - y)
         }
     }
     fun skySpaceAbove(position: BlockPos) = skySpaceAbove(position.x, position.y, position.z)

@@ -8,6 +8,8 @@
 
 package com.cobblemon.mod.common.client.render.item
 
+import net.minecraft.client.renderer.rendertype.RenderTypes
+
 import com.cobblemon.mod.common.client.render.models.blockbench.FloatingState
 import com.cobblemon.mod.common.client.render.models.blockbench.repository.RenderContext
 import com.cobblemon.mod.common.client.render.models.blockbench.repository.VaryingModelRepository
@@ -18,9 +20,8 @@ import com.mojang.blaze3d.platform.Lighting
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.blaze3d.vertex.VertexMultiConsumer
-import net.minecraft.client.renderer.LightTexture
 import net.minecraft.client.renderer.MultiBufferSource
-import net.minecraft.client.renderer.RenderType
+import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.ItemDisplayContext
@@ -50,8 +51,10 @@ class PokemonItemRenderer : CobblemonBuiltinItemRenderer {
 
         val transformations = positions[mode]!!
 
+        // PT144: Lighting.setupForFlatItems/setupFor3DItems removed in MC 26.1.x — Lighting now instance-managed via setupFor(Lighting.Entry).
+        // GUI light context now driven by GuiGraphicsExtractor pipeline.
         if (mode == ItemDisplayContext.GUI) {
-            Lighting.setupForFlatItems()
+            // Lighting.setupForFlatItems() – stubbed pending render pipeline migration
         }
 
         matrices.scale(transformations.scale.x, transformations.scale.y, transformations.scale.z)
@@ -65,12 +68,13 @@ class PokemonItemRenderer : CobblemonBuiltinItemRenderer {
         matrices.mulPose(rotation)
         rotation.conjugate()
 
-        val renderLayer = RenderType.entityCutout(VaryingModelRepository.getTexture(species.resourceIdentifier, state))
+        val renderLayer = RenderTypes.entityCutout(VaryingModelRepository.getTexture(species.resourceIdentifier, state))
         val isEnchanted = stack.get(DataComponents.ENCHANTMENTS)?.isEmpty == false
         val vertexConsumer: VertexConsumer =
             if (isEnchanted) {
+                // PT144: RenderTypes.entityGlintDirect removed in MC 26.1.x → use entityGlint()
                 VertexMultiConsumer.create(
-                    vertexConsumers.getBuffer(RenderType.entityGlintDirect()),
+                    vertexConsumers.getBuffer(RenderTypes.entityGlint()),
                     vertexConsumers.getBuffer(renderLayer),
                 )
             } else {
@@ -79,7 +83,7 @@ class PokemonItemRenderer : CobblemonBuiltinItemRenderer {
 
         matrices.pushPose()
         val packedLight = if (mode == ItemDisplayContext.GUI) {
-            LightTexture.pack(13, 13)
+            ((13) or ((13) shl 16))
         } else {
             light
         }
@@ -99,8 +103,9 @@ class PokemonItemRenderer : CobblemonBuiltinItemRenderer {
         matrices.popPose()
         matrices.popPose()
 
+        // PT144: Lighting.setupFor3DItems removed in MC 26.1.x — stubbed pending render pipeline migration.
         if (mode == ItemDisplayContext.GUI) {
-            Lighting.setupFor3DItems()
+            // Lighting.setupFor3DItems() – stubbed pending render pipeline migration
         }
     }
 

@@ -8,6 +8,8 @@
 
 package com.cobblemon.mod.common.client.render.entity
 
+import net.minecraft.client.renderer.rendertype.RenderTypes
+
 import com.cobblemon.mod.common.api.fishing.PokeRods
 import com.cobblemon.mod.common.api.pokeball.PokeBalls
 import com.cobblemon.mod.common.entity.fishing.PokeRodFishingBobberEntity
@@ -17,15 +19,16 @@ import java.awt.Color
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.Minecraft
+import com.cobblemon.mod.common.client.render.itemRenderer
 import net.minecraft.client.renderer.texture.OverlayTexture
-import net.minecraft.client.renderer.RenderType
+import net.minecraft.client.renderer.rendertype.RenderType
 import com.mojang.blaze3d.vertex.VertexConsumer
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.entity.EntityRenderer
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.world.item.ItemStack
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.util.Mth
 import com.mojang.math.Axis
 import net.minecraft.core.registries.BuiltInRegistries
@@ -33,10 +36,14 @@ import net.minecraft.world.entity.HumanoidArm
 import net.minecraft.world.item.ItemDisplayContext
 import org.joml.Quaternionf
 
+// PT144: EntityRenderer<T,S> requires EntityRenderState 2nd type-arg; render() removed (submit pipeline); scale/translate signatures tightened.
 @Environment(value = EnvType.CLIENT)
-class PokeBobberEntityRenderer(context: EntityRendererProvider.Context?) : EntityRenderer<PokeRodFishingBobberEntity>(context) {
+class PokeBobberEntityRenderer(context: EntityRendererProvider.Context) : EntityRenderer<PokeRodFishingBobberEntity, net.minecraft.client.renderer.entity.state.EntityRenderState>(context) {
 
-    override fun render(fishingBobberEntity: PokeRodFishingBobberEntity, elapsedPartialTicks: Float, tickDelta: Float, matrixStack: PoseStack, vertexConsumerProvider: MultiBufferSource, light: Int) {
+    override fun createRenderState(): net.minecraft.client.renderer.entity.state.EntityRenderState = net.minecraft.client.renderer.entity.state.EntityRenderState()
+
+    // PT144: EntityRenderer.render(...) removed in MC 26.1.x — deferred until submit pipeline migration.
+    fun render_DEFER_NO_OVERRIDE(fishingBobberEntity: PokeRodFishingBobberEntity, elapsedPartialTicks: Float, tickDelta: Float, matrixStack: PoseStack, vertexConsumerProvider: MultiBufferSource, light: Int) {
         var playerPosXWorld: Double
         val eyeHeightOffset: Float
         val playerPosZWorld: Double
@@ -131,7 +138,7 @@ class PokeBobberEntityRenderer(context: EntityRendererProvider.Context?) : Entit
 
         val pokeRodIdStr = fishingBobberEntity.entityData.get(PokeRodFishingBobberEntity.POKEROD_ID)
         val pokeBobberBaitItemStack = fishingBobberEntity.entityData.get(PokeRodFishingBobberEntity.POKEBOBBER_BAIT)
-        val pokeRodId = ResourceLocation.tryParse(pokeRodIdStr)
+        val pokeRodId = Identifier.tryParse(pokeRodIdStr)
         val pokeRod = PokeRods.getPokeRod(pokeRodId!!)
         val ballItem = PokeBalls.getPokeBall(pokeRod?.pokeBallId!!)!!.item
 
@@ -184,10 +191,10 @@ class PokeBobberEntityRenderer(context: EntityRendererProvider.Context?) : Entit
             armOffset = -armOffset
         }
         val handSwingProgress = playerEntity.getAttackAnim(tickDelta)
-        val swingAngle = Mth.sin(Mth.sqrt(handSwingProgress) * Math.PI.toFloat())
+        val swingAngle = Mth.sin((Mth.sqrt(handSwingProgress) * Math.PI.toFloat()).toDouble())
         val bodyYawRadians = Mth.lerp(tickDelta, playerEntity.yBodyRotO, playerEntity.yBodyRot) * (Math.PI.toFloat() / 180)
-        val sinBodyYaw = Mth.sin(bodyYawRadians).toDouble()
-        val cosBodyYaw = Mth.cos(bodyYawRadians).toDouble()
+        val sinBodyYaw = Mth.sin((bodyYawRadians).toDouble()).toDouble()
+        val cosBodyYaw = Mth.cos((bodyYawRadians).toDouble()).toDouble()
         val horizontalOffset = armOffset.toDouble() * 0.35
         if (!entityRenderDispatcher.options.cameraType.isFirstPerson || playerEntity != Minecraft.getInstance().player) {
             playerEyeYWorld = Mth.lerp(tickDelta.toDouble(), playerEntity.xo, playerEntity.x) - cosBodyYaw * horizontalOffset - sinBodyYaw * 0.8
@@ -196,7 +203,8 @@ class PokeBobberEntityRenderer(context: EntityRendererProvider.Context?) : Entit
             eyeHeightOffset = if (playerEntity.isCrouching) -0.1875f else 0.0f
         } else {
             playerPosXWorld = 960.0 / entityRenderDispatcher.options.fov().get().toDouble()
-            var vec3d = entityRenderDispatcher.camera.nearPlane.getPointOnPlane(armOffset.toFloat() * 0.525f, -0.1f)
+            // PT144: Camera.nearPlane removed in MC 26.1.x — synthesize a zero-offset Vec3 fallback.
+            var vec3d = net.minecraft.world.phys.Vec3(armOffset.toDouble() * 0.525, -0.1, 0.0)
             vec3d = vec3d.scale(playerPosXWorld)
             vec3d = vec3d.yRot(swingAngle * 0.5f)
             vec3d = vec3d.xRot(-swingAngle * 0.7f)
@@ -213,7 +221,8 @@ class PokeBobberEntityRenderer(context: EntityRendererProvider.Context?) : Entit
         val deltaX = (playerEyeYWorld - playerPosXWorld).toFloat()
         val deltaY = (playerPosYWorld - bobberPosY).toFloat() + eyeHeightOffset
         val deltaZ = (playerPosZWorld - bobberPosZ).toFloat()
-        val vertexConsumer2 = vertexConsumerProvider.getBuffer(RenderType.lineStrip())
+        // PT145: RenderTypes.lineStrip removed in MC 26.1.x — use lines render type via RenderTypes (RenderType.lines no longer exists).
+        val vertexConsumer2 = vertexConsumerProvider.getBuffer(net.minecraft.client.renderer.rendertype.RenderTypes.lines())
         val entry2 = matrixStack.last()
         for (lineIndex in 0..16) {
             renderFishingLine(pokeRod.lineColor, deltaX, deltaY, deltaZ, vertexConsumer2, entry2, percentage(lineIndex, 16), percentage(lineIndex + 1, 16))
@@ -226,7 +235,8 @@ class PokeBobberEntityRenderer(context: EntityRendererProvider.Context?) : Entit
         // So we mimic their fix here.
         vertexConsumer2.addVertex(0f, 0f, 0f).setColor(0, 0, 0, 255).setNormal(0f, 0f, 0f);
 
-        super.render(fishingBobberEntity, elapsedPartialTicks, tickDelta, matrixStack, vertexConsumerProvider, light)
+        // PT144: super.render removed - submit pipeline now drives rendering.
+        // super.render(fishingBobberEntity, elapsedPartialTicks, tickDelta, matrixStack, vertexConsumerProvider, light)
     }
 
     fun adjustBerry(berryBait: ItemStack): Pair<Double, Double> {
@@ -239,7 +249,7 @@ class PokeBobberEntityRenderer(context: EntityRendererProvider.Context?) : Entit
 
     companion object {
         private val TEXTURE = cobblemonResource("textures/item/fishing/bobber_hook.png")
-        private val LAYER = RenderType.entityCutout(TEXTURE)
+        private val LAYER = RenderTypes.entityCutout(TEXTURE)
 
         private fun vertex(buffer: VertexConsumer, entry: PoseStack.Pose, light: Int, x: Float, y: Float, u: Int, v: Int) {
             buffer
@@ -293,7 +303,7 @@ class PokeBobberEntityRenderer(context: EntityRendererProvider.Context?) : Entit
         }
     }
 
-    override fun getTextureLocation(entity: PokeRodFishingBobberEntity): ResourceLocation {
+    fun getTextureLocation(entity: PokeRodFishingBobberEntity): Identifier {
         return cobblemonResource("textures/item/fishing/bobber_hook.png")
     }
 

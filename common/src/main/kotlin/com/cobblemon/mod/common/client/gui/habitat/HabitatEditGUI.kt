@@ -25,14 +25,14 @@ import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
 import java.awt.Color
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 class HabitatEditGUI(
     /** The position of the habitat block in the client player's world */
@@ -48,9 +48,9 @@ class HabitatEditGUI(
     /** Use this as reference data for what buckets can be chosen and how rare they are */
     val buckets: List<SpawnBucket>,
     /** Use this as reference data for pre-made activated habitat pools */
-    val activatedHabitatPools: Map<ResourceLocation, ActivatedHabitatPool>,
+    val activatedHabitatPools: Map<Identifier, ActivatedHabitatPool>,
     /** Use this as reference data for pre-made natural habitat pools */
-    val naturalHabitatPools: Map<ResourceLocation, NaturalHabitatPool>,
+    val naturalHabitatPools: Map<Identifier, NaturalHabitatPool>,
     /** The current settings - edit the properties in here then send it back to the server. */
     val habitatSettingsDTO: HabitatSettingsDTO
 ) : Screen(lang("ui.edit.habitat")), CobblemonRenderable {
@@ -95,20 +95,22 @@ class HabitatEditGUI(
         mimicInput = EditBox(font, 10, y, buttonWidth, 20, "Mimic Block".text())
         mimicInput.value = habitatSettingsDTO.mimicId.toString()
         mimicInput.setResponder { value ->
-            val id = ResourceLocation.tryParse(value)
+            val id = Identifier.tryParse(value)
+            // PT144: Holder.value() return is now nullable in MC 26.1.x — chain safe calls through.
             val valid = id != null &&
                 BuiltInRegistries.BLOCK.containsKey(id) &&
-                BuiltInRegistries.BLOCK.get(id).builtInRegistryHolder().`is`(CobblemonBlockTags.HABITAT_MIMICS)
+                BuiltInRegistries.BLOCK.get(id).orElse(null)?.value()?.builtInRegistryHolder()?.`is`(CobblemonBlockTags.HABITAT_MIMICS) == true
             if (valid) {
                 habitatSettingsDTO.mimicId = id!!
             }
             mimicInput.setTextColor(if (valid) validTextColor else invalidTextColor)
             setFieldValidity("mimic", valid, "ui.edit.habitat.validation.mimic")
         }
-        val initialMimicId = ResourceLocation.tryParse(mimicInput.value)
+        val initialMimicId = Identifier.tryParse(mimicInput.value)
+        // PT144: Holder.value() return is now nullable in MC 26.1.x — chain safe calls through.
         val initialMimicValid = initialMimicId != null &&
             BuiltInRegistries.BLOCK.containsKey(initialMimicId) &&
-            BuiltInRegistries.BLOCK.get(initialMimicId).builtInRegistryHolder().`is`(CobblemonBlockTags.HABITAT_MIMICS)
+            BuiltInRegistries.BLOCK.get(initialMimicId).orElse(null)?.value()?.builtInRegistryHolder()?.`is`(CobblemonBlockTags.HABITAT_MIMICS) == true
         mimicInput.setTextColor(if (initialMimicValid) validTextColor else invalidTextColor)
         setFieldValidity("mimic", initialMimicValid, "ui.edit.habitat.validation.mimic")
         addOptionWidget(mimicInput)
@@ -374,30 +376,30 @@ class HabitatEditGUI(
         return true
     }
 
-    override fun render(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
+    override fun extractRenderState(guiGraphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {
         guiGraphics.fill(0, 0, width, height, Color(0, 0, 0, 100).rgb)
         guiGraphics.fill(0, 0, width, headerHeight, Color(0, 0, 0, 150).rgb)
         guiGraphics.fill(0, getFooterTop(), width, height, Color(0, 0, 0, 150).rgb)
-        guiGraphics.drawCenteredString(font, title, width / 2, 8, 0xFFFFFF)
+        guiGraphics.centeredText(font, title, width / 2, 8, 0xFFFFFF)
 
         guiGraphics.enableScissor(0, getOptionsTop(), width, getOptionsBottom())
         optionWidgets.forEach { widget ->
-            widget.render(guiGraphics, mouseX, mouseY, partialTick)
+            widget.extractRenderState(guiGraphics, mouseX, mouseY, partialTick)
         }
         val optionsBottom = getOptionsBottom()
         labels.forEach { (label, pos) ->
             if (pos.second >= getOptionsTop() && pos.second + font.lineHeight <= optionsBottom) {
-                guiGraphics.drawString(font, label, pos.first, pos.second, 0xFFFFFF)
+                guiGraphics.text(font, label, pos.first, pos.second, 0xFFFFFF)
             }
         }
         guiGraphics.disableScissor()
 
         footerWidgets.forEach { widget ->
-            widget.render(guiGraphics, mouseX, mouseY, partialTick)
+            widget.extractRenderState(guiGraphics, mouseX, mouseY, partialTick)
         }
 
         validationErrors.values.firstOrNull()?.let { errorKey ->
-            guiGraphics.drawString(font, lang(errorKey), 10, validationMessageY, invalidTextColor)
+            guiGraphics.text(font, lang(errorKey), 10, validationMessageY, invalidTextColor)
         }
     }
 
@@ -443,7 +445,7 @@ class HabitatEditGUI(
         }
     }
 
-    private fun applyPoolSelection(poolId: ResourceLocation?) {
+    private fun applyPoolSelection(poolId: Identifier?) {
         val currentPool = if (habitatSettingsDTO.isActivatedSpawning) {
             habitatSettingsDTO.activatedSettings?.habitatPool
         } else {

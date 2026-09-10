@@ -20,19 +20,21 @@ import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
 import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.server.level.ServerEntity
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.tags.FluidTags
+import net.minecraft.world.entity.EntityDimensions
 import net.minecraft.world.entity.EntityType
-import net.minecraft.world.entity.vehicle.Boat
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.Items
-import net.minecraft.world.level.GameRules
+import net.minecraft.world.level.gamerules.GameRules
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.properties.WoodType
 
 @Suppress("unused")
-open class CobblemonBoatEntity(entityType: EntityType<out Boat>, world: Level) : Boat(entityType, world) {
+open class CobblemonBoatEntity(entityType: EntityType<out AbstractBoat>, world: Level) : AbstractBoat(entityType, world, java.util.function.Supplier { Items.OAK_BOAT }) {
 
     constructor(world: Level) : this(CobblemonEntities.BOAT, world)
 
@@ -63,7 +65,8 @@ open class CobblemonBoatEntity(entityType: EntityType<out Boat>, world: Level) :
      */
     val baseBlock: Block get() = this.boatType.baseBlock
 
-    override fun getDropItem(): Item = this.boatType.boatItem
+    // PT142: getDropItem is final in AbstractBoat MC 26.1.x — drop item passed via Supplier in super ctor
+    fun cobblemonDropItem(): Item = this.boatType.boatItem
 
     override fun getAddEntityPacket(entityTrackerEntry: ServerEntity): Packet<ClientGamePacketListener> = ClientboundAddEntityPacket(this, entityTrackerEntry)
 
@@ -72,25 +75,28 @@ open class CobblemonBoatEntity(entityType: EntityType<out Boat>, world: Level) :
         builder.define(TYPE_TRACKED_DATA, CobblemonBoatType.APRICORN.ordinal)
     }
 
-    override fun readAdditionalSaveData(nbt: CompoundTag) {
-        if (nbt.contains(TYPE_KEY, Tag.TAG_STRING.toInt())) {
-            this.boatType = CobblemonBoatType.valueOf(nbt.getString(TYPE_KEY))
+    // PT142: Entity save API → ValueInput/ValueOutput in MC 26.1.x
+    override fun readAdditionalSaveData(input: net.minecraft.world.level.storage.ValueInput) {
+        super.readAdditionalSaveData(input)
+        input.read("LegacyData", CompoundTag.CODEC).ifPresent { nbt ->
+            if (nbt.contains(TYPE_KEY)) {
+                this.boatType = CobblemonBoatType.valueOf(nbt.getStringOr(TYPE_KEY, ""))
+            }
         }
     }
 
-    override fun addAdditionalSaveData(nbt: CompoundTag) {
+    override fun addAdditionalSaveData(output: net.minecraft.world.level.storage.ValueOutput) {
+        super.addAdditionalSaveData(output)
+        val nbt = CompoundTag()
         nbt.put(TYPE_KEY, StringTag.valueOf(this.boatType.name))
+        output.store("LegacyData", CompoundTag.CODEC, nbt)
     }
 
-    override fun setVariant(type: Type) {
-        throw UnsupportedOperationException("The vanilla boat type is not present in the Cobblemon implementation use the boatType property")
-    }
-
-    override fun getVariant(): Type {
-        return Type.BAMBOO //have to return something here as otherwise it breaks vanilla interactions (e.g. player getting into boat)
-    }
-
+    // PT136: Boat.Type + setVariant/getVariant removed in MC 26.1.x — vanilla types replaced by dropItem Supplier
     override fun getSinglePassengerXOffset(): Float = this.boatType.mountedOffset
+
+    // PT142: rideHeight abstract in AbstractBoat MC 26.1.x
+    override fun rideHeight(dimensions: EntityDimensions): Double = -0.1
 
     override fun checkFallDamage(heightDifference: Double, onGround: Boolean, state: BlockState, landedPosition: BlockPos) {
         val accessor = this.accessor()
@@ -104,7 +110,8 @@ open class CobblemonBoatEntity(entityType: EntityType<out Boat>, world: Level) :
         if (!onGround) {
             return
         }
-        if (this.fallDistance < 3F || accessor.location != Status.ON_LAND) {
+        // PT142: Boat.Status moved to AbstractBoat.Status in MC 26.1.x
+        if (this.fallDistance < 3F || accessor.location != net.minecraft.world.entity.vehicle.boat.AbstractBoat.Status.ON_LAND) {
             this.resetFallDistance()
             return
         }
@@ -112,13 +119,14 @@ open class CobblemonBoatEntity(entityType: EntityType<out Boat>, world: Level) :
         if (this.level().isClientSide || this.isRemoved) {
             return
         }
-        this.kill()
-        if (this.level().gameRules.getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+        val serverLevel = this.level() as? ServerLevel ?: return
+        this.kill(serverLevel)
+        if (serverLevel.gameRules.get(GameRules.ENTITY_DROPS)) {
             repeat(3) {
-                this.spawnAtLocation(this.boatType.baseBlock)
+                this.spawnAtLocation(serverLevel, this.boatType.baseBlock)
             }
             repeat(2) {
-                this.spawnAtLocation(Items.STICK)
+                this.spawnAtLocation(serverLevel, Items.STICK)
             }
         }
     }

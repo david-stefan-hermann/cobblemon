@@ -22,7 +22,8 @@ abstract class CobblemonKeyBinding(
     name: String,
     type: InputConstants.Type = InputConstants.Type.KEYSYM,
     key: Int,
-    category: String
+    // PT142: KeyMapping ctor takes KeyMapping.Category in MC 26.1.x
+    category: KeyMapping.Category = KeyMapping.Category.GAMEPLAY
 ): KeyMapping(name, type, key, category) {
 
     abstract fun onPress()

@@ -14,10 +14,10 @@ import com.cobblemon.mod.common.net.messages.client.SetClientPlayerDataPacket
 import com.cobblemon.mod.common.util.readString
 import com.cobblemon.mod.common.util.writeString
 import net.minecraft.network.RegistryFriendlyByteBuf
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 class ClientTMMoveManager(
-    val learnedTMs: MutableSet<ResourceLocation>
+    val learnedTMs: MutableSet<Identifier>
 ) : ClientInstancedPlayerData {
 
     override fun encode(buf: RegistryFriendlyByteBuf) {
@@ -27,8 +27,8 @@ class ClientTMMoveManager(
     companion object {
         fun decode(buf: RegistryFriendlyByteBuf): SetClientPlayerDataPacket {
             val tms = buf.readCollection(
-                { mutableSetOf<ResourceLocation>() },
-                { buf.readString().let(ResourceLocation::tryParse) ?: ResourceLocation("minecraft", "empty") }
+                { mutableSetOf<Identifier>() },
+                { buf.readString().let(Identifier::tryParse) ?: Identifier.fromNamespaceAndPath("minecraft", "empty") }
             )
             return SetClientPlayerDataPacket(
                 PlayerInstancedDataStoreTypes.TM_MOVES,

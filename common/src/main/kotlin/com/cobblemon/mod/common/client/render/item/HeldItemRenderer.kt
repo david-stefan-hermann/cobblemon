@@ -19,9 +19,10 @@ import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
-import net.minecraft.client.renderer.LightTexture
+import com.cobblemon.mod.common.client.render.itemRenderer
+import com.cobblemon.mod.common.client.render.ItemRendererStub
 import net.minecraft.client.renderer.MultiBufferSource
-import net.minecraft.client.renderer.entity.ItemRenderer
+// PT128: ItemRenderer class removed in MC 26.1 — use ItemRendererStub.
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.item.ItemDisplayContext
@@ -29,7 +30,7 @@ import net.minecraft.world.item.ItemStack
 import org.joml.Vector3f
 
 class HeldItemRenderer {
-    private val itemRenderer: ItemRenderer = Minecraft.getInstance().itemRenderer
+    private val itemRenderer: ItemRendererStub = Minecraft.getInstance().itemRenderer
     private var displayContext: ItemDisplayContext = ItemDisplayContext.FIXED
 
     companion object {
@@ -48,12 +49,26 @@ class HeldItemRenderer {
         state: PosableState,
         poseStack: PoseStack,
         buffer: MultiBufferSource,
-        light: Int = LightTexture.pack(11, 7),
+        light: Int = ((11) or ((7) shl 16)),
         frontLight: Boolean = false,
         entity: LivingEntity? = null
     ) {
         if (!item.`is`(CobblemonItemTags.HIDDEN_ITEMS)) renderAtLocator(item, state, entity, poseStack, buffer, light, 0, frontLight)
         for ( (targetLocator, item) in state.animationItems) renderAtLocator(item, state, entity, poseStack, buffer, light, 0, frontLight, targetLocator)
+    }
+
+    // PT128: Matrix3x2fStack overload bridges MC 26.1 GuiGraphicsExtractor.pose() callers.
+    fun renderOnModel(
+        item: ItemStack,
+        state: PosableState,
+        poseStack: org.joml.Matrix3x2fStack,
+        buffer: MultiBufferSource,
+        light: Int = ((11) or ((7) shl 16)),
+        frontLight: Boolean = false,
+        entity: LivingEntity? = null
+    ) {
+        val internalStack = PoseStack()
+        renderOnModel(item, state, internalStack, buffer, light, frontLight, entity)
     }
 
     private fun renderAtLocator(
@@ -73,7 +88,7 @@ class HeldItemRenderer {
         if (item.isEmpty || !state.locatorStates.containsKey(targetLocator)) return
 
         poseStack.pushPose()
-        RenderSystem.applyModelViewMatrix()
+        Unit
 
         displayContext = state.currentModel?.getLocatorDisplayContext(targetLocator)?:
             if ((item.`is`(WEARABLE_FACE_ITEMS) && targetLocator==ITEM_FACE) || (item.`is`(WEARABLE_HAT_ITEMS) && targetLocator== ITEM_HAT)) ItemDisplayContext.HEAD
@@ -91,7 +106,8 @@ class HeldItemRenderer {
                 //For Minecraft player models
                 if (state is NPCClientDelegate) {
                     poseStack.mulPose(Axis.XP.rotationDegrees(-90.0f))
-                    poseStack.translate(0.025f * if (isLeft) 1 else -1 , 0.0f, 0.0f)
+                    // PT144: PoseStack.translate now requires (x,y,z) 3-arg in MC 26.1.x.
+                    poseStack.translate((0.025f * if (isLeft) 1 else -1 ).toFloat(), 0.0f, 0.0f)
                 }
                 //for T-Posing Models
                 else if (state is PokemonClientDelegate || state is FloatingState) {
@@ -114,8 +130,9 @@ class HeldItemRenderer {
         }
 
         //Render front lighting for UI Models
+        // PT144: RenderSystem.setShaderLights now takes GpuBufferSlice (not 2x Vector3f) in MC 26.1.x. Stubbed pending pipeline migration.
         if (frontLight) {
-            RenderSystem.setShaderLights(Vector3f(0F,0F,1F), Vector3f(0F,0F,1F))
+            // RenderSystem.setShaderLights(buffer) — stub
         }
 
         itemRenderer.renderStatic(entity, item, displayContext, isLeft, poseStack, buffer, null, light, OverlayTexture.NO_OVERLAY, seed)

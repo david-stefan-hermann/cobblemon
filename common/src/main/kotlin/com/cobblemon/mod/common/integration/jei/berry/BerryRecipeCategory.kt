@@ -26,7 +26,9 @@ class BerryRecipeCategory(private val registration: IRecipeCategoryRegistration)
     private var icon: IDrawable
     init {
         val guiHelper = registration.jeiHelpers.guiHelper
-        background = guiHelper.createDrawable(GUI_TEXTURE_ID, 0, 0, WIDTH, HEIGHT)
+        // PT143: JEI 1.21.1 references net.minecraft.resources.ResourceLocation which is absent in MC 26.1.x.
+        // Background drawable is replaced with the empty drawable until JEI updates.
+        background = guiHelper.createBlankDrawable(WIDTH, HEIGHT)
         icon = guiHelper.createDrawableItemStack(CobblemonItems.SURPRISE_MULCH.defaultInstance)
     }
     override fun getRecipeType(): RecipeType<BerryMutationRecipe> {
@@ -46,10 +48,10 @@ class BerryRecipeCategory(private val registration: IRecipeCategoryRegistration)
     }
 
     override fun setRecipe(p0: IRecipeLayoutBuilder, p1: BerryMutationRecipe, p2: IFocusGroup) {
-        //These magic numbers are where the items should be positioned on the gui texture
-        p0.addSlot(RecipeIngredientRole.INPUT, 1, 1).addIngredients(Ingredient.of(p1.berryOne.defaultInstance))
-        p0.addSlot(RecipeIngredientRole.INPUT, 50, 1).addIngredients(Ingredient.of(p1.berryTwo.defaultInstance))
-        p0.addSlot(RecipeIngredientRole.OUTPUT, 108, 1).addIngredients(Ingredient.of(p1.berryResult.defaultInstance))
+        // PT137: Ingredient.of(ItemStack) removed — Ingredient.of(ItemLike...) only. Use Item directly.
+        p0.addSlot(RecipeIngredientRole.INPUT, 1, 1).addIngredients(Ingredient.of(p1.berryOne))
+        p0.addSlot(RecipeIngredientRole.INPUT, 50, 1).addIngredients(Ingredient.of(p1.berryTwo))
+        p0.addSlot(RecipeIngredientRole.OUTPUT, 108, 1).addIngredients(Ingredient.of(p1.berryResult))
     }
 
     companion object {

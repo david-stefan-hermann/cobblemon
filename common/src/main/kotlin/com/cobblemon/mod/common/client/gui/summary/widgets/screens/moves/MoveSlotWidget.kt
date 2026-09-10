@@ -24,7 +24,8 @@ import com.cobblemon.mod.common.client.render.drawScaledText
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.math.toRGB
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Component
 import net.minecraft.util.Mth
 
@@ -71,7 +72,7 @@ class MoveSlotWidget(
     }
 
     val elementalType:ElementalType = Moves.getByNameOrDummy(move?.name ?: "").getEffectiveElementalType(pokemon)
-    override fun renderWidget(context: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {
         val matrices = context.pose()
         isHovered = pMouseX >= x && pMouseY >= y && pMouseX < x + width && pMouseY < y + height
         if (move != null) {
@@ -152,16 +153,19 @@ class MoveSlotWidget(
             )
 
             // Reorder Buttons
-            moveUpButton.render(context, pMouseX, pMouseY, pPartialTicks)
-            moveDownButton.render(context, pMouseX, pMouseY, pPartialTicks)
+            moveUpButton.extractRenderState(context, pMouseX, pMouseY, pPartialTicks)
+            moveDownButton.extractRenderState(context, pMouseX, pMouseY, pPartialTicks)
         }
 
         // Switch Move Button
-        switchMoveButton.render(context, pMouseX, pMouseY, pPartialTicks)
+        switchMoveButton.extractRenderState(context, pMouseX, pMouseY, pPartialTicks)
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
         if (isHovered) movesWidget.selectMove(move)
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(event, fromOnClick)
     }
 }

@@ -8,6 +8,7 @@
 
 package com.cobblemon.mod.common.client.gui.dialogue.widgets
 
+import com.cobblemon.mod.common.util.hasShiftDown
 import com.cobblemon.mod.common.api.gui.blitk
 import com.cobblemon.mod.common.api.gui.drawCenteredText
 import com.cobblemon.mod.common.api.text.text
@@ -17,8 +18,10 @@ import com.cobblemon.mod.common.net.messages.client.dialogue.dto.DialogueInputDT
 import com.cobblemon.mod.common.net.messages.server.dialogue.InputToDialoguePacket
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.mojang.blaze3d.platform.InputConstants
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.screens.Screen
 import org.lwjgl.glfw.GLFW
@@ -43,7 +46,10 @@ class DialogueTextInputWidget(
         isFocused = true
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
         if (!dialogueScreen.renderInput()) {
             return false
         }
@@ -59,7 +65,7 @@ class DialogueTextInputWidget(
         }
     }
 
-    override fun renderWidget(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         if (!dialogueScreen.renderInput()) {
             return
         }
@@ -67,7 +73,7 @@ class DialogueTextInputWidget(
             return
         }
         if (cursorPosition != value.length) {
-            moveCursorToEnd(Screen.hasShiftDown())
+            moveCursorToEnd(hasShiftDown())
         }
 
         blitk(
@@ -89,10 +95,13 @@ class DialogueTextInputWidget(
         )
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+    override fun keyPressed(event: KeyEvent): Boolean {
+        val keyCode = event.key()
+        val scanCode = event.scancode()
+        val modifiers = event.modifiers()
         if (keyCode == InputConstants.KEY_ESCAPE || keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
             this.dialogueScreen.sendToServer(InputToDialoguePacket(dialogueScreen.dialogueDTO.dialogueInput.inputId, value.trim()))
         }
-        return super.keyPressed(keyCode, scanCode, modifiers)
+        return super.keyPressed(event)
     }
 }

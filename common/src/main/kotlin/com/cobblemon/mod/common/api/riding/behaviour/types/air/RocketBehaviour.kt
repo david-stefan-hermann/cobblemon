@@ -468,7 +468,8 @@ class RocketBehaviour : RidingBehaviour<RocketSettings, RocketState> {
     ): Boolean {
         if (!state.boosting.get()) return false
         val impactSpeed = impactVec.horizontalDistance().toFloat() * 10f
-        return vehicle.causeFallDamage(impactSpeed, 1f, vehicle.damageSources().flyIntoWall())
+        // PT143: Entity.causeFallDamage signature changed in MC 26.1.x — first arg is double now.
+        return vehicle.causeFallDamage(impactSpeed.toDouble(), 1f, vehicle.damageSources().flyIntoWall())
     }
 
     override fun getRideSounds(

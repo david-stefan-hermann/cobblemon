@@ -22,10 +22,10 @@ import com.cobblemon.mod.common.util.lang
 import java.text.DecimalFormat
 import net.minecraft.ChatFormatting
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
-import net.minecraft.util.FastColor
+import net.minecraft.util.ARGB
 import net.minecraft.util.Mth
 import net.minecraft.world.item.ItemStack
 
@@ -56,7 +56,7 @@ class DropsScrollingWidget(val pX: Int, val pY: Int): ScrollingWidget<DropsScrol
         }
     }
 
-    override fun getScrollbarPosition(): Int {
+    override fun scrollBarX(): Int {
         return left + width - scrollBarWidth - 7
     }
 
@@ -64,23 +64,23 @@ class DropsScrollingWidget(val pX: Int, val pY: Int): ScrollingWidget<DropsScrol
         return this.y + this.height - 1
     }
 
-    override fun renderScrollbar(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
-        val xLeft = this.scrollbarPosition
+    override fun renderScrollbar(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        val xLeft = this.scrollBarX()
         val xRight = xLeft + 3
         val yStart = y + 1
 
         val barHeight = this.bottom - yStart
 
-        var yBottom = ((barHeight * barHeight).toFloat() / this.maxPosition.toFloat()).toInt()
+        var yBottom = ((barHeight * barHeight).toFloat() / this.contentHeight().toFloat()).toInt()
         yBottom = Mth.clamp(yBottom, 32, barHeight - 8)
-        var yTop = scrollAmount.toInt() * (barHeight - yBottom) / this.maxScroll + yStart
+        var yTop = scrollAmount.toInt() * (barHeight - yBottom) / this.maxScrollAmount() + yStart
         if (yTop < yStart) yTop = yStart
 
-        context.fill(xLeft + 1, yStart, xRight - 1, this.bottom, FastColor.ARGB32.color(255, 126, 231, 229)) // track
-        context.fill(xLeft, yTop, xRight, yTop + yBottom, FastColor.ARGB32.color(255, 58, 150, 182)) // bar
+        context.fill(xLeft + 1, yStart, xRight - 1, this.bottom, ARGB.color(255, 126, 231, 229)) // track
+        context.fill(xLeft, yTop, xRight, yTop + yBottom, ARGB.color(255, 58, 150, 182)) // bar
     }
 
-    override fun renderWidget(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         drawScaledText(
             context = context,
             font = CobblemonResources.DEFAULT_LARGE,
@@ -102,48 +102,35 @@ class DropsScrollingWidget(val pX: Int, val pY: Int): ScrollingWidget<DropsScrol
                 centered = true
             )
         } else {
-            super.renderWidget(context, mouseX, mouseY, delta)
+            super.extractWidgetRenderState(context, mouseX, mouseY, delta)
         }
     }
 
-    override fun renderItem(
-        context: GuiGraphics,
-        mouseX: Int,
-        mouseY: Int,
-        delta: Float,
-        index: Int,
-        x: Int,
-        y: Int,
-        entryWidth: Int,
-        entryHeight: Int
-    ) {
-        val entry =  this.getEntry(index)
-        entry.render(
-            context, index, y + 2, x, entryWidth, entryHeight, mouseX, mouseY,
-            hovered == entry, delta
-        )
+    // PT137: AbstractSelectionList.renderItem→extractItem(Entry); getEntry removed (use children()[index])
+    override fun extractItem(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float, entry: DropWidgetEntry) {
+        entry.extractContent(context, mouseX, mouseY, hovered == entry, delta)
     }
 
-    override fun getEntry(index: Int): DropWidgetEntry {
-        return children()[index] as DropWidgetEntry
-    }
+    fun entryAt(index: Int): DropWidgetEntry = children()[index] as DropWidgetEntry
 
     class DropWidgetEntry(val entry: ItemDropEntry): Slot<DropWidgetEntry>() {
-        override fun render(
-            context: GuiGraphics,
-            index: Int,
-            y: Int,
-            x: Int,
-            entryWidth: Int,
-            entryHeight: Int,
+        override fun extractContent(
+            context: GuiGraphicsExtractor,
             mouseX: Int,
             mouseY: Int,
             hovered: Boolean,
             tickDelta: Float
         ) {
-            context.pose().pushPose()
-            context.pose().translate(0f, 0f, 100f)
-            val itemStack = Minecraft.getInstance().player?.level()?.itemRegistry?.get(entry.item)?.defaultInstance ?: ItemStack.EMPTY
+            val index = 0
+            val y = contentY
+            val x = contentX
+            val entryWidth = width
+            val entryHeight = contentHeight
+            context.pose().pushMatrix()
+            // PT137: Matrix3x2fStack.translate is 2-arg (x,y); z translation no longer applies in 2D matrix
+            context.pose().translate(0f, 0f)
+            // PT137: ItemRegistry uses Optional<Holder<Item>>; defaultInstance via Holder.value().defaultInstance
+            val itemStack = Minecraft.getInstance().player?.level()?.itemRegistry?.get(entry.item)?.orElse(null)?.value()?.defaultInstance ?: ItemStack.EMPTY
             renderScaledGuiItemIcon(
                 itemStack = itemStack,
                 x = x.toDouble(),
@@ -151,7 +138,7 @@ class DropsScrollingWidget(val pX: Int, val pY: Int): ScrollingWidget<DropsScrol
                 matrixStack = context.pose(),
                 scale = PokedexGUIConstants.SCALE.toDouble()
             )
-            context.pose().pushPose()
+            context.pose().pushMatrix()
 
             val min = entry.quantityRange?.min() ?: entry.quantity
             val max = entry.quantityRange?.max() ?: entry.quantity
@@ -195,8 +182,8 @@ class DropsScrollingWidget(val pX: Int, val pY: Int): ScrollingWidget<DropsScrol
                 scale = PokedexGUIConstants.SCALE
             )
 
-            context.pose().popPose()
-            context.pose().popPose()
+            context.pose().popMatrix()
+            context.pose().popMatrix()
         }
 
         override fun getNarration(): Component {

@@ -26,7 +26,8 @@ object AttackAngryAtTask {
             Trigger { world, entity, _ ->
                 val angryAt = it.get(angryAt)
                 val livingEntity = world.getEntity(angryAt) as? LivingEntity
-                if (livingEntity != null && entity.commandSenderWorld.getCurrentDifficultyAt(entity.blockPosition()).difficulty != Difficulty.PEACEFUL) {
+                // PT144: Level.getCurrentDifficultyAt removed in MC 26.1.x — use global level difficulty.
+                if (livingEntity != null && entity.level().getDifficulty() != Difficulty.PEACEFUL) {
                     entity.brain.setMemory(MemoryModuleType.ATTACK_TARGET, livingEntity)
                 } else {
                     entity.brain.eraseMemory(MemoryModuleType.ANGRY_AT)

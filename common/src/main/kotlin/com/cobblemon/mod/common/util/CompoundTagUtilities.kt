@@ -8,13 +8,17 @@
 
 package com.cobblemon.mod.common.util
 
+import com.cobblemon.mod.common.util.getUUID
+import com.cobblemon.mod.common.util.putUUID
+import com.cobblemon.mod.common.util.hasUUID
+
 import net.minecraft.nbt.CompoundTag
 import java.util.*
 
 object CompoundTagUtilities {
     @JvmStatic
     fun getPokemonID(nbt: CompoundTag): UUID {
-        return nbt.getCompound(DataKeys.POKEMON)
+        return nbt.getCompoundOrEmpty(DataKeys.POKEMON)
             .getUUID(DataKeys.POKEMON_UUID)
     }
 

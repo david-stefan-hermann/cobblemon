@@ -8,6 +8,9 @@
 
 package com.cobblemon.mod.common.client.gui.interact.partyselect
 
+import com.cobblemon.mod.common.util.translate
+import com.cobblemon.mod.common.util.scale
+
 import com.cobblemon.mod.common.api.gui.blitk
 import com.cobblemon.mod.common.api.pokemon.PokemonProperties
 import com.cobblemon.mod.common.api.text.bold
@@ -26,11 +29,11 @@ import com.cobblemon.mod.common.util.lang
 import com.cobblemon.mod.common.util.math.fromEulerXYZDegrees
 import com.cobblemon.mod.common.util.toAssetPath
 import com.google.common.collect.Lists
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.sounds.SoundManager
 import net.minecraft.network.chat.Component
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.util.FormattedCharSequence
 import net.minecraft.world.item.ItemStack
 import org.joml.Quaternionf
@@ -62,7 +65,7 @@ class PartySlotButton(
 
     private val renderablePokemon = pokemon.asRenderablePokemon().also { it.aspects = aspects }
 
-    override fun renderWidget(context: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {
+    override fun extractContents(context: GuiGraphicsExtractor, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {
         isHovered = pMouseX >= x && pMouseY >= y && pMouseX < x + width && pMouseY < y + height && enabled
         val alpha = if (enabled) 1.0 else 0.7
         val matrices = context.pose()
@@ -100,7 +103,7 @@ class PartySlotButton(
             textureHeight = height * 3
         )
 
-        context.pose().pushPose()
+        context.pose().pushMatrix()
         context.pose().translate(x.toDouble() + 13, y.toDouble() - 2, 0.0)
 
         drawProfilePokemon(
@@ -111,7 +114,7 @@ class PartySlotButton(
             scale = 10F,
             partialTicks = if (!isHovered) 0F else pPartialTicks
         )
-        context.pose().popPose()
+        context.pose().popMatrix()
 
         val ballIcon = pokemon.pokeball!!.asIdentifierDefaultingNamespace().toAssetPath("textures/gui/ball/", ".png")
         val ballHeight = 22
@@ -127,7 +130,7 @@ class PartySlotButton(
         )
 
         // Ensure elements are not hidden behind Pokémon render
-        matrices.pushPose()
+        matrices.pushMatrix()
         matrices.translate(0.0, 0.0, 100.0)
         drawScaledText(
             context = context,
@@ -205,10 +208,11 @@ class PartySlotButton(
 
         // Hover Text
         if (isHovered && hoverText.isNotEmpty()) {
-            this.parent.setTooltipForNextRenderPass(Lists.transform<Component, FormattedCharSequence>(hoverText) { it.visualOrderText })
+            // PT145: Screen.setTooltipForNextRenderPass/setTooltip removed in MC 26.1.x — hover text temporarily disabled until widget-level tooltip migration.
+            // hoverText.firstOrNull()
         }
 
-        matrices.popPose()
+        matrices.popMatrix()
     }
 
     override fun playDownSound(soundManager: SoundManager) {}

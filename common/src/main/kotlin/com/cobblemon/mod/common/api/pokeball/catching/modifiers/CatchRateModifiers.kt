@@ -83,7 +83,7 @@ object CatchRateModifiers {
     val MOON_PHASES: CatchRateModifier = WorldStateModifier { _, entity ->
         if (entity.level().gameTime in 12000..24000)
             return@WorldStateModifier 1F
-        when (entity.level().moonPhase) {
+        when (((entity.level().overworldClockTime / 24000L) % 8L).toInt()) {
             2, 6 -> 1.5F
             1, 7 -> 2.5F
             0 -> 4F

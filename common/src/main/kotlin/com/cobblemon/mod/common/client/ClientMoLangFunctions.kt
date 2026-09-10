@@ -53,7 +53,7 @@ object ClientMoLangFunctions {
             }
         },
         "is_time" to java.util.function.Function { params ->
-            val time = (Minecraft.getInstance().level?.dayTime() ?: 0) % 24000
+            val time = (Minecraft.getInstance().level?.overworldClockTime ?: 0) % 24000
             val min = params.getInt(0)
             val max = params.getInt(1)
             time in min..max
@@ -133,7 +133,7 @@ object ClientMoLangFunctions {
                 val maxPitch = params.getDoubleOrNull(3) ?: 45F
                 ObjectValue(
                     PitchTiltAnimation(
-                        bone = model.getPart(bone),
+                        bone = model.getPart(bone) as com.cobblemon.mod.common.client.render.models.blockbench.pose.Bone,
                         minPitch = minPitch.toFloat(),
                         maxPitch = maxPitch.toFloat(),
                         maxChangePerTick = maxChangePerTick.toFloat()

@@ -39,9 +39,12 @@ class CookingPotShapelessRecipe(
     override val seasoningProcessors: List<SeasoningProcessor>
 ) : Recipe<CraftingInput>, CookingPotRecipeBase {
     override fun getType(): RecipeType<CookingPotShapelessRecipe> = CobblemonRecipeTypes.COOKING_POT_SHAPELESS
-    override fun getSerializer() = CobblemonRecipeSerializers.COOKING_POT_SHAPELESS
-    override fun getIngredients() = ingredients
-    override fun canCraftInDimensions(width: Int, height: Int) = width * height >= ingredients.size
+    // PT138: canCraftInDimensions/getIngredients removed from Recipe interface; RecipeSerializer is final record
+    @Suppress("UNCHECKED_CAST")
+    override fun getSerializer(): RecipeSerializer<out net.minecraft.world.item.crafting.Recipe<CraftingInput>> =
+        Serializer.INSTANCE as RecipeSerializer<out net.minecraft.world.item.crafting.Recipe<CraftingInput>>
+    // Non-override convenience accessor
+    fun ingredients(): NonNullList<Ingredient> = ingredients
 
     override fun matches(input: CraftingInput, level: Level): Boolean {
         val remaining = ingredients.toMutableList()
@@ -60,19 +63,21 @@ class CookingPotShapelessRecipe(
         return remaining.isEmpty()
     }
 
-    class Serializer : RecipeSerializer<CookingPotShapelessRecipe> {
-        companion object {
-            private val CODEC: MapCodec<CookingPotShapelessRecipe> = RecordCodecBuilder.mapCodec { instance ->
+    // PT138: RecipeSerializer is now a final record class (cannot be extended). Wrapper → object with INSTANCE.
+    object Serializer {
+            val CODEC: MapCodec<CookingPotShapelessRecipe> = RecordCodecBuilder.mapCodec { instance ->
                 instance.group(
-                    Codec.STRING.optionalFieldOf("group", "").forGetter { it.group },
+                    Codec.STRING.optionalFieldOf("group", "").forGetter { it.groupName },
                     CookingPotBookCategory.CODEC.fieldOf("category").orElse(CookingPotBookCategory.MISC).forGetter { it.category },
-                    ItemStack.STRICT_CODEC.fieldOf("result").forGetter { it.result },
-                    Ingredient.CODEC_NONEMPTY.listOf().fieldOf("ingredients").flatXmap({ list ->
-                        val ingredients = list.filter { !it.isEmpty }.toTypedArray()
+                    ItemStack.CODEC.fieldOf("result").forGetter { it.result },
+                    // PT138: Ingredient.CODEC_NONEMPTY removed → use Ingredient.CODEC (Ingredient is now non-empty by construction)
+                    Ingredient.CODEC.listOf().fieldOf("ingredients").flatXmap({ list ->
+                        val ingredients = list.toTypedArray()
                         when {
                             ingredients.isEmpty() -> DataResult.error { "No ingredients for shapeless recipe" }
                             ingredients.size > 9 -> DataResult.error { "Too many ingredients for shapeless recipe" }
-                            else -> DataResult.success(NonNullList.of(Ingredient.EMPTY, *ingredients))
+                            // PT138: Ingredient.EMPTY removed; NonNullList.of requires a non-null default — use first ingredient
+                            else -> DataResult.success(NonNullList.of(ingredients[0], *ingredients))
                         }
                     }, { DataResult.success(it) }).forGetter { it.ingredients },
                     TagKey.codec(Registries.ITEM).fieldOf("seasoningTag").orElse(CobblemonItemTags.EMPTY).forGetter { recipe -> recipe.seasoningTag },
@@ -92,8 +97,13 @@ class CookingPotShapelessRecipe(
                 val category = buffer.readEnum(CookingPotBookCategory::class.java)
                 val seasoningTag = TagKey.create(Registries.ITEM, buffer.readIdentifier())
                 val size = buffer.readVarInt()
-                val ingredients = NonNullList.withSize(size, Ingredient.EMPTY)
-                ingredients.replaceAll { Ingredient.CONTENTS_STREAM_CODEC.decode(buffer) }
+                // PT138: Ingredient.EMPTY removed; decode first to use as default
+                val first = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer)
+                val ingredients = NonNullList.withSize(size, first)
+                if (size > 0) ingredients[0] = first
+                for (i in 1 until size) {
+                    ingredients[i] = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer)
+                }
                 val result = ItemStack.STREAM_CODEC.decode(buffer)
                 val seasoningProcessors = buffer.readList {
                     val type = buffer.readString()
@@ -103,7 +113,7 @@ class CookingPotShapelessRecipe(
             }
 
             private fun toNetwork(buffer: RegistryFriendlyByteBuf, recipe: CookingPotShapelessRecipe) {
-                buffer.writeUtf(recipe.group)
+                buffer.writeUtf(recipe.groupName)
                 buffer.writeEnum(recipe.category)
                 buffer.writeIdentifier(recipe.seasoningTag.location)
                 buffer.writeVarInt(recipe.ingredients.size)
@@ -115,9 +125,8 @@ class CookingPotShapelessRecipe(
                     buffer.writeString(it.type)
                 }
             }
-        }
 
-        override fun codec() = CODEC
-        override fun streamCodec() = STREAM_CODEC
+        // PT138: direct record-constructor — RecipeSerializer(MapCodec, StreamCodec)
+        val INSTANCE: RecipeSerializer<CookingPotShapelessRecipe> = RecipeSerializer(CODEC, STREAM_CODEC)
     }
 }

@@ -8,6 +8,10 @@
 
 package com.cobblemon.mod.common.block
 
+import net.minecraft.util.RandomSource
+
+import net.minecraft.world.level.ScheduledTickAccess
+
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonBlockEntities
 import com.cobblemon.mod.common.CobblemonNetwork
@@ -25,7 +29,7 @@ import com.cobblemon.mod.common.util.rotateShape
 import com.mojang.serialization.MapCodec
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.StringRepresentable
@@ -216,12 +220,13 @@ class PastureBlock(settings: Properties): BaseEntityBlock(settings), SimpleWater
         return super.playerWillDestroy(world, pos, state, player)
     }
 
+    // PT137: BlockBehaviour.onExplosionHit(BlockState, ServerLevel, BlockPos, Explosion, BiConsumer<ItemStack, BlockPos>) — Level→ServerLevel + non-null BiConsumer params
     override fun onExplosionHit(
         state: BlockState,
-        level: Level,
+        level: net.minecraft.server.level.ServerLevel,
         pos: BlockPos,
         explosion: Explosion,
-        dropConsumer: BiConsumer<ItemStack?, BlockPos?>
+        dropConsumer: BiConsumer<ItemStack, BlockPos>
     ) {
         val interaction = explosion.blockInteraction
         if (interaction == Explosion.BlockInteraction.DESTROY || interaction == Explosion.BlockInteraction.DESTROY_WITH_DECAY) {
@@ -231,11 +236,12 @@ class PastureBlock(settings: Properties): BaseEntityBlock(settings), SimpleWater
         super.onExplosionHit(state, level, pos, explosion, dropConsumer)
     }
 
-    override fun <T : BlockEntity?> getTicker(world: Level, state: BlockState, type: BlockEntityType<T>): BlockEntityTicker<T>? {
+    override fun <T : BlockEntity> getTicker(world: Level, state: BlockState, type: BlockEntityType<T>): BlockEntityTicker<T>? {
         return createTickerHelper(type, CobblemonBlockEntities.PASTURE, PokemonPastureBlockEntity.TICKER::tick)
     }
 
-    override fun setPlacedBy(world: Level, pos: BlockPos, state: BlockState, placer: LivingEntity?, itemStack: ItemStack?) {
+    // PT143: Block.setPlacedBy(Level, BlockPos, BlockState, @Nullable LivingEntity, ItemStack) in MC 26.1.x.
+    override fun setPlacedBy(world: Level, pos: BlockPos, state: BlockState, placer: LivingEntity?, itemStack: ItemStack) {
         world.setBlock(
             pos.above(),
             state
@@ -243,7 +249,7 @@ class PastureBlock(settings: Properties): BaseEntityBlock(settings), SimpleWater
                 .setValue(WATERLOGGED, world.getFluidState((pos.above())).type == Fluids.WATER),
             3
         )
-        world.blockUpdated(pos, Blocks.AIR)
+        world.updateNeighborsAt(pos, Blocks.AIR, null)
         state.updateNeighbourShapes(world, pos, 3)
 
         if (world is ServerLevel && placer is ServerPlayer) {
@@ -287,7 +293,7 @@ class PastureBlock(settings: Properties): BaseEntityBlock(settings), SimpleWater
                 )
             )
 
-            PastureLinkManager.createLink(player.uuid, PastureLink(linkId, pcId, ResourceLocation.tryParse(world.dimensionTypeRegistration().registeredName)!!, getBasePosition(state, pos), perms))
+            PastureLinkManager.createLink(player.uuid, PastureLink(linkId, pcId, Identifier.tryParse(world.dimensionTypeRegistration().registeredName)!!, getBasePosition(state, pos), perms))
 
             world.playSoundServer(
                 position = pos.toVec3d(),
@@ -333,8 +339,8 @@ class PastureBlock(settings: Properties): BaseEntityBlock(settings), SimpleWater
         return blockState.rotate(mirror.getRotation(blockState.getValue(HorizontalDirectionalBlock.FACING)))
     }
 
-    override fun onRemove(state: BlockState, world: Level, pos: BlockPos, newState: BlockState, moved: Boolean) {
-        if (!state.`is`(newState.block)) super.onRemove(state, world, pos, newState, moved)
+    override fun affectNeighborsAfterRemoval(state: BlockState, world: net.minecraft.server.level.ServerLevel, pos: BlockPos, moved: Boolean) {
+        super.affectNeighborsAfterRemoval(state, world, pos, moved)
     }
 
     override fun getFluidState(state: BlockState): FluidState {
@@ -345,14 +351,16 @@ class PastureBlock(settings: Properties): BaseEntityBlock(settings), SimpleWater
 
     override fun updateShape(
         state: BlockState,
-        direction: Direction,
-        neighborState: BlockState,
-        world: LevelAccessor,
+        world: LevelReader,
+        scheduledTickAccess: ScheduledTickAccess,
         pos: BlockPos,
-        neighborPos: BlockPos
+        direction: Direction,
+        neighborPos: BlockPos,
+        neighborState: BlockState,
+        random: RandomSource
     ): BlockState {
         if (state.getValue(WATERLOGGED)) {
-            world.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(world))
+            scheduledTickAccess.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(world))
         }
 
         val isPasture = neighborState.`is`(this)
@@ -360,7 +368,8 @@ class PastureBlock(settings: Properties): BaseEntityBlock(settings), SimpleWater
         if (!isPasture && part == PasturePart.TOP && neighborPos == pos.below()) {
             return Blocks.AIR.defaultBlockState()
         } else if (!isPasture && part == PasturePart.BOTTOM && neighborPos == pos.above()) {
-            checkBreakEntity(world, state, pos)
+            // PT137: world is LevelReader in updateShape; checkBreakEntity expects LevelAccessor — skip in read-only context
+            if (world is LevelAccessor) checkBreakEntity(world, state, pos)
             return Blocks.AIR.defaultBlockState()
         }
 

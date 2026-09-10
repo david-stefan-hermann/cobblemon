@@ -11,14 +11,35 @@ package com.cobblemon.mod.common
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.util.RandomSource
 import net.minecraft.world.entity.Entity
-import net.minecraft.world.entity.npc.VillagerData
-import net.minecraft.world.entity.npc.VillagerProfession
-import net.minecraft.world.entity.npc.VillagerTrades
+import net.minecraft.world.entity.npc.villager.VillagerData
+import net.minecraft.world.entity.npc.villager.VillagerProfession
+import net.minecraft.world.item.Item
+import net.minecraft.world.level.ItemLike
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.trading.ItemCost
 import net.minecraft.world.item.trading.MerchantOffer
 import java.util.Optional
+
+// PT108: VillagerTrades.ItemListing/ItemsForEmeralds removed in MC 26.1 — local stub bridges legacy data.
+object VillagerTrades {
+    interface ItemListing {
+        fun getOffer(entity: Entity?, randomSource: RandomSource?): MerchantOffer?
+    }
+    class ItemsForEmeralds(
+        private val item: ItemLike,
+        private val emeraldCost: Int,
+        private val numberOfItems: Int,
+        private val maxUses: Int,
+        private val villagerXp: Int,
+        private val priceMultiplier: Float = 0.05F
+    ) : ItemListing {
+        constructor(item: ItemLike, emeraldCost: Int, numberOfItems: Int, maxUses: Int, villagerXp: Int) :
+            this(item, emeraldCost, numberOfItems, maxUses, villagerXp, 0.05F)
+        override fun getOffer(entity: Entity?, randomSource: RandomSource?): MerchantOffer =
+            MerchantOffer(ItemCost(Items.EMERALD, emeraldCost), ItemStack(item, numberOfItems), maxUses, villagerXp, priceMultiplier)
+    }
+}
 
 /**
  * A generator for various trade offers in the mod.
@@ -75,12 +96,15 @@ object CobblemonTradeOffers {
                 TradeOffer(ItemCost(Items.EMERALD, 22), ItemStack(CobblemonItems.VIVICHOKE_DIP, 1), 4, 30, Optional.of<ItemCost>(ItemCost(Items.BOWL)))
             ))
         )
-        VillagerProfession.FISHERMAN -> listOf(
-            VillagerTradeOffer(VillagerProfession.FISHERMAN, 5, listOf(
-                VillagerTrades.ItemsForEmeralds(CobblemonItems.POKEROD_SMITHING_TEMPLATE, 12, 1, 3, 30)
-            ))
-        )
-        else -> emptyList()
+        // PT142: VillagerProfession.FISHERMAN is now ResourceKey<VillagerProfession> in MC 26.1.x — dereference via registry
+        else -> {
+            val fisherman = net.minecraft.core.registries.BuiltInRegistries.VILLAGER_PROFESSION.getValue(net.minecraft.resources.ResourceLocation.withDefaultNamespace("fisherman"))
+            if (fisherman != null && profession == fisherman) listOf(
+                VillagerTradeOffer(fisherman, 5, listOf(
+                    VillagerTrades.ItemsForEmeralds(CobblemonItems.POKEROD_SMITHING_TEMPLATE, 12, 1, 3, 30)
+                ))
+            ) else emptyList()
+        }
     }
 
     /**

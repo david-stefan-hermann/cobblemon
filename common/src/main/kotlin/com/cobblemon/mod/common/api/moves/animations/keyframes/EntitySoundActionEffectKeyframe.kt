@@ -41,8 +41,9 @@ class EntitySoundActionEffectKeyframe : ConditionalActionEffectKeyframe(), Entit
         }?.asIdentifierDefaultingNamespace() ?: return skip()
 
         entities.forEach { entity ->
-            val soundEvent = entity.level().registryAccess().registryOrThrow(Registries.SOUND_EVENT).get(soundIdentifier) ?: return skip()
-            entity.playSound(soundEvent, 1f, 1f)
+            val soundEventOpt = entity.level().registryAccess().lookupOrThrow(Registries.SOUND_EVENT).get(soundIdentifier)
+            if (!soundEventOpt.isPresent) return skip()
+            entity.playSound(soundEventOpt.get().value(), 1f, 1f)
         }
 
         return delayedFuture(seconds = delay.resolveFloat(context.runtime))

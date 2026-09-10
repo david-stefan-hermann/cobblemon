@@ -6,7 +6,8 @@ plugins {
     id("java")
     id("java-library")
     id("maven-publish")
-    id("dev.architectury.loom")
+    // PT011: dev.architectury.loom → net.fabricmc.fabric-loom (1.15.5).
+    id("net.fabricmc.fabric-loom")
     id("net.nemerosa.versioning")
 }
 
@@ -42,8 +43,9 @@ publishing {
 
     publications {
         create<MavenPublication>(project.name) {
-            artifact(tasks.remapJar)
-            artifact(tasks.remapSourcesJar)
+            // PT012 (port/26.1.x): no-remap mode → remapJar/remapSourcesJar 미존재. shadowJar + sourcesJar 사용.
+            artifact(tasks.named("shadowJar"))
+            artifact(tasks.named("sourcesJar"))
 
             @Suppress("UnstableApiUsage")
             loom.disableDeprecatedPomGeneration(this)

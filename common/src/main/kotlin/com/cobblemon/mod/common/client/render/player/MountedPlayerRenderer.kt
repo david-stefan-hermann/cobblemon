@@ -42,8 +42,9 @@ object MountedPlayerRenderer {
         )
     )
 
+    // PT144: HumanoidModel<T : HumanoidRenderState> bound tightened in MC 26.1.x.
     fun animate(
-        model: HumanoidModel<AbstractClientPlayer>,
+        model: HumanoidModel<net.minecraft.client.renderer.entity.state.HumanoidRenderState>,
         pokemonEntity: PokemonEntity,
         player: AbstractClientPlayer,
         headYaw: Float,
@@ -103,41 +104,16 @@ object MountedPlayerRenderer {
      * This does what Minecraft would typically do for various additional body part
      * rendering thingies. It's largely copy paste.
      */
+    // PT144: HumanoidModel.poseLeftArm/poseRightArm privatized, leftArmPose/rightArmPose removed, ModelPart.copyFrom removed.
+    // Pose animation deferred until HumanoidRenderState pipeline migration; mount visualization falls back to default model pose.
     fun applyRegularAnimation(
-        model: HumanoidModel<AbstractClientPlayer>,
+        model: HumanoidModel<net.minecraft.client.renderer.entity.state.HumanoidRenderState>,
         player: AbstractClientPlayer,
         ageInTicks: Float
     ) {
-        val rightHanded = player.mainArm == HumanoidArm.RIGHT
-        if (player.isUsingItem) {
-            val usingMainHand = player.usedItemHand == InteractionHand.MAIN_HAND
-            if (usingMainHand == rightHanded) {
-                model.poseRightArm(player)
-            } else {
-                model.poseLeftArm(player)
-            }
-        } else {
-            val offHandIsTwoHanded: Boolean = if (rightHanded) model.leftArmPose.isTwoHanded else model.rightArmPose.isTwoHanded
-            if (rightHanded != offHandIsTwoHanded) {
-                model.poseLeftArm(player)
-                model.poseRightArm(player)
-            } else {
-                model.poseRightArm(player)
-                model.poseLeftArm(player)
-            }
-        }
-
-        model.setupAttackAnimation(player, ageInTicks)
-
-        if (model.rightArmPose != HumanoidModel.ArmPose.SPYGLASS) {
-            AnimationUtils.bobModelPart(model.rightArm, ageInTicks, 1.0F);
-        }
-
-        if (model.leftArmPose != HumanoidModel.ArmPose.SPYGLASS) {
-            AnimationUtils.bobModelPart(model.leftArm, ageInTicks, -1.0F);
-        }
-
-        model.hat.copyFrom(model.head)
+        // Bob arms generically as a visual fallback so mounted rendering still animates.
+        AnimationUtils.bobModelPart(model.rightArm, ageInTicks, 1.0F)
+        AnimationUtils.bobModelPart(model.leftArm, ageInTicks, -1.0F)
     }
 
     const val RIDING_SITTING_OFFSET = -10.0

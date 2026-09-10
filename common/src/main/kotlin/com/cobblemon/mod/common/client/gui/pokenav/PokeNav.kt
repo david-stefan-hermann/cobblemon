@@ -8,6 +8,7 @@
 
 package com.cobblemon.mod.common.client.gui.pokenav
 
+import net.minecraft.client.input.KeyEvent
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.api.gui.blitk
 import com.cobblemon.mod.common.client.CobblemonClient
@@ -22,12 +23,12 @@ import com.google.common.collect.HashBasedTable
 import com.google.common.collect.Table
 import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Component
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 class PokeNav : Screen(Component.translatable("cobblemon.ui.pokenav.title")), CobblemonRenderable {
 
@@ -83,7 +84,10 @@ class PokeNav : Screen(Component.translatable("cobblemon.ui.pokenav.title")), Co
      * Changed by Licious April 29th 2022
      * Cleaned up the original code see [moveSelected] for how the selection moves around.
      */
-    override fun keyPressed(pKeyCode: Int, pScanCode: Int, pModifiers: Int): Boolean {
+    override fun keyPressed(event: KeyEvent): Boolean {
+        val pKeyCode = event.key()
+        val pScanCode = event.scancode()
+        val pModifiers = event.modifiers()
         if (isInventoryKeyPressed(minecraft, pKeyCode, pScanCode)) {
             Minecraft.getInstance().setScreen(null)
             return true
@@ -97,7 +101,7 @@ class PokeNav : Screen(Component.translatable("cobblemon.ui.pokenav.title")), Co
             InputConstants.KEY_SPACE -> {
                 val button = this.buttons.get(currentSelectionPos.first, currentSelectionPos.second)
                 button?.playDownSound(Minecraft.getInstance().soundManager)
-                button?.onPress()
+                button?.onPress(net.minecraft.client.input.KeyEvent(InputConstants.KEY_SPACE, 0, 0))
                 0 to 0
             }
             PokeNavigatorBinding.boundKey().value, InputConstants.KEY_LSHIFT, InputConstants.KEY_RSHIFT -> {
@@ -107,14 +111,17 @@ class PokeNav : Screen(Component.translatable("cobblemon.ui.pokenav.title")), Co
             else -> 0 to 0
         }
         this.moveSelected(movement.first, movement.second)
-        return super.keyPressed(pKeyCode, pScanCode, pModifiers)
+        return super.keyPressed(event)
     }
 
-    override fun keyReleased(pKeyCode: Int, pScanCode: Int, pModifiers: Int): Boolean {
+    override fun keyReleased(event: KeyEvent): Boolean {
+        val pKeyCode = event.key()
+        val pScanCode = event.scancode()
+        val pModifiers = event.modifiers()
         if ((pKeyCode == PokeNavigatorBinding.boundKey().value || pKeyCode == InputConstants.KEY_LSHIFT || pKeyCode == InputConstants.KEY_RSHIFT) && aboutToClose) {
             Minecraft.getInstance().setScreen(null) // So we only close if the Key was released
         }
-        return super.keyReleased(pKeyCode, pScanCode, pModifiers)
+        return super.keyReleased(event)
     }
 
     /**
@@ -124,8 +131,8 @@ class PokeNav : Screen(Component.translatable("cobblemon.ui.pokenav.title")), Co
     /**
      * Rendering the background texture
      */
-    override fun render(context: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {
-        renderBackground(context, pMouseX, pMouseY, pPartialTicks)
+    override fun extractRenderState(context: GuiGraphicsExtractor, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {
+        // PT136-DEFER: Screen.renderBackground removed in MC 26.1.x — needs GuiGraphicsExtractor refactor
 
         // Rendering UI Background
         blitk(
@@ -135,7 +142,7 @@ class PokeNav : Screen(Component.translatable("cobblemon.ui.pokenav.title")), Co
             width = backgroundWidth, height = backgroundHeight
         )
 
-        super.render(context, pMouseX, pMouseY, pPartialTicks)
+        super.extractRenderState(context, pMouseX, pMouseY, pPartialTicks)
 
         /**
          * Rendering Selection
@@ -287,13 +294,13 @@ class PokeNav : Screen(Component.translatable("cobblemon.ui.pokenav.title")), Co
      *
      * @throws [IllegalStateException] if the UI cannot fit more buttons.
      *
-     * @param identifier The [ResourceLocation] of this button.
+     * @param identifier The [Identifier] of this button.
      * @param onPress The action ran when the button is clicked, will not execute if [canClick] is false.
      * @param text The display [Component] of the button.
      * @param canClick Used to check if the button can be clicked. Will affect asset rendering to visually symbolize if false.
      */
     private fun insertButton(
-        identifier: ResourceLocation,
+        identifier: Identifier,
         onPress: Button.OnPress,
         text: MutableComponent,
         canClick: () -> Boolean = { true }

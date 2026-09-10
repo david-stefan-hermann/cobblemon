@@ -164,7 +164,7 @@ interface Evolution : EvolutionLike {
         val preEvoName = pokemon.getDisplayName()
         val pokemonEntity = pokemon.entity
         if (pokemonEntity == null || !useEvolutionEffect) {
-            pokemon.getOwnerPlayer()?.playNotifySound(CobblemonSounds.EVOLUTION_UI, SoundSource.PLAYERS, 1F, 1F)
+            pokemon.getOwnerPlayer()?.playSound(CobblemonSounds.EVOLUTION_UI, 1F, 1F)
             evolutionMethod(pokemon)
             pokemon.getOwnerPlayer()?.sendSystemMessage(lang("ui.evolve.into", preEvoName, pokemon.species.translatedName))
         } else {
@@ -230,7 +230,7 @@ interface Evolution : EvolutionLike {
         this.shed(pokemon)
 
         val ownerPlayer = pokemon.getOwnerPlayer()
-        if (ownerPlayer != null && ownerPlayer.level().gameRules.getBoolean(CobblemonGameRules.DO_POKEMON_LOOT)) {
+        if (ownerPlayer != null && (ownerPlayer.level() as ServerLevel).gameRules.get(CobblemonGameRules.DO_POKEMON_LOOT)) {
             drops.drop(
                 pokemon.entity,
                 ownerPlayer.level() as ServerLevel,

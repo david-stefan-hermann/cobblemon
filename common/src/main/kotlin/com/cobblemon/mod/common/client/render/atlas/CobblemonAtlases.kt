@@ -10,7 +10,7 @@ package com.cobblemon.mod.common.client.render.atlas
 
 import com.cobblemon.mod.common.util.cobblemonResource
 import net.minecraft.client.Minecraft
-import net.minecraft.client.resources.TextureAtlasHolder
+// PT132: TextureAtlasHolder local stub (MC 26.1 removed net.minecraft.client.resources.TextureAtlasHolder)
 
 object CobblemonAtlases {
     val atlases = mutableSetOf<TextureAtlasHolder>()

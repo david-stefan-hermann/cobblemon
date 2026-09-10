@@ -12,7 +12,8 @@ import com.cobblemon.mod.common.api.net.NetworkPacket
 import io.netty.buffer.Unpooled
 import net.minecraft.network.RegistryFriendlyByteBuf
 
-abstract class DataRegistrySyncPacket<T, N : NetworkPacket<N>>(private val registryEntries: Collection<T>) : NetworkPacket<N> {
+// PT143: writeCollection / readList require T:Any in MC 26.1.x. Enforce non-null T at the class level.
+abstract class DataRegistrySyncPacket<T : Any, N : NetworkPacket<N>>(private val registryEntries: Collection<T>) : NetworkPacket<N> {
 
     var buffer: RegistryFriendlyByteBuf? = null
     internal val entries = arrayListOf<T>()

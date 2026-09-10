@@ -44,7 +44,7 @@ class NaturalHabitatSpawn : HabitatSpawn() {
 
     override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
-        bucket = Cobblemon.bestSpawner.config.buckets.first { it.name == nbt.getString(DataKeys.HABITAT_POOL_SPAWN_BUCKET) }
+        bucket = Cobblemon.bestSpawner.config.buckets.first { it.name == nbt.getStringOr(DataKeys.HABITAT_POOL_SPAWN_BUCKET, "") }
     }
 
     override fun encode(buffer: RegistryFriendlyByteBuf) {

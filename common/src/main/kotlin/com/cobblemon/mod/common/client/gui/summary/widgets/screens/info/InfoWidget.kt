@@ -24,7 +24,7 @@ import com.cobblemon.mod.common.util.asTranslated
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
 
@@ -45,7 +45,7 @@ class InfoWidget(
         private val infoBaseResource = cobblemonResource("textures/gui/summary/summary_info_base.png")
     }
 
-    override fun renderWidget(context: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {
         val matrices = context.pose()
         // Base texture
         blitk(
@@ -71,7 +71,7 @@ class InfoWidget(
             label = lang("ui.info.pokedex_number"),
             value = dexNo.text()
         )
-        pokedexNumberWidget.render(context, pMouseX, pMouseY, pPartialTicks)
+        pokedexNumberWidget.extractRenderState(context, pMouseX, pMouseY, pPartialTicks)
 
         // Size
         val size = if (pokemon.isAlpha) "alpha" else pokemon.getSizeCategory().name.lowercase()
@@ -93,7 +93,7 @@ class InfoWidget(
             label = lang("ui.info.species"),
             value = pokemon.species.translatedName
         )
-        speciesWidget.render(context, pMouseX, pMouseY, pPartialTicks)
+        speciesWidget.extractRenderState(context, pMouseX, pMouseY, pPartialTicks)
 
         // Type
         val type = pokemon.types.map { it.displayName.copy() }.reduce { acc, next -> acc.plus("/").plus(next) }
@@ -104,7 +104,7 @@ class InfoWidget(
             label = lang("ui.info.type"),
             value = type
         )
-        typeWidget.render(context, pMouseX, pMouseY, pPartialTicks)
+        typeWidget.extractRenderState(context, pMouseX, pMouseY, pPartialTicks)
 
         // Original Trainer
         val otName: MutableComponent = pokemon.originalTrainerName?.let { name ->
@@ -120,7 +120,7 @@ class InfoWidget(
             label = lang("ui.info.original_trainer"),
             value = otName
         )
-        otWidget.render(context, pMouseX, pMouseY, pPartialTicks)
+        otWidget.extractRenderState(context, pMouseX, pMouseY, pPartialTicks)
 
 
         // Nature
@@ -134,7 +134,7 @@ class InfoWidget(
             label = lang("ui.info.nature"),
             value = natureText,
         )
-        natureWidget.render(context, pMouseX, pMouseY, pPartialTicks)
+        natureWidget.extractRenderState(context, pMouseX, pMouseY, pPartialTicks)
 
 
         // Ability
@@ -145,10 +145,10 @@ class InfoWidget(
             label = lang("ui.info.ability").bold(),
             value = pokemon.ability.displayName.asTranslated().bold()
         )
-        abilityWidget.render(context, pMouseX, pMouseY, pPartialTicks)
+        abilityWidget.extractRenderState(context, pMouseX, pMouseY, pPartialTicks)
 
-        matrices.pushPose()
-        matrices.scale(HALF_SCALE, HALF_SCALE, 1F)
+        matrices.pushMatrix()
+        matrices.scale(HALF_SCALE, HALF_SCALE)
         MultiLineLabelK.create(
             component = pokemon.ability.description.asTranslated(),
             width = 117 / HALF_SCALE,
@@ -161,7 +161,7 @@ class InfoWidget(
             colour = ColourLibrary.WHITE,
             shadow = true
         )
-        matrices.popPose()
+        matrices.popMatrix()
 
         drawScaledText(
             context = context,
@@ -228,7 +228,7 @@ class InfoWidget(
 
         if (pMouseX >= (x + 107.5) && pMouseY >= (y + 6.5) && pMouseX <= ((x + 107.5) + (SIZE_ICON_WIDTH * SCALE)) && pMouseY <= ((y + 6.5) + (SIZE_ICON_HEIGHT * SCALE))) {
             val sizeLabel = if (pokemon.isAlpha) lang("ui.pokemon.alpha") else lang("size_category.prefix", PokemonSizeCategory.translationKey(pokemon.getSizeCategory()).text())
-            context.renderTooltip( Minecraft.getInstance().font, sizeLabel, pMouseX, pMouseY)
+            context.setTooltipForNextFrame( Minecraft.getInstance().font, sizeLabel, pMouseX, pMouseY)
         }
     }
 }

@@ -8,6 +8,8 @@
 
 package com.cobblemon.mod.common.client.entity
 
+import com.cobblemon.mod.common.util.ownerUUID
+
 import com.bedrockk.molang.runtime.struct.QueryStruct
 import com.bedrockk.molang.runtime.value.DoubleValue
 import com.bedrockk.molang.runtime.value.StringValue
@@ -46,7 +48,7 @@ import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
 import net.minecraft.network.syncher.EntityDataAccessor
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundSource
 import net.minecraft.world.InteractionHand
@@ -108,7 +110,7 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
         super.onSyncedDataUpdated(data)
         if (this::currentEntity.isInitialized) {
             if (data == PokemonEntity.SPECIES) {
-                val identifier = ResourceLocation.parse(currentEntity.entityData.get(PokemonEntity.SPECIES))
+                val identifier = Identifier.parse(currentEntity.entityData.get(PokemonEntity.SPECIES))
                 currentPose = null
                 currentEntity.pokemon.species = PokemonSpecies.getByIdentifier(identifier)!! // TODO exception handling
                 // force a model update - handles edge case where the PosableState's tracked PosableModel isn't updated until the LivingEntityRenderer render is run
@@ -172,7 +174,8 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
                                 }
                             }
                             val client = Minecraft.getInstance()
-                            val sound = MovingSoundInstance(SoundEvent.createVariableRangeEvent(CobblemonSounds.POKE_BALL_TRAIL.location), SoundSource.PLAYERS, { sendOutPosition?.add(sendOutOffset) }, 0.1f, 1f, false, 20, 0)
+                            // PT144: Vec3.add(Vec3) requires non-null arg — guard nullable sendOutOffset.
+                            val sound = MovingSoundInstance(SoundEvent.createVariableRangeEvent(CobblemonSounds.POKE_BALL_TRAIL.location), SoundSource.PLAYERS, { sendOutPosition?.add(sendOutOffset ?: Vec3.ZERO) }, 0.1f, 1f, false, 20, 0)
                             if (!playedThrowingSound) {
                                 client.soundManager.play(sound)
                                 playedThrowingSound = true
@@ -205,7 +208,8 @@ class PokemonClientDelegate : PosableState(), PokemonSideDelegate {
                                     playedSendOutSound = true
                                     /// create end rod particles in a 0.1 radius around the soundPos with a count of 50 and a random velocity of 0.1
                                     sendOutPosition?.let {
-                                        val newPos = it.add(sendOutOffset)
+                                        // PT144: Vec3.add(Vec3) requires non-null arg.
+                                        val newPos = it.add(sendOutOffset ?: Vec3.ZERO)
                                         val ballType =
                                             currentEntity.pokemon.caughtBall.name.path.lowercase().replace("_", "")
                                         val mode = if (currentEntity.isBattling) "battle" else "casual"

@@ -10,27 +10,20 @@ package com.cobblemon.mod.common.client.render.color
 
 import com.cobblemon.mod.common.CobblemonItemComponents
 import com.cobblemon.mod.common.api.cooking.getColourMixFromColors
-import com.cobblemon.mod.common.api.cooking.getColourMixFromFlavours
-import com.cobblemon.mod.common.client.pot.CookingQuality
-import net.minecraft.ChatFormatting
-import net.minecraft.client.color.item.ItemColor
-import net.minecraft.util.FastColor
+import net.minecraft.client.color.item.ItemTintSource
+import net.minecraft.client.multiplayer.ClientLevel
+import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.item.ItemStack
 
-object SinisterTeaItemColorProvider : ItemColor {
-
-    private const val TEA_INDEX = 1
-
-    override fun getColor(stack: ItemStack, layer: Int): Int {
-        if (layer == 0 || layer == 2) return -1
-
+object SinisterTeaItemColorProvider : ItemTintSource {
+    override fun calculate(stack: ItemStack, level: ClientLevel?, entity: LivingEntity?): Int {
         val colorComponent = stack.get(CobblemonItemComponents.FOOD_COLOUR) ?: return -1
-
-        if (layer == TEA_INDEX) {
-            val colorMix = getColourMixFromColors(colorComponent.getColoursAsARGB())
-            if (colorMix != null) return colorMix
-        }
-
+        val colorMix = getColourMixFromColors(colorComponent.getColoursAsARGB())
+        if (colorMix != null) return colorMix
         return -1
     }
+
+    // PT144: ItemTintSource.type() abstract member added in MC 26.1.x.
+    override fun type(): com.mojang.serialization.MapCodec<out ItemTintSource> =
+        com.mojang.serialization.MapCodec.unit(this)
 }

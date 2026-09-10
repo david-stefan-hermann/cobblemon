@@ -16,6 +16,7 @@ import com.cobblemon.mod.common.client.render.models.blockbench.animation.PitchT
 import com.cobblemon.mod.common.client.render.models.blockbench.animation.PitchTiltAnimation.Companion.PREVIOUS_ANGLE
 import com.cobblemon.mod.common.client.render.models.blockbench.frame.HeadedFrame
 import com.cobblemon.mod.common.client.render.models.blockbench.pose.Bone
+import net.minecraft.client.model.geom.ModelPart
 import com.cobblemon.mod.common.client.render.models.blockbench.pose.ModelPartTransformation.Companion.X_AXIS
 import com.cobblemon.mod.common.client.render.models.blockbench.pose.ModelPartTransformation.Companion.Y_AXIS
 import com.cobblemon.mod.common.client.render.models.blockbench.repository.RenderContext
@@ -30,7 +31,7 @@ import com.cobblemon.mod.common.util.math.geometry.toRadians
  * @since December 5th, 2021
  */
 class SingleBoneLookAnimation(
-    val bone: Bone?,
+    val bone: ModelPart?,
     val pitchMultiplier: Float = 1F,
     val yawMultiplier: Float = 1F,
     val maxPitch: Float = 70F,

@@ -26,7 +26,8 @@ abstract class TypeWidget(
         private const val OFFSET = 0.5
     }
 
-    fun renderType(type: ElementalType, pPoseStack: PoseStack, pX: Int = x, pY: Int = y) {
+    // PT128: PoseStack→Matrix3x2fStack for MC 26.1 GuiGraphicsExtractor.pose() return type.
+    fun renderType(type: ElementalType, pPoseStack: org.joml.Matrix3x2fStack, pX: Int = x, pY: Int = y) {
         blitk(
             matrixStack = pPoseStack,
             texture = typeResource,
@@ -37,7 +38,7 @@ abstract class TypeWidget(
         )
     }
 
-    fun renderType(mainType: ElementalType, secondaryType: ElementalType, pPoseStack: PoseStack) {
+    fun renderType(mainType: ElementalType, secondaryType: ElementalType, pPoseStack: org.joml.Matrix3x2fStack) {
         renderType(secondaryType, pPoseStack, x + 16)
         renderType(mainType, pPoseStack)
     }

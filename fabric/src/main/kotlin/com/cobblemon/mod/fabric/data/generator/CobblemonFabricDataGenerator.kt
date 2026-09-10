@@ -8,20 +8,8 @@
 
 package com.cobblemon.mod.fabric.data.generator
 
-import com.cobblemon.mod.common.Cobblemon
-import com.cobblemon.mod.fabric.data.generator.providers.TypeGemsLootTableProvider
-import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint
-import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator
-
-class CobblemonFabricDataGenerator : DataGeneratorEntrypoint {
-    override fun onInitializeDataGenerator(generator: FabricDataGenerator?) {
-        if (generator == null) {
-            Cobblemon.LOGGER.error("Fabric Data Generator couldn't initialize")
-            return
-        }
-
-        val pack = generator.createPack()
-
-        pack.addProvider(::TypeGemsLootTableProvider);
-    }
-}
+/**
+ * PT150: fabric-api datagen v1 (DataGeneratorEntrypoint, FabricDataGenerator) not yet remapped for MC 26.1.x.
+ * Stubbed pending upstream port. Reintroduce datagen wiring + TypeGemsLootTableProvider in PT15X+.
+ */
+class CobblemonFabricDataGenerator

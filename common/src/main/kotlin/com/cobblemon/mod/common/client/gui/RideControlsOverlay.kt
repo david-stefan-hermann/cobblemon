@@ -26,12 +26,12 @@ import com.cobblemon.mod.common.util.cobblemonResource
 import net.minecraft.client.DeltaTracker
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Gui
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.client.gui.screens.Screen
-import net.minecraft.client.player.Input
+import net.minecraft.world.entity.player.Input
 import net.minecraft.network.chat.MutableComponent
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.util.Mth
 import kotlin.math.max
 
@@ -76,9 +76,9 @@ class RideControlsOverlay : Gui(Minecraft.getInstance()) {
     var mouseMovedUp: Boolean? = null
     var mouseMovedRight: Boolean? = null
 
-    var currentBehaviourKey: ResourceLocation? = null
+    var currentBehaviourKey: Identifier? = null
 
-    override fun render(context: GuiGraphics, tickCounter: DeltaTracker) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, tickCounter: DeltaTracker) {
         val minecraft = Minecraft.getInstance()
 
         // Hiding if a Screen is open and not exempt
@@ -101,7 +101,7 @@ class RideControlsOverlay : Gui(Minecraft.getInstance()) {
         }
     }
 
-    private fun renderControls(minecraft: Minecraft, context: GuiGraphics, tickCounter: DeltaTracker, riddenEntity: PokemonEntity) {
+    private fun renderControls(minecraft: Minecraft, context: GuiGraphicsExtractor, tickCounter: DeltaTracker, riddenEntity: PokemonEntity) {
         // Update max duration if user has changed config
         val configDuration = Cobblemon.config.displayControlSeconds  * BASELINE_FPS
         if (controlsMaxDurationFrames != configDuration) {
@@ -203,7 +203,7 @@ class RideControlsOverlay : Gui(Minecraft.getInstance()) {
                 disableHorizontalMovementKeys,
                 showJumpKey,
                 showSneakKey,
-                minecraft.player?.input,
+                minecraft.player?.input?.keyPresses,
                 centerX,
                 centerY / 2,
                 controlsFadeFrames / CONTROLS_FADE_FRAMES
@@ -258,7 +258,7 @@ class RideControlsOverlay : Gui(Minecraft.getInstance()) {
         if (mouseMovedUp == null) mouseOffsetY = 0F
     }
 
-    private fun renderMouseControls(context: GuiGraphics, centered: Boolean, showHorizontal: Boolean, showVertical: Boolean, posX: Int, posY: Int, opacity: Float) {
+    private fun renderMouseControls(context: GuiGraphicsExtractor, centered: Boolean, showHorizontal: Boolean, showVertical: Boolean, posX: Int, posY: Int, opacity: Float) {
         if (showVertical || showHorizontal) {
             calculateMousePosition()
 
@@ -338,7 +338,7 @@ class RideControlsOverlay : Gui(Minecraft.getInstance()) {
         }
     }
 
-    private fun renderKeyControls(context: GuiGraphics, centered: Boolean, showMovement: Boolean, disableHorizontal: Boolean, showJump: Boolean, showSneak: Boolean, input: Input?, posX: Int, posY: Int, opacity: Float) {
+    private fun renderKeyControls(context: GuiGraphicsExtractor, centered: Boolean, showMovement: Boolean, disableHorizontal: Boolean, showJump: Boolean, showSneak: Boolean, input: Input?, posX: Int, posY: Int, opacity: Float) {
         val offsetX = if (centered) 43.5 else 0.0
 
         if (showMovement) {
@@ -362,7 +362,7 @@ class RideControlsOverlay : Gui(Minecraft.getInstance()) {
                 height = 28,
                 width = 28,
                 textureHeight = 56,
-                vOffset = if (input?.up ?: false) 28 else 0,
+                vOffset = if (input?.forward() ?: false) 28 else 0,
                 scale = HALF_SCALE,
                 alpha = opacity
             )
@@ -375,7 +375,7 @@ class RideControlsOverlay : Gui(Minecraft.getInstance()) {
                 height = 28,
                 width = 20,
                 textureHeight = 56,
-                vOffset = if (input?.down ?: false) 28 else 0,
+                vOffset = if (input?.backward() ?: false) 28 else 0,
                 scale = HALF_SCALE,
                 alpha = opacity
             )
@@ -400,7 +400,7 @@ class RideControlsOverlay : Gui(Minecraft.getInstance()) {
                     height = 32,
                     width = 26,
                     textureHeight = 64,
-                    vOffset = if (input?.left ?: false) 32 else 0,
+                    vOffset = if (input?.left() ?: false) 32 else 0,
                     scale = HALF_SCALE,
                     alpha = opacity
                 )
@@ -413,7 +413,7 @@ class RideControlsOverlay : Gui(Minecraft.getInstance()) {
                     height = 32,
                     width = 26,
                     textureHeight = 64,
-                    vOffset = if (input?.right ?: false) 32 else 0,
+                    vOffset = if (input?.right() ?: false) 32 else 0,
                     scale = HALF_SCALE,
                     alpha = opacity
                 )
@@ -434,7 +434,7 @@ class RideControlsOverlay : Gui(Minecraft.getInstance()) {
                     height = 32,
                     width = 56,
                     textureHeight = 64,
-                    vOffset = if (input?.shiftKeyDown ?: false) 32 else 0,
+                    vOffset = if (input?.shift() ?: false) 32 else 0,
                     scale = HALF_SCALE,
                     alpha = opacity
                 )
@@ -447,7 +447,7 @@ class RideControlsOverlay : Gui(Minecraft.getInstance()) {
                     height = 32,
                     width = 56,
                     textureHeight = 64,
-                    vOffset = if (input?.jumping ?: false) 32 else 0,
+                    vOffset = if (input?.jump() ?: false) 32 else 0,
                     scale = HALF_SCALE,
                     alpha = opacity
                 )
@@ -462,7 +462,7 @@ class RideControlsOverlay : Gui(Minecraft.getInstance()) {
                     height = 32,
                     width = 72,
                     textureHeight = 64,
-                    vOffset = if ((if (showSneak) input?.shiftKeyDown else input?.jumping) ?: false) 32 else 0,
+                    vOffset = if ((if (showSneak) input?.shift() else input?.jump()) ?: false) 32 else 0,
                     scale = HALF_SCALE,
                     alpha = opacity
                 )

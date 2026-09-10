@@ -41,13 +41,27 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty
 import net.minecraft.world.level.pathfinder.PathComputationType
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.shapes.CollisionContext
+import net.minecraft.world.phys.shapes.Shapes
 import net.minecraft.world.phys.shapes.VoxelShape
-import net.minecraft.world.level.block.LecternBlock as MinecraftLecternBlock
 
 class LecternBlock(properties: Properties): BaseEntityBlock(properties) {
     companion object {
         val CODEC: MapCodec<LecternBlock> = simpleCodec(::LecternBlock)
         val EMIT_LIGHT: BooleanProperty = BooleanProperty.create("emit_light")
+        // PT137: vanilla SHAPE_* fields are private in 26.1.x — replicate shapes
+        val SHAPE_COMMON: VoxelShape = Shapes.or(
+            Block.box(0.0, 10.0, 0.0, 16.0, 14.0, 16.0),
+            Block.box(4.0, 0.0, 4.0, 12.0, 14.0, 12.0)
+        )
+        val SHAPE_COLLISION: VoxelShape = Shapes.or(
+            Block.box(0.0, 10.0, 0.0, 16.0, 16.0, 16.0),
+            Block.box(4.0, 0.0, 4.0, 12.0, 14.0, 12.0)
+        )
+        val SHAPE_TOP_PLATE: VoxelShape = Block.box(0.0, 14.0, 0.0, 16.0, 16.0, 16.0)
+        val SHAPE_NORTH: VoxelShape = Shapes.or(SHAPE_COMMON, SHAPE_TOP_PLATE)
+        val SHAPE_SOUTH: VoxelShape = SHAPE_NORTH
+        val SHAPE_EAST: VoxelShape = SHAPE_NORTH
+        val SHAPE_WEST: VoxelShape = SHAPE_NORTH
     }
 
     init {
@@ -62,42 +76,46 @@ class LecternBlock(properties: Properties): BaseEntityBlock(properties) {
 
     override fun <T : BlockEntity> getTicker(world: Level, blockState: BlockState, BlockWithEntityType: BlockEntityType<T>) = createTickerHelper(BlockWithEntityType, CobblemonBlockEntities.LECTERN, ViewerCountBlockEntity.TICKER::tick)
 
-    override fun getRenderShape(blockState: BlockState?) = RenderShape.MODEL
+    // PT137: getRenderShape now 1-arg(BlockState) — non-nullable in MC 26.1.x
+    override fun getRenderShape(blockState: BlockState) = RenderShape.MODEL
 
-    override fun getOcclusionShape(blockState: BlockState?, blockGetter: BlockGetter?, blockPos: BlockPos?): VoxelShape = MinecraftLecternBlock.SHAPE_COMMON
+    // PT137: getOcclusionShape signature collapsed to 1-arg(BlockState) in MC 26.1.x
+    override fun getOcclusionShape(blockState: BlockState): VoxelShape = SHAPE_COMMON
 
-    override fun useShapeForLightOcclusion(blockState: BlockState?) = true
+    override fun useShapeForLightOcclusion(blockState: BlockState) = true
 
-    override fun getCollisionShape(blockState: BlockState?, blockGetter: BlockGetter?, blockPos: BlockPos?, collisionContext: CollisionContext?): VoxelShape = MinecraftLecternBlock.SHAPE_COLLISION
+    // PT137: SHAPE_COLLISION/SHAPE_NORTH/etc private in vanilla 26.1.x — define our own
+    override fun getCollisionShape(blockState: BlockState, blockGetter: BlockGetter, blockPos: BlockPos, collisionContext: CollisionContext): VoxelShape = SHAPE_COLLISION
 
-    override fun getShape(blockState: BlockState, blockGetter: BlockGetter?, blockPos: BlockPos?, collisionContext: CollisionContext?): VoxelShape {
+    override fun getShape(blockState: BlockState, blockGetter: BlockGetter, blockPos: BlockPos, collisionContext: CollisionContext): VoxelShape {
         return when (blockState.getValue(FACING) as Direction) {
-            Direction.NORTH -> MinecraftLecternBlock.SHAPE_NORTH
-            Direction.SOUTH -> MinecraftLecternBlock.SHAPE_SOUTH
-            Direction.EAST -> MinecraftLecternBlock.SHAPE_EAST
-            Direction.WEST -> MinecraftLecternBlock.SHAPE_WEST
-            else -> MinecraftLecternBlock.SHAPE_COMMON
+            Direction.NORTH -> SHAPE_NORTH
+            Direction.SOUTH -> SHAPE_SOUTH
+            Direction.EAST -> SHAPE_EAST
+            Direction.WEST -> SHAPE_WEST
+            else -> SHAPE_COMMON
         }
     }
 
     override fun getStateForPlacement(blockPlaceContext: BlockPlaceContext): BlockState = this.defaultBlockState().setValue(FACING, blockPlaceContext.horizontalDirection.opposite).setValue(EMIT_LIGHT, false)
 
-    override fun getCloneItemStack(levelReader: LevelReader, blockPos: BlockPos, blockState: BlockState): ItemStack = ItemStack(Blocks.LECTERN)
+    override fun getCloneItemStack(levelReader: LevelReader, blockPos: BlockPos, blockState: BlockState, includeData: Boolean): ItemStack = ItemStack(Blocks.LECTERN)
 
     override fun rotate(blockState: BlockState, rotation: Rotation) = blockState.setValue(FACING, rotation.rotate(blockState.getValue(FACING) as Direction)) as BlockState
 
     override fun mirror(blockState: BlockState, mirror: Mirror): BlockState = blockState.rotate(mirror.getRotation(blockState.getValue(FACING) as Direction))
 
-    override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block?, BlockState?>) {
+    override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
         builder.add(FACING)
         builder.add(EMIT_LIGHT)
     }
 
     override fun newBlockEntity(blockPos: BlockPos, blockState: BlockState): BlockEntity = LecternBlockEntity(blockPos, blockState)
 
-    override fun isSignalSource(blockState: BlockState?): Boolean = true
+    // PT137: BlockBehaviour signatures non-nullable in MC 26.1.x
+    override fun isSignalSource(blockState: BlockState): Boolean = true
 
-    override fun getSignal(blockState: BlockState?, blockGetter: BlockGetter?, blockPos: BlockPos?, direction: Direction?): Int = 15
+    override fun getSignal(blockState: BlockState, blockGetter: BlockGetter, blockPos: BlockPos, direction: Direction): Int = 15
 
     override fun playerWillDestroy(level: Level, blockPos: BlockPos, blockState: BlockState, player: Player): BlockState {
         if (!level.isClientSide) {
@@ -132,10 +150,11 @@ class LecternBlock(properties: Properties): BaseEntityBlock(properties) {
                 }
             }
         }
-        return InteractionResult.SUCCESS_NO_ITEM_USED
+        return InteractionResult.SUCCESS // PT137: SUCCESS_NO_ITEM_USED removed in MC 26.1.x
     }
 
-    override fun isPathfindable(blockState: BlockState?, pathComputationType: PathComputationType?) = false
+    // PT137: isPathfindable signature non-nullable in MC 26.1.x
+    override fun isPathfindable(blockState: BlockState, pathComputationType: PathComputationType) = false
 
     private fun takeStoredItem(blockEntity: LecternBlockEntity, blockState: BlockState, level: Level, blockPos: BlockPos, player: Player) {
         if (player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty) {

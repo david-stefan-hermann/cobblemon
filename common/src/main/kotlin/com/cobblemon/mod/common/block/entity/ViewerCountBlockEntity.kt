@@ -12,6 +12,8 @@ import com.cobblemon.mod.common.util.DataKeys
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.level.storage.ValueInput
+import net.minecraft.world.level.storage.ValueOutput
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.ClientGamePacketListener
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket
@@ -25,7 +27,7 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.entity.EntityTypeTest
 import net.minecraft.world.phys.AABB
 
-open class ViewerCountBlockEntity(type: BlockEntityType<*>?, blockPos: BlockPos, blockState: BlockState) : BlockEntity(type, blockPos, blockState) {
+open class ViewerCountBlockEntity(type: BlockEntityType<*>, blockPos: BlockPos, blockState: BlockState) : BlockEntity(type, blockPos, blockState) {
 
     companion object {
         internal val TICKER = BlockEntityTicker<ViewerCountBlockEntity> { world, _, _, blockEntity ->
@@ -41,14 +43,14 @@ open class ViewerCountBlockEntity(type: BlockEntityType<*>?, blockPos: BlockPos,
         if (inRangeViewers < viewerCount) changeViewerCount(inRangeViewers)
     }
 
-    override fun saveAdditional(compoundTag: CompoundTag, registryLookup: HolderLookup.Provider) {
-        super.saveAdditional(compoundTag, registryLookup)
-        compoundTag.putInt(DataKeys.BLOCK_ENTITY_USER_AMOUNT, viewerCount)
+    override fun saveAdditional(output: ValueOutput) {
+        super.saveAdditional(output)
+        output.putInt(DataKeys.BLOCK_ENTITY_USER_AMOUNT, viewerCount)
     }
 
-    override fun loadAdditional(compoundTag: CompoundTag, registryLookup: HolderLookup.Provider) {
-        super.loadAdditional(compoundTag, registryLookup)
-        viewerCount = if (compoundTag.contains(DataKeys.BLOCK_ENTITY_USER_AMOUNT)) compoundTag.getInt(DataKeys.BLOCK_ENTITY_USER_AMOUNT) else 0
+    override fun loadAdditional(input: ValueInput) {
+        super.loadAdditional(input)
+        viewerCount = input.getIntOr(DataKeys.BLOCK_ENTITY_USER_AMOUNT, 0)
     }
 
     override fun getUpdatePacket(): Packet<ClientGamePacketListener>? {

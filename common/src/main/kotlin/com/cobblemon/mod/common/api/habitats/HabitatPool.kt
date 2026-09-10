@@ -13,7 +13,7 @@ import com.cobblemon.mod.common.api.spawning.detail.PokemonSpawnDetail
 import com.cobblemon.mod.common.api.spawning.position.SpawnablePosition
 import com.cobblemon.mod.common.block.habitat.HabitatBlockEntity
 import net.minecraft.network.RegistryFriendlyByteBuf
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 /**
  * A pool of [HabitatSpawn]s. This is either filled with [NaturalHabitatSpawn]s or [ActivatedHabitatSpawn]s depending
@@ -31,9 +31,9 @@ abstract class HabitatPool<T : HabitatSpawn> {
         )
     }
 
-    lateinit var id: ResourceLocation
+    lateinit var id: Identifier
     var name: String = ""
-    abstract val type: ResourceLocation
+    abstract val type: Identifier
     abstract var spawns: List<T>
 
     /** Whether a pool is editable is just down to whether it's not from a datapack. */
@@ -53,13 +53,13 @@ abstract class HabitatPool<T : HabitatSpawn> {
     }
 
     fun encode(buffer: RegistryFriendlyByteBuf) {
-        buffer.writeResourceLocation(id)
+        buffer.writeIdentifier(id)
         buffer.writeUtf(name)
         buffer.writeCollection(spawns) { _, it -> it.encode(buffer) }
     }
 
     open fun decode(buffer: RegistryFriendlyByteBuf, buckets: List<SpawnBucket>) {
-        id = buffer.readResourceLocation()
+        id = buffer.readIdentifier()
         name = buffer.readUtf()
     }
 }

@@ -13,6 +13,7 @@ import com.cobblemon.mod.common.mixin.invoker.ClientPlayNetworkHandlerInvoker
 import net.minecraft.client.Minecraft
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.EntitySpawnReason
 import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.network.protocol.PacketUtils
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
@@ -36,15 +37,13 @@ abstract class SpawnExtraDataEntityPacket<T: NetworkPacket<T>, E : Entity>(var v
         // This is a copy pasta of ClientPlayNetworkHandler#onEntitySpawn
         // This exists due to us needing to do everything it does except spawn the entity in the world.
         // We invoke applyData then we add the entity to the world.
-        PacketUtils.ensureRunningOnSameThread(this.vanillaSpawnPacket, player.connection, client)
+        // PT143: ensureRunningOnSameThread takes PacketProcessor on client side in MC 26.1.x.
+        PacketUtils.ensureRunningOnSameThread(this.vanillaSpawnPacket, player.connection, client.packetProcessor())
         val entityType = this.vanillaSpawnPacket.type
-        val entity = entityType.create(world) ?: return
+        // PT137: EntityType.create(Level, EntitySpawnReason); xa/ya/za fields removed, replaced by getMovement(): Vec3
+        val entity = entityType.create(world, EntitySpawnReason.LOAD) ?: return
         entity.recreateFromPacket(this.vanillaSpawnPacket)
-        entity.deltaMovement = Vec3(
-            this.vanillaSpawnPacket.xa,
-            this.vanillaSpawnPacket.ya,
-            this.vanillaSpawnPacket.za
-        )
+        entity.deltaMovement = this.vanillaSpawnPacket.movement
         // Cobblemon start
         if (this.checkType(entity)) {
             this.applyData(entity as E, world)

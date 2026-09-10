@@ -103,7 +103,7 @@ class DamagedMonitorBlock(settings: Properties) : Block(settings) {
         level: Level,
         pos: BlockPos,
         block: Block,
-        fromPos: BlockPos,
+        orientation: net.minecraft.world.level.redstone.Orientation?,
         isMoving: Boolean
     ){
         val powered = level.hasNeighborSignal(pos)

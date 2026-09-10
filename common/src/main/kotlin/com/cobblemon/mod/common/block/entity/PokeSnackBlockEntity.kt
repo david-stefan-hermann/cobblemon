@@ -8,6 +8,10 @@
 
 package com.cobblemon.mod.common.block.entity
 
+import com.cobblemon.mod.common.util.getUUID
+import com.cobblemon.mod.common.util.putUUID
+import com.cobblemon.mod.common.util.hasUUID
+
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonBlockEntities
 import com.cobblemon.mod.common.CobblemonItemComponents
@@ -40,6 +44,9 @@ import com.cobblemon.mod.common.util.DataKeys
 import java.util.UUID
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
+import net.minecraft.core.UUIDUtil
+import net.minecraft.world.level.storage.ValueInput
+import net.minecraft.world.level.storage.ValueOutput
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.NbtOps
 import net.minecraft.network.protocol.Packet
@@ -76,7 +83,7 @@ open class PokeSnackBlockEntity(pos: BlockPos, state: BlockState) :
             horizontalRadius = RADIUS,
             verticalRadius = RADIUS,
             maxPokemonPerChunk = Cobblemon.config.pokeSnackPokemonPerChunk,
-            name = "poke_snack_spawner_${server.dimension().location()}_$blockPos",
+            name = "poke_snack_spawner_${server.dimension().identifier()}_$blockPos",
             baitEffects = baitEffects
         )
 
@@ -229,95 +236,67 @@ open class PokeSnackBlockEntity(pos: BlockPos, state: BlockState) :
             .orEmpty()
     }
 
-    override fun saveAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
-        super.saveAdditional(tag, registries)
+    override fun saveAdditional(output: ValueOutput) {
+        super.saveAdditional(output)
 
-        saveTint(tag)
+        saveTint(output)
 
-        tag.putInt(DataKeys.AMOUNT_SPAWNED, amountSpawned)
+        output.putInt(DataKeys.AMOUNT_SPAWNED, amountSpawned)
 
         foodColourComponent?.let { component ->
-            CobblemonItemComponents.FOOD_COLOUR.codec()!!
-                .encodeStart(NbtOps.INSTANCE, component)
-                .result()
-                .ifPresent { encodedTag ->
-                    tag.put(DataKeys.FOOD_COLOUR, encodedTag)
-                }
+            CobblemonItemComponents.FOOD_COLOUR.codec()?.let { codec ->
+                output.store(DataKeys.FOOD_COLOUR, codec, component)
+            }
         }
 
         baitEffectsComponent?.let { component ->
-            CobblemonItemComponents.BAIT_EFFECTS.codec()!!
-                .encodeStart(NbtOps.INSTANCE, component)
-                .result()
-                .ifPresent { encodedTag ->
-                    tag.put(DataKeys.BAIT_EFFECTS, encodedTag)
-                }
+            CobblemonItemComponents.BAIT_EFFECTS.codec()?.let { codec ->
+                output.store(DataKeys.BAIT_EFFECTS, codec, component)
+            }
         }
 
         ingredientComponent?.let { component ->
-            CobblemonItemComponents.INGREDIENT.codec()!!
-                .encodeStart(NbtOps.INSTANCE, component)
-                .result()
-                .ifPresent { encodedTag ->
-                    tag.put(DataKeys.INGREDIENTS, encodedTag)
-                }
+            CobblemonItemComponents.INGREDIENT.codec()?.let { codec ->
+                output.store(DataKeys.INGREDIENTS, codec, component)
+            }
         }
 
-        tag.putFloat(DataKeys.TICKS_UNTIL_NEXT_SPAWN, randomTicksUntilNextSpawn)
+        output.putFloat(DataKeys.TICKS_UNTIL_NEXT_SPAWN, randomTicksUntilNextSpawn)
 
         placedBy?.let {
-            tag.putUUID(DataKeys.PLACED_BY, it)
+            output.store(DataKeys.PLACED_BY, UUIDUtil.CODEC, it)
         }
     }
 
-    override fun loadAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
-        super.loadAdditional(tag, registries)
+    override fun loadAdditional(input: ValueInput) {
+        super.loadAdditional(input)
 
-        loadTint(tag)
+        loadTint(input)
 
-        amountSpawned = tag.getInt(DataKeys.AMOUNT_SPAWNED)
+        amountSpawned = input.getIntOr(DataKeys.AMOUNT_SPAWNED, 0)
 
-        if (tag.contains(DataKeys.FOOD_COLOUR)) {
-            CobblemonItemComponents.FOOD_COLOUR.codec()
-                ?.parse(NbtOps.INSTANCE, tag.get(DataKeys.FOOD_COLOUR))
-                ?.result()
-                ?.ifPresent { component ->
-                    foodColourComponent = component
-                }
+        CobblemonItemComponents.FOOD_COLOUR.codec()?.let { codec ->
+            input.read(DataKeys.FOOD_COLOUR, codec).ifPresent { foodColourComponent = it }
         }
 
-        if (tag.contains(DataKeys.BAIT_EFFECTS)) {
-            CobblemonItemComponents.BAIT_EFFECTS.codec()
-                ?.parse(NbtOps.INSTANCE, tag.get(DataKeys.BAIT_EFFECTS))
-                ?.result()
-                ?.ifPresent { component ->
-                    baitEffectsComponent = component
-                }
+        CobblemonItemComponents.BAIT_EFFECTS.codec()?.let { codec ->
+            input.read(DataKeys.BAIT_EFFECTS, codec).ifPresent { baitEffectsComponent = it }
         }
 
-        if (tag.contains(DataKeys.INGREDIENTS)) {
-            CobblemonItemComponents.INGREDIENT.codec()
-                ?.parse(NbtOps.INSTANCE, tag.get(DataKeys.INGREDIENTS))
-                ?.result()
-                ?.ifPresent { component ->
-                    ingredientComponent = component
-                }
+        CobblemonItemComponents.INGREDIENT.codec()?.let { codec ->
+            input.read(DataKeys.INGREDIENTS, codec).ifPresent { ingredientComponent = it }
         }
 
-        if (tag.contains(DataKeys.TICKS_UNTIL_NEXT_SPAWN)) {
-            randomTicksUntilNextSpawn = tag.getFloat(DataKeys.TICKS_UNTIL_NEXT_SPAWN)
-        }
+        randomTicksUntilNextSpawn = input.getFloatOr(DataKeys.TICKS_UNTIL_NEXT_SPAWN, 0f)
 
-        if (tag.contains(DataKeys.PLACED_BY)) {
-            placedBy = tag.getUUID(DataKeys.PLACED_BY)
-        }
+        placedBy = input.read(DataKeys.PLACED_BY, UUIDUtil.CODEC).orElse(null)
     }
 
     override fun getUpdateTag(registryLookup: HolderLookup.Provider): CompoundTag {
         return saveWithoutMetadata(registryLookup)
     }
 
-    override fun getUpdatePacket(): Packet<ClientGamePacketListener?>? {
+    override fun getUpdatePacket(): Packet<ClientGamePacketListener>? {
         return ClientboundBlockEntityDataPacket.create(this)
     }
 }

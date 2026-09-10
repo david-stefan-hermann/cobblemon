@@ -23,7 +23,7 @@ import net.minecraft.client.gui.components.Button
 import net.minecraft.client.sounds.SoundManager
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import org.joml.Quaternionf
 import org.joml.Vector3f
 
@@ -60,7 +60,7 @@ class TMPartySlotWidget(
         private val learnedLabel = lang("ui.tm_machine.learned")
     }
 
-    private fun getResource(): ResourceLocation = when (teachable) {
+    private fun getResource(): Identifier = when (teachable) {
         CAN_LEARN -> if (clickable) slotLearnableResource else slotLearnableDisabledResource
         CANNOT_LEARN -> slotDisabledResource
         LEARNED -> slotLearnedResource
@@ -74,7 +74,7 @@ class TMPartySlotWidget(
         else -> null
     }
 
-    override fun renderWidget(context: net.minecraft.client.gui.GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractContents(context: net.minecraft.client.gui.GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         state.currentAspects = pokemon?.aspects ?: emptySet()
         val matrices = context.pose()
 
@@ -104,9 +104,9 @@ class TMPartySlotWidget(
             )
 
             // Render Pokémon
-            matrices.pushPose()
-            matrices.translate(x + (PORTRAIT_DIAMETER / 2.0) - 2, y - 1.0, 0.0)
-            matrices.scale(2.5F, 2.5F, 1F)
+            matrices.pushMatrix()
+            matrices.translate((x + (PORTRAIT_DIAMETER / 2.0) - 2).toFloat(), (y - 1.0).toFloat())
+            matrices.scale(2.5F, 2.5F)
             drawProfilePokemon(
                 species = pokemon.species.resourceIdentifier,
                 matrixStack = matrices,
@@ -115,7 +115,7 @@ class TMPartySlotWidget(
                 scale = 4.5F,
                 partialTicks = delta
             )
-            matrices.popPose()
+            matrices.popMatrix()
 
             drawScaledTextJustifiedRight(
                 context = context,

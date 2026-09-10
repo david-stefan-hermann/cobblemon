@@ -11,7 +11,7 @@ package com.cobblemon.mod.common.client.render.shader
 import com.cobblemon.mod.common.util.ShaderRegistryData
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.mojang.blaze3d.vertex.DefaultVertexFormat
-import net.minecraft.client.renderer.ShaderInstance
+// PT132: net.minecraft.client.renderer.ShaderInstance removed in MC 26.1 — using stub in same package
 import net.minecraft.server.packs.resources.ResourceProvider
 import java.util.function.Consumer
 

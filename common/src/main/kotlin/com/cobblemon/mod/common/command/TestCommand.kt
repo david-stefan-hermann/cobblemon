@@ -50,6 +50,8 @@ import com.mojang.brigadier.context.CommandContext
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.permissions.Permission as MinecraftPermission
+import net.minecraft.server.permissions.PermissionLevel as MinecraftPermissionLevel
 import net.minecraft.network.chat.Component
 import net.minecraft.world.phys.AABB
 import com.mojang.serialization.JsonOps
@@ -61,7 +63,7 @@ object TestCommand {
 
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>) {
         val command = Commands.literal("testcommand")
-            .requires { it.hasPermission(4) }
+            .requires { it.permissions().hasPermission(MinecraftPermission.HasCommandLevel(MinecraftPermissionLevel.byId(4))) }
             .executes(::execute)
         dispatcher.register(command)
     }

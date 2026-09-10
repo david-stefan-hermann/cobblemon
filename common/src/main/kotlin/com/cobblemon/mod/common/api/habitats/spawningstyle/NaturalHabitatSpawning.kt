@@ -15,7 +15,7 @@ import com.cobblemon.mod.common.api.spawning.detail.SpawnDetail
 import com.cobblemon.mod.common.block.habitat.HabitatBlockEntity
 import com.cobblemon.mod.common.util.DataKeys
 import net.minecraft.nbt.CompoundTag
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 /**
  * A habitat spawning style defined by tapping into regular spawning methods. This works by adding to the spawn list
@@ -33,7 +33,7 @@ import net.minecraft.resources.ResourceLocation
  */
 class NaturalHabitatSpawning(val habitatBlockEntity: HabitatBlockEntity) : HabitatSpawningStyle {
     @Transient
-    override val type: ResourceLocation = NaturalHabitatSpawn.TYPE
+    override val type: Identifier = NaturalHabitatSpawn.TYPE
 
     var pool: NaturalHabitatPool = NaturalHabitatPool.default()
     var replaceSpawns = false
@@ -62,11 +62,11 @@ class NaturalHabitatSpawning(val habitatBlockEntity: HabitatBlockEntity) : Habit
     }
 
     override fun readFromNBT(nbt: CompoundTag) {
-        replaceSpawns = nbt.getBoolean(DataKeys.HABITAT_NATURAL_REPLACE_SPAWNS)
-        rangeOfInfluence = nbt.getInt(DataKeys.HABITAT_NATURAL_RANGE_OF_INFLUENCE)
+        replaceSpawns = nbt.getBooleanOr(DataKeys.HABITAT_NATURAL_REPLACE_SPAWNS, false)
+        rangeOfInfluence = nbt.getIntOr(DataKeys.HABITAT_NATURAL_RANGE_OF_INFLUENCE, 0)
 
         pool = readPoolFromNBT(
-            nbt = nbt.getCompound(DataKeys.HABITAT_POOL),
+            nbt = nbt.getCompoundOrEmpty(DataKeys.HABITAT_POOL),
             poolInitializer = ::NaturalHabitatPool,
             spawnInitializer = ::NaturalHabitatSpawn,
             defaultPool = NaturalHabitatPool::default

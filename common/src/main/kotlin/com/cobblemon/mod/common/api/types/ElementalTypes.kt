@@ -21,7 +21,7 @@ object ElementalTypes {
     @JvmField
     val NORMAL = register(
         name = "Normal",
-        displayName = Component.translatable("cobblemon.type.normal"),
+        displayName = Component.translatable("cobblemon.type.unitVec3i"),
         hue = 0xE8E8DA,
         textureXMultiplier = 0,
         primaryColor = 0x8FA689,

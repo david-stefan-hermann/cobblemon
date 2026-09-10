@@ -8,35 +8,8 @@
 
 package com.cobblemon.mod.common.compat.lambdynamiclights;
 
-import com.cobblemon.mod.common.Cobblemon;
-import dev.lambdaurora.lambdynlights.api.DynamicLightsContext;
-import dev.lambdaurora.lambdynlights.api.DynamicLightsInitializer;
-import dev.lambdaurora.lambdynlights.api.entity.luminance.EntityLuminance;
-import dev.lambdaurora.lambdynlights.api.item.ItemLightSourceManager;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EntityType;
-
-public class LambDynamicLightsInitializer implements DynamicLightsInitializer {
-    public static final EntityLuminance.Type POKEMON_LUMINANCE = EntityLuminance.Type.registerSimple(
-            ResourceLocation.fromNamespaceAndPath(Cobblemon.MODID, "pokemon"),
-            PokemonLuminance.INSTANCE
-    );
-    public static final EntityLuminance.Type PLAYER_LUMINANCE = EntityLuminance.Type.registerSimple(
-            ResourceLocation.fromNamespaceAndPath(Cobblemon.MODID, "shoulder"),
-            PlayerLuminance.INSTANCE
-    );
-
-    @Override
-    public void onInitializeDynamicLights(DynamicLightsContext context) {
-        Cobblemon.LOGGER.info("Lamb Dynamic Lights compatibility enabled");
-
-        context.entityLightSourceManager().onRegisterEvent().register(ctx -> {
-            ctx.register(EntityType.PLAYER, PlayerLuminance.INSTANCE);
-        });
-    }
-
-    @SuppressWarnings({"removal", "UnstableApiUsage"})
-    @Override
-    public void onInitializeDynamicLights(ItemLightSourceManager itemLightSourceManager) {}
+// PT149: Lamb Dynamic Lights API (DynamicLightsInitializer, EntityLuminance.Type.registerSimple, Identifier.fromNamespaceAndPath)
+// is unavailable / refactored for MC 26.1.x. Compat module stubbed to keep core build green.
+// Reintroduce in PT15X+ once the Lamb Dynamic Lights port targets MC 26.1.x.
+public class LambDynamicLightsInitializer {
 }
-

@@ -21,9 +21,9 @@ import com.cobblemon.mod.common.entity.npc.NPCEntity
 import java.util.UUID
 import kotlin.math.atan
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import org.joml.Quaternionf
 import org.joml.Vector3f
 
@@ -36,12 +36,12 @@ import org.joml.Vector3f
 sealed interface RenderableFace {
     val isLeftSide: Boolean
     val struct: QueryStruct
-    fun render(GuiGraphics: GuiGraphics, partialTicks: Float)
+    fun extractRenderState(GuiGraphicsExtractor: GuiGraphicsExtractor, partialTicks: Float)
 }
 
 class PlayerRenderableFace(val playerId: UUID, override val isLeftSide: Boolean) : RenderableFace {
     override val struct: QueryStruct = QueryStruct(hashMapOf())
-    override fun render(GuiGraphics: GuiGraphics, partialTicks: Float) {
+    override fun extractRenderState(GuiGraphicsExtractor: GuiGraphicsExtractor, partialTicks: Float) {
         val entity = Minecraft.getInstance().level?.getPlayerByUUID(playerId) ?: return
         // All of the maths below is shamelessly stolen from InventoryScreen.drawEntity.
         // the -20 and 5 divided by 40 are for configuring the yaw and pitch tilt of the body and head respectively.
@@ -65,7 +65,8 @@ class PlayerRenderableFace(val playerId: UUID, override val isLeftSide: Boolean)
         val size = 37F
         val xOffset = 0
         val yOffset = 72
-        InventoryScreen.renderEntityInInventory(GuiGraphics, xOffset.toFloat(), yOffset.toFloat(), size, Vector3f(), quaternionf, quaternionf2, entity)
+        // PT145: InventoryScreen.renderEntityInInventory removed in MC 26.1.x — replaced by extractEntityInInventoryFollowsMouse(GuiGraphicsExtractor, x1, y1, x2, y2, slotSize, partialY, mouseX, mouseY, LivingEntity).
+        InventoryScreen.extractEntityInInventoryFollowsMouse(GuiGraphicsExtractor, xOffset, yOffset, xOffset + size.toInt(), yOffset + size.toInt(), size.toInt(), 0.0625F, 0F, 0F, entity)
         // Resets the entity
         entity.yBodyRot = oldBodyYaw
         entity.yRot = oldEntityYaw
@@ -79,14 +80,14 @@ class ReferenceRenderableFace(val entity: PosableEntity, override val isLeftSide
     val state = entity.delegate as PosableState
     override val struct: QueryStruct
         get() = state.runtime.environment.query
-    override fun render(GuiGraphics: GuiGraphics, partialTicks: Float) {
+    override fun extractRenderState(GuiGraphicsExtractor: GuiGraphicsExtractor, partialTicks: Float) {
         val state = this.state
         if (state is PokemonClientDelegate) {
             state.currentAspects = state.currentEntity.pokemon.aspects
             drawPosablePortrait(
                 identifier = state.currentEntity.pokemon.species.resourceIdentifier,
                 contextScale = state.currentEntity.pokemon.form.baseScale,
-                matrixStack = GuiGraphics.pose(),
+                matrixStack = GuiGraphicsExtractor.pose(),
                 state = state,
                 reversed = !isLeftSide,
                 partialTicks = 0F // It's already being rendered potentially so we don't need to tick the state.
@@ -98,7 +99,7 @@ class ReferenceRenderableFace(val entity: PosableEntity, override val isLeftSide
             val limbSwingAmount = entity.walkAnimation.speed(partialTicks)
             drawPosablePortrait(
                 identifier = state.npcEntity.resourceIdentifier,
-                matrixStack = GuiGraphics.pose(),
+                matrixStack = GuiGraphicsExtractor.pose(),
                 state = state,
                 reversed = !isLeftSide,
                 partialTicks = 0F, // It's already being rendered potentially so we don't need to tick the state.
@@ -112,7 +113,7 @@ class ReferenceRenderableFace(val entity: PosableEntity, override val isLeftSide
 
 class ArtificialRenderableFace(
     val modelType: String,
-    val identifier: ResourceLocation,
+    val identifier: Identifier,
     val aspects: Set<String>,
     override val isLeftSide: Boolean
 ): RenderableFace {
@@ -120,7 +121,7 @@ class ArtificialRenderableFace(
     override val struct: QueryStruct
         get() = state.runtime.environment.query
 
-    override fun render(GuiGraphics: GuiGraphics, partialTicks: Float) {
+    override fun extractRenderState(GuiGraphicsExtractor: GuiGraphicsExtractor, partialTicks: Float) {
         val state = this.state
         state.currentAspects = aspects
         if (modelType == "pokemon") {
@@ -130,7 +131,7 @@ class ArtificialRenderableFace(
             }
             drawPosablePortrait(
                 identifier = species.resourceIdentifier,
-                matrixStack = GuiGraphics.pose(),
+                matrixStack = GuiGraphicsExtractor.pose(),
                 contextScale = species.getForm(aspects).baseScale,
                 state = state,
                 reversed = !isLeftSide,
@@ -139,7 +140,7 @@ class ArtificialRenderableFace(
         } else if (modelType == "npc") {
             drawPosablePortrait(
                 identifier = identifier,
-                matrixStack = GuiGraphics.pose(),
+                matrixStack = GuiGraphicsExtractor.pose(),
                 state = state,
                 reversed = !isLeftSide,
                 partialTicks = partialTicks

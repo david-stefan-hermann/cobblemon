@@ -15,7 +15,8 @@ import net.minecraft.world.effect.MobEffectCategory
 import net.minecraft.world.entity.LivingEntity
 
 class MentalRestorationEffect : MobEffect(MobEffectCategory.BENEFICIAL, 0xAA66FF) {
-    override fun applyEffectTick(entity: LivingEntity, amplifier: Int): Boolean {
+    // PT143: MC 26.1.x added ServerLevel as the first arg to applyEffectTick.
+    override fun applyEffectTick(level: net.minecraft.server.level.ServerLevel, entity: LivingEntity, amplifier: Int): Boolean {
         if (entity is ServerPlayer) {
             val stats = entity.stats
             val statType = Stats.CUSTOM.get(Stats.TIME_SINCE_REST)

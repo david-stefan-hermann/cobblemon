@@ -28,6 +28,7 @@ class AttackHostileMobsTaskConfig : SingleTaskConfig {
     }
     
     companion object {
-        val CODEC: Codec<AttackHostileMobsTaskConfig> = Codec.unit(AttackHostileMobsTaskConfig())
+        // PT136: Codec.unit removed in DFU 9.0.19 — use MapCodec.unitCodec
+        val CODEC: Codec<AttackHostileMobsTaskConfig> = com.mojang.serialization.MapCodec.unitCodec(AttackHostileMobsTaskConfig())
     }
 }

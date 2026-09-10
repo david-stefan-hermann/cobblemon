@@ -34,7 +34,7 @@ import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
 import com.cobblemon.mod.common.util.math.fromEulerXYZDegrees
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.client.sounds.SoundManager
 import org.joml.Quaternionf
@@ -151,7 +151,7 @@ class BattleTargetSelection(
             ArrowDirection.DOWN -> Pair(this.x + TARGET_WIDTH / 2 - 4F, this.y - 7)
         }
 
-        fun render(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+        fun render(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
             val passedSeconds = CobblemonClient.battleOverlay.passedSeconds // This syncs the role throbbers
             val selectConditionOpacity = targetSelection.opacity * if (!selectable) 0.5F else 1F
             val matrices = context.pose()
@@ -193,9 +193,9 @@ class BattleTargetSelection(
             // Target name
             if (battlePokemon.hpValue > 0) {
                 // Render Pokémon
-                matrices.pushPose()
-                matrices.translate(x + TARGET_WIDTH - (25 / 2.0) - 2, y + 5.0, 0.0)
-                matrices.scale(2.5F, 2.5F, 1F)
+                matrices.pushMatrix()
+                matrices.translate((x + TARGET_WIDTH - (25 / 2.0) - 2).toFloat(), (y + 5.0).toFloat())
+                matrices.scale(2.5F, 2.5F)
                 // Grab aspects for right variant
                 state.currentAspects = battlePokemon.state.currentAspects
                 drawProfilePokemon(
@@ -206,7 +206,7 @@ class BattleTargetSelection(
                     scale = 4.5F,
                     partialTicks = delta
                 )
-                matrices.popPose()
+                matrices.popMatrix()
 
                 // Battle Role Upper
                 val stage = floor((passedSeconds / BattleOverlay.ROLE_CYCLE_SECONDS % 1) * 5)
@@ -323,7 +323,7 @@ class BattleTargetSelection(
         }
     }
 
-    override fun renderWidget(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
 
         // Draw Background
         blitk(
@@ -350,7 +350,7 @@ class BattleTargetSelection(
         targetTiles.forEach {
             it.render(context, mouseX, mouseY, delta)
         }
-        backButton.render(context, mouseX, mouseY, delta)
+        backButton.extractRenderState(context, mouseX, mouseY, delta)
     }
 
     override fun mousePrimaryClicked(mouseX: Double, mouseY: Double): Boolean {

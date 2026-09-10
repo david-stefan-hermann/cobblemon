@@ -29,7 +29,7 @@ class MulchItem(val variant: MulchVariant) : CobblemonItem(Properties()) {
             if (!world.isClientSide) {
                 world.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, pos, 0)
             }
-            return InteractionResult.sidedSuccess(true)
+            return (if (true) InteractionResult.SUCCESS else InteractionResult.SUCCESS_SERVER)
         }
         return InteractionResult.PASS
     }

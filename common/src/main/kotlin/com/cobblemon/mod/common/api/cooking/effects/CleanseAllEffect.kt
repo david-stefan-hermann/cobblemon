@@ -15,7 +15,8 @@ import net.minecraft.world.entity.LivingEntity
 
 class CleanseAllEffect : MobEffect(MobEffectCategory.BENEFICIAL, 0xFFFFFF) {
     override fun isInstantenous() = true
-    override fun applyInstantenousEffect(source: Entity?, indirect: Entity?, target: LivingEntity, amplifier: Int, proximity: Double) {
+    // PT143: MC 26.1.x added ServerLevel as the first arg to applyInstantenousEffect.
+    override fun applyInstantenousEffect(level: net.minecraft.server.level.ServerLevel, source: Entity?, indirect: Entity?, target: LivingEntity, amplifier: Int, proximity: Double) {
         target.removeAllEffects()
     }
     override fun shouldApplyEffectTickThisTick(duration: Int, amplifier: Int) = false

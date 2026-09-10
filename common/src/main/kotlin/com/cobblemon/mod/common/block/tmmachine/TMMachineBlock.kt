@@ -126,7 +126,7 @@ class TMMachineBlock(properties: Properties) : BaseEntityBlock(properties), Simp
         else null
     }
 
-    override fun fallOn(level: Level, state: BlockState, pos: BlockPos, entity: Entity, fallDistance: Float) {
+    override fun fallOn(level: Level, state: BlockState, pos: BlockPos, entity: Entity, fallDistance: Double) {
         if (!level.isClientSide && (entity is LivingEntity) &&
             (entity.bbWidth * entity.bbWidth * entity.bbHeight > 0.512F) &&
             (entity.y >= (pos.y + 0.55)) &&
@@ -165,12 +165,13 @@ class TMMachineBlock(properties: Properties) : BaseEntityBlock(properties), Simp
             } else {
                 val serverPlayer = player as? ServerPlayer
                 if (serverPlayer != null) {
-                    val recipeId = cobblemonResource("tm_machine")
-                    val recipeOpt = level.server?.recipeManager?.byKey(recipeId)
+                    // PT144: RecipeBook.contains/add removed in MC 26.1.x — use awardRecipes (handles dedup).
+                    // recipeManager.byKey expects ResourceKey<Recipe<*>> not Identifier; wrap accordingly.
+                    val recipeKey: net.minecraft.resources.ResourceKey<net.minecraft.world.item.crafting.Recipe<*>> =
+                        net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE, cobblemonResource("tm_machine"))
+                    val recipeOpt = level.server?.recipeManager?.byKey(recipeKey)
                     recipeOpt?.ifPresent { recipe ->
-                        if (!serverPlayer.recipeBook.contains(recipe)) {
-                            serverPlayer.awardRecipes(listOf(recipe))
-                        }
+                        serverPlayer.awardRecipes(listOf(recipe))
                     }
                 }
                 val blockEntity = level.getBlockEntity(pos)
@@ -186,7 +187,7 @@ class TMMachineBlock(properties: Properties) : BaseEntityBlock(properties), Simp
                 }
             }
         }
-        return InteractionResult.sidedSuccess(level.isClientSide)
+        return (if (level.isClientSide) InteractionResult.SUCCESS else InteractionResult.SUCCESS_SERVER)
     }
 
     override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
@@ -214,9 +215,12 @@ class TMMachineBlock(properties: Properties) : BaseEntityBlock(properties), Simp
 
     override fun getShape(state: BlockState, getter: BlockGetter, pos: BlockPos, context: CollisionContext): VoxelShape = if (state.getValue(OPEN)) SHAPE_OPEN else SHAPE
 
-    override fun onRemove(state: BlockState, level: Level, pos: BlockPos, newState: BlockState, movedByPiston: Boolean) {
-        Containers.dropContentsOnDestroy(state, newState, level, pos)
-        super.onRemove(state, level, pos, newState, movedByPiston)
+    override fun affectNeighborsAfterRemoval(state: BlockState, level: net.minecraft.server.level.ServerLevel, pos: BlockPos, movedByPiston: Boolean) {
+        val be = level.getBlockEntity(pos)
+        if (be is net.minecraft.world.Container) {
+            Containers.dropContents(level, pos, be)
+        }
+        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston)
     }
 
     override fun isSignalSource(state: BlockState): Boolean = false
@@ -225,7 +229,7 @@ class TMMachineBlock(properties: Properties) : BaseEntityBlock(properties), Simp
 
     override fun hasAnalogOutputSignal(state: BlockState): Boolean = true
 
-    /*override fun getAnalogOutputSignal(state: BlockState, level: Level, pos: BlockPos): Int {
+    /*override fun getAnalogOutputSignal(state: BlockState, level: Level, pos: BlockPos, direction: Direction): Int {
         val be = level.getBlockEntity(pos) as? TMMachineBlockEntity ?: return 0
 
         // Have comparator output act like a progress bar when burning because that might be super dope to see without going into the menu
@@ -233,7 +237,7 @@ class TMMachineBlock(properties: Properties) : BaseEntityBlock(properties), Simp
         return scaled.coerceIn(0, 15)
     }*/
 
-    override fun getAnalogOutputSignal(state: BlockState, level: Level, pos: BlockPos): Int {
+    override fun getAnalogOutputSignal(state: BlockState, level: Level, pos: BlockPos, direction: Direction): Int {
         val be = level.getBlockEntity(pos) as? TMMachineBlockEntity ?: return 0
 
         // Have comparator output act like a progress bar when burning because that might be super dope to see without going into the menu

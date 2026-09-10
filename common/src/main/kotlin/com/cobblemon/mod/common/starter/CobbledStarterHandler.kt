@@ -35,9 +35,9 @@ open class CobblemonStarterHandler : StarterHandler {
         val playerData = Cobblemon.playerDataManager.getGenericData(player)
         if (playerData.starterSelected) {
             playerData.sendToPlayer(player)
-            player.sendSystemMessage(lang("ui.starter.alreadyselected").red(), true)
+            player.sendOverlayMessage(lang("ui.starter.alreadyselected").red())
         } else if (playerData.starterLocked) {
-            player.sendSystemMessage(lang("ui.starter.cannotchoose").red(), true)
+            player.sendOverlayMessage(lang("ui.starter.cannotchoose").red())
         } else {
             OpenStarterUIPacket(getStarterList(player)).sendToPlayer(player)
             playerData.starterPrompted = true
@@ -48,9 +48,9 @@ open class CobblemonStarterHandler : StarterHandler {
     override fun chooseStarter(player: ServerPlayer, categoryName: String, index: Int) {
         val playerData = Cobblemon.playerDataManager.getGenericData(player)
         if (playerData.starterSelected) {
-            return player.sendSystemMessage(lang("ui.starter.alreadyselected").red(), true)
+            return player.sendOverlayMessage(lang("ui.starter.alreadyselected").red())
         } else if (playerData.starterLocked) {
-            return player.sendSystemMessage(lang("ui.starter.cannotchoose").red(), true)
+            return player.sendOverlayMessage(lang("ui.starter.cannotchoose").red())
         }
 
         val category = getStarterList(player).find { it.name == categoryName } ?: return
@@ -67,7 +67,7 @@ open class CobblemonStarterHandler : StarterHandler {
                 it.pokemon.also {
                     playerData.starterSelected = true
                     playerData.starterUUID = it.uuid
-                    if (player.level().gameRules.getBoolean(CobblemonGameRules.SHINY_STARTERS)) { pokemon.shiny = true }
+                    if ((player.level() as net.minecraft.server.level.ServerLevel).gameRules.get(CobblemonGameRules.SHINY_STARTERS)) { pokemon.shiny = true }
                 }
             )
             CobblemonCriteria.PICK_STARTER.trigger(player, pokemon)

@@ -21,14 +21,8 @@ class BrewingStandJeiProvider : CobblemonJeiProvider {
     }
 
     override fun registerRecipes(registration: IRecipeRegistration) {
-        val recipeManger =
-            Minecraft.getInstance().level?.recipeManager ?: throw IllegalStateException("Recipe manager not found")
-
-        val allBrewingRecipes = recipeManger.getAllRecipesFor(CobblemonRecipeTypes.BREWING_STAND)
-
-        val jeiRecipes = allBrewingRecipes.map { entry ->
-            JeiBrewingStandRecipe(entry.value, entry.id)
-        }
+        // PT135-DEFER: ClientLevel.recipeManager removed in MC 26.1.x — JEI integration needs ClientRecipeAccess refactor.
+        val jeiRecipes = emptyList<JeiBrewingStandRecipe>()
 
         registration.addRecipes(RecipeTypes.BREWING, jeiRecipes)
     }

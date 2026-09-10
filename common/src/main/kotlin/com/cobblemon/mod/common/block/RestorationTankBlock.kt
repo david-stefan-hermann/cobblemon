@@ -8,6 +8,10 @@
 
 package com.cobblemon.mod.common.block
 
+import net.minecraft.world.level.ScheduledTickAccess
+
+import net.minecraft.world.InteractionResult
+
 import com.cobblemon.mod.common.CobblemonBlocks
 import com.cobblemon.mod.common.api.multiblock.MultiblockBlock
 import com.cobblemon.mod.common.api.multiblock.MultiblockEntity
@@ -97,7 +101,7 @@ class RestorationTankBlock(settings: Properties) : MultiblockBlock(settings), Wo
     ) {
         //Place the full block before we call to super to validate the multiblock
         world.setBlock(pos.above(), state.setValue(PART, TankPart.TOP) as BlockState, UPDATE_ALL)
-        world.blockUpdated(pos, Blocks.AIR)
+        world.updateNeighborsAt(pos, Blocks.AIR, null)
         state.updateNeighbourShapes(world, pos, UPDATE_ALL)
         super.setPlacedBy(world, pos, state, placer, itemStack)
     }
@@ -157,7 +161,7 @@ class RestorationTankBlock(settings: Properties) : MultiblockBlock(settings), Wo
         return true
     }
 
-    override fun getAnalogOutputSignal(state: BlockState, world: Level, pos: BlockPos): Int {
+    override fun getAnalogOutputSignal(state: BlockState, world: Level, pos: BlockPos, direction: Direction): Int {
         if(world == null || pos == null) {
             return 0
         }
@@ -169,14 +173,12 @@ class RestorationTankBlock(settings: Properties) : MultiblockBlock(settings), Wo
         return 0
     }
 
-    override fun onRemove(state: BlockState, world: Level, pos: BlockPos, newState: BlockState, moved: Boolean) {
-        if (state.block != newState.block) {
-            super.onRemove(state, world, pos, newState, moved)
-            val otherPart = world.getBlockState(getPositionOfOtherPart(state, pos))
+    override fun affectNeighborsAfterRemoval(state: BlockState, world: net.minecraft.server.level.ServerLevel, pos: BlockPos, moved: Boolean) {
+        super.affectNeighborsAfterRemoval(state, world, pos, moved)
+        val otherPart = world.getBlockState(getPositionOfOtherPart(state, pos))
 
-            if (otherPart.block is RestorationTankBlock) {
-                world.setBlock(getPositionOfOtherPart(state, pos), Blocks.AIR.defaultBlockState(), UPDATE_CLIENTS)
-            }
+        if (otherPart.block is RestorationTankBlock) {
+            world.setBlock(getPositionOfOtherPart(state, pos), Blocks.AIR.defaultBlockState(), UPDATE_CLIENTS)
         }
     }
 
@@ -186,7 +188,7 @@ class RestorationTankBlock(settings: Properties) : MultiblockBlock(settings), Wo
         world: Level,
         pos: BlockPos,
         sourceBlock: Block,
-        sourcePos: BlockPos,
+        orientation: net.minecraft.world.level.redstone.Orientation?,
         notify: Boolean
     ) {
         val bl = world.hasNeighborSignal(pos) || world.hasNeighborSignal(pos.above())
@@ -225,12 +227,14 @@ class RestorationTankBlock(settings: Properties) : MultiblockBlock(settings), Wo
     }
 
     override fun updateShape(
-            state: BlockState,
-            direction: Direction,
-            neighborState: BlockState,
-            world: LevelAccessor,
-            pos: BlockPos,
-            neighborPos: BlockPos
+        state: BlockState,
+        world: LevelReader,
+        scheduledTickAccess: ScheduledTickAccess,
+        pos: BlockPos,
+        direction: Direction,
+        neighborPos: BlockPos,
+        neighborState: BlockState,
+        random: RandomSource
     ): BlockState {
         val isTank = neighborState.`is`(this)
         val part = state.getValue(PART)
@@ -260,7 +264,7 @@ class RestorationTankBlock(settings: Properties) : MultiblockBlock(settings), Wo
     }
 
     @Deprecated("Deprecated in Java")
-    override fun isPathfindable(state: BlockState?, type: PathComputationType): Boolean {
+    override fun isPathfindable(state: BlockState, type: PathComputationType): Boolean {
         return false
     }
 

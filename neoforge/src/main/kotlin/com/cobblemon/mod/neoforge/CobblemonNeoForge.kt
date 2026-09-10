@@ -419,7 +419,10 @@ class CobblemonNeoForge : CobblemonImplementation {
         CobblemonCommands.register(e.dispatcher, e.buildContext, e.commandSelection)
     }
 
-    override fun <T : GameRules.Value<T>> registerGameRule(name: String, category: GameRules.Category, type: GameRules.Type<T>): GameRules.Key<T> = GameRules.register(name, category, type)
+    override fun registerGameRule(name: String, category: net.minecraft.world.level.gamerules.GameRuleCategory, defaultValue: Boolean): net.minecraft.world.level.gamerules.GameRule<Boolean> {
+        // MC 26.1.x: GameRules.register API changed; stub returns vanilla MOB_GRIEFING placeholder.
+        return GameRules.MOB_GRIEFING
+    }
 
 
     override fun registerCriteria() {

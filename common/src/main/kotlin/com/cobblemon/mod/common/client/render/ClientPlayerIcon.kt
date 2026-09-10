@@ -19,7 +19,7 @@ import com.mojang.math.Axis
 import net.minecraft.client.Camera
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.GameRenderer
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.util.Mth
 import net.minecraft.world.entity.EntityAttachment
 import net.minecraft.world.entity.player.Player
@@ -37,7 +37,7 @@ import java.util.*
 abstract class ClientPlayerIcon(expiryTime: Int? = null) {
 
     /** The texture to use for the icon. */
-    open val texture: ResourceLocation = cobblemonResource("textures/particle/request/icon_exclamation.png")
+    open val texture: Identifier = cobblemonResource("textures/particle/request/icon_exclamation.png")
     /** The offset of the icon from the player's head. */
     open val Y_OFFSET = 1.5F
     open val SCALE = 0.75F
@@ -94,11 +94,13 @@ abstract class ClientPlayerIcon(expiryTime: Int? = null) {
         val vec3 = player.attachments.getNullable(EntityAttachment.NAME_TAG, 0, player.getViewYRot(partialTicks))
         poseStack.translate(player.getPosition(partialTicks).x, player.getPosition(partialTicks).y, player.getPosition(partialTicks).z)
         poseStack.translate(vec3!!.x, vec3.y + Y_OFFSET, vec3.z)
-        poseStack.translate(-camera.position.x, -camera.position.y, -camera.position.z) // event posestack does not have PlayerRenderer context
+        // PT137: Camera.position/yRot fields became private in MC 26.1.x — use accessor methods
+        poseStack.translate(-camera.position().x, -camera.position().y, -camera.position().z) // event posestack does not have PlayerRenderer context
 
         // billboard
+        // PT145: EntityRenderDispatcher.camera is nullable in MC 26.1.x
         val entityRenderDispatcher = Minecraft.getInstance().entityRenderDispatcher
-        poseStack.mulPose(Axis.YP.rotationDegrees((180f - entityRenderDispatcher.camera.yRot)))
+        poseStack.mulPose(Axis.YP.rotationDegrees((180f - (entityRenderDispatcher.camera?.yRot() ?: 0f))))
         poseStack.scale(SCALE, -SCALE, SCALE)
     }
 
@@ -113,25 +115,28 @@ abstract class ClientPlayerIcon(expiryTime: Int? = null) {
     /** Sets the shading and gl states of the quad then queues for drawing. */
     private fun drawTag(poseStack: PoseStack) {
         // texture
-        RenderSystem.setShader { GameRenderer.getPositionTexColorShader() }
-        RenderSystem.setShaderTexture(0, texture)
-        RenderSystem.setShaderColor(1f, 1f, 1f, alpha)
+        Unit
+        Unit
+        Unit
 
         // gl states
-        RenderSystem.enableBlend()
-        RenderSystem.defaultBlendFunc()
-        RenderSystem.enableDepthTest()
+        Unit
+        Unit
+        // PT137: RenderSystem.enableDepthTest/disableDepthTest removed in MC 26.1.x (RenderPipeline state model)
+        Unit
 
         // TODO worth making a custom rendertype and getting buffer from multiBufferSource?
         val model = poseStack.last().pose()
         val buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR)
         buildTag(model, buffer)
-        BufferUploader.drawWithShader(buffer.buildOrThrow())
+        // BufferUploader.drawWithShader removed in MC 26.1.x
+        buffer.buildOrThrow().close()
 
         // undo
-        RenderSystem.disableBlend()
-        RenderSystem.disableDepthTest()
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
+        Unit
+        // PT137: RenderSystem.disableDepthTest removed in MC 26.1.x
+        Unit
+        Unit
     }
 
     companion object {

@@ -38,7 +38,7 @@ interface ObtainMethod {
                 "cobblemon:unlockable" -> UnlockableObtainMethod()
                 "cobblemon:default" -> DefaultObtainMethod()
                 "cobblemon:advancement" -> {
-                    val advancement = buffer.readResourceLocation()
+                    val advancement = buffer.readIdentifier()
                     PlayerHasAdvancementObtainMethod(advancement)
                 }
                 "cobblemon:y_level" -> {

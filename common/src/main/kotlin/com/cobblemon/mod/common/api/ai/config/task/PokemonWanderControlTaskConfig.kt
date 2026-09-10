@@ -18,6 +18,7 @@ import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.ai.behavior.BehaviorControl
 import net.minecraft.world.entity.ai.behavior.OneShot
+import net.minecraft.world.entity.ai.memory.MemoryModuleType
 
 /**
  * Runs at priority zero to do the basics of setting up the wander control for any later wander
@@ -35,6 +36,7 @@ class PokemonWanderControlTaskConfig : SingleTaskConfig {
         behaviourConfigurationContext.addMemories(CobblemonMemories.WANDER_CONTROL)
 
         return object : OneShot<LivingEntity>() {
+            override fun getRequiredMemories(): Set<MemoryModuleType<*>> = setOf(CobblemonMemories.WANDER_CONTROL)
             override fun trigger(serverLevel: ServerLevel, livingEntity: LivingEntity, l: Long): Boolean {
                 if (entity !is PokemonEntity) {
                     return false

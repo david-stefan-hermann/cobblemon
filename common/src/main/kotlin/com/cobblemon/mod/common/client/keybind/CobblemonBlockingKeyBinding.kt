@@ -21,7 +21,8 @@ abstract class CobblemonBlockingKeyBinding(
     name: String,
     type: InputConstants.Type = InputConstants.Type.KEYSYM,
     key: Int,
-    category: String
+    // PT144: KeyMapping.Category replaces String in MC 26.1.x.
+    category: net.minecraft.client.KeyMapping.Category
 ) : CobblemonKeyBinding(name, type, key, category) {
     var wasDown = false
     var timeDown = 0F
@@ -39,7 +40,8 @@ abstract class CobblemonBlockingKeyBinding(
         } else if (!isDown) {
             wasDown = false
         } else if (wasDown) {
-            timeDown += Minecraft.getInstance().timer.getGameTimeDeltaPartialTick(false)
+            // PT136: Minecraft.timer renamed to getDeltaTracker() in MC 26.1.x
+            timeDown += Minecraft.getInstance().deltaTracker.getGameTimeDeltaPartialTick(false)
         }
     }
 }

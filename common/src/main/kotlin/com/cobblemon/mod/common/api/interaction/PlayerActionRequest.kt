@@ -72,7 +72,7 @@ interface ServerPlayerActionRequest : PlayerActionRequest {
     /** System message to inform individual [player] about [langKey]. */
     fun notify(player: ServerPlayer, error: Boolean, langKey: String, vararg params: Any) {
         val lang = lang(langKey, *params).apply { if (error) red() else yellow() }
-        player.sendSystemMessage(lang, false)
+        player.sendSystemMessage(lang)
     }
 }
 

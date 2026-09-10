@@ -29,6 +29,8 @@ import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.core.HolderLookup
+import net.minecraft.world.level.storage.ValueInput
+import net.minecraft.world.level.storage.ValueOutput
 import net.minecraft.core.NonNullList
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.NbtOps
@@ -36,13 +38,13 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.ClientGamePacketListener
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket
-import net.minecraft.resources.ResourceLocation
-import net.minecraft.util.FastColor
+import net.minecraft.resources.Identifier
+import net.minecraft.util.ARGB
 import net.minecraft.world.ContainerHelper
 import net.minecraft.world.WorldlyContainer
 import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.entity.player.Inventory
-import net.minecraft.world.entity.player.StackedContents
+// PT137: StackedContents → StackedItemContents (fully qualified at use site)
 import net.minecraft.world.inventory.*
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
@@ -133,7 +135,7 @@ class CampfireBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlock
                     campfireBlockEntity.particleEntityHandler(
                         position = position,
                         level = level,
-                        particle = ResourceLocation("cobblemon", "broth_bubbles")
+                        particle = Identifier.fromNamespaceAndPath("cobblemon", "broth_bubbles")
                     )
                 }
 
@@ -153,7 +155,7 @@ class CampfireBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlock
             fun <T : CookingPotRecipeBase> fetchRecipe(
                 recipeType: RecipeType<T>
             ): Optional<RecipeHolder<CookingPotRecipeBase>> {
-                val optional = level.recipeManager.getRecipeFor(recipeType, craftingInput, level)
+                val optional = level.server?.recipeManager?.getRecipeFor(recipeType, craftingInput, level) ?: Optional.empty()
                 @Suppress("UNCHECKED_CAST")
                 return optional.map { it as RecipeHolder<CookingPotRecipeBase> }
             }
@@ -170,7 +172,8 @@ class CampfireBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlock
             else {
                 val cookingPotRecipe = optionalRecipe
                 val recipe = cookingPotRecipe.value()
-                val cookedItem = recipe.assemble(craftingInput, level.registryAccess())
+                // PT144: Recipe.assemble now takes only the input (no registryAccess) in MC 26.1.x.
+                val cookedItem = recipe.assemble(craftingInput)
                 val resultSlotItem = campfireBlockEntity.getItem(0)
 
                 recipe.applySeasoning(cookedItem, campfireBlockEntity.getSeasonings().filter { it.`is`(recipe.seasoningTag) })
@@ -237,7 +240,7 @@ class CampfireBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlock
     private var cookingProgress: Int = 0
     private var cookingTotalTime: Int = COOKING_TOTAL_TIME
     private var items: NonNullList<ItemStack> = NonNullList.withSize(ITEMS_SIZE, ItemStack.EMPTY)
-    private val recipesUsed: Object2IntOpenHashMap<ResourceLocation> = Object2IntOpenHashMap()
+    private val recipesUsed: Object2IntOpenHashMap<Identifier> = Object2IntOpenHashMap()
     private val quickCheck: RecipeManager.CachedCheck<CraftingInput, *> =
         RecipeManager.createCheck(CobblemonRecipeTypes.COOKING_POT_COOKING)
     private var potComponent: PotComponent? = null
@@ -274,7 +277,7 @@ class CampfireBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlock
         }
     }
 
-    fun particleEntityHandler(position: Vec3, level: Level, particle: ResourceLocation): ParticleStorm {
+    fun particleEntityHandler(position: Vec3, level: Level, particle: Identifier): ParticleStorm {
         val wrapper = MatrixWrapper()
         val matrix = PoseStack()
         wrapper.updateMatrix(matrix.last().pose())
@@ -290,10 +293,10 @@ class CampfireBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlock
             sourceAlive = { blockState.getValue(CampfireBlock.COOKING) },
             sourceVisible = { blockState.getValue(CampfireBlock.COOKING) },
             getParticleColor = {
-                val red = FastColor.ARGB32.red(bubbleColor) / 255F
-                val green = FastColor.ARGB32.green(bubbleColor) / 255F
-                val blue = FastColor.ARGB32.blue(bubbleColor) / 255F
-                val alpha = FastColor.ARGB32.alpha(bubbleColor) / 255F
+                val red = ARGB.red(bubbleColor) / 255F
+                val green = ARGB.green(bubbleColor) / 255F
+                val blue = ARGB.blue(bubbleColor) / 255F
+                val alpha = ARGB.alpha(bubbleColor) / 255F
 
                 Vector4f(red, green, blue, alpha)
             }
@@ -310,8 +313,11 @@ class CampfireBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlock
         fun consumeItem(slot: Int) {
             val itemInSlot = getItem(slot)
             if (!itemInSlot.isEmpty) {
-                if (itemInSlot.item.hasCraftingRemainingItem()) {
-                    remainderItems[itemInSlot.item.craftingRemainingItem!!] = (remainderItems[itemInSlot.item.craftingRemainingItem!!] ?: 0) + 1
+                // PT137: Item.hasCraftingRemainingItem() / craftingRemainingItem removed → getCraftingRemainder():ItemStackTemplate (null when no remainder)
+                val remainder = itemInSlot.item.craftingRemainder
+                if (remainder != null) {
+                    val remainderItem = remainder.create().item
+                    remainderItems[remainderItem] = (remainderItems[remainderItem] ?: 0) + 1
                 }
                 itemInSlot.shrink(1)
                 if (itemInSlot.count <= 0) setItem(slot, ItemStack.EMPTY)
@@ -382,15 +388,17 @@ class CampfireBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlock
 
     override fun setRecipeUsed(recipe: RecipeHolder<*>?) {
         if (recipe != null) {
-            val resourceLocation = recipe.id()
+            // PT144: ResourceKey accessor renamed to identifier() in MC 26.1.x (was location()).
+            val resourceLocation = recipe.id().identifier()
             this.recipesUsed.addTo(resourceLocation, 1)
         }
     }
 
-    override fun getRecipeUsed() = null
-    override fun fillStackedContents(contents: StackedContents) {
+    override fun getRecipeUsed(): RecipeHolder<*>? = null
+    // PT137: StackedContentsCompatible.fillStackedContents(StackedItemContents) replaces StackedContents
+    override fun fillStackedContents(contents: net.minecraft.world.entity.player.StackedItemContents) {
         for (itemStack in this.items) {
-            contents.accountSimpleStack(itemStack);
+            contents.accountSimpleStack(itemStack)
         }
     }
 
@@ -408,36 +416,26 @@ class CampfireBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlock
         level?.sendBlockUpdated(blockPos, blockState, blockState, Block.UPDATE_CLIENTS)
     }
 
-    override fun saveAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
-        super.saveAdditional(tag, registries)
+    override fun saveAdditional(output: ValueOutput) {
+        super.saveAdditional(output)
 
-        tag.putInt("CookingProgress", this.cookingProgress)
+        output.putInt("CookingProgress", this.cookingProgress)
 
-        ContainerHelper.saveAllItems(tag, this.items, registries)
+        ContainerHelper.saveAllItems(output, this.items)
         potComponent?.let { component ->
-            PotComponent.CODEC.encodeStart(NbtOps.INSTANCE, component)
-                .result()
-                ?.ifPresent { encoded -> tag.put("PotComponent", encoded) }
+            output.store("PotComponent", PotComponent.CODEC, component)
         }
     }
 
-    override fun loadAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
-        super.loadAdditional(tag, registries)
+    override fun loadAdditional(input: ValueInput) {
+        super.loadAdditional(input)
 
-        this.cookingProgress = tag.getInt("CookingProgress")
-
-        // Minecraft doesn't save empty item stacks to the items tag, so we have to manually clear them
-        // otherwise they would never clear and seasonings would always render wrongly
+        this.cookingProgress = input.getIntOr("CookingProgress", 0)
 
         clearContent()
-        ContainerHelper.loadAllItems(tag, this.items, registries)
+        ContainerHelper.loadAllItems(input, this.items)
 
-        if (tag.contains("PotComponent")) {
-            val component = PotComponent.CODEC.parse(NbtOps.INSTANCE, tag.getCompound("PotComponent"))
-                .result()
-                ?.orElse(null)
-            potComponent = component
-        }
+        potComponent = input.read("PotComponent", PotComponent.CODEC).orElse(null)
     }
 
     override fun getUpdatePacket(): Packet<ClientGamePacketListener>? {

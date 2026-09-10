@@ -22,7 +22,8 @@ abstract class CobblemonCustomKeyBinding(
     name: String,
     type: InputConstants.Type = InputConstants.Type.KEYSYM,
     key: Int,
-    category: String
+    // PT144: KeyMapping.Category replaces String in MC 26.1.x.
+    category: net.minecraft.client.KeyMapping.Category
 ) : CobblemonKeyBinding(name, type, key, category) {
 
     var run: Runnable? = null

@@ -101,7 +101,6 @@
     "entity.TameableEntityMixin",
     "invoker.AdornRegisterInvoker",
     "invoker.BlocksInvoker",
-    "invoker.BooleanRuleInvoker",
     "invoker.DoorBlockInvoker",
     "invoker.FireBlockInvoker",
     "invoker.PressurePlateBlockInvoker",

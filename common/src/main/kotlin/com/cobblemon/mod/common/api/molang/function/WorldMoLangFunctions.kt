@@ -58,12 +58,12 @@ object WorldMoLangFunctions : AbstractMoLangFunctionHolder<Holder<Level>>() {
 
             val timeOfDay = TimeRange.timeRanges[params.getString(0).lowercase()]
                 ?: return@put DoubleValue.ZERO
-            val time = world.dayTime % 24000
+            val time = world.overworldClockTime % 24000
             return@put DoubleValue(timeOfDay.contains(time.toInt()))
         }
         map["game_time"] = { _ -> DoubleValue(world.gameTime.toDouble()) }
         map["time_of_day"] = put@{
-            val time = world.dayTime % 24000
+            val time = world.overworldClockTime % 24000
             return@put DoubleValue(time.toDouble())
         }
         map["server"] = { _ -> server()?.asMoLangValue() ?: DoubleValue.ZERO }
@@ -87,7 +87,8 @@ object WorldMoLangFunctions : AbstractMoLangFunctionHolder<Holder<Level>>() {
 
                 else -> {
                     val biome = world.getBiome(blockPos).value() as Biome
-                    return@put DoubleValue(biome.getPrecipitationAt(blockPos) == Biome.Precipitation.SNOW)
+                    // PT143: Biome.getPrecipitationAt added seaLevel parameter in MC 26.1.x.
+                    return@put DoubleValue(biome.getPrecipitationAt(blockPos, world.seaLevel) == Biome.Precipitation.SNOW)
                 }
             }
         }
@@ -103,7 +104,8 @@ object WorldMoLangFunctions : AbstractMoLangFunctionHolder<Holder<Level>>() {
             val x = params.getInt(0)
             val y = params.getInt(1)
             val z = params.getInt(2)
-            val block = world.blockRegistry.get(params.getString(3).asIdentifierDefaultingNamespace())
+            // PT143: Registry.get returns Optional<Holder.Reference<Block>> in MC 26.1.x.
+            val block = world.blockRegistry.get(params.getString(3).asIdentifierDefaultingNamespace()).orElse(null)?.value()
                 ?: run {
                     Cobblemon.LOGGER.error("Unknown block: ${params.getString(3)}")
                     return@put DoubleValue.ZERO
@@ -184,7 +186,7 @@ object WorldMoLangFunctions : AbstractMoLangFunctionHolder<Holder<Level>>() {
             }
 
             val pokemon = props.createEntity(world)
-            pokemon.moveTo(pos, pokemon.yRot, pokemon.xRot)
+            pokemon.snapTo(pos, pokemon.yRot, pokemon.xRot)
 
             if (world.addFreshEntity(pokemon)) {
                 return@put pokemon.struct
@@ -201,7 +203,7 @@ object WorldMoLangFunctions : AbstractMoLangFunctionHolder<Holder<Level>>() {
             val level = params.getInt(4)
             if (npcClass == null) return@put DoubleValue.ZERO
             val npc = NPCEntity(world)
-            npc.moveTo(x, y, z, npc.yRot, npc.xRot)
+            npc.snapTo(x, y, z, npc.yRot, npc.xRot)
             npc.npc = npcClass
             npc.initialize(level)
             if (world.addFreshEntity(npc)) {

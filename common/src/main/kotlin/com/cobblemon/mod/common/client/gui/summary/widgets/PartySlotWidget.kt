@@ -8,6 +8,7 @@
 
 package com.cobblemon.mod.common.client.gui.summary.widgets
 
+import net.minecraft.client.input.MouseButtonEvent
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.api.gui.blitk
@@ -25,9 +26,9 @@ import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
 import com.cobblemon.mod.common.util.math.fromEulerXYZDegrees
 import com.cobblemon.mod.common.util.toAssetPath
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Component
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import org.joml.Quaternionf
 import org.joml.Vector3f
 
@@ -53,7 +54,7 @@ class PartySlotWidget(
         val genderIconFemale = cobblemonResource("textures/gui/party/party_gender_female.png")
     }
 
-    private fun getSlotTexture(pokemon: Pokemon?): ResourceLocation {
+    private fun getSlotTexture(pokemon: Pokemon?): Identifier {
         if (pokemon != null) {
             if (pokemon.isFainted()) return slotFaintedResource
             return slotResource
@@ -72,7 +73,7 @@ class PartySlotWidget(
         return 0
     }
 
-    override fun renderWidget(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         isHovered = mouseX >= x && mouseY >= y && mouseX < x + width && mouseY < y + height
         val matrices = context.pose()
         val isDraggedSlot = partyWidget.swapEnabled && partyWidget.swapSource == index
@@ -154,9 +155,9 @@ class PartySlotWidget(
             )
 
             // Render Pokémon
-            matrices.pushPose()
-            matrices.translate(x + (PORTRAIT_DIAMETER / 2.0), y - 3.0, 0.0)
-            matrices.scale(2.5F, 2.5F, 1F)
+            matrices.pushMatrix()
+            matrices.translate((x + (PORTRAIT_DIAMETER / 2.0)).toFloat(), (y - 3.0).toFloat())
+            matrices.scale(2.5F, 2.5F)
 
             val shouldAnimate = when (Cobblemon.config.summaryProfileAnimations) {
                 PokemonGUIAnimationStyle.ALWAYS_ANIMATE -> true
@@ -172,7 +173,7 @@ class PartySlotWidget(
                 scale = 4.5F,
                 partialTicks = if (shouldAnimate) delta else 0F
             )
-            matrices.popPose()
+            matrices.popMatrix()
 
             drawScaledText(
                 context = context,
@@ -218,7 +219,10 @@ class PartySlotWidget(
         }
     }
 
-    override fun mouseClicked(pMouseX: Double, pMouseY: Double, pButton: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val pMouseX = event.x
+        val pMouseY = event.y
+        val pButton = event.button()
         if (isValidClick(pMouseX, pMouseY, pButton)) {
             if (partyWidget.swapEnabled) {
                 toggleDrag(true)
@@ -230,15 +234,21 @@ class PartySlotWidget(
                 }
             }
         }
-        return super.mouseClicked(pMouseX, pMouseY, pButton)
+        return super.mouseClicked(event, fromOnClick)
     }
 
-    override fun mouseReleased(pMouseX: Double, pMouseY: Double, pButton: Int): Boolean {
+    override fun mouseReleased(event: MouseButtonEvent): Boolean {
+        val pMouseX = event.x
+        val pMouseY = event.y
+        val pButton = event.button()
         if (partyWidget.swapEnabled) toggleDrag(false)
-        return partyWidget.mouseReleased(pMouseX, pMouseY, pButton)
+        return partyWidget.mouseReleased(event)
     }
 
-    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, f: Double, g: Double): Boolean {
+    override fun mouseDragged(event: MouseButtonEvent, f: Double, g: Double): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
         if (partyWidget.swapEnabled && partyWidget.isWithinScreen(mouseX, mouseY) && index < 0) {
             repositionSlot(mouseX, mouseY)
         } else {
@@ -247,7 +257,7 @@ class PartySlotWidget(
             partyWidget.swapSource = null
             partyWidget.draggedSlot = null
         }
-        return super.mouseDragged(mouseX, mouseY, button, f, g)
+        return super.mouseDragged(event, f, g)
     }
 
     private fun toggleDrag(boolean: Boolean) {

@@ -23,7 +23,7 @@ import com.cobblemon.mod.common.util.asIdentifierDefaultingNamespace
 import com.cobblemon.mod.common.util.asTranslated
 import com.cobblemon.mod.common.util.itemRegistry
 import net.minecraft.client.Minecraft
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.world.item.ItemStack
 
 /**
@@ -78,7 +78,8 @@ class SearchFilter(val pokedexManager: AbstractPokedexManager, val searchString:
                 formsList.forEach {
                     it.drops.entries.forEach {
                         if (it is ItemDropEntry) {
-                            val itemStack = Minecraft.getInstance().player?.level()?.itemRegistry?.get(it.item)?.defaultInstance ?: ItemStack.EMPTY
+                            // PT143: Registry.get returns Optional<Holder.Reference<Item>> in MC 26.1.x.
+                            val itemStack = Minecraft.getInstance().player?.level()?.itemRegistry?.get(it.item)?.orElse(null)?.value()?.defaultInstance ?: ItemStack.EMPTY
                             if (!itemStack.isEmpty) dropsList.add(itemStack.displayName.string.lowercase())
                         }
                     }
@@ -97,7 +98,7 @@ class SearchFilter(val pokedexManager: AbstractPokedexManager, val searchString:
         search: String,
         highestLevel: Int,
         pokedex: AbstractPokedexManager,
-        learnedTMs: Set<ResourceLocation>
+        learnedTMs: Set<Identifier>
     ): Boolean {
         val highestEvolutionLevel = collectEvolutionForms(form).maxOfOrNull { evolutionForm ->
             val speciesRecord = pokedex.getSpeciesRecord(evolutionForm.species.resourceIdentifier)
@@ -146,9 +147,9 @@ class SearchFilter(val pokedexManager: AbstractPokedexManager, val searchString:
     }
 
     // todo remove this since it isn't needed anymore
-    private fun buildEvolutionMoveLevelIndex(form: FormData): Map<ResourceLocation, Map<String, Int>> {
+    private fun buildEvolutionMoveLevelIndex(form: FormData): Map<Identifier, Map<String, Int>> {
         val evolutionForms = collectEvolutionForms(form)
-        val levelsBySpecies = mutableMapOf<ResourceLocation, MutableMap<String, Int>>()
+        val levelsBySpecies = mutableMapOf<Identifier, MutableMap<String, Int>>()
 
         for (evolutionForm in evolutionForms) {
             val speciesId = evolutionForm.species.resourceIdentifier

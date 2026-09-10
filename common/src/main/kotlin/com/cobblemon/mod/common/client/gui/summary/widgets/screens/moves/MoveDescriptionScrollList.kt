@@ -9,8 +9,9 @@
 package com.cobblemon.mod.common.client.gui.summary.widgets.screens.moves
 
 import com.cobblemon.mod.common.client.gui.CobblemonRenderable
+import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.ObjectSelectionList
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
@@ -31,14 +32,14 @@ class MoveDescriptionScrollList(
     init {
         this.y = this.listY
         this.x = this.listX
-        this.setRenderHeader(false, 0)
+        // PT136: AbstractSelectionList.setRenderHeader removed in MC 26.1.x
     }
 
-    override fun getScrollbarPosition(): Int {
+    override fun scrollBarX(): Int {
         return x + width - 3
     }
 
-    override fun renderWidget(context: GuiGraphics, pMouseX: Int, pMouseY: Int, f: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, pMouseX: Int, pMouseY: Int, f: Float) {
         isHovered = pMouseX >= x && pMouseY >= y && pMouseX < x + width && pMouseY < y + height
         context.enableScissor(
             x,
@@ -46,35 +47,41 @@ class MoveDescriptionScrollList(
             x + width,
             y + height
         )
-        super.renderWidget(context, pMouseX, pMouseY, f)
+        super.extractWidgetRenderState(context, pMouseX, pMouseY, f)
         context.disableScissor()
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
         updateScrollingState(mouseX, mouseY)
         if (scrolling) isDragging = true
 
         return isDragging
     }
 
-    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
+    override fun mouseDragged(event: MouseButtonEvent, deltaX: Double, deltaY: Double): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
         if (scrolling) {
             if (mouseY < y) {
                 scrollAmount = 0.0
             } else if (mouseY > bottom) {
-                scrollAmount = maxScroll.toDouble()
+                scrollAmount = maxScrollAmount().toDouble()
             } else {
                 scrollAmount += deltaY
             }
         }
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+        return super.mouseDragged(event, deltaX, deltaY)
     }
 
-    override fun renderListBackground(guiGraphics: GuiGraphics) {}
+    override fun extractListBackground(guiGraphics: GuiGraphicsExtractor) {}
 
     private fun updateScrollingState(mouseX: Double, mouseY: Double) {
-        scrolling = mouseX >= getScrollbarPosition().toDouble()
-                && mouseX < (getScrollbarPosition() + 3).toDouble()
+        scrolling = mouseX >= scrollBarX().toDouble()
+                && mouseX < (scrollBarX() + 3).toDouble()
                 && mouseY >= y
                 && mouseY < bottom
     }

@@ -12,6 +12,8 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.IntTag
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.world.level.storage.ValueInput
+import net.minecraft.world.level.storage.ValueOutput
 
 interface TintBlockEntity {
     companion object {
@@ -47,11 +49,11 @@ interface TintBlockEntity {
         level.sendBlockUpdated(entity.blockPos, entity.blockState, entity.blockState, Block.UPDATE_ALL)
     }
 
-    fun saveTint(tag: CompoundTag) {
-        tint?.let { tag.put(TINT, IntTag.valueOf(it)) }
+    fun saveTint(output: ValueOutput) {
+        tint?.let { output.putInt(TINT, it) }
     }
 
-    fun loadTint(tag: CompoundTag) {
-        if (tag.contains(TINT)) tint = tag.getInt(TINT)
+    fun loadTint(input: ValueInput) {
+        tint = input.getInt(TINT).orElse(null) as? Int ?: tint
     }
 }

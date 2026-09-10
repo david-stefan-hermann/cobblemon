@@ -24,14 +24,27 @@ interface CookingPotRecipeBase : Recipe<CraftingInput> {
     val seasoningTag: TagKey<Item>
     val seasoningProcessors: List<SeasoningProcessor>
 
-    override fun getGroup() = groupName
+    // PT137: Recipe.getGroup()/getResultItem()/getIngredients()/getToastSymbol()/canCraftInDimensions() removed
+    // New API: group():String / assemble(input):ItemStack 1-arg / showNotification():Boolean /
+    //          placementInfo():PlacementInfo / recipeBookCategory():RecipeBookCategory
+    override fun group(): String = groupName
     override fun matches(input: CraftingInput, level: Level): Boolean
     fun category() = category
-    override fun getResultItem(registries: HolderLookup.Provider) = this.result
 
-    override fun assemble(input: CraftingInput, registries: HolderLookup.Provider): ItemStack {
+    // Non-override convenience accessor (Recipe no longer requires getResultItem)
+    fun resultItem(): ItemStack = this.result
+
+    override fun assemble(input: CraftingInput): ItemStack {
         return result.copy()
     }
+
+    override fun showNotification(): Boolean = true
+
+    override fun placementInfo(): net.minecraft.world.item.crafting.PlacementInfo =
+        net.minecraft.world.item.crafting.PlacementInfo.NOT_PLACEABLE
+
+    override fun recipeBookCategory(): net.minecraft.world.item.crafting.RecipeBookCategory =
+        net.minecraft.world.item.crafting.RecipeBookCategories.CRAFTING_MISC
 
     fun applySeasoning(stack: ItemStack, seasoning: List<ItemStack>) {
         for (processor in seasoningProcessors) {
@@ -39,8 +52,6 @@ interface CookingPotRecipeBase : Recipe<CraftingInput> {
         }
     }
 
-    override fun getToastSymbol(): ItemStack? {
-        return ItemStack(CobblemonItems.CAMPFIRE_POT_RED)
-    }
-
+    // PT137: getToastSymbol removed from Recipe — kept as non-override helper for legacy callers
+    fun toastSymbol(): ItemStack = ItemStack(CobblemonItems.CAMPFIRE_POT_RED)
 }

@@ -8,14 +8,8 @@
 
 package com.cobblemon.mod.fabric.client.integration.modmenu
 
-import com.cobblemon.mod.common.client.gui.config.CobblemonConfigScreen
-import com.terraformersmc.modmenu.api.ConfigScreenFactory
-import com.terraformersmc.modmenu.api.ModMenuApi
-
-class CobblemonModMenu : ModMenuApi {
-    override fun getModConfigScreenFactory(): ConfigScreenFactory<*> {
-        return ConfigScreenFactory { parent ->
-            CobblemonConfigScreen(parent)
-        }
-    }
-}
+/**
+ * PT150: ModMenu API (terraformersmc) not yet remapped for MC 26.1.x.
+ * Stubbed pending upstream port. Reintroduce ConfigScreenFactory binding in PT15X+.
+ */
+class CobblemonModMenu

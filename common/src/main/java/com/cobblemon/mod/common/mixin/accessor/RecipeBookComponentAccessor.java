@@ -8,15 +8,7 @@
 
 package com.cobblemon.mod.common.mixin.accessor;
 
-import net.minecraft.client.gui.components.StateSwitchingButton;
-import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
-import net.minecraft.network.chat.Component;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
-import org.spongepowered.asm.mixin.gen.Accessor;
-
-@Mixin(RecipeBookComponent.class)
+// PT149: RecipeBookComponent removed in MC 26.1.x. New recipe book uses StackedItemContents + RecipeBookCategory.
+// Stubbed and disabled in mixins.cobblemon-common.json. Reintroduce as state-aware accessor in PT15X+.
 public interface RecipeBookComponentAccessor {
-    @Accessor("filterButton")
-    StateSwitchingButton getFilterButton();
 }

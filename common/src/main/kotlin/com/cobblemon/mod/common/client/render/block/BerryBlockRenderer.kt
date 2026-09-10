@@ -8,6 +8,8 @@
 
 package com.cobblemon.mod.common.client.render.block
 
+import net.minecraft.client.renderer.rendertype.RenderTypes
+
 import com.cobblemon.mod.common.api.mulch.MulchVariant
 import com.cobblemon.mod.common.block.BerryBlock
 import com.cobblemon.mod.common.block.entity.BerryBlockEntity
@@ -21,14 +23,14 @@ import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.MultiBufferSource
-import net.minecraft.client.renderer.RenderType
+import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 
 
-class BerryBlockRenderer(private val context: BlockEntityRendererProvider.Context) : BlockEntityRenderer<BerryBlockEntity> {
+class BerryBlockRenderer(private val context: BlockEntityRendererProvider.Context) : BlockEntityRenderer<BerryBlockEntity, net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> {
 
     val mulchModels = mutableMapOf(
         MulchVariant.COARSE to CobblemonBakingOverrides.COARSE_MULCH,
@@ -44,20 +46,21 @@ class BerryBlockRenderer(private val context: BlockEntityRendererProvider.Contex
 
 
     override fun shouldRender(blockEntity: BerryBlockEntity, pos: Vec3): Boolean {
+        // PT144: LevelRenderer.cullingFrustum field privatized in MC 26.1.x. Fallback to base-class default culling.
         return super.shouldRender(blockEntity, pos)
-                && Minecraft.getInstance().levelRenderer.cullingFrustum.isVisible(AABB.ofSize(pos, 2.0, 4.0, 2.0))
     }
 
-    override fun render(entity: BerryBlockEntity, tickDelta: Float, matrices: PoseStack, vertexConsumers: MultiBufferSource, light: Int, overlay: Int) {
+    fun render_DEFER_NO_OVERRIDE(entity: BerryBlockEntity, tickDelta: Float, matrices: PoseStack, vertexConsumers: MultiBufferSource, light: Int, overlay: Int) {
         if (!shouldRender(entity, entity.blockPos.toVec3d())) return
         val blockState = entity.blockState
         if (entity.renderState == null) {
             entity.renderState = BerryBlockEntityRenderState()
         }
 
-        // RenderType.entityCutoutNoCull for shading, as shading is absent in RenderType CobblemonRenderLayers.BERRY_LAYER
+        // PT144: RenderTypes.entityCutoutNoCull removed in MC 26.1.x → entityCutout(id, false) no-cull variant.
+        // TextureAtlas.identifier() renamed to location().
         val buffer = vertexConsumers.getBuffer(
-            RenderType.entityCutoutNoCull(BERRY_SPRITE_ATLAS.textureAtlas.location())
+            RenderTypes.entityCutout(BERRY_SPRITE_ATLAS.textureAtlas.location(), false)
         )
 
         val renderState = entity.renderState as BerryBlockEntityRenderState
@@ -92,13 +95,10 @@ class BerryBlockRenderer(private val context: BlockEntityRendererProvider.Contex
     ) {
         matrices.pushPose()
         //Mulch is rendered on a different layer than the actual berries so
-        val mulchBuf = vertexConsumers.getBuffer(RenderType.cutout())
+        val mulchBuf = vertexConsumers.getBuffer(net.minecraft.client.renderer.Sheets.cutoutBlockSheet())
         val model = mulchModels[entity.mulchVariant]
-        model?.let {
-            it.getModel().getQuads(entity.blockState, null, entity.level?.random).forEach { quad ->
-                mulchBuf.putBulkData(matrices.last(), quad, 1F, 1F, 1F, 1F, light, overlay)
-            }
-        }
+        // PT136-DEFER: BlockModel.getQuads + VertexConsumer.putBulkData removed in MC 26.1.x — needs SectionMesher/RenderType refactor
+        model?.let { /* mulch quads disabled until model API migrated */ }
         matrices.popPose()
     }
 
@@ -169,4 +169,14 @@ class BerryBlockRenderer(private val context: BlockEntityRendererProvider.Contex
 //        VertexBuffer.unbind()
     }
 
+
+    override fun createRenderState(): net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState =
+        net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState()
+
+    override fun submit(
+        state: net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState,
+        poseStack: com.mojang.blaze3d.vertex.PoseStack,
+        collector: net.minecraft.client.renderer.SubmitNodeCollector,
+        camera: net.minecraft.client.renderer.state.level.CameraRenderState
+    ) { /* PT129-DEFER */ }
 }

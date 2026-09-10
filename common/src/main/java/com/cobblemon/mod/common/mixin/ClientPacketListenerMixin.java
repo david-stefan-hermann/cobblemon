@@ -8,47 +8,7 @@
 
 package com.cobblemon.mod.common.mixin;
 
-import com.cobblemon.mod.common.entity.pokemon.PokemonEntity;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
-import net.minecraft.world.entity.Entity;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
-
-@Mixin(ClientPacketListener.class)
-public class ClientPacketListenerMixin {
-
-    @Shadow private ClientLevel level;
-
-    @Inject(method = "handleSetEntityPassengersPacket", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;hasIndirectPassenger(Lnet/minecraft/world/entity/Entity;)Z", shift = At.Shift.BEFORE), cancellable = true)
-    private void cobblemon$handlePokemonPassengers(ClientboundSetPassengersPacket packet, CallbackInfo ci) {
-        Entity entity = this.level.getEntity(packet.getVehicle());
-        if (entity instanceof PokemonEntity pokemon) {
-            var passengers = new ArrayList<Entity>();
-            for (int passenger : packet.getPassengers()) {
-                passengers.add(this.level.getEntity(passenger));
-            }
-            pokemon.getOccupiedSeats().values().stream()
-                    .filter(x -> !passengers.contains(x))
-                    .filter(Objects::nonNull)
-                    .forEach(Entity::stopRiding);
-
-            // Mount passengers not yet in the map
-            var currentPassengers = new ArrayList<>(pokemon.getOccupiedSeats().values());
-            passengers.stream()
-                    .filter(x -> !currentPassengers.contains(x))
-                    .filter(Objects::nonNull)
-                    .forEach(x -> x.startRiding(pokemon, true));
-            ci.cancel();
-        }
-    }
-
+// PT149: Entity.startRiding(Entity, boolean) signature changed in MC 26.1.x.
+// Stubbed and disabled in mixins.cobblemon-common.json. Reintroduce in PT15X+.
+public abstract class ClientPacketListenerMixin {
 }

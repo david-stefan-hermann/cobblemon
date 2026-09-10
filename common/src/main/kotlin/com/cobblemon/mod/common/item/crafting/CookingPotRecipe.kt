@@ -43,9 +43,12 @@ class CookingPotRecipe(
     override val seasoningProcessors: List<SeasoningProcessor>
 ) : CookingPotRecipeBase {
     override fun getType() = CobblemonRecipeTypes.COOKING_POT_COOKING
-    override fun canCraftInDimensions(width: Int, height: Int) = true
-    override fun getSerializer() = CobblemonRecipeSerializers.COOKING_POT_COOKING
-    override fun getIngredients(): NonNullList<Ingredient> = this.pattern.ingredients()
+    // PT138: canCraftInDimensions/getIngredients removed from Recipe interface; RecipeSerializer is final record (cannot extend)
+    @Suppress("UNCHECKED_CAST")
+    override fun getSerializer(): RecipeSerializer<out net.minecraft.world.item.crafting.Recipe<CraftingInput>> =
+        Serializer.INSTANCE as RecipeSerializer<out net.minecraft.world.item.crafting.Recipe<CraftingInput>>
+    // Non-override: ShapedRecipePattern.ingredients() now returns List<Optional<Ingredient>>
+    fun ingredients(): List<Ingredient> = this.pattern.ingredients().mapNotNull { it.orElse(null) }
     override fun matches(input: CraftingInput, level: Level): Boolean {
         // Create a filtered CraftingInput with only slots 1-9
         val filteredItems = (0..8).mapNotNull { index ->
@@ -58,13 +61,14 @@ class CookingPotRecipe(
         return matches
     }
 
-    class Serializer : RecipeSerializer<CookingPotRecipe> {
-        companion object {
-            val CODEC: MapCodec<CookingPotRecipe> = RecordCodecBuilder.mapCodec { instance ->
+    // PT138: RecipeSerializer is now a final record class (cannot be extended).
+    // Wrapper converted to object holding the canonical INSTANCE built via direct record constructor.
+    object Serializer {
+        val CODEC: MapCodec<CookingPotRecipe> = RecordCodecBuilder.mapCodec { instance ->
                 instance.group(
                     ShapedRecipePattern.MAP_CODEC.forGetter { recipe -> recipe.pattern },
-                    ItemStack.STRICT_CODEC.fieldOf("result").forGetter { recipe -> recipe.result },
-                    Codec.STRING.optionalFieldOf("group", "").forGetter { recipe -> recipe.group },
+                    ItemStack.CODEC.fieldOf("result").forGetter { recipe -> recipe.result },
+                    Codec.STRING.optionalFieldOf("group", "").forGetter { recipe -> recipe.groupName },
                     CookingPotBookCategory.CODEC.fieldOf("category").orElse(CookingPotBookCategory.MISC).forGetter { recipe -> recipe.category },
                     TagKey.codec(Registries.ITEM).fieldOf("seasoningTag").orElse(CobblemonItemTags.EMPTY).forGetter { recipe -> recipe.seasoningTag },
                     createByStringCodec<SeasoningProcessor>(
@@ -100,9 +104,8 @@ class CookingPotRecipe(
                     buffer.writeString(it.type)
                 }
             }
-        }
 
-        override fun codec() = CODEC
-        override fun streamCodec() = STREAM_CODEC
+        // PT138: direct record-constructor — RecipeSerializer(MapCodec, StreamCodec)
+        val INSTANCE: RecipeSerializer<CookingPotRecipe> = RecipeSerializer(CODEC, STREAM_CODEC)
     }
 }

@@ -29,13 +29,17 @@ interface SleepDepth {
         }
 
         val normal = object : SleepDepth {
+            // PT143: Level.getNearbyPlayers removed in MC 26.1.x; replace with player-list filter on bounding-box.
+            private fun nearbyPlayers(pokemonEntity: PokemonEntity): List<net.minecraft.world.entity.player.Player> {
+                val box = AABB.ofSize(pokemonEntity.position(), 16.0, 16.0, 16.0)
+                return pokemonEntity.level().players().filter { p -> p.boundingBox.intersects(box) }
+            }
             override fun canSleep(pokemonEntity: PokemonEntity): Boolean {
-                return pokemonEntity.level().getNearbyPlayers(TargetingConditions.forNonCombat(), pokemonEntity, AABB.ofSize(pokemonEntity.position(), 16.0, 16.0, 16.0)).isEmpty()
+                return nearbyPlayers(pokemonEntity).isEmpty()
             }
 
             override fun shouldWake(pokemonEntity: PokemonEntity): Boolean {
-                val nearbyPlayers = pokemonEntity.level().getNearbyPlayers(TargetingConditions.forNonCombat(), pokemonEntity, AABB.ofSize(pokemonEntity.position(), 16.0, 16.0, 16.0))
-                return nearbyPlayers.any { !it.isShiftKeyDown }
+                return nearbyPlayers(pokemonEntity).any { !it.isShiftKeyDown }
             }
         }
 

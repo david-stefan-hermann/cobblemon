@@ -171,7 +171,7 @@ abstract class RequestManager<T : ServerPlayerActionRequest> {
 
         // verify request being responded to still valid
         if (request == null)
-            player.sendSystemMessage(lang("ui.interact.request_already_expired").red(), false)
+            player.sendSystemMessage(lang("ui.interact.request_already_expired").red())
         // verify accepting player can respond to sending player
         else if (!this.isValidInteraction(player, target ?: request.sender))    // with teams anyone can accept
             request.notify(player, true, "ui.interact.failed")

@@ -131,8 +131,8 @@ class HealingMachineBlock(settings: Properties) : BaseEntityBlock(settings) {
         return blockState.rotate(mirror.getRotation(blockState.getValue(HorizontalDirectionalBlock.FACING)))
     }
 
-    override fun onRemove(state: BlockState, world: Level, pos: BlockPos, newState: BlockState, moved: Boolean) {
-        if (!state.`is`(newState.block)) super.onRemove(state, world, pos, newState, moved)
+    override fun affectNeighborsAfterRemoval(state: BlockState, world: net.minecraft.server.level.ServerLevel, pos: BlockPos, moved: Boolean) {
+        super.affectNeighborsAfterRemoval(state, world, pos, moved)
     }
 
     override fun useWithoutItem(blockState: BlockState, world: Level, blockPos: BlockPos, player: Player, hit: BlockHitResult): InteractionResult {
@@ -148,36 +148,36 @@ class HealingMachineBlock(settings: Properties) : BaseEntityBlock(settings) {
         val serverPlayerEntity = player as ServerPlayer
 
         if (blockEntity.isInUse) {
-            player.sendSystemMessage(lang("healingmachine.alreadyinuse").red(), true)
+            player.sendOverlayMessage(lang("healingmachine.alreadyinuse").red())
             return InteractionResult.SUCCESS
         }
 
         if (serverPlayerEntity.isInBattle()) {
-            player.sendSystemMessage(lang("healingmachine.inbattle").red(), true)
+            player.sendOverlayMessage(lang("healingmachine.inbattle").red())
             return InteractionResult.SUCCESS
         }
         val party = serverPlayerEntity.party()
         val pc = serverPlayerEntity.pc()
-        val healPC = player.level().gameRules.getBoolean(CobblemonGameRules.HEALERS_HEAL_PC);
+        val healPC = (player.level() as net.minecraft.server.level.ServerLevel).gameRules.get(CobblemonGameRules.HEALERS_HEAL_PC);
 
         if (party.none() && (!healPC || pc.none())) {
-            player.sendSystemMessage(lang("healingmachine.nopokemon").red(), true)
+            player.sendOverlayMessage(lang("healingmachine.nopokemon").red())
             return InteractionResult.SUCCESS
         }
 
         if (party.none { pokemon -> pokemon.canBeHealed() } && (!healPC || pc.none { pokemon -> pokemon.canBeHealed() })) {
-            player.sendSystemMessage(lang("healingmachine.alreadyhealed").red(), true)
+            player.sendOverlayMessage(lang("healingmachine.alreadyhealed").red())
             return InteractionResult.SUCCESS
         }
 
         if (HealingMachineBlockEntity.isUsingHealer(player)) {
-            player.sendSystemMessage(lang("healingmachine.alreadyhealing").red(), true)
+            player.sendOverlayMessage(lang("healingmachine.alreadyhealing").red())
             return InteractionResult.SUCCESS
         }
 
         if (blockEntity.canHeal(party)) {
             blockEntity.activate(player.uuid, party)
-            player.sendSystemMessage(lang("healingmachine.healing").green(), true)
+            player.sendOverlayMessage(lang("healingmachine.healing").green())
         } else {
             val neededCharge = player.party().getHealingRemainderPercent() - blockEntity.healingCharge
             player.sendSystemMessage(lang("healingmachine.notenoughcharge", "${((neededCharge/party.count())*100f).toInt()}%").red(), true)
@@ -212,7 +212,7 @@ class HealingMachineBlock(settings: Properties) : BaseEntityBlock(settings) {
 
     override fun hasAnalogOutputSignal(state: BlockState) = true
 
-    override fun getAnalogOutputSignal(state: BlockState, world: Level, pos: BlockPos): Int = (world.getBlockEntity(pos) as? HealingMachineBlockEntity)?.currentSignal ?: 0
+    override fun getAnalogOutputSignal(state: BlockState, world: Level, pos: BlockPos, direction: Direction): Int = (world.getBlockEntity(pos) as? HealingMachineBlockEntity)?.currentSignal ?: 0
 
     override fun <T : BlockEntity> getTicker(world: Level, blockState: BlockState, blockWithEntityType: BlockEntityType<T>): BlockEntityTicker<T>? = createTickerHelper(blockWithEntityType, CobblemonBlockEntities.HEALING_MACHINE, HealingMachineBlockEntity.TICKER::tick)
 
@@ -220,13 +220,6 @@ class HealingMachineBlock(settings: Properties) : BaseEntityBlock(settings) {
         return RenderShape.MODEL
     }
 
-    override fun appendHoverText(
-        stack: ItemStack,
-        context: Item.TooltipContext,
-        tooltip: MutableList<Component>,
-        options: TooltipFlag
-    ) {
-        tooltip.add("block.${Cobblemon.MODID}.healing_machine.tooltip1".asTranslated().gray())
-        tooltip.add("block.${Cobblemon.MODID}.healing_machine.tooltip2".asTranslated().gray())
-    }
+    // PT144: appendHoverText removed from Block in MC 26.1.x — only on Item.
+    // Tooltip moved to BlockItem subclass; stub here to preserve interface.
 }

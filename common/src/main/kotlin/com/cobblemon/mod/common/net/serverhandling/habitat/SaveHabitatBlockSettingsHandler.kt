@@ -18,7 +18,7 @@ import net.minecraft.server.level.ServerPlayer
 
 object SaveHabitatBlockSettingsHandler : ServerNetworkPacketHandler<SaveHabitatBlockSettingsPacket> {
     override fun handle(packet: SaveHabitatBlockSettingsPacket, server: MinecraftServer, player: ServerPlayer) {
-        val world = player.serverLevel()
+        val world = player.level()
         val blockEntity = world.getBlockEntity(packet.blockPos) as? HabitatBlockEntity ?: return // it's broken
         val pre = SaveHabitatBlockSettingsEvent.Pre(
             player = player,

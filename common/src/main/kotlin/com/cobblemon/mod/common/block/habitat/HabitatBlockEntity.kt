@@ -40,7 +40,7 @@ import net.minecraft.nbt.Tag
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.ClientGamePacketListener
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.InteractionResult
@@ -51,6 +51,8 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityTicker
 import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.storage.ValueInput
+import net.minecraft.world.level.storage.ValueOutput
 import net.minecraft.world.phys.BlockHitResult
 
 class HabitatBlockEntity(pos: BlockPos, state: BlockState) :
@@ -70,10 +72,10 @@ class HabitatBlockEntity(pos: BlockPos, state: BlockState) :
     var levelRange: IntRange = 1..Cobblemon.config.maxPokemonLevel
     var modifiers: PokemonProperties = PokemonProperties()
 
-    var mimicId: ResourceLocation = BuiltInRegistries.BLOCK.getKey(Blocks.STONE)
+    var mimicId: Identifier = BuiltInRegistries.BLOCK.getKey(Blocks.STONE)
     val mimickedState: BlockState
-        get() = BuiltInRegistries.BLOCK.get(mimicId).defaultBlockState() ?: Blocks.STONE.defaultBlockState()
-    var displaySpeciesIds: List<ResourceLocation> = emptyList()
+        get() = BuiltInRegistries.BLOCK.get(mimicId).orElse(null)?.value()?.defaultBlockState() ?: Blocks.STONE.defaultBlockState()
+    var displaySpeciesIds: List<Identifier> = emptyList()
 
     fun onUse(player: Player, hit: BlockHitResult): InteractionResult {
         if (player.level().isClientSide) {
@@ -174,51 +176,44 @@ class HabitatBlockEntity(pos: BlockPos, state: BlockState) :
         level?.sendBlockUpdated(worldPosition, blockState, blockState, Block.UPDATE_ALL)
     }
 
-    override fun saveAdditional(tag: CompoundTag, registryLookup: HolderLookup.Provider) {
-        super.saveAdditional(tag, registryLookup)
-        tag.putString(DataKeys.HABITAT_MIMIC, mimicId.toString())
-        tag.putInt(DataKeys.HABITAT_PHASE_COUNT, numberOfPhases)
-        tag.putString(DataKeys.HABITAT_PHASE_ORDER, phaseOrder.toString())
+    override fun saveAdditional(output: ValueOutput) {
+        super.saveAdditional(output)
+        output.putString(DataKeys.HABITAT_MIMIC, mimicId.toString())
+        output.putInt(DataKeys.HABITAT_PHASE_COUNT, numberOfPhases)
+        output.putString(DataKeys.HABITAT_PHASE_ORDER, phaseOrder.toString())
         // Only save the level range when it's a non-trivial one
         if (levelRange.first != 1 || levelRange.last != Cobblemon.config.maxPokemonLevel) {
-            tag.putString(DataKeys.HABITAT_LEVEL_RANGE, IntRangeAdapter.serialize(levelRange))
+            output.putString(DataKeys.HABITAT_LEVEL_RANGE, IntRangeAdapter.serialize(levelRange))
         }
-        tag.putString(DataKeys.HABITAT_MODIFIERS, modifiers.asString())
-        tag.putString(DataKeys.HABITAT_SPAWNING_STYLE, spawningStyle.type.toString())
-        spawningStyle.writeToNBT(tag)
-        val speciesListTag = ListTag()
-        displaySpeciesIds.forEach { speciesListTag.add(StringTag.valueOf(it.toString())) }
-        tag.put(DISPLAY_SPECIES_KEY, speciesListTag)
+        output.putString(DataKeys.HABITAT_MODIFIERS, modifiers.asString())
+        output.putString(DataKeys.HABITAT_SPAWNING_STYLE, spawningStyle.type.toString())
+        // TODO PT134-DEFER: spawningStyle.writeToNBT(output) — needs migration to ValueOutput
+        // TODO PT134-DEFER: displaySpeciesIds list save via ValueOutput.list() with Identifier codec
     }
 
-    override fun loadAdditional(tag: CompoundTag, registryLookup: HolderLookup.Provider) {
-        super.loadAdditional(tag, registryLookup)
-        tag.getString(DataKeys.HABITAT_MIMIC).let {
-            mimicId = ResourceLocation.tryParse(it) ?: BuiltInRegistries.BLOCK.getKey(Blocks.STONE)
+    override fun loadAdditional(input: ValueInput) {
+        super.loadAdditional(input)
+        input.getString(DataKeys.HABITAT_MIMIC).ifPresent {
+            mimicId = Identifier.tryParse(it) ?: BuiltInRegistries.BLOCK.getKey(Blocks.STONE)
         }
-        displaySpeciesIds = if (tag.contains(DISPLAY_SPECIES_KEY, Tag.TAG_LIST.toInt())) {
-            tag.getList(DISPLAY_SPECIES_KEY, Tag.TAG_STRING.toInt())
-                .mapNotNull { speciesTag -> ResourceLocation.tryParse(speciesTag.asString) }
-                .distinct()
-        } else {
-            emptyList()
-        }
+        // TODO PT134-DEFER: displaySpeciesIds list reload via ValueInput.list() with Identifier codec
+        displaySpeciesIds = emptyList()
 
         if (level?.isClientSide == true) {
             return // Client doesn't need to try loading the rest
         }
 
-        numberOfPhases = tag.getInt(DataKeys.HABITAT_PHASE_COUNT)
-        phaseOrder = HabitatPhaseOrder.valueOf(tag.getString(DataKeys.HABITAT_PHASE_ORDER))
-        levelRange = tag.getString(DataKeys.HABITAT_LEVEL_RANGE).takeIf { it.isNotBlank() }?.let(IntRangeAdapter::deserialize) ?: 1..Cobblemon.config.maxPokemonLevel
-        modifiers = tag.getString(DataKeys.HABITAT_MODIFIERS).takeIf { it.isNotBlank() }?.let(PokemonProperties::parse) ?: PokemonProperties()
-        val spawningStyleType = tag.getString(DataKeys.HABITAT_SPAWNING_STYLE).asIdentifierDefaultingNamespace()
+        numberOfPhases = input.getIntOr(DataKeys.HABITAT_PHASE_COUNT, 0)
+        phaseOrder = HabitatPhaseOrder.valueOf(input.getStringOr(DataKeys.HABITAT_PHASE_ORDER, HabitatPhaseOrder.SIMPLE.toString()))
+        levelRange = input.getStringOr(DataKeys.HABITAT_LEVEL_RANGE, "").takeIf { it.isNotBlank() }?.let(IntRangeAdapter::deserialize) ?: 1..Cobblemon.config.maxPokemonLevel
+        modifiers = input.getStringOr(DataKeys.HABITAT_MODIFIERS, "").takeIf { it.isNotBlank() }?.let(PokemonProperties::parse) ?: PokemonProperties()
+        val spawningStyleType = input.getStringOr(DataKeys.HABITAT_SPAWNING_STYLE, "").asIdentifierDefaultingNamespace()
         spawningStyle = if (spawningStyleType == ActivatedHabitatSpawn.TYPE) {
             ActivatedHabitatSpawning(this)
         } else {
             NaturalHabitatSpawning(this)
         }
-        spawningStyle.readFromNBT(tag)
+        // TODO PT134-DEFER: spawningStyle.readFromNBT(input) — needs migration to ValueInput
         refreshDisplaySpeciesIds()
     }
 

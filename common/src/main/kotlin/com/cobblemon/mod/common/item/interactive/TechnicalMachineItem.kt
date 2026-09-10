@@ -34,11 +34,11 @@ class TechnicalMachineItem(properties: Properties) : CobblemonItem(properties), 
         val tmLearnableMoves = pokemon.form.moves.tmLearnableMoves()
 
         if (moveTemplate !in tmLearnableMoves) {
-            player.displayClientMessage(lang("tms.cannot_learn", pokemon.getDisplayName(), moveTemplate.displayName), true)
+            player.sendOverlayMessage(lang("tms.cannot_learn", pokemon.getDisplayName(), moveTemplate.displayName))
             return false
         }
         if (pokemon.moveSet.getMoveTemplates().contains(moveTemplate) || pokemon.allAccessibleMoves.contains(moveTemplate)) {
-            player.displayClientMessage(lang("tms.already_known", pokemon.getDisplayName(), moveTemplate.displayName), true)
+            player.sendOverlayMessage(lang("tms.already_known", pokemon.getDisplayName(), moveTemplate.displayName))
             return false
         }
 
@@ -50,16 +50,17 @@ class TechnicalMachineItem(properties: Properties) : CobblemonItem(properties), 
             pokemon.benchedMoves.add(BenchedMove(moveTemplate, 0))
         }
 
-        player.displayClientMessage(lang("tms.teach_move", pokemon.getDisplayName(), moveTemplate.displayName).green(), true)
+        player.sendOverlayMessage(lang("tms.teach_move", pokemon.getDisplayName(), moveTemplate.displayName).green())
         player.level().playSound(null, player.blockPosition(), CobblemonSounds.TM_USE, SoundSource.PLAYERS, 1.0F, 1.0F)
         entity.cry()
         return true
     }
 
-    override fun appendHoverText(stack: ItemStack, context: TooltipContext, tooltip: MutableList<Component>, tooltipFlag: TooltipFlag) {
+    // PT137: appendHoverText(ItemStack, TooltipContext, TooltipDisplay, Consumer<Component>, TooltipFlag) — 5-arg signature
+    override fun appendHoverText(stack: ItemStack, context: TooltipContext, tooltipDisplay: net.minecraft.world.item.component.TooltipDisplay, consumer: java.util.function.Consumer<Component>, tooltipFlag: TooltipFlag) {
         val move = TMMoveComponent.getTMMove(stack)
         val text = move?.displayName ?: lang("tms.unknown_move")
-        tooltip.add(text.gray())
-        super.appendHoverText(stack, context, tooltip, tooltipFlag)
+        consumer.accept(text.gray())
+        super.appendHoverText(stack, context, tooltipDisplay, consumer, tooltipFlag)
     }
 }

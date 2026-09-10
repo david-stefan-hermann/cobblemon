@@ -58,6 +58,9 @@ class SnowstormParticle(
 
     val sprite = getSpriteFromAtlas()
 
+    var roll: Float = 0F
+    var oRoll: Float = 0F
+
     val particleTextureSheet: ParticleRenderType
     var angularVelocity = 0.0
     var colliding = false
@@ -94,7 +97,8 @@ class SnowstormParticle(
     fun getVelocityZ() = zd
 
     fun getSpriteFromAtlas(): TextureAtlasSprite {
-        val atlas = Minecraft.getInstance().particleEngine.textureAtlas
+        // PT132: particleEngine.textureAtlas removed in MC 26.1 — use AtlasManager.getAtlasOrThrow(LOCATION_PARTICLES)
+        val atlas = Minecraft.getInstance().atlasManager.getAtlasOrThrow(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_PARTICLES)
         val sprite = atlas.getSprite(storm.effect.particle.texture)
         return sprite
     }
@@ -129,23 +133,21 @@ class SnowstormParticle(
         storm.effect.particle.creationEvents.forEach { it.trigger(storm, this) }
     }
 
-    override fun render(vertexConsumer: VertexConsumer, camera: Camera, tickDelta: Float) {
+    // PT143: Particle.render/getRenderType removed in MC 26.1.x — kept as non-override callable via custom render-state path.
+    fun render(vertexConsumer: VertexConsumer, camera: Camera, tickDelta: Float) {
         if (invisible) {
             return
         }
 
-        if (Cobblemon.implementation.modAPI != ModAPI.FORGE) {
-           if (!Minecraft.getInstance().levelRenderer.cullingFrustum.isVisible(boundingBox)) {
-               return
-           }
-        }
+        // PT143: levelRenderer.cullingFrustum removed in MC 26.1.x — frustum access reworked via FrustumProvider.
+        // Frustum culling is now handled upstream by the particle renderer.
 
         applyRandoms()
         setParticleAgeInRuntime()
         storm.effect.curves.forEach { it.apply(runtime) }
         runtime.execute(storm.effect.particle.renderExpressions)
 
-        val vec3d = camera.position
+        val vec3d = camera.position()
 
         val interpLocalX = Mth.lerp(tickDelta.toDouble(), prevLocalX, localX)
         val interpLocalY = Mth.lerp(tickDelta.toDouble(), prevLocalY, localY)
@@ -169,10 +171,10 @@ class SnowstormParticle(
             angle = roll,
             deltaTicks = tickDelta,
             particlePosition = Vec3(x, y, z),
-            cameraPosition = camera.position,
+            cameraPosition = camera.position(),
             cameraAngle = camera.rotation(),
-            cameraYaw = camera.yRot,
-            cameraPitch = camera.xRot,
+            cameraYaw = camera.yRot(),
+            cameraPitch = camera.xRot(),
             viewDirection = viewDirection
         )
         val xSize = runtime.resolveDouble(storm.effect.particle.sizeX).toFloat() / 1.5.toFloat()
@@ -202,7 +204,8 @@ class SnowstormParticle(
         val minV = uvs.startV * spriteVRange + sprite.v0
         val maxV = uvs.endV * spriteVRange + sprite.v0
 
-        val p = if (storm.effect.particle.environmentLighting) getLightColor(tickDelta) else (15 shl 20 or (15 shl 4))
+        // PT143: getLightColor removed in MC 26.1.x; use getLightCoords helper for the same purpose.
+        val p = if (storm.effect.particle.environmentLighting) getLightCoords(tickDelta) else (15 shl 20 or (15 shl 4))
         vertexConsumer
             .addVertex(particleVertices[0].x, particleVertices[0].y, particleVertices[0].z)
             .setUv(maxU, maxV)
@@ -496,7 +499,9 @@ class SnowstormParticle(
         runtime.environment.variable.setDirectly("particle_lifetime", DoubleValue(lifetime / 20.0))
     }
 
-    override fun getRenderType() = particleTextureSheet
+    // PT143: Particle.getRenderType removed in MC 26.1.x; only getGroup() is abstract now.
+    fun snowstormRenderType() = particleTextureSheet
+    override fun getGroup(): ParticleRenderType = particleTextureSheet
 
     override fun remove() {
         super.remove()

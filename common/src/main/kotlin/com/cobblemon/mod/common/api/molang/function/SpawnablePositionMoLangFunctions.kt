@@ -21,7 +21,7 @@ object SpawnablePositionMoLangFunctions : AbstractMoLangFunctionHolder<Spawnable
     override fun SpawnablePosition.moLangFunctions(): MutableMap<String, (MoParams) -> Any> {
         val spawningContext = this
         val map = mutableMapOf<String, (MoParams) -> Any>()
-        val worldValue = spawningContext.world.registryAccess().registryOrThrow(Registries.DIMENSION)
+        val worldValue = spawningContext.world.registryAccess().lookupOrThrow(Registries.DIMENSION)
             .wrapAsHolder(spawningContext.world).asWorldMoLangValue()
         val biomeValue = spawningContext.biomeHolder.asBiomeMoLangValue()
         map["biome"] = { _ -> biomeValue }

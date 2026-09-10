@@ -3,7 +3,9 @@ import utilities.writeVersion
 
 plugins {
     id("cobblemon.base-conventions")
-    id("com.github.johnrengelman.shadow")
+    // PT011: 정밀한 타입세이프 accessor 생성을 위해 fabric-loom을 직접 명시(transitive 적용에서는 accessor 부재).
+    id("net.fabricmc.fabric-loom")
+    id("com.gradleup.shadow")
 }
 
 writeVersion(type = VersionType.FULL)
@@ -42,24 +44,20 @@ tasks {
         archiveClassifier.set("dev-slim")
     }
 
+    // PT012 (port/26.1.x): fabric-loom 1.15.5 no-remap mode → `remapJar` task 미등록.
+    // shadowJar를 production jar로 직접 사용 (classifier 비움, archive name·version 명시).
     shadowJar {
-        archiveClassifier.set("dev-shadow")
+        archiveClassifier.set("")
         archiveBaseName.set("Cobblemon-${project.name}")
+        archiveVersion.set("${rootProject.version}")
         configurations = listOf(bundle)
         mergeServiceFiles()
 
         relocate ("com.oracle", "com.cobblemon.mod.relocations.oracle")
     }
 
-    remapJar {
-        dependsOn(shadowJar)
-        inputFile.set(shadowJar.flatMap { it.archiveFile })
-        archiveBaseName.set("Cobblemon-${project.name}")
-        archiveVersion.set("${rootProject.version}")
-    }
-
     val copyJar by registering(CopyFile::class) {
-        val productionJar = tasks.remapJar.flatMap { it.archiveFile }
+        val productionJar = shadowJar.flatMap { it.archiveFile }
         fileToCopy = productionJar
         destination = productionJar.flatMap {
             rootProject.layout.buildDirectory.file("libs/${it.asFile.name}")

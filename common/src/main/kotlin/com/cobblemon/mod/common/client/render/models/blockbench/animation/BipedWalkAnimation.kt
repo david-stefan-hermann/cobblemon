@@ -13,6 +13,7 @@ import com.cobblemon.mod.common.client.render.models.blockbench.PosableState
 import com.cobblemon.mod.common.client.render.models.blockbench.addRotation
 import com.cobblemon.mod.common.client.render.models.blockbench.frame.BipedFrame
 import com.cobblemon.mod.common.client.render.models.blockbench.pose.Bone
+import net.minecraft.client.model.geom.ModelPart
 import com.cobblemon.mod.common.client.render.models.blockbench.pose.ModelPartTransformation.Companion.X_AXIS
 import com.cobblemon.mod.common.client.render.models.blockbench.repository.RenderContext
 import net.minecraft.util.Mth
@@ -30,8 +31,8 @@ class BipedWalkAnimation(
     val periodMultiplier: Float = 0.6662F,
     /** The multiplier to apply to the stride of the entity. The larger this is, the further the legs move. */
     val amplitudeMultiplier: Float = 1.4F,
-    val leftLeg: Bone?,
-    val rightLeg: Bone?
+    val leftLeg: ModelPart?,
+    val rightLeg: ModelPart?,
 ) : PoseAnimation() {
     constructor(
         frame: BipedFrame,
@@ -45,7 +46,7 @@ class BipedWalkAnimation(
     )
 
     override fun setupAnim(context: RenderContext, model: PosableModel, state: PosableState, limbSwing: Float, limbSwingAmount: Float, ageInTicks: Float, headYaw: Float, headPitch: Float, intensity: Float) {
-        rightLeg?.addRotation(X_AXIS, Mth.cos(limbSwing * periodMultiplier + Math.PI.toFloat()) * limbSwingAmount * amplitudeMultiplier * intensity)
-        leftLeg?.addRotation(X_AXIS, Mth.cos(limbSwing * periodMultiplier) * limbSwingAmount * amplitudeMultiplier * intensity)
+        rightLeg?.addRotation(X_AXIS, Mth.cos((limbSwing * periodMultiplier + Math.PI.toFloat()).toDouble()) * limbSwingAmount * amplitudeMultiplier * intensity)
+        leftLeg?.addRotation(X_AXIS, Mth.cos((limbSwing * periodMultiplier).toDouble()) * limbSwingAmount * amplitudeMultiplier * intensity)
     }
 }

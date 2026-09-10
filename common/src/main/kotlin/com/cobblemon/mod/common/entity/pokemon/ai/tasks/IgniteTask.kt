@@ -91,7 +91,8 @@ class IgniteTask : Behavior<PokemonEntity>(
 
     private fun addLookWalkTargets(entity: PokemonEntity) {
         pos.ifPresent { pos: BlockPos? ->
-            val blockPosLookTarget = BlockPosTracker(pos)
+            val nonNullPos = pos ?: return@ifPresent
+            val blockPosLookTarget = BlockPosTracker(nonNullPos)
             entity.brain.setMemory(
                 MemoryModuleType.LOOK_TARGET,
                 blockPosLookTarget

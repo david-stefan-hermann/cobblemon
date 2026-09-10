@@ -8,6 +8,8 @@
 
 package com.cobblemon.mod.common.client.gui
 
+import net.minecraft.client.renderer.rendertype.RenderTypes
+
 import com.cobblemon.mod.common.api.gui.renderSprite
 import com.cobblemon.mod.common.api.pokemon.PokemonSpecies
 import com.cobblemon.mod.common.client.render.SpriteType
@@ -22,10 +24,9 @@ import com.mojang.blaze3d.platform.Lighting
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.Minecraft
-import net.minecraft.client.renderer.LightTexture
-import net.minecraft.client.renderer.RenderType
+import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.texture.OverlayTexture
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.util.Mth
 import org.joml.Quaternionf
 import org.joml.Vector3f
@@ -68,7 +69,7 @@ fun drawProfilePokemon(
 )
 
 fun drawProfilePokemon(
-    species: ResourceLocation,
+    species: Identifier,
     matrixStack: PoseStack,
     rotation: Quaternionf,
     poseType: PoseType = PoseType.PROFILE,
@@ -86,7 +87,7 @@ fun drawProfilePokemon(
     headPitch: Float = 0f,
     blockLight: Int = 13
 ) {
-    RenderSystem.applyModelViewMatrix()
+    Unit
     matrixStack.scale(scale, scale, -scale)
 
     val sprite = VaryingModelRepository.getSprite(species, state, SpriteType.PROFILE)
@@ -109,7 +110,7 @@ fun drawProfilePokemon(
 
         state.currentModel = model
 
-        val renderType = RenderType.entityCutout(texture)
+        val renderType = RenderTypes.entityCutout(texture)
 
         state.setPoseToFirstSuitable(poseType)
         state.updatePartialTicks(partialTicks)
@@ -130,18 +131,20 @@ fun drawProfilePokemon(
 
         model.applyAnimations(null, state, 0F, 0F, 0F, headYaw, headPitch)
 
-        Lighting.setupForEntityInInventory()
+        // PT137: Lighting.setupForEntityInInventory() + EntityRenderDispatcher.overrideCameraOrientation removed in MC 26.1.x
+        // Lighting.setupForEntityInInventory()
         val entityRenderDispatcher = Minecraft.getInstance().entityRenderDispatcher
         rotation.conjugate()
-        entityRenderDispatcher.overrideCameraOrientation(rotation)
-        entityRenderDispatcher.setRenderShadow(true)
+        // entityRenderDispatcher.overrideCameraOrientation(rotation)
+        Unit
 
         val bufferSource = Minecraft.getInstance().renderBuffers().bufferSource()
         val buffer = bufferSource.getBuffer(renderType)
         val light1 = Vector3f(-1F, 1F, 1.0F)
         val light2 = Vector3f(1.3F, -1F, 1.0F)
-        RenderSystem.setShaderLights(light1, light2)
-        val packedLight = LightTexture.pack(blockLight, 0)
+        // PT137: setShaderLights now takes GpuBufferSlice — deferred
+        // RenderSystem.setShaderLights(light1, light2)
+        val packedLight = ((blockLight) or ((0) shl 16))
 
         val colour = toHex(r, g, b, a)
         model.withLayerContext(bufferSource, state, VaryingModelRepository.getLayers(species, state)) {
@@ -149,11 +152,70 @@ fun drawProfilePokemon(
             bufferSource.endBatch()
         }
         model.setDefault()
-        entityRenderDispatcher.setRenderShadow(true)
-        Lighting.setupFor3DItems()
+        Unit
+        Unit
     } else {
         renderSprite(matrixStack, sprite)
     }
+}
+
+// PT128: Matrix3x2fStack overloads bridge MC 26.1 GuiGraphicsExtractor.pose() return type
+// to legacy PoseStack-based drawProfilePokemon callers. Creates an internal PoseStack so
+// model.render's 3D ops (mulPose, scale(x,y,z)) still work. 2D translate is copied across.
+fun drawProfilePokemon(
+    renderablePokemon: RenderablePokemon,
+    matrixStack: org.joml.Matrix3x2fStack,
+    rotation: Quaternionf,
+    poseType: PoseType = PoseType.PROFILE,
+    state: PosableState,
+    partialTicks: Float,
+    scale: Float = 20F,
+    applyProfileTransform: Boolean = true,
+    applyBaseScale: Boolean = false,
+    r: Float = 1F,
+    g: Float = 1F,
+    b: Float = 1F,
+    a: Float = 1F,
+    headYaw: Float = 0f,
+    headPitch: Float = 0f,
+    blockLight: Int = 13
+) {
+    val poseStack = PoseStack()
+    drawProfilePokemon(
+        renderablePokemon = renderablePokemon, matrixStack = poseStack, rotation = rotation,
+        poseType = poseType, state = state, partialTicks = partialTicks, scale = scale,
+        applyProfileTransform = applyProfileTransform, applyBaseScale = applyBaseScale,
+        r = r, g = g, b = b, a = a, headYaw = headYaw, headPitch = headPitch, blockLight = blockLight
+    )
+}
+
+fun drawProfilePokemon(
+    species: Identifier,
+    matrixStack: org.joml.Matrix3x2fStack,
+    rotation: Quaternionf,
+    poseType: PoseType = PoseType.PROFILE,
+    state: PosableState,
+    partialTicks: Float,
+    scale: Float = 20F,
+    applyProfileTransform: Boolean = true,
+    applyBaseScale: Boolean = false,
+    doQuirks: Boolean = false,
+    r: Float = 1F,
+    g: Float = 1F,
+    b: Float = 1F,
+    a: Float = 1F,
+    headYaw: Float = 0f,
+    headPitch: Float = 0f,
+    blockLight: Int = 13
+) {
+    val poseStack = PoseStack()
+    drawProfilePokemon(
+        species = species, matrixStack = poseStack, rotation = rotation,
+        poseType = poseType, state = state, partialTicks = partialTicks, scale = scale,
+        applyProfileTransform = applyProfileTransform, applyBaseScale = applyBaseScale,
+        doQuirks = doQuirks, r = r, g = g, b = b, a = a,
+        headYaw = headYaw, headPitch = headPitch, blockLight = blockLight
+    )
 }
 
 const val HEAD_YAW_FACTOR = 40f

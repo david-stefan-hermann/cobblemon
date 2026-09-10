@@ -15,12 +15,11 @@ import com.cobblemon.mod.common.api.cooking.Seasonings
 import com.cobblemon.mod.common.block.entity.CampfireBlockEntity
 import com.cobblemon.mod.common.item.crafting.CookingPotRecipe
 import com.cobblemon.mod.common.item.crafting.CookingPotRecipeBase
-import net.minecraft.recipebook.ServerPlaceRecipe
-import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.util.Mth
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.entity.player.StackedContents
+import net.minecraft.world.entity.player.StackedItemContents
 import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.inventory.ContainerData
 import net.minecraft.world.inventory.ContainerListener
@@ -38,7 +37,7 @@ import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.level.Level
 import java.util.*
 
-class CookingPotMenu : RecipeBookMenu<CraftingInput, CookingPotRecipeBase>, ContainerListener {
+class CookingPotMenu : RecipeBookMenu, ContainerListener {
     private val player: Player
     private val level: Level
     private val playerInventory: Inventory
@@ -110,45 +109,35 @@ class CookingPotMenu : RecipeBookMenu<CraftingInput, CookingPotRecipeBase>, Cont
         super.broadcastChanges()
     }
 
-    override fun handlePlacement(placeAll: Boolean, recipe: RecipeHolder<*>, player: ServerPlayer) {
-        val recipeValue = recipe.value()
-        if (recipeValue is CookingPotRecipeBase) {
-            @Suppress("UNCHECKED_CAST")
-            val castedRecipe = recipe as RecipeHolder<CookingPotRecipeBase>
-
-            // Save seasoning contents
-            val seasoningSlots = CampfireBlockEntity.SEASONING_SLOTS
-            val preservedSeasonings = seasoningSlots.map { container.getItem(it).copy() }
-
-            this.beginPlacingRecipe()
-            try {
-                val serverPlaceRecipe = ServerPlaceRecipe(this)
-                serverPlaceRecipe.recipeClicked(player, castedRecipe, placeAll)
-            } finally {
-                this.finishPlacingRecipe(castedRecipe)
-            }
-
-            seasoningSlots.forEachIndexed { index, slot ->
-                container.setItem(slot, preservedSeasonings[index])
-            }
-        } else {
-            throw IllegalArgumentException("Unsupported recipe type: ${recipeValue::class.java.name}")
-        }
+    // PT144: RecipeBookMenu.handlePlacement signature changed in MC 26.1.x.
+    // Returns PostPlaceAction; signature is (useMaxItems, allowDroppingItemsToClear, recipe, level, inventory).
+    override fun handlePlacement(
+        useMaxItems: Boolean,
+        allowDroppingItemsToClear: Boolean,
+        recipe: RecipeHolder<*>,
+        level: ServerLevel,
+        inventory: Inventory
+    ): RecipeBookMenu.PostPlaceAction {
+        // PT144: ServerPlaceRecipe internals not accessible; stub returning NOTHING — recipe book placement
+        // requires deeper rework with custom CraftingMenuAccess impl (deferred).
+        return RecipeBookMenu.PostPlaceAction.NOTHING
     }
 
     override fun removed(player: Player) {
         super.removed(player)
     }
 
-    override fun fillCraftSlotsStackedContents(itemHelper: StackedContents) {
+    // PT144: fillCraftSlotsStackedContents takes StackedItemContents (was StackedContents) in MC 26.1.x.
+    override fun fillCraftSlotsStackedContents(itemHelper: StackedItemContents) {
         this.container.fillStackedContents(itemHelper)
     }
 
-    override fun clearCraftingContent() {
+    // PT144: clearCraftingContent + recipeMatches removed from RecipeBookMenu in MC 26.1.x.
+    fun clearCraftingContent() {
         container.clearContent()
     }
 
-    override fun recipeMatches(recipe: RecipeHolder<CookingPotRecipeBase>): Boolean {
+    fun recipeMatches(recipe: RecipeHolder<CookingPotRecipeBase>): Boolean {
         val craftInput = CraftingInput.of(3,3, container.items.subList(1,10))
         val recipeValue = recipe.value()
         return if (recipeValue is CookingPotRecipeBase) {
@@ -163,7 +152,7 @@ class CookingPotMenu : RecipeBookMenu<CraftingInput, CookingPotRecipeBase>, Cont
         fun <T : CookingPotRecipeBase> fetchRecipe(
             recipeType: RecipeType<T>
         ): Optional<RecipeHolder<CookingPotRecipeBase>> {
-            val optional = level.recipeManager.getRecipeFor(recipeType, craftInput, level)
+            val optional = level.server?.recipeManager?.getRecipeFor(recipeType, craftInput, level) ?: Optional.empty()
             @Suppress("UNCHECKED_CAST")
             return optional.map { it as RecipeHolder<CookingPotRecipeBase> }
         }
@@ -173,7 +162,8 @@ class CookingPotMenu : RecipeBookMenu<CraftingInput, CookingPotRecipeBase>, Cont
 
         currentActiveRecipe = recipe
         if (recipe != null) {
-            previewItem = recipe.value.assemble(craftInput, level.registryAccess())
+            // PT144: Recipe.assemble now takes only input (registryAccess arg removed) in MC 26.1.x.
+            previewItem = recipe.value.assemble(craftInput)
             // Apply seasoning to the preview item
             recipe.value.applySeasoning(
                 previewItem,
@@ -185,21 +175,11 @@ class CookingPotMenu : RecipeBookMenu<CraftingInput, CookingPotRecipeBase>, Cont
         } else previewItem = ItemStack.EMPTY
     }
 
-    override fun getResultSlotIndex(): Int {
-        return CampfireBlockEntity.RESULT_SLOT
-    }
-
-    override fun getGridWidth(): Int {
-        return CampfireBlockEntity.CRAFTING_GRID_WIDTH
-    }
-
-    override fun getGridHeight(): Int {
-        return CampfireBlockEntity.CRAFTING_GRID_WIDTH
-    }
-
-    override fun getSize(): Int {
-        return CampfireBlockEntity.ITEMS_SIZE
-    }
+    // PT144: getResultSlotIndex/getGridWidth/getGridHeight/getSize removed from RecipeBookMenu in MC 26.1.x.
+    fun getResultSlotIndex(): Int = CampfireBlockEntity.RESULT_SLOT
+    fun getGridWidth(): Int = CampfireBlockEntity.CRAFTING_GRID_WIDTH
+    fun getGridHeight(): Int = CampfireBlockEntity.CRAFTING_GRID_WIDTH
+    fun getSize(): Int = CampfireBlockEntity.ITEMS_SIZE
 
     fun getBurnProgress(): Float {
         val i = this.containerData.get(0)
@@ -215,7 +195,8 @@ class CookingPotMenu : RecipeBookMenu<CraftingInput, CookingPotRecipeBase>, Cont
         return COOKING_POT
     }
 
-    override fun shouldMoveToInventory(slotIndex: Int): Boolean {
+    // PT144: shouldMoveToInventory removed from RecipeBookMenu in MC 26.1.x — kept as utility.
+    fun shouldMoveToInventory(slotIndex: Int): Boolean {
         return !CampfireBlockEntity.SEASONING_SLOTS.contains(slotIndex)
     }
 

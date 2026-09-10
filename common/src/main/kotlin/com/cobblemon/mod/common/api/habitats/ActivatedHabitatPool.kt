@@ -10,7 +10,7 @@ package com.cobblemon.mod.common.api.habitats
 
 import com.cobblemon.mod.common.api.spawning.SpawnBucket
 import net.minecraft.network.RegistryFriendlyByteBuf
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 /**
  * A [HabitatPool] of [ActivatedHabitatSpawn]s. Mainly just to help with deserialization and ensuring
@@ -20,12 +20,12 @@ import net.minecraft.resources.ResourceLocation
  * @since February 13th, 2026
  */
 class ActivatedHabitatPool : HabitatPool<ActivatedHabitatSpawn>() {
-    override val type: ResourceLocation = ActivatedHabitatSpawn.TYPE
+    override val type: Identifier = ActivatedHabitatSpawn.TYPE
     override var spawns: List<ActivatedHabitatSpawn> = listOf()
 
     companion object {
         fun default() = ActivatedHabitatPool().apply {
-            id = ResourceLocation("cobblemon", "custom__default_activated_pool")
+            id = Identifier.fromNamespaceAndPath("cobblemon", "custom__default_activated_pool")
             name = "Custom"
         }
     }

@@ -18,10 +18,10 @@ import com.cobblemon.mod.common.api.habitats.NaturalHabitatPool
 import com.cobblemon.mod.common.api.habitats.NaturalHabitatSpawn
 import com.cobblemon.mod.common.api.spawning.SpawnBucket
 import net.minecraft.network.RegistryFriendlyByteBuf
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 class HabitatPoolSettingsDTO() {
-    lateinit var id: ResourceLocation
+    lateinit var id: Identifier
     var isReference = false
     var isActivated = false
 
@@ -40,7 +40,7 @@ class HabitatPoolSettingsDTO() {
     }
 
     fun encode(buffer: RegistryFriendlyByteBuf) {
-        buffer.writeResourceLocation(id)
+        buffer.writeIdentifier(id)
         buffer.writeBoolean(isReference)
         buffer.writeBoolean(isActivated)
         if (!isReference) {
@@ -55,7 +55,7 @@ class HabitatPoolSettingsDTO() {
         buffer: RegistryFriendlyByteBuf,
         buckets: List<SpawnBucket>
     ) {
-        this.id = buffer.readResourceLocation()
+        this.id = buffer.readIdentifier()
         this.isReference = buffer.readBoolean()
         this.isActivated = buffer.readBoolean()
         if (!isReference) {

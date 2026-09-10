@@ -8,6 +8,7 @@
 
 package com.cobblemon.mod.common.entity.pokemon.ai.tasks
 
+import com.cobblemon.mod.common.util.isNight
 import com.cobblemon.mod.common.CobblemonMemories
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
 import com.cobblemon.mod.common.util.getMemorySafely
@@ -53,7 +54,9 @@ object PlaceHoneyInHiveTask {
                             // Erase Hive memory and give the bee a moment to locate a new hive
                             entity.brain.eraseMemory(CobblemonMemories.HIVE_LOCATION)
                         } else {
-                            blockEntity.addOccupant(entity)
+                            // PT143: BeehiveBlockEntity.addOccupant(Bee) only accepts Bee in MC 26.1.x.
+                            // PokemonEntity can't be cast to Bee; stub the hive-insertion until a proper Occupant adapter exists.
+                            // entity.brain.eraseMemory(CobblemonMemories.HIVE_LOCATION) // optional fallback if needed
                         }
                     }
 

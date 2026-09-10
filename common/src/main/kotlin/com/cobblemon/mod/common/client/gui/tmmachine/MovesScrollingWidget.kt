@@ -24,12 +24,13 @@ import com.cobblemon.mod.common.client.render.drawScaledText
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
 import com.cobblemon.mod.common.util.math.toRGB
+import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.network.chat.Component
-import net.minecraft.resources.ResourceLocation
-import net.minecraft.util.FastColor
+import net.minecraft.resources.Identifier
+import net.minecraft.util.ARGB
 import net.minecraft.util.Mth
 
 class MovesScrollingWidget(val pX: Int, val pY: Int, tmList: SettableObservable<MutableList<TechnicalMachine>>, val setTM: (TechnicalMachine?, Boolean) -> (Unit)): ScrollingWidget<ScrollSlot>(
@@ -48,7 +49,7 @@ class MovesScrollingWidget(val pX: Int, val pY: Int, tmList: SettableObservable<
         val searchBar = cobblemonResource("textures/gui/tmmachine/search_bar.png")
     }
 
-    var highlightedMoveId: ResourceLocation? = null
+    var highlightedMoveId: Identifier? = null
 
     init {
         tmList.subscribeIncludingCurrent { tmList ->
@@ -56,7 +57,7 @@ class MovesScrollingWidget(val pX: Int, val pY: Int, tmList: SettableObservable<
         }
     }
 
-    fun setSlotHighlighted(id: ResourceLocation?) {
+    fun setSlotHighlighted(id: Identifier?) {
         highlightedMoveId = id
         for (child in children()) {
             if (child is ScrollSlot) {
@@ -76,9 +77,9 @@ class MovesScrollingWidget(val pX: Int, val pY: Int, tmList: SettableObservable<
         }
     }
 
-    override fun getScrollbarPosition(): Int = rowLeft + width - 3
+    override fun scrollBarX(): Int = rowLeft + width - 3
 
-    override fun renderWidget(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         blitk(
             matrixStack = context.pose(),
             texture = searchBar,
@@ -87,27 +88,28 @@ class MovesScrollingWidget(val pX: Int, val pY: Int, tmList: SettableObservable<
             width = 120,
             height = 19
         )
-        super.renderWidget(context, mouseX, mouseY, delta)
+        super.extractWidgetRenderState(context, mouseX, mouseY, delta)
     }
 
-    override fun renderScrollbar(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
-        val xLeft = this.scrollbarPosition
+    override fun renderScrollbar(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        val xLeft = this.scrollBarX()
         val xRight = xLeft + 3
 
         val barHeight = this.bottom - this.y
 
-        var yBottom = ((barHeight * barHeight).toFloat() / this.maxPosition.toFloat()).toInt()
+        var yBottom = ((barHeight * barHeight).toFloat() / this.contentHeight().toFloat()).toInt()
         yBottom = Mth.clamp(yBottom, 32, barHeight - 8)
-        var yTop = scrollAmount.toInt() * (barHeight - yBottom) / this.maxScroll + this.y
+        var yTop = scrollAmount.toInt() * (barHeight - yBottom) / this.maxScrollAmount() + this.y
         if (yTop < this.y) {
             yTop = this.y
         }
 
-        context.fill(xLeft, this.y, xRight, this.bottom, FastColor.ARGB32.color(255, 75, 75, 75)) // background
-        context.fill(xLeft,yTop, xRight, yTop + yBottom, FastColor.ARGB32.color(255, 141, 141, 141)) // base
+        context.fill(xLeft, this.y, xRight, this.bottom, ARGB.color(255, 75, 75, 75)) // background
+        context.fill(xLeft,yTop, xRight, yTop + yBottom, ARGB.color(255, 141, 141, 141)) // base
     }
 
-    override fun getEntry(index: Int): ScrollSlot = children()[index] as ScrollSlot
+    // PT144: AbstractSelectionList.getEntry(Int) removed in MC 26.1.x — rely on children() index access.
+    fun getEntry(index: Int): ScrollSlot = children()[index] as ScrollSlot
 
     class ScrollSlot(val tm: TechnicalMachine, val setTM : (TechnicalMachine?, clicked: Boolean) -> Unit): Slot<ScrollSlot>() {
         var posX: Int = 0
@@ -115,7 +117,10 @@ class MovesScrollingWidget(val pX: Int, val pY: Int, tmList: SettableObservable<
         var highlighted = false
         var disabled = false
 
-        override fun render(context: GuiGraphics, index: Int, y: Int, x: Int, entryWidth: Int, entryHeight: Int, mouseX: Int, mouseY: Int, hovered: Boolean, tickDelta: Float) {
+        // PT144: AbstractSelectionList.Entry now requires extractContent(GuiGraphicsExtractor, mouseX, mouseY, hovered, tickDelta) in MC 26.1.x.
+        override fun extractContent(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, hovered: Boolean, tickDelta: Float) {
+            val x = contentX
+            val y = contentY
             posX = x
             posY = y
             val moveTemplate = tm.moveName
@@ -206,13 +211,16 @@ class MovesScrollingWidget(val pX: Int, val pY: Int, tmList: SettableObservable<
             }
         }
 
-        override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
             // Prevent clicking through scroll bar
             if (!disabled && (mouseX < posX + (108))) {
                 setTM(tm, true)
                 Minecraft.getInstance().soundManager.play(SimpleSoundInstance.forUI(CobblemonSounds.GUI_CLICK, 1.0F))
             }
-            return super.mouseClicked(mouseX, mouseY, button)
+            return super.mouseClicked(event, fromOnClick)
         }
 
         override fun getNarration(): Component {

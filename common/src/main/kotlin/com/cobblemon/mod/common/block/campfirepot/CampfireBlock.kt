@@ -8,6 +8,8 @@
 
 package com.cobblemon.mod.common.block.campfirepot
 
+import net.minecraft.world.level.ScheduledTickAccess
+
 import com.cobblemon.mod.common.CobblemonBlockEntities
 import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.block.entity.CampfireBlockEntity
@@ -43,7 +45,8 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.StateDefinition
 import net.minecraft.world.level.block.state.properties.BlockStateProperties
 import net.minecraft.world.level.block.state.properties.BooleanProperty
-import net.minecraft.world.level.block.state.properties.DirectionProperty
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.redstone.Orientation
 import net.minecraft.world.level.material.FluidState
 import net.minecraft.world.level.material.Fluids
 import net.minecraft.world.level.pathfinder.PathComputationType
@@ -63,7 +66,7 @@ class CampfireBlock(settings: Properties, val isSoul: Boolean) : BaseEntityBlock
                 Codec.BOOL.fieldOf("isSoul").forGetter(CampfireBlock::isSoul)
             ).apply(it, ::CampfireBlock)
         }
-        val ITEM_DIRECTION = DirectionProperty.create("item_facing")
+        val ITEM_DIRECTION = EnumProperty.create("item_facing", Direction::class.java)
         val POWERED = BlockStateProperties.POWERED
         val COOKING = BooleanProperty.create("cooking")
         val LID = BooleanProperty.create("lid")
@@ -181,7 +184,7 @@ class CampfireBlock(settings: Properties, val isSoul: Boolean) : BaseEntityBlock
             val f = 0.25F * direction.stepX.toFloat()
             val g = 0.25F * direction.stepZ.toFloat()
 
-            val itemEntity = ItemEntity(level, blockPos.x.toDouble() + 0.5 + f.toDouble(), (blockPos.y + 1).toDouble(), blockPos.z.toDouble() + 0.5 + g.toDouble(), potItem)
+            val itemEntity = ItemEntity(level, blockPos.x.toDouble() + 0.5 + f.toDouble(), (blockPos.y + 1).toDouble(), blockPos.z.toDouble() + 0.5 + g.toDouble(), potItem ?: ItemStack.EMPTY)
             itemEntity.setDefaultPickUpDelay()
             level.addFreshEntity(itemEntity)
         }
@@ -211,19 +214,21 @@ class CampfireBlock(settings: Properties, val isSoul: Boolean) : BaseEntityBlock
 
     override fun updateShape(
         state: BlockState,
-        direction: Direction,
-        neighborState: BlockState,
-        world: LevelAccessor,
+        world: LevelReader,
+        scheduledTickAccess: ScheduledTickAccess,
         pos: BlockPos,
-        neighborPos: BlockPos
+        direction: Direction,
+        neighborPos: BlockPos,
+        neighborState: BlockState,
+        random: RandomSource
     ): BlockState {
         return if (direction == state.getValue(FACING) && !state.canSurvive(world, pos)) Blocks.AIR.defaultBlockState()
-        else super.updateShape(state, direction, neighborState, world, pos, neighborPos)
+        else super.updateShape(state, world, scheduledTickAccess, pos, direction, neighborPos, neighborState, random)
     }
 
     override fun getRenderShape(state: BlockState) = RenderShape.MODEL
 
-    override fun getAnalogOutputSignal(state: BlockState, level: Level, pos: BlockPos): Int {
+    override fun getAnalogOutputSignal(state: BlockState, level: Level, pos: BlockPos, direction: Direction): Int {
         return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(level.getBlockEntity(pos))
     }
 
@@ -235,12 +240,12 @@ class CampfireBlock(settings: Properties, val isSoul: Boolean) : BaseEntityBlock
 
     override fun isPathfindable(state: BlockState, type: PathComputationType): Boolean = false
 
-    override fun <T : BlockEntity?> getTicker(
+    override fun <T : BlockEntity> getTicker(
         level: Level,
         state: BlockState,
-        blockEntityType: BlockEntityType<T?>
-    ): BlockEntityTicker<T?>? {
-        return createCookingPotTicker(level, blockEntityType as BlockEntityType<*>, CobblemonBlockEntities.CAMPFIRE) as BlockEntityTicker<T?>?
+        blockEntityType: BlockEntityType<T>
+    ): BlockEntityTicker<T>? {
+        return createCookingPotTicker(level, blockEntityType as BlockEntityType<*>, CobblemonBlockEntities.CAMPFIRE) as BlockEntityTicker<T>?
     }
 
     @Nullable
@@ -275,7 +280,7 @@ class CampfireBlock(settings: Properties, val isSoul: Boolean) : BaseEntityBlock
         }
     }
 
-    override fun getCloneItemStack(level: LevelReader, pos: BlockPos, state: BlockState): ItemStack {
+    override fun getCloneItemStack(level: LevelReader, pos: BlockPos, state: BlockState, includeData: Boolean): ItemStack {
         return if (isSoul) ItemStack(Blocks.SOUL_CAMPFIRE) else ItemStack(Blocks.CAMPFIRE)
     }
 
@@ -284,10 +289,11 @@ class CampfireBlock(settings: Properties, val isSoul: Boolean) : BaseEntityBlock
         level: Level,
         pos: BlockPos,
         neighborBlock: Block,
-        neighborPos: BlockPos,
+        orientation: Orientation?,
         movedByPiston: Boolean
     ) {
-        super.neighborChanged(state, level, pos, neighborBlock, neighborPos, movedByPiston)
+        // PT137: 26.1.x neighborChanged signature replaces neighborPos (BlockPos) with Orientation
+        super.neighborChanged(state, level, pos, neighborBlock, orientation, movedByPiston)
         val isPowered = level.hasNeighborSignal(pos)
         val blockEntity = level.getBlockEntity(pos) as? CampfireBlockEntity ?: return
 
@@ -301,37 +307,32 @@ class CampfireBlock(settings: Properties, val isSoul: Boolean) : BaseEntityBlock
         return true
     }
 
-    override fun onRemove(
+    override fun affectNeighborsAfterRemoval(
         state: BlockState,
-        level: Level,
+        level: ServerLevel,
         pos: BlockPos,
-        newState: BlockState,
         movedByPiston: Boolean
     ) {
-        if (!state.`is`(newState.block)) {
-            val blockEntity = level.getBlockEntity(pos)
-            if (blockEntity is CampfireBlockEntity) {
-                if (level is ServerLevel) {
-                    Containers.dropContents(level, pos, blockEntity)
-                    val potItem = blockEntity.getPotItem() ?: ItemStack.EMPTY
+        val blockEntity = level.getBlockEntity(pos)
+        if (blockEntity is CampfireBlockEntity) {
+            Containers.dropContents(level, pos, blockEntity)
+            val potItem = blockEntity.getPotItem() ?: ItemStack.EMPTY
 
-                    if (!potItem.isEmpty) {
-                        val direction = state.getValue(FACING) as Direction
-                        val f = 0.25F * direction.stepX.toFloat()
-                        val g = 0.25F * direction.stepZ.toFloat()
+            if (!potItem.isEmpty) {
+                val direction = state.getValue(FACING) as Direction
+                val f = 0.25F * direction.stepX.toFloat()
+                val g = 0.25F * direction.stepZ.toFloat()
 
-                        val itemEntity = ItemEntity(level, pos.x.toDouble() + 0.5 + f.toDouble(), (pos.y + 1).toDouble(), pos.z.toDouble() + 0.5 + g.toDouble(), potItem)
-                        itemEntity.setDefaultPickUpDelay()
+                val itemEntity = ItemEntity(level, pos.x.toDouble() + 0.5 + f.toDouble(), (pos.y + 1).toDouble(), pos.z.toDouble() + 0.5 + g.toDouble(), potItem)
+                itemEntity.setDefaultPickUpDelay()
 
-                        level.addFreshEntity(itemEntity)
-                    }
-                }
-
-                super.onRemove(state, level, pos, newState, movedByPiston)
-                level.updateNeighbourForOutputSignal(pos, this)
-            } else {
-                super.onRemove(state, level, pos, newState, movedByPiston)
+                level.addFreshEntity(itemEntity)
             }
+
+            super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston)
+            level.updateNeighbourForOutputSignal(pos, this)
+        } else {
+            super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston)
         }
     }
 }

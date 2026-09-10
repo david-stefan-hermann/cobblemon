@@ -13,6 +13,7 @@ import com.cobblemon.mod.common.client.render.models.blockbench.PosableState
 import com.cobblemon.mod.common.client.render.models.blockbench.addRotation
 import com.cobblemon.mod.common.client.render.models.blockbench.frame.QuadrupedFrame
 import com.cobblemon.mod.common.client.render.models.blockbench.pose.Bone
+import net.minecraft.client.model.geom.ModelPart
 import com.cobblemon.mod.common.client.render.models.blockbench.pose.ModelPartTransformation.Companion.X_AXIS
 import com.cobblemon.mod.common.client.render.models.blockbench.repository.RenderContext
 import net.minecraft.util.Mth
@@ -26,10 +27,10 @@ import net.minecraft.util.Mth
  * @since December 4th, 2021
  */
 class QuadrupedWalkAnimation(
-    val legFrontLeft: Bone?,
-    val legFrontRight: Bone?,
-    val legBackLeft: Bone?,
-    val legBackRight: Bone?,
+    val legFrontLeft: ModelPart?,
+    val legFrontRight: ModelPart?,
+    val legBackLeft: ModelPart?,
+    val legBackRight: ModelPart?,
     /** The multiplier to apply to the cosine movement of the legs. The smaller this value, the quicker the legs move. */
     val periodMultiplier: Float = 0.6662F,
     /** The multiplier to apply to the stride of the entity. The larger this is, the further the legs move. */
@@ -49,14 +50,15 @@ class QuadrupedWalkAnimation(
     )
 
     override fun setupAnim(context: RenderContext, model: PosableModel, state: PosableState, limbSwing: Float, limbSwingAmount: Float, ageInTicks: Float, headYaw: Float, headPitch: Float, intensity: Float) {
-        val hindRightLeg = legBackRight ?: return
-        val hindLeftLeg = legBackLeft ?: return
-        val foreRightLeg = legFrontRight ?: return
-        val foreLeftLeg = legFrontLeft ?: return
+        // PT142: ModelPart→Bone via mixin at runtime; explicit cast for Kotlin static type
+        val hindRightLeg = (legBackRight ?: return) as Bone
+        val hindLeftLeg = (legBackLeft ?: return) as Bone
+        val foreRightLeg = (legFrontRight ?: return) as Bone
+        val foreLeftLeg = (legFrontLeft ?: return) as Bone
 
-        hindRightLeg.addRotation(X_AXIS, Mth.cos(limbSwing * periodMultiplier) * limbSwingAmount * amplitudeMultiplier * intensity)
-        hindLeftLeg.addRotation(X_AXIS, Mth.cos(limbSwing * periodMultiplier + Math.PI.toFloat()) * limbSwingAmount * amplitudeMultiplier * intensity)
-        foreRightLeg.addRotation(X_AXIS, Mth.cos(limbSwing * periodMultiplier + Math.PI.toFloat()) * limbSwingAmount * amplitudeMultiplier * intensity)
-        foreLeftLeg.addRotation(X_AXIS, Mth.cos(limbSwing * periodMultiplier) * limbSwingAmount * amplitudeMultiplier * intensity)
+        hindRightLeg.addRotation(X_AXIS, (Mth.cos((limbSwing * periodMultiplier).toDouble()) * limbSwingAmount * amplitudeMultiplier * intensity))
+        hindLeftLeg.addRotation(X_AXIS, (Mth.cos((limbSwing * periodMultiplier + Math.PI.toFloat()).toDouble()) * limbSwingAmount * amplitudeMultiplier * intensity))
+        foreRightLeg.addRotation(X_AXIS, (Mth.cos((limbSwing * periodMultiplier + Math.PI.toFloat()).toDouble()) * limbSwingAmount * amplitudeMultiplier * intensity))
+        foreLeftLeg.addRotation(X_AXIS, (Mth.cos((limbSwing * periodMultiplier).toDouble()) * limbSwingAmount * amplitudeMultiplier * intensity))
     }
 }

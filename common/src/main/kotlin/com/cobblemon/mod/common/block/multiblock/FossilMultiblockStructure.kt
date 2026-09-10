@@ -8,6 +8,13 @@
 
 package com.cobblemon.mod.common.block.multiblock
 
+import com.cobblemon.mod.common.util.getBlockPos
+import com.cobblemon.mod.common.util.putBlockPos
+
+import com.cobblemon.mod.common.util.getUUID
+import com.cobblemon.mod.common.util.putUUID
+import com.cobblemon.mod.common.util.hasUUID
+
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonBlocks
 import com.cobblemon.mod.common.CobblemonSounds
@@ -47,7 +54,7 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.ListTag
 import net.minecraft.nbt.NbtOps
 import net.minecraft.nbt.NbtUtils
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundSource
@@ -114,9 +121,8 @@ class FossilMultiblockStructure (
             if (this.hasCreatedPokemon) {
                 if (this.fossilOwnerUUID != null && player.uuid != this.fossilOwnerUUID) {
                     var ownerName : String = "UNKNOWN_USER" // TODO: lang agnostic fallback
-                    server()?.profileCache?.get(this.fossilOwnerUUID)?.orElse(null)?.name?.let {
-                        ownerName = it
-                    }
+                    // PT134-DEFER: server.profileCache removed in MC 26.1.x — needs async ProfileResolver
+                    (null as String?)?.let { ownerName = it }
                     player.sendSystemMessage(lang("fossilmachine.protected", ownerName), true)
                     return InteractionResult.FAIL
                 }
@@ -201,17 +207,17 @@ class FossilMultiblockStructure (
                     && insertOrganicMaterial(ItemStack(stack.item, 1), world)) {
                 this.lastInteraction = world.gameTime
                 if (!player.hasInfiniteMaterials()) {
+                    // PT137: NaturalMaterials.getReturnItem returns Identifier? — null-check before registry lookup
                     val returnItem = NaturalMaterials.getReturnItem(stack)
                     stack?.shrink(1)
-                    player.giveOrDropItemStack(
-                        ItemStack(
-                            BuiltInRegistries.ITEM.get(
-                                returnItem
-                            )
-                        ), false)
+                    if (returnItem != null) {
+                        BuiltInRegistries.ITEM.get(returnItem).ifPresent { holder ->
+                            player.giveOrDropItemStack(ItemStack(holder), false)
+                        }
+                    }
                 }
             }
-            return InteractionResult.sidedSuccess(world.isClientSide)
+            return (if (world.isClientSide) InteractionResult.SUCCESS else InteractionResult.SUCCESS_SERVER)
         }
 
         // pure client instances dont know what a valid fossil is so this is my janky workaround
@@ -225,12 +231,12 @@ class FossilMultiblockStructure (
         entity.refreshDimensions()
         val width = entity.boundingBox.xsize
 
-        val idealPlace = pos.offset(directionToBehind.normal.multiply(ceil(width / 2.0).toInt() + 1))
+        val idealPlace = pos.offset(directionToBehind.unitVec3i.multiply(ceil(width / 2.0).toInt() + 1))
         var box = entity.getDimensions(Pose.STANDING).makeBoundingBox(idealPlace.center.subtract(0.0, 0.5, 0.0))
 
         for (i in 0..5) {
-            box = box.move(directionToBehind.normal.x.toDouble(), 0.0, directionToBehind.normal.z.toDouble())
-            val fixedPosition = makeSuitableY(world, idealPlace.offset(directionToBehind.normal.multiply(i + 1)), entity, box)
+            box = box.move(directionToBehind.unitVec3i.x.toDouble(), 0.0, directionToBehind.unitVec3i.z.toDouble())
+            val fixedPosition = makeSuitableY(world, idealPlace.offset(directionToBehind.unitVec3i.multiply(i + 1)), entity, box)
             if (fixedPosition != null) {
                 entity.setPos(fixedPosition.center.subtract(0.0, 0.5, 0.0))
                 // TODO: Find a correct way to set the new entity's Yaw rotation. (Face away from the machine)
@@ -621,9 +627,9 @@ class FossilMultiblockStructure (
 
     override fun writeToNbt(registryLookup: HolderLookup.Provider): CompoundTag {
         val result = CompoundTag()
-        result.put(DataKeys.MONITOR_POS, NbtUtils.writeBlockPos(monitorPos))
-        result.put(DataKeys.ANALYZER_POS, NbtUtils.writeBlockPos(analyzerPos))
-        result.put(DataKeys.TANK_BASE_POS, NbtUtils.writeBlockPos(tankBasePos))
+        result.putBlockPos(DataKeys.MONITOR_POS, monitorPos)
+        result.putBlockPos(DataKeys.ANALYZER_POS, analyzerPos)
+        result.putBlockPos(DataKeys.TANK_BASE_POS, tankBasePos)
         result.putInt(DataKeys.TIME_LEFT, timeRemaining)
         result.putInt(DataKeys.PROTECTED_TIME_LEFT, protectionTime)
         fossilOwnerUUID?.let { result.putUUID(DataKeys.FOSSIL_OWNER, it) }
@@ -632,7 +638,8 @@ class FossilMultiblockStructure (
 
         fossilInventory.forEach { fossilInv.add(ItemStack.CODEC.encodeStart(NbtOps.INSTANCE, it).orThrow) }
         result.put(DataKeys.FOSSIL_INVENTORY, fossilInv)
-        result.putString(DataKeys.CONNECTOR_DIRECTION, tankConnectorDirection?.toString())
+        // PT137: putString requires non-null String — coerce nullable Direction.toString()
+        result.putString(DataKeys.CONNECTOR_DIRECTION, tankConnectorDirection?.toString() ?: "")
 
         if (this.resultingFossil != null) {
             result.putString(DataKeys.INSERTED_FOSSIL, this.resultingFossil!!.serializedName)
@@ -657,24 +664,27 @@ class FossilMultiblockStructure (
         const val PROTECTION_TIME = TICKS_PER_MINUTE * 5
 
         fun fromNbt(nbt: CompoundTag, registryLookup: HolderLookup.Provider, animAge: Int = -1, partialTicks: Float = 0f): FossilMultiblockStructure {
-            val monitorPos =  NbtUtils.readBlockPos(nbt, DataKeys.MONITOR_POS).get()
-            val compartmentPos = NbtUtils.readBlockPos(nbt, DataKeys.ANALYZER_POS).get()
-            val tankBasePos = NbtUtils.readBlockPos(nbt, DataKeys.TANK_BASE_POS).get()
+            val monitorPos =  nbt.getBlockPos(DataKeys.MONITOR_POS).get()
+            val compartmentPos = nbt.getBlockPos(DataKeys.ANALYZER_POS).get()
+            val tankBasePos = nbt.getBlockPos(DataKeys.TANK_BASE_POS).get()
 
             val result = FossilMultiblockStructure(monitorPos, compartmentPos, tankBasePos, animAge, partialTicks)
-            result.organicMaterialInside = nbt.getInt(DataKeys.ORGANIC_MATERIAL)
-            result.timeRemaining = nbt.getInt(DataKeys.TIME_LEFT)
-            result.protectionTime = if (nbt.contains(DataKeys.PROTECTED_TIME_LEFT)) nbt.getInt(DataKeys.PROTECTED_TIME_LEFT) else -1
+            result.organicMaterialInside = nbt.getIntOr(DataKeys.ORGANIC_MATERIAL, 0)
+            result.timeRemaining = nbt.getIntOr(DataKeys.TIME_LEFT, 0)
+            result.protectionTime = if (nbt.contains(DataKeys.PROTECTED_TIME_LEFT)) nbt.getIntOr(DataKeys.PROTECTED_TIME_LEFT, 0) else -1
             result.fossilOwnerUUID = if (nbt.contains(DataKeys.FOSSIL_OWNER)) nbt.getUUID(DataKeys.FOSSIL_OWNER) else null
 
             val fossilInv = if (nbt.contains(DataKeys.FOSSIL_INVENTORY)) { (nbt.get(DataKeys.FOSSIL_INVENTORY) as ListTag) } else ListTag()
             val actualFossilList = mutableListOf<ItemStack>()
-            fossilInv.forEach { ItemStack.parse(registryLookup, it).ifPresent(actualFossilList::add) }
+            // PT137: ItemStack.parse(HolderLookup.Provider, Tag) removed — use CODEC.parse(NbtOps, tag).result()
+            fossilInv.forEach { tag ->
+                ItemStack.CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, tag).result().ifPresent(actualFossilList::add)
+            }
             result.fossilInventory = actualFossilList
-            result.tankConnectorDirection = Direction.byName(nbt.getString(DataKeys.CONNECTOR_DIRECTION))
+            result.tankConnectorDirection = Direction.byName(nbt.getStringOr(DataKeys.CONNECTOR_DIRECTION, ""))
 
             if (nbt.contains(DataKeys.INSERTED_FOSSIL)) {
-                val id = ResourceLocation.parse(nbt.getString(DataKeys.INSERTED_FOSSIL))
+                val id = Identifier.parse(nbt.getStringOr(DataKeys.INSERTED_FOSSIL, ""))
                 val fossil = Fossils.getByIdentifier(id)
 
                 if (fossil != null) {
@@ -688,7 +698,7 @@ class FossilMultiblockStructure (
                 // migration of instances that saved the created pokeon in the nbt
                 result.hasCreatedPokemon = true
             } else if (nbt.contains(DataKeys.HAS_CREATED_POKEMON)){
-                result.hasCreatedPokemon = nbt.getBoolean(DataKeys.HAS_CREATED_POKEMON)
+                result.hasCreatedPokemon = nbt.getBooleanOr(DataKeys.HAS_CREATED_POKEMON, false)
             }
             result.fillLevel = result.organicMaterialInside * 8 / MATERIAL_TO_START
             return result

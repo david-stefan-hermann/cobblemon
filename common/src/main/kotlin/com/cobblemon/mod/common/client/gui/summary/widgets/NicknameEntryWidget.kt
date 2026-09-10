@@ -8,6 +8,10 @@
 
 package com.cobblemon.mod.common.client.gui.summary.widgets
 
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.renderer.rendertype.RenderTypes
+
 import com.cobblemon.mod.common.CobblemonNetwork
 import com.cobblemon.mod.common.api.text.bold
 import com.cobblemon.mod.common.api.text.font
@@ -19,11 +23,11 @@ import com.cobblemon.mod.common.net.messages.server.pokemon.update.SetNicknamePa
 import com.cobblemon.mod.common.net.serverhandling.pokemon.update.SetNicknameHandler.MAX_NAME_LENGTH
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.mojang.blaze3d.platform.InputConstants
-import net.minecraft.Util
+import net.minecraft.util.Util
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.EditBox
-import net.minecraft.client.renderer.RenderType
+import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.resources.language.I18n
 import net.minecraft.network.chat.Component
 
@@ -61,7 +65,10 @@ class NicknameEntryWidget(
         value = pokemon.getDisplayName().string
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
         return if (mouseX.toInt() in x..(x + width) && mouseY.toInt() in y..(y + height)) {
             isFocused = true
             true
@@ -92,7 +99,7 @@ class NicknameEntryWidget(
         }
     }
 
-    override fun renderWidget(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         val showCursor = isFocused && ((Util.getMillis() - this.focusedTime) / 300L % 2L == 0L)
         val name = "${value}${if ((cursorPosition == value.length) && showCursor) "_" else ""}".text().bold()
         drawScaledText(
@@ -106,8 +113,8 @@ class NicknameEntryWidget(
 
         if (showCursor && !value.isEmpty() && cursorPosition != value.length) {
             val startToCursorWidth = Minecraft.getInstance().font.width((name.getString(cursorPosition).text().bold()).font(CobblemonResources.DEFAULT_LARGE))
+            // PT144: context.fill 6-arg pipeline overload requires RenderPipeline; legacy RenderType path replaced with 5-arg color-only call.
             context.fill(
-                RenderType.guiTextHighlight(),
                 x + startToCursorWidth - 1,
                 y,
                 x + startToCursorWidth,
@@ -117,10 +124,13 @@ class NicknameEntryWidget(
         }
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+    override fun keyPressed(event: KeyEvent): Boolean {
+        val keyCode = event.key()
+        val scanCode = event.scancode()
+        val modifiers = event.modifiers()
         if (keyCode == InputConstants.KEY_ESCAPE) {
             this.updateNickname(value.trim().ifBlank { this.pokemonName })
         }
-        return super.keyPressed(keyCode, scanCode, modifiers)
+        return super.keyPressed(event)
     }
 }

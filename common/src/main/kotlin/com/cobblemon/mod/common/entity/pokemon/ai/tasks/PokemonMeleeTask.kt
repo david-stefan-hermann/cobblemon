@@ -30,7 +30,8 @@ object PokemonMeleeTask {
                     if (entity.isWithinMeleeAttackRange(livingEntity) && context.get(visibleMobs).contains(livingEntity)) {
                         lookTarget.set(EntityTracker(livingEntity, true))
                         entity.swing(InteractionHand.MAIN_HAND)
-                        entity.doHurtTarget(livingEntity)
+                        // PT143: doHurtTarget(ServerLevel, Entity) in MC 26.1.x.
+                        entity.doHurtTarget(world, livingEntity)
                         attackCooldown.setWithExpiry(true, cooldownBetweenAttacks.toLong())
                         return@Trigger true
                     } else {

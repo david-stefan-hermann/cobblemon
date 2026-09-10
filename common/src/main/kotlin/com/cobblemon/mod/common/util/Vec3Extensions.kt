@@ -22,6 +22,9 @@ fun Vec3.toBlockPos(): BlockPos {
 fun Vec3.toVec3f(): Vector3f = Vector3f(x.toFloat(), y.toFloat(), z.toFloat())
 fun Vector3f.toVec3d(): Vec3 =
     Vec3(x.toDouble(), y.toDouble(), z.toDouble())
+// PT132: Camera.upVector()/leftVector()/forwardVector() return Vector3fc in MC 26.1
+fun org.joml.Vector3fc.toVec3d(): Vec3 =
+    Vec3(x().toDouble(), y().toDouble(), z().toDouble())
 fun Vector3f.set(vec3d: Vec3): Vector3f {
     x = vec3d.x.toFloat()
     y = vec3d.y.toFloat()

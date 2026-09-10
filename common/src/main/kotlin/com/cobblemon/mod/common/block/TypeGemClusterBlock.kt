@@ -16,7 +16,7 @@ import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.util.RandomSource
 import net.minecraft.world.item.BlockItem
@@ -26,6 +26,7 @@ import net.minecraft.world.item.component.CustomModelData
 import net.minecraft.world.item.context.BlockPlaceContext
 import net.minecraft.world.level.LevelAccessor
 import net.minecraft.world.level.LevelReader
+import net.minecraft.world.level.ScheduledTickAccess
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.DirectionalBlock
@@ -34,7 +35,7 @@ import net.minecraft.world.level.block.Rotation
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.StateDefinition
 import net.minecraft.world.level.block.state.properties.BooleanProperty
-import net.minecraft.world.level.block.state.properties.DirectionProperty
+import net.minecraft.world.level.block.state.properties.EnumProperty
 import net.minecraft.world.level.block.state.properties.IntegerProperty
 import net.minecraft.world.level.material.PushReaction
 import net.minecraft.world.level.storage.loot.LootParams
@@ -44,7 +45,7 @@ import net.minecraft.world.phys.shapes.VoxelShape
 class TypeGemClusterBlock(
     settings: Properties,
     val nextStage: Block,
-    val dropItemId: ResourceLocation
+    val dropItemId: Identifier
 ) : DirectionalBlock(settings.pushReaction(PushReaction.DESTROY)) {
 
     companion object {
@@ -52,7 +53,7 @@ class TypeGemClusterBlock(
             instance.group(
                 propertiesCodec(),
                 Block.CODEC.fieldOf("nextStage").forGetter { it.nextStage },
-                ResourceLocation.CODEC.fieldOf("dropItem").forGetter { it.dropItemId }
+                Identifier.CODEC.fieldOf("dropItem").forGetter { it.dropItemId }
             ).apply(instance) { settings, nextStage, dropItemId ->
                 TypeGemClusterBlock(settings, nextStage, dropItemId).also {
                     gemToClusterMap[nextStage] = it
@@ -62,7 +63,7 @@ class TypeGemClusterBlock(
         val gemToClusterMap: MutableMap<Block, TypeGemClusterBlock> = mutableMapOf()
 
         val SHOULD_GROW: BooleanProperty = BooleanProperty.create("should_grow")
-        val FACING: DirectionProperty = DirectionalBlock.FACING
+        val FACING: EnumProperty<Direction> = DirectionalBlock.FACING
         val STAGE: IntegerProperty = IntegerProperty.create("stage", 0, 3)
         val STUNTED: BooleanProperty = BooleanProperty.create("stunted")
 
@@ -205,7 +206,7 @@ class TypeGemClusterBlock(
             )
             stack.set(
                 DataComponents.CUSTOM_MODEL_DATA,
-                CustomModelData(state.getValue(STAGE))
+                CustomModelData(listOf(state.getValue(STAGE).toFloat()), emptyList(), emptyList(), emptyList())
             )
         }
 
@@ -239,12 +240,12 @@ class TypeGemClusterBlock(
         }
     }
 
-    override fun updateShape(state: BlockState, direction: Direction, neighborState: BlockState, level: LevelAccessor, pos: BlockPos, neighborPos: BlockPos): BlockState {
+    override fun updateShape(state: BlockState, world: LevelReader, scheduledTickAccess: ScheduledTickAccess, pos: BlockPos, direction: Direction, neighborPos: BlockPos, neighborState: BlockState, random: RandomSource): BlockState {
         val facing = state.getValue(FACING)
-        if (direction == facing.opposite && !canSurvive(state, level, pos)) {
+        if (direction == facing.opposite && !canSurvive(state, world, pos)) {
             return Blocks.AIR.defaultBlockState()
         }
-        return super.updateShape(state, direction, neighborState, level, pos, neighborPos)
+        return super.updateShape(state, world, scheduledTickAccess, pos, direction, neighborPos, neighborState, random)
     }
 
     override fun rotate(state: BlockState, rotation: Rotation): BlockState {
@@ -261,7 +262,8 @@ class TypeGemClusterBlock(
         return level.getBlockState(supportPos).isFaceSturdy(level, supportPos, direction)
     }
 
-    override fun propagatesSkylightDown(state: BlockState, level: net.minecraft.world.level.BlockGetter, pos: BlockPos): Boolean = true
+    // PT143: BlockBehaviour.propagatesSkylightDown signature simplified in MC 26.1.x — takes BlockState only.
+    override fun propagatesSkylightDown(state: BlockState): Boolean = true
 
     override fun getShadeBrightness(state: BlockState, level: net.minecraft.world.level.BlockGetter, pos: BlockPos): Float = 1.0F
 
@@ -275,8 +277,9 @@ class TypeGemClusterBlock(
         builder.add(FACING, SHOULD_GROW, STAGE, STUNTED)
     }
 
-    override fun getCloneItemStack(level: LevelReader, pos: BlockPos, state: BlockState): ItemStack {
-        val stack = super.getCloneItemStack(level, pos, state)
+    override fun getCloneItemStack(level: LevelReader, pos: BlockPos, state: BlockState, includeData: Boolean): ItemStack {
+        // PT143: super.getCloneItemStack now requires includeData in MC 26.1.x.
+        val stack = super.getCloneItemStack(level, pos, state, includeData)
         val itemPath = BuiltInRegistries.ITEM.getKey(stack.item).path
         if (itemPath.endsWith("_gem_cluster")) {
             stack.set(
@@ -288,7 +291,7 @@ class TypeGemClusterBlock(
             )
             stack.set(
                 DataComponents.CUSTOM_MODEL_DATA,
-                CustomModelData(state.getValue(STAGE))
+                CustomModelData(listOf(state.getValue(STAGE).toFloat()), emptyList(), emptyList(), emptyList())
             )
         }
         return stack

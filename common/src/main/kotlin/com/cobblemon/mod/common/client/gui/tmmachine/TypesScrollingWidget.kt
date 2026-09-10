@@ -17,11 +17,12 @@ import com.cobblemon.mod.common.client.gui.ScrollingWidget
 import com.cobblemon.mod.common.client.gui.TypeIcon
 import com.cobblemon.mod.common.client.gui.tmmachine.TypesScrollingWidget.ScrollSlotRow
 import com.cobblemon.mod.common.util.cobblemonResource
+import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.network.chat.Component
-import net.minecraft.util.FastColor
+import net.minecraft.util.ARGB
 import net.minecraft.util.Mth
 
 class TypesScrollingWidget(val pX: Int, val pY: Int, val setType: (ElementalType?) -> (Unit)): ScrollingWidget<ScrollSlotRow>(
@@ -44,44 +45,33 @@ class TypesScrollingWidget(val pX: Int, val pY: Int, val setType: (ElementalType
         }
     }
 
-    override fun getScrollbarPosition(): Int = rowLeft + width - 3
+    override fun scrollBarX(): Int = rowLeft + width - 3
 
-    override fun renderScrollbar(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
-        val xLeft = this.scrollbarPosition
+    override fun renderScrollbar(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        val xLeft = this.scrollBarX()
         val xRight = xLeft + 3
         val barHeight = this.bottom - this.y
 
-        var yBottom = ((barHeight * barHeight).toFloat() / this.maxPosition.toFloat()).toInt()
+        var yBottom = ((barHeight * barHeight).toFloat() / this.contentHeight().toFloat()).toInt()
         yBottom = Mth.clamp(yBottom, 32, barHeight - 8)
-        var yTop = scrollAmount.toInt() * (barHeight - yBottom) / this.maxScroll + this.y
+        var yTop = scrollAmount.toInt() * (barHeight - yBottom) / this.maxScrollAmount() + this.y
         if (yTop < this.y) {
             yTop = this.y
         }
 
-        context.fill(xLeft, this.y, xRight, this.bottom, FastColor.ARGB32.color(255, 75, 75, 75)) // background
-        context.fill(xLeft,yTop, xRight, yTop + yBottom, FastColor.ARGB32.color(255, 141, 141, 141)) // base
+        context.fill(xLeft, this.y, xRight, this.bottom, ARGB.color(255, 75, 75, 75)) // background
+        context.fill(xLeft,yTop, xRight, yTop + yBottom, ARGB.color(255, 141, 141, 141)) // base
     }
 
-    fun renderEntry(context: GuiGraphics, mouseX: Int, mouseY: Int, index: Int, x: Int, y: Int) {
-        val entry =  this.getEntry(index)
-        entry.x = x
-        entry.y = y
+    fun renderEntry(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, index: Int, x: Int, y: Int) {
+        // PT137: AbstractSelectionList.getEntry removed — index children() list directly
+        val entry =  children()[index] as ScrollSlotRow
+        entry.slotX = x
+        entry.slotY = y
         entry.renderRow( context, y, x, mouseX, mouseY)
     }
 
-    override fun getEntry(index: Int): ScrollSlotRow = children()[index] as ScrollSlotRow
-
-    override fun renderListItems(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
-        val rowX = rowLeft
-
-        for (index in 0 until this.itemCount) {
-            val rowY = this.getRowTop(index)
-            val rowBottom = this.getRowBottom(index)
-            if (rowBottom >= this.y && rowY <= this.bottom) {
-                this.renderEntry(context!!, mouseX, mouseY, index, rowX, rowY)
-            }
-        }
-    }
+    // PT137: AbstractSelectionList.getEntry/renderListItems removed in 26.1; entries iterated via children()
 
     fun setDisabled(disabled: Boolean, vararg exclusions: ElementalType?) {
         children().forEach { row ->
@@ -97,12 +87,13 @@ class TypesScrollingWidget(val pX: Int, val pY: Int, val setType: (ElementalType
             private val slotDisabledResource = cobblemonResource("textures/gui/tmmachine/type_slot_disabled.png")
         }
 
-        var x: Int = 0
-        var y: Int = 0
+        // PT145: 'x'/'y' clash with parent Slot's getX/setX/getY/setY in MC 26.1.x — renamed to slotX/slotY.
+        var slotX: Int = 0
+        var slotY: Int = 0
         var disabled: Boolean = false
         var disabledExclusions: Set<ElementalType?> = setOf(null)
 
-        fun renderRow(context: GuiGraphics, y: Int, x: Int, mouseX: Int, mouseY: Int) {
+        fun renderRow(context: GuiGraphicsExtractor, y: Int, x: Int, mouseX: Int, mouseY: Int) {
             types.forEachIndexed { index, type ->
                 val matrices = context.pose()
 
@@ -136,9 +127,15 @@ class TypesScrollingWidget(val pX: Int, val pY: Int, val setType: (ElementalType
             }
         }
 
-        override fun render(context: GuiGraphics, index: Int, y: Int, x: Int, entryWidth: Int, entryHeight: Int, mouseX: Int, mouseY: Int, hovered: Boolean, tickDelta: Float) {}
+        // PT137: AbstractSelectionList.Entry.extractContent(GuiGraphicsExtractor, mouseX, mouseY, hovered, tickDelta) is the 5-arg abstract
+        override fun extractContent(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, hovered: Boolean, tickDelta: Float) {
+            renderRow(context, contentY, contentX, mouseX, mouseY)
+        }
 
-        override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
             var disable = false
 
             val hoverIndex = getHoveredSlotIndex(mouseX.toInt(), mouseY.toInt())

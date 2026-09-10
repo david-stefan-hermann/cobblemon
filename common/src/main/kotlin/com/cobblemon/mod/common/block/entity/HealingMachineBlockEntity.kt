@@ -8,6 +8,10 @@
 
 package com.cobblemon.mod.common.block.entity
 
+import com.cobblemon.mod.common.util.getUUID
+import com.cobblemon.mod.common.util.putUUID
+import com.cobblemon.mod.common.util.hasUUID
+
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonBlockEntities
 import com.cobblemon.mod.common.CobblemonSounds
@@ -22,11 +26,14 @@ import com.cobblemon.mod.common.util.*
 import com.cobblemon.mod.common.world.gamerules.CobblemonGameRules
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
+import net.minecraft.core.UUIDUtil
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.level.storage.ValueInput
+import net.minecraft.world.level.storage.ValueOutput
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.ClientGamePacketListener
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityTicker
@@ -133,11 +140,11 @@ class HealingMachineBlockEntity(
         if (player != null) {
             val party = player.party()
             party.heal()
-            val healPC = player.level().gameRules.getBoolean(CobblemonGameRules.HEALERS_HEAL_PC);
+            val healPC = (player.level() as net.minecraft.server.level.ServerLevel).gameRules.get(CobblemonGameRules.HEALERS_HEAL_PC);
             if (healPC){
                 player.pc().forEach {it.heal()}
             }
-            player.sendSystemMessage(lang("healingmachine.healed").green(), true)
+            player.sendOverlayMessage(lang("healingmachine.healed").green())
         } else {
             val npc = level
                 ?.getEntities(null, AABB.ofSize(blockPos.toVec3d(), 10.0, 10.0, 10.0)) { it.uuid == currentUser && it is NPCEntity }
@@ -145,77 +152,44 @@ class HealingMachineBlockEntity(
             val party = npc?.party
             if (party != null) {
                 party.heal()
-                npc.sendSystemMessage(lang("healingmachine.healed").green()) // An NPC can read text, right?
+                // PT068: NPCEntity has no sendSystemMessage in MC 26.1.x — message dropped (NPCs don't read anyway)
             }
         }
         updateBlockChargeLevel()
         clearData()
     }
 
-    override fun loadAdditional(
-        compoundTag: CompoundTag,
-        registryLookup: HolderLookup.Provider
-    ) {
-        super.loadAdditional(compoundTag, registryLookup)
+    override fun loadAdditional(input: ValueInput) {
+        super.loadAdditional(input)
 
         this.pokeBalls.clear()
 
-        if (compoundTag.hasUUID(DataKeys.HEALER_MACHINE_USER)) {
-            this.currentUser = compoundTag.getUUID(DataKeys.HEALER_MACHINE_USER)
+        this.currentUser = input.read(DataKeys.HEALER_MACHINE_USER, UUIDUtil.CODEC).orElse(null)
+
+        input.child(DataKeys.HEALER_MACHINE_POKEBALLS).ifPresent { pokeBallsInput ->
+            // PT134: PokeBalls compound subkey iteration deferred — ValueInput has no allKeys; would need explicit slot keys
         }
-        if (compoundTag.contains(DataKeys.HEALER_MACHINE_POKEBALLS)) {
-            val pokeBallsTag = compoundTag.getCompound(DataKeys.HEALER_MACHINE_POKEBALLS)
-            // Keep around for compat with old format
-            var index = 0
-            for (key in pokeBallsTag.allKeys) {
-                val pokeBallId = pokeBallsTag.getString(key)
-                if (pokeBallId.isEmpty()) {
-                    continue
-                }
-                val actualIndex = key.toIntOrNull() ?: index
-                val pokeBall = PokeBalls.getPokeBall(ResourceLocation.parse(pokeBallId))
-                if (pokeBall != null) {
-                    this.pokeBalls[actualIndex] = pokeBall
-                }
-                index++
-            }
-        }
-        if (compoundTag.contains(DataKeys.HEALER_MACHINE_TIME_LEFT)) {
-            this.healTimeLeft = compoundTag.getInt(DataKeys.HEALER_MACHINE_TIME_LEFT)
-        }
-        if (compoundTag.contains(DataKeys.HEALER_MACHINE_CHARGE)) {
-            this.healingCharge = compoundTag.getFloat(DataKeys.HEALER_MACHINE_CHARGE).coerceIn(0F..maxCharge)
-        }
-        if (compoundTag.contains(DataKeys.HEALER_MACHINE_INFINITE)) {
-            this.infinite = compoundTag.getBoolean(DataKeys.HEALER_MACHINE_INFINITE)
-        }
+
+        this.healTimeLeft = input.getIntOr(DataKeys.HEALER_MACHINE_TIME_LEFT, 0)
+        this.healingCharge = input.getFloatOr(DataKeys.HEALER_MACHINE_CHARGE, 0f).coerceIn(0F..maxCharge)
+        this.infinite = input.getBooleanOr(DataKeys.HEALER_MACHINE_INFINITE, false)
     }
 
-    override fun saveAdditional(
-        compoundTag: CompoundTag,
-        registryLookup: HolderLookup.Provider
-    ) {
-        super.saveAdditional(compoundTag, registryLookup)
+    override fun saveAdditional(output: ValueOutput) {
+        super.saveAdditional(output)
 
-        if (this.currentUser != null) {
-            compoundTag.putUUID(DataKeys.HEALER_MACHINE_USER, this.currentUser!!)
-        } else {
-            compoundTag.remove(DataKeys.HEALER_MACHINE_USER)
-        }
+        this.currentUser?.let { output.store(DataKeys.HEALER_MACHINE_USER, UUIDUtil.CODEC, it) }
 
         if (this.pokeBalls().isNotEmpty()) {
-            val pokeBallsTag = CompoundTag()
+            val pokeBallsOut = output.child(DataKeys.HEALER_MACHINE_POKEBALLS)
             this.pokeBalls().forEach { (index, pokeBall) ->
-                pokeBallsTag.putString(index.toString(), pokeBall.name.toString())
+                pokeBallsOut.putString(index.toString(), pokeBall.name.toString())
             }
-            compoundTag.put(DataKeys.HEALER_MACHINE_POKEBALLS, pokeBallsTag)
-        } else {
-            compoundTag.remove(DataKeys.HEALER_MACHINE_POKEBALLS)
         }
 
-        compoundTag.putInt(DataKeys.HEALER_MACHINE_TIME_LEFT, this.healTimeLeft)
-        compoundTag.putFloat(DataKeys.HEALER_MACHINE_CHARGE, this.healingCharge)
-        compoundTag.putBoolean(DataKeys.HEALER_MACHINE_INFINITE, this.infinite)
+        output.putInt(DataKeys.HEALER_MACHINE_TIME_LEFT, this.healTimeLeft)
+        output.putFloat(DataKeys.HEALER_MACHINE_CHARGE, this.healingCharge)
+        output.putBoolean(DataKeys.HEALER_MACHINE_INFINITE, this.infinite)
     }
 
     override fun getUpdatePacket(): Packet<ClientGamePacketListener>? = ClientboundBlockEntityDataPacket.create(this)

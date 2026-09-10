@@ -19,7 +19,7 @@ import com.cobblemon.mod.common.client.render.drawScaledText
 import com.cobblemon.mod.common.config.CobblemonConfig
 import com.cobblemon.mod.common.config.CobblemonConfigField
 import com.cobblemon.mod.common.util.lang
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.network.chat.MutableComponent
@@ -76,18 +76,18 @@ abstract class CobblemonConfigVariable(
         return normalizedLabel.contains(text, ignoreCase = true)
     }
 
-    override fun render(
-        context: GuiGraphics,
-        index: Int,
-        top: Int,
-        left: Int,
-        width: Int,
-        height: Int,
-        mouseX: Int,
-        mouseY: Int,
-        hovering: Boolean,
-        partialTick: Float
-    ) {
+    override fun extractContent(
+            context: GuiGraphicsExtractor,
+            mouseX: Int,
+            mouseY: Int,
+            hovering: Boolean,
+            partialTick: Float
+        ) {
+            val index = 0
+            val top = contentY
+            val left = contentX
+            val width = width
+            val height = contentHeight
         val x = getX(left)
         val y = getY(top)
 
@@ -101,6 +101,6 @@ abstract class CobblemonConfigVariable(
 
         resetButton.x = x + SLOT_WIDTH - RESET_SLOT_WIDTH
         resetButton.y = y + WIDGET_Y_OFFSET
-        resetButton.render(context, mouseX, mouseY, partialTick)
+        resetButton.extractRenderState(context, mouseX, mouseY, partialTick)
     }
 }

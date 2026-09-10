@@ -61,7 +61,8 @@ abstract class BattleGimmickButton(gimmick: ShowdownMoveset.Gimmick, val x: Floa
     private val sfx = SimpleSoundInstance.forUI(SoundEvents.ANVIL_LAND, 1.0F)
     private val texture = gimmick.id
 
-    fun render(matrices: PoseStack, mouseX: Int, mouseY: Int, delta: Float) {
+    // PT128: PoseStack→Matrix3x2fStack for MC 26.1 GuiGraphicsExtractor.pose() return type.
+    fun render(matrices: org.joml.Matrix3x2fStack, mouseX: Int, mouseY: Int, delta: Float) {
         blitk(
             matrixStack = matrices,
             texture = cobblemonResource("textures/gui/battle/battle_gimmick_${texture}.png"),

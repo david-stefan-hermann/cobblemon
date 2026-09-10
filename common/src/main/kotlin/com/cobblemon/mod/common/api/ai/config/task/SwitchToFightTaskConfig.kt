@@ -32,7 +32,8 @@ class SwitchToFightTaskConfig : SingleTaskConfig {
             it.present(MemoryModuleType.ATTACK_TARGET)
         ).apply(it) { _ ->
             Trigger { world, entity, _ ->
-                if (entity.commandSenderWorld.getCurrentDifficultyAt(entity.blockPosition()).difficulty == Difficulty.PEACEFUL) {
+                // PT143: Level.getCurrentDifficultyAt removed → use Level.difficulty in MC 26.1.x.
+                if (entity.level().difficulty == Difficulty.PEACEFUL) {
                     return@Trigger false
                 }
 

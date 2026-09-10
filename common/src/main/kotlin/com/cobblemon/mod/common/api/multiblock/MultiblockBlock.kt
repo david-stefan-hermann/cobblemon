@@ -56,12 +56,12 @@ abstract class MultiblockBlock(properties: Properties) : BaseEntityBlock(propert
         return super.useWithoutItem(state, world, pos, player, hit)
     }
 
-    override fun onRemove(state: BlockState, level: Level, pos: BlockPos, newState: BlockState, movedByPiston: Boolean) {
+    override fun affectNeighborsAfterRemoval(state: BlockState, level: net.minecraft.server.level.ServerLevel, pos: BlockPos, movedByPiston: Boolean) {
         val entity = level.getBlockEntity(pos)
-        if (entity is MultiblockEntity && entity.multiblockStructure != null && state.block != newState.block) {
+        if (entity is MultiblockEntity && entity.multiblockStructure != null) {
             entity.multiblockStructure!!.playerWillDestroy(level, pos, state, null)
         }
-        super.onRemove(state, level, pos, newState, movedByPiston)
+        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston)
     }
 
     override fun newBlockEntity(pos: BlockPos, state: BlockState): BlockEntity? {
@@ -74,9 +74,10 @@ abstract class MultiblockBlock(properties: Properties) : BaseEntityBlock(propert
     }
 
     //This is done so a block picked with NBT doesnt absolutely DESTROY multiblocks
-    override fun getCloneItemStack(world: LevelReader, pos: BlockPos, state: BlockState): ItemStack {
+    override fun getCloneItemStack(world: LevelReader, pos: BlockPos, state: BlockState, includeData: Boolean): ItemStack {
         val blockEntity = world.getBlockEntity(pos) as? MultiblockEntity ?: return ItemStack.EMPTY
-        return if (blockEntity.multiblockStructure == null) super.getCloneItemStack(world, pos, state) else ItemStack.EMPTY
+        // PT143: Block.getCloneItemStack signature in MC 26.1.x now includes includeData.
+        return if (blockEntity.multiblockStructure == null) super.getCloneItemStack(world, pos, state, includeData) else ItemStack.EMPTY
     }
 
     abstract fun createMultiBlockEntity(pos: BlockPos, state: BlockState): FossilMultiblockEntity

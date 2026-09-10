@@ -8,6 +8,10 @@
 
 package com.cobblemon.mod.common.util
 
+import com.cobblemon.mod.common.util.getUUID
+import com.cobblemon.mod.common.util.putUUID
+import com.cobblemon.mod.common.util.hasUUID
+
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.PlayerSpawnerAccessor
@@ -32,7 +36,7 @@ import com.cobblemon.mod.common.trade.TradeManager
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.nbt.StringTag
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
@@ -75,7 +79,7 @@ fun ServerPlayer.openDialogue(activeDialogue: ActiveDialogue) {
     DialogueManager.startDialogue(activeDialogue)
 }
 fun ServerPlayer.extraData(key: String) = Cobblemon.playerDataManager.getGenericData(this).extraData[key]
-fun ServerPlayer.hasKeyItem(key: ResourceLocation) = Cobblemon.playerDataManager.getGenericData(this).keyItems.contains(key)
+fun ServerPlayer.hasKeyItem(key: Identifier) = Cobblemon.playerDataManager.getGenericData(this).keyItems.contains(key)
 fun UUID.getPlayer() = server()?.playerList?.getPlayer(this)
 
 fun ServerPlayer.requestWallpapers() {
@@ -93,7 +97,7 @@ fun ServerPlayer.onLogout(handler: () -> Unit) {
  * @return If the attempt to heal was successful.
  */
 fun ServerPlayer.didSleep(): Boolean {
-    if (sleepTimer != 100 || level().dayTime.toInt() % 24000 != 0 || this.isInBattle()) {
+    if (sleepTimer != 100 || level().overworldClockTime.toInt() % 24000 != 0 || this.isInBattle()) {
         return false
     }
     party().didSleep()
@@ -327,14 +331,14 @@ fun ServerPlayer.raycast(maxDistance: Float, fluidHandling: ClipContext.Fluid?):
     val f = xRot
     val g = yRot
     val vec3d = eyePosition
-    val h = Mth.cos(-g * 0.017453292f - 3.1415927f)
-    val i = Mth.sin(-g * 0.017453292f - 3.1415927f)
-    val j = -Mth.cos(-f * 0.017453292f)
-    val k = Mth.sin(-f * 0.017453292f)
+    val h = Mth.cos((-g * 0.017453292f - 3.1415927f).toDouble())
+    val i = Mth.sin((-g * 0.017453292f - 3.1415927f).toDouble())
+    val j = -Mth.cos((-f * 0.017453292f).toDouble())
+    val k = Mth.sin((-f * 0.017453292f).toDouble())
     val l = i * j
     val n = h * j
-    val vec3d2 = vec3d.add(l.toDouble() * maxDistance, k.toDouble() * maxDistance, n.toDouble() * maxDistance)
-    return level().clip(ClipContext(vec3d, vec3d2, ClipContext.Block.OUTLINE, fluidHandling, this))
+    val vec3d2 = vec3d.add(l * maxDistance.toDouble(), k * maxDistance.toDouble(), n * maxDistance.toDouble())
+    return level().clip(ClipContext(vec3d, vec3d2, ClipContext.Block.OUTLINE, fluidHandling ?: ClipContext.Fluid.NONE, this))
 }
 
 fun ServerPlayer.raycastSafeSendout(pokemon: Pokemon, maxDistance: Double, dropHeight: Double, fluidHandling: ClipContext.Fluid?): Vec3? {
@@ -342,14 +346,14 @@ fun ServerPlayer.raycastSafeSendout(pokemon: Pokemon, maxDistance: Double, dropH
     val f = xRot
     val g = yRot
     val vec3d = eyePosition
-    val h = Mth.cos(-g * 0.017453292f - 3.1415927f)
-    val i = Mth.sin(-g * 0.017453292f - 3.1415927f)
-    val j = -Mth.cos(-f * 0.017453292f)
-    val k = Mth.sin(-f * 0.017453292f)
+    val h = Mth.cos((-g * 0.017453292f - 3.1415927f).toDouble())
+    val i = Mth.sin((-g * 0.017453292f - 3.1415927f).toDouble())
+    val j = -Mth.cos((-f * 0.017453292f).toDouble())
+    val k = Mth.sin((-f * 0.017453292f).toDouble())
     val l = i * j
     val n = h * j
-    val vec3d2 = vec3d.add(l.toDouble() * maxDistance, k.toDouble() * maxDistance, n.toDouble() * maxDistance)
-    val result = level().clip(ClipContext(vec3d, vec3d2, ClipContext.Block.OUTLINE, fluidHandling, this))
+    val vec3d2 = vec3d.add((l * maxDistance).toDouble(), (k * maxDistance).toDouble(), (n * maxDistance).toDouble())
+    val result = level().clip(ClipContext(vec3d, vec3d2, ClipContext.Block.OUTLINE, fluidHandling ?: ClipContext.Fluid.NONE, this))
 
 
     if (level().getBlockState(result.blockPos).isAir) {
@@ -416,7 +420,8 @@ fun ServerPlayer.raycastSafeSendout(pokemon: Pokemon, maxDistance: Double, dropH
     return null
 }
 
-fun Inventory.usableItems() = offhand + items
+// PT137: Inventory.offhand/items fields private → use Container.getItem(index) over full container size
+fun Inventory.usableItems(): List<ItemStack> = (0 until this.containerSize).map { this.getItem(it) }
 
 /**
  * Utility function meant to emulate the behavior seen across Minecraft when attempting to give items directly to player but there's not enough room for the entire stack.
@@ -483,12 +488,15 @@ fun Player.isUsingPokedex() = isUsingItem &&
     (offhandItem.item is PokedexItem && usedItemHand == InteractionHand.OFF_HAND))
 
 fun ServerPlayer.updateShoulderNbt(pokemon: Pokemon) {
-    // Use copies because player doesn't expose a forceful update of shoulder data
-    val nbt = if ((pokemon.state as ShoulderedState).isLeftShoulder) shoulderEntityLeft.copy() else shoulderEntityRight.copy()
+    // PT137: ServerPlayer.shoulderEntityLeft/Right fields privatized; setShoulderEntityLeft/Right protected.
+    // Read via public getShoulderEntityLeft()/Right(); write via setEntityOnShoulder(nbt) which auto-picks slot.
+    val isLeft = (pokemon.state as ShoulderedState).isLeftShoulder
+    val nbt = if (isLeft) this.getShoulderEntityLeft().copy() else this.getShoulderEntityRight().copy()
     nbt.putUUID(DataKeys.SHOULDER_UUID, uuid)
     nbt.putString(DataKeys.SHOULDER_SPECIES, pokemon.species.resourceIdentifier.toString())
     nbt.putString(DataKeys.SHOULDER_FORM, pokemon.form.name)
     nbt.put(DataKeys.SHOULDER_ASPECTS, pokemon.aspects.map(StringTag::valueOf).toNbtList())
     nbt.putFloat(DataKeys.SHOULDER_SCALE_MODIFIER, pokemon.effectiveScale)
-    if ((pokemon.state as ShoulderedState).isLeftShoulder) shoulderEntityLeft = nbt else shoulderEntityRight = nbt
+    // PT137-DEFER: protected setter — public setEntityOnShoulder auto-picks left first; cannot force left/right
+    this.setEntityOnShoulder(nbt)
 }

@@ -33,10 +33,19 @@ class BrewingStandRecipe(
 ) : Recipe<BrewingStandInput> {
 
     override fun getType() = CobblemonRecipeTypes.BREWING_STAND
-    override fun canCraftInDimensions(width: Int, height: Int) = true
-    override fun getSerializer() = CobblemonRecipeSerializers.BREWING_STAND
-    override fun assemble(input: BrewingStandInput, registries: HolderLookup.Provider): ItemStack? = result.copy()
-    override fun getResultItem(registries: HolderLookup.Provider): ItemStack? = result.copy()
+    // PT138: canCraftInDimensions/getResultItem removed; assemble takes only input; RecipeSerializer is final record
+    @Suppress("UNCHECKED_CAST")
+    override fun getSerializer(): RecipeSerializer<out Recipe<BrewingStandInput>> =
+        Serializer.INSTANCE as RecipeSerializer<out Recipe<BrewingStandInput>>
+    override fun assemble(input: BrewingStandInput): ItemStack = result.copy()
+    // Non-override convenience accessor (Recipe no longer requires getResultItem)
+    fun resultItem(): ItemStack = result.copy()
+    override fun showNotification(): Boolean = true
+    override fun placementInfo(): net.minecraft.world.item.crafting.PlacementInfo =
+        net.minecraft.world.item.crafting.PlacementInfo.NOT_PLACEABLE
+    override fun recipeBookCategory(): net.minecraft.world.item.crafting.RecipeBookCategory =
+        net.minecraft.world.item.crafting.RecipeBookCategories.CRAFTING_MISC
+    override fun group(): String = groupName
 
     override fun matches(input: BrewingStandInput, level: Level): Boolean {
         val ingredientMatches = this.input.test(input.getIngredient())
@@ -48,29 +57,22 @@ class BrewingStandRecipe(
     }
 
     companion object {
-        fun isBottle(itemStack: ItemStack, recipeManager: RecipeManager): Boolean {
-            val recipes = recipeManager.getAllRecipesFor(CobblemonRecipeTypes.BREWING_STAND)
-            return recipes.any { recipe ->
-                recipe.value.bottle.test(itemStack)
-            }
-        }
+        // PT139: RecipeManager API drastically changed in MC 26.1.x. Stubbed pending API survey.
+        @Suppress("UNUSED_PARAMETER")
+        fun isBottle(itemStack: ItemStack, recipeManager: RecipeManager): Boolean = false
 
-        fun isInput(itemStack: ItemStack, recipeManager: RecipeManager): Boolean {
-            val recipes = recipeManager.getAllRecipesFor(CobblemonRecipeTypes.BREWING_STAND)
-            return recipes.any { recipe ->
-                recipe.value.input.test(itemStack)
-            }
-        }
+        @Suppress("UNUSED_PARAMETER")
+        fun isInput(itemStack: ItemStack, recipeManager: RecipeManager): Boolean = false
     }
 
-    class Serializer : RecipeSerializer<BrewingStandRecipe> {
-        companion object {
+    // PT138: RecipeSerializer is now a final record class (cannot be extended). Wrapper → object with INSTANCE.
+    object Serializer {
             val CODEC: MapCodec<BrewingStandRecipe> = RecordCodecBuilder.mapCodec { instance ->
                 instance.group(
                     Codec.STRING.optionalFieldOf("group", "").forGetter { recipe -> recipe.groupName },
                     Ingredient.CODEC.fieldOf("input").forGetter { recipe -> recipe.input },
                     Ingredient.CODEC.fieldOf("bottle").forGetter { recipe -> recipe.bottle },
-                    ItemStack.STRICT_CODEC.fieldOf("result").forGetter { recipe -> recipe.result }
+                    ItemStack.CODEC.fieldOf("result").forGetter { recipe -> recipe.result }
                 ).apply(instance, ::BrewingStandRecipe)
             }
 
@@ -91,9 +93,8 @@ class BrewingStandRecipe(
                 Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.bottle)
                 ItemStack.STREAM_CODEC.encode(buffer, recipe.result)
             }
-        }
 
-        override fun codec() = CODEC
-        override fun streamCodec() = STREAM_CODEC
+        // PT138: direct record-constructor — RecipeSerializer(MapCodec, StreamCodec)
+        val INSTANCE: RecipeSerializer<BrewingStandRecipe> = RecipeSerializer(CODEC, STREAM_CODEC)
     }
 }

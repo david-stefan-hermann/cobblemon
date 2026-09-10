@@ -31,10 +31,12 @@ class LocatorAccess(
         const val PREFIX = "internal_locator__"
 
         fun resolve(part: Bone): LocatorAccess? {
+            // PT144: ModelPart.children no longer publicly exposed in MC 26.1.x — locator discovery deferred until accessor injection.
+            val emptyEntries: List<Map.Entry<String, net.minecraft.client.model.geom.ModelPart>> = emptyList()
             val (
                 locatorChildren,
                 nonLocatorChildren
-            ) = part.children.entries.partition { it.key.startsWith(PREFIX) }
+            ) = emptyEntries.partition { it.key.startsWith(PREFIX) }
 
             val locators = locatorChildren.associate { (namePrefixed, part) ->
                 namePrefixed.substringAfter(PREFIX) to part
@@ -72,7 +74,7 @@ class LocatorAccess(
      */
     fun update(matrixStack: PoseStack, entity: Entity?, scale: Float, state: MutableMap<String, MatrixWrapper>, isRoot: Boolean = false) {
         matrixStack.pushPose()
-        joint.transform(matrixStack)
+        joint.translateAndRotate(matrixStack)
 
         if (isRoot) {
             matrixStack.pushPose()
@@ -109,7 +111,7 @@ class LocatorAccess(
 
         for ((name, locator) in locators) {
             matrixStack.pushPose()
-            locator.transform(matrixStack)
+            locator.translateAndRotate(matrixStack)
             matrixStack.mulPose(Axis.ZP.rotationDegrees(180f)) //Undo rotation from previous flip
             state.getOrPut(name) { MatrixWrapper() }.updateMatrix(matrixStack.last().pose())
             matrixStack.popPose()

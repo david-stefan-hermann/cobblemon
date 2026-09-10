@@ -123,7 +123,8 @@ class HabitatBlock(properties: Properties) : Block(properties), EntityBlock {
         return box(0.0, 0.0, 0.0, 16.0, 16.0, 16.0)
     }
 
-    override fun getOcclusionShape(state: BlockState, level: BlockGetter, pos: BlockPos): VoxelShape? {
+    // PT142: BlockBehaviour.getOcclusionShape(BlockState) in MC 26.1.x (level/pos removed)
+    override fun getOcclusionShape(state: BlockState): VoxelShape {
         return Shapes.empty()
     }
 

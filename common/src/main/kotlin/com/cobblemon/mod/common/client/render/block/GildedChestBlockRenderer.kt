@@ -8,6 +8,8 @@
 
 package com.cobblemon.mod.common.client.render.block
 
+import net.minecraft.client.renderer.rendertype.RenderTypes
+
 import com.cobblemon.mod.common.block.entity.GildedChestBlockEntity
 import com.cobblemon.mod.common.client.render.models.blockbench.blockentity.BlockEntityModel
 import com.cobblemon.mod.common.client.render.models.blockbench.repository.RenderContext
@@ -15,18 +17,18 @@ import com.cobblemon.mod.common.client.render.models.blockbench.repository.Varyi
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import net.minecraft.client.renderer.MultiBufferSource
-import net.minecraft.client.renderer.RenderType
+import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.world.level.block.state.properties.BlockStateProperties
 
-class GildedChestBlockRenderer(context: BlockEntityRendererProvider.Context) : BlockEntityRenderer<GildedChestBlockEntity> {
+class GildedChestBlockRenderer(context: BlockEntityRendererProvider.Context) : BlockEntityRenderer<GildedChestBlockEntity, net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> {
     val context = RenderContext().also {
         it.put(RenderContext.RENDER_STATE, RenderContext.RenderState.BLOCK)
         it.put(RenderContext.DO_QUIRKS, true)
     }
-    override fun render(
+    fun render_DEFER_NO_OVERRIDE(
         entity: GildedChestBlockEntity,
         tickDelta: Float,
         matrices: PoseStack,
@@ -44,7 +46,7 @@ class GildedChestBlockRenderer(context: BlockEntityRendererProvider.Context) : B
         val model = VaryingModelRepository.getPoser(poserId, state) as BlockEntityModel
         model.context = context
         val texture = VaryingModelRepository.getTexture(poserId, state)
-        val vertexConsumer = vertexConsumers.getBuffer(RenderType.entityCutout(texture))
+        val vertexConsumer = vertexConsumers.getBuffer(RenderTypes.entityCutout(texture))
         model.bufferProvider = vertexConsumers
         state.currentModel = model
         context.put(RenderContext.ASPECTS, aspects)
@@ -75,4 +77,14 @@ class GildedChestBlockRenderer(context: BlockEntityRendererProvider.Context) : B
         matrices.popPose()
 
     }
+
+    override fun createRenderState(): net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState =
+        net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState()
+
+    override fun submit(
+        state: net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState,
+        poseStack: com.mojang.blaze3d.vertex.PoseStack,
+        collector: net.minecraft.client.renderer.SubmitNodeCollector,
+        camera: net.minecraft.client.renderer.state.level.CameraRenderState
+    ) { /* PT129-DEFER */ }
 }

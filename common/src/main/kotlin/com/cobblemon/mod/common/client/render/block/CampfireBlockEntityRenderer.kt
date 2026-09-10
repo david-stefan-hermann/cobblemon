@@ -16,14 +16,15 @@ import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
-import net.minecraft.client.renderer.ItemBlockRenderTypes
+import com.cobblemon.mod.common.client.render.itemRenderer
+// import net.minecraft.client.renderer.ItemBlockRenderTypes — removed in MC 26.1.x
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
-import net.minecraft.client.resources.model.BakedModel
+import com.cobblemon.mod.common.client.render.model.BakedModel
 import net.minecraft.core.Direction
-import net.minecraft.util.FastColor
+import net.minecraft.util.ARGB
 import net.minecraft.world.item.ItemDisplayContext
 import net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING
 import org.joml.Vector3f
@@ -31,7 +32,7 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 
-class CampfireBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<CampfireBlockEntity> {
+class CampfireBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<CampfireBlockEntity, net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> {
 
     companion object {
         const val CIRCLE_RADIUS = 0.4F
@@ -40,7 +41,7 @@ class CampfireBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : Bl
         const val JUMP_SPEED = 0.1F
     }
 
-    override fun render(
+    fun render_DEFER_NO_OVERRIDE(
         blockEntity: CampfireBlockEntity,
         tickDelta: Float,
         poseStack: PoseStack,
@@ -89,28 +90,7 @@ class CampfireBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : Bl
         poseStack.pushPose()
         poseStack.translate(0.0, 0.4375, 0.0)
 
-        val blockRenderer = Minecraft.getInstance().blockRenderer
-        val state = campfirePotItem.block.defaultBlockState()
-            .setValue(CampfirePotBlock.OPEN, isLidOpen)
-            .setValue(FACING, Direction.fromYRot(yRot.toDouble()))
-            .setValue(CampfirePotBlock.OCCUPIED, (!blockEntity.getSeasonings().isEmpty() || !blockEntity.getIngredients().isEmpty()))
-        val bakedModel: BakedModel = blockRenderer.getBlockModel(state)
-
-        val red = FastColor.ARGB32.red(blockEntity.brothColor) / 255F
-        val green = FastColor.ARGB32.green(blockEntity.brothColor) / 255F
-        val blue = FastColor.ARGB32.blue(blockEntity.brothColor) / 255F
-
-        blockRenderer.modelRenderer.renderModel(
-            poseStack.last(),
-            multiBufferSource.getBuffer(ItemBlockRenderTypes.getRenderType(state, false)),
-            state,
-            bakedModel,
-            red,
-            green,
-            blue,
-            light,
-            overlay
-        )
+        // Pot rendering deferred: BakedModel/ItemBlockRenderTypes API removed in MC 26.1.x
 
         poseStack.popPose()
     }
@@ -193,4 +173,14 @@ class CampfireBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : Bl
             .setLight(packedLight)
             .setNormal(0f, 1f, 0f)
     }
+
+    override fun createRenderState(): net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState =
+        net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState()
+
+    override fun submit(
+        state: net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState,
+        poseStack: com.mojang.blaze3d.vertex.PoseStack,
+        collector: net.minecraft.client.renderer.SubmitNodeCollector,
+        camera: net.minecraft.client.renderer.state.level.CameraRenderState
+    ) { /* PT129-DEFER */ }
 }

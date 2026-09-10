@@ -8,6 +8,10 @@
 
 package com.cobblemon.mod.common.block
 
+import net.minecraft.world.level.ScheduledTickAccess
+
+import net.minecraft.world.level.LevelReader
+
 import com.cobblemon.mod.common.CobblemonBlocks
 import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.CobblemonSounds
@@ -124,14 +128,16 @@ class HeartyGrainsBlock(settings: Properties) : CropBlock(settings), SimpleWater
 
     override fun updateShape(
         state: BlockState,
-        direction: Direction,
-        neighborState: BlockState,
-        world: LevelAccessor,
+        world: LevelReader,
+        scheduledTickAccess: ScheduledTickAccess,
         pos: BlockPos,
-        neighborPos: BlockPos
+        direction: Direction,
+        neighborPos: BlockPos,
+        neighborState: BlockState,
+        random: RandomSource
     ): BlockState {
         if (state.getValue(WATERLOGGED)) {
-            world.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(world))
+            scheduledTickAccess.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(world))
         }
         if (!state.canSurvive(world, pos)) return Blocks.AIR.defaultBlockState()
         val doubleBlockHalf = state.getValue(HALF)
@@ -224,7 +230,7 @@ class HeartyGrainsBlock(settings: Properties) : CropBlock(settings), SimpleWater
     private fun isLower(state: BlockState): Boolean =
         state.`is`(CobblemonBlocks.HEARTY_GRAINS) && state.getValue(HALF) == DoubleBlockHalf.LOWER
 
-    override fun getSoundType(state: BlockState): SoundType? {
+    override fun getSoundType(state: BlockState): SoundType {
         return if (state.getValue(WATERLOGGED)) CobblemonSounds.HEARTY_GRAINS_WATER_SOUNDS else CobblemonSounds.HEARTY_GRAINS_SOUNDS
     }
 }

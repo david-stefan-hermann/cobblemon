@@ -8,6 +8,8 @@
 
 package com.cobblemon.mod.common.item.interactive
 
+import net.minecraft.world.InteractionResult
+
 import com.cobblemon.mod.common.api.item.PokemonSelectingItem
 import com.cobblemon.mod.common.api.pokemon.stats.ItemEvSource
 import com.cobblemon.mod.common.api.pokemon.stats.Stat
@@ -18,7 +20,7 @@ import com.cobblemon.mod.common.util.giveOrDropItemStack
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.world.InteractionHand
-import net.minecraft.world.InteractionResultHolder
+
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
@@ -38,7 +40,7 @@ abstract class EVIncreaseItem(
         player: ServerPlayer,
         stack: ItemStack,
         pokemon: Pokemon
-    ): InteractionResultHolder<ItemStack> {
+    ): InteractionResult {
         val evsGained = pokemon.evs.add(stat, evIncreaseAmount, ItemEvSource(player, stack, pokemon))
         return if (evsGained > 0) {
             pokemon.entity?.playSound(sound, 1F, 1F)
@@ -46,16 +48,16 @@ abstract class EVIncreaseItem(
             if (!player.hasInfiniteMaterials()) {
                 player.giveOrDropItemStack(ItemStack(Items.GLASS_BOTTLE))
             }
-            InteractionResultHolder.success(stack)
+            InteractionResult.SUCCESS
         } else {
-            InteractionResultHolder.fail(stack)
+            InteractionResult.FAIL
         }
     }
 
-    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResult {
         if (user is ServerPlayer) {
             return use(user, user.getItemInHand(hand))
         }
-        return InteractionResultHolder.success(user.getItemInHand(hand))
+        return InteractionResult.SUCCESS
     }
 }

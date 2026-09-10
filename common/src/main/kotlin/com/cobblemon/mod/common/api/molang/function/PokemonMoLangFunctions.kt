@@ -8,6 +8,8 @@
 
 package com.cobblemon.mod.common.api.molang.function
 
+import com.cobblemon.mod.common.util.ownerUUID
+
 import com.bedrockk.molang.runtime.MoParams
 import com.bedrockk.molang.runtime.struct.QueryStruct
 import com.bedrockk.molang.runtime.value.DoubleValue
@@ -34,7 +36,7 @@ import com.cobblemon.mod.common.util.getIntOrNull
 import com.cobblemon.mod.common.util.server
 import com.cobblemon.mod.common.util.toProperties
 import kotlin.random.Random
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 object PokemonMoLangFunctions : AbstractMoLangFunctionHolder<Pokemon>() {
     override fun Pokemon.moLangFunctions(): MutableMap<String, (MoParams) -> Any> {
@@ -372,7 +374,7 @@ object PokemonMoLangFunctions : AbstractMoLangFunctionHolder<Pokemon>() {
             if (param is DoubleValue) {
                 pokemon.initializeMoveset(param == DoubleValue.ONE)
             } else {
-                val movesetBuilderId = ResourceLocation.parse(param.asString())
+                val movesetBuilderId = Identifier.parse(param.asString())
                 val movesetBuilder = CobblemonMovesetBuilders.movesetBuilders[movesetBuilderId]
                     ?: run {
                         Cobblemon.LOGGER.error("Tried initializing moveset from moveset builder ${param.asString()} but it does not exist.")

@@ -12,19 +12,20 @@ import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.api.gui.blitk
 import com.cobblemon.mod.common.api.text.text
 import com.cobblemon.mod.common.client.gui.CobblemonRenderable
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.client.sounds.SoundManager
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 class ScaledButton(
     var buttonX: Float,
     var buttonY: Float,
     val buttonWidth: Number,
     val buttonHeight: Number,
-    var resource: ResourceLocation? = null,
+    var resource: Identifier? = null,
     val scale: Float = 0.5F,
     val silent: Boolean = false,
     val clickAction: Button.OnPress
@@ -33,11 +34,11 @@ class ScaledButton(
     var isWidgetActive = false
     var isVisible = true
 
-    override fun mouseDragged(d: Double, e: Double, i: Int, f: Double, g: Double) = false
+    override fun mouseDragged(event: net.minecraft.client.input.MouseButtonEvent, dx: Double, dy: Double) = false
     override fun defaultButtonNarrationText(builder: NarrationElementOutput) {
     }
 
-    override fun renderWidget(context: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {
+    override fun extractContents(context: GuiGraphicsExtractor, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {
         val matrices = context.pose()
         if (isVisible && resource != null) {
             blitk(
@@ -54,9 +55,12 @@ class ScaledButton(
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
         if (isVisible && active && isButtonHovered(mouseX, mouseY)) {
-            super.mouseClicked(mouseX, mouseY, button)
+            super.mouseClicked(event, fromOnClick)
         }
         return false
     }

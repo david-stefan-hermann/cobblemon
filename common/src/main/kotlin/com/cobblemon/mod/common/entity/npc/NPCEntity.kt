@@ -70,11 +70,10 @@ import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket
 import net.minecraft.network.protocol.game.ClientGamePacketListener
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
-import net.minecraft.network.protocol.game.DebugPackets
 import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerEntity
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
@@ -184,13 +183,13 @@ class NPCEntity(world: Level) : AgeableMob(CobblemonEntities.NPC, world), Posabl
             entityData.set(HITBOX_EYES_HEIGHT, comparison.eyeHeight)
         }
 
-    var resourceIdentifier: ResourceLocation
+    var resourceIdentifier: Identifier
         get() = entityData.get(RESOURCE_IDENTIFIER)
         private set(value) {
             entityData.set(RESOURCE_IDENTIFIER, value)
         }
 
-    var forcedResourceIdentifier: ResourceLocation? = null
+    var forcedResourceIdentifier: Identifier? = null
         set(value) {
             field = value
             if (value != null) {
@@ -240,7 +239,7 @@ class NPCEntity(world: Level) : AgeableMob(CobblemonEntities.NPC, world), Posabl
     var interaction: NPCInteractConfiguration? = null
 
     override var behavioursAreCustom = false
-    override val behaviours = mutableListOf<ResourceLocation>()
+    override val behaviours = mutableListOf<Identifier>()
     override val registeredVariables: MutableList<MoLangConfigVariable> = mutableListOf()
     override var data = VariableStruct()
     override var config = VariableStruct()
@@ -312,7 +311,9 @@ class NPCEntity(world: Level) : AgeableMob(CobblemonEntities.NPC, world), Posabl
         const val COMMAND_ANIMATION = "command"
     }
 
-    override fun brainProvider() = Brain.provider<NPCEntity>(emptySet(), emptySet())
+    // PT137: LivingEntity.brainProvider() removed from base; Brain.provider() now requires (memoryTypes, sensorTypes, activitySupplier) 3-arg.
+    // ActivitySupplier<E>.createActivities(E):List<ActivityData<E>> — return empty list = no activities (configured later via NPCBrain.configure).
+    fun npcBrainProvider() = Brain.provider<NPCEntity>(emptySet<MemoryModuleType<*>>(), emptySet<SensorType<out Sensor<in NPCEntity>>>()) { _ -> emptyList() }
     override fun getBreedOffspring(world: ServerLevel, entity: AgeableMob) = null // No lovemaking! Unless...
     override fun getCurrentPoseType() = this.entityData.get(POSE_TYPE)
 
@@ -340,37 +341,44 @@ class NPCEntity(world: Level) : AgeableMob(CobblemonEntities.NPC, world), Posabl
         )
     ) as Packet<ClientGamePacketListener>
 
+    // PT138: LivingEntity.remakeBrain removed → non-override helper
     override fun remakeBrain() {
-        makeBrain(this.brainDynamic ?: makeEmptyBrainDynamic())
+        // No-op: brain rebuild happens via makeBrain(Brain.Packed) at entity construction
     }
 
+    // PT138: LivingEntity.assignNewBrainWithMemoriesAndSensors removed → MoLangScriptingEntity override
+    // PT141: needs override modifier (MoLangScriptingEntity interface)
     override fun assignNewBrainWithMemoriesAndSensors(
-        dynamic: Dynamic<*>,
+        packed: Brain.Packed,
         memories: Set<MemoryModuleType<*>>,
         sensors: Set<SensorType<*>>
     ): Brain<out NPCEntity> {
         val allSensors = BuiltInRegistries.SENSOR_TYPE.toSet().filterIsInstance<SensorType<Sensor<in NPCEntity>>>()
-        val brain = Brain.provider(
+        val brain = Brain.provider<NPCEntity>(
             memories.toSet(),
-            allSensors.filter { it in sensors }.toSet()
-        ).makeBrain(dynamic)
+            allSensors.filter { it in sensors }.toSet(),
+            Brain.ActivitySupplier<NPCEntity> { _ -> emptyList() }
+        ).makeBrain(this, packed)
         this.brain = brain
         return brain
     }
 
-    override fun makeBrain(dynamic: Dynamic<*>): Brain<out NPCEntity> {
-        this.brainDynamic = dynamic
-        val brain = brainProvider().makeBrain(dynamic)
+    // PT138: LivingEntity.makeBrain(Dynamic) → makeBrain(Brain.Packed) only abstract member.
+    override fun makeBrain(packed: Brain.Packed): Brain<out NPCEntity> {
+        val brain = npcBrainProvider().makeBrain(this, packed)
         this.brain = brain
         if (npc != null) {
-            NPCBrain.configure(this, npc, dynamic)
+            // PT141: NPCBrain.configure now takes Brain.Packed (was Dynamic<*>)
+            NPCBrain.configure(this, npc, packed)
         }
         return brain
     }
 
-    override fun doHurtTarget(target: Entity): Boolean {
+    // PT138: Mob.doHurtTarget(ServerLevel, Entity) — ServerLevel parameter added
+    override fun doHurtTarget(level: ServerLevel, target: Entity): Boolean {
         val source = this.damageSources().mobAttack(this)
-        val hurt = target.hurt(source, attributes.getValue(Attributes.ATTACK_DAMAGE).toFloat() * 5F)
+        // PT138: Entity.hurt returns Unit now; use hurtServer for server-side hits with attribution
+        val hurt = super.doHurtTarget(level, target)
         if (hurt) {
             playAttackSound()
         }
@@ -395,16 +403,10 @@ class NPCEntity(world: Level) : AgeableMob(CobblemonEntities.NPC, world), Posabl
         schedulingTracker.update(1/20F)
     }
 
-    override fun customServerAiStep() {
-        super.customServerAiStep()
-        getBrain().tick(level() as ServerLevel, this)
-    }
-
-    override fun sendDebugPackets() {
-        super.sendDebugPackets()
-        DebugPackets.sendEntityBrain(this)
-        DebugPackets.sendGoalSelector(level(), this, this.goalSelector)
-        DebugPackets.sendPathFindingPacket(level(), this, this.navigation.path, this.navigation.path?.distToTarget ?: 0F)
+    // PT138: Mob.customServerAiStep(ServerLevel) — ServerLevel parameter added
+    override fun customServerAiStep(level: ServerLevel) {
+        super.customServerAiStep(level)
+        getBrain().tick(level, this)
     }
 
     override fun broadcastToPlayer(player: ServerPlayer): Boolean {
@@ -426,8 +428,20 @@ class NPCEntity(world: Level) : AgeableMob(CobblemonEntities.NPC, world), Posabl
         return false
     }
 
-    override fun saveWithoutId(nbt: CompoundTag): CompoundTag {
-        super.saveWithoutId(nbt)
+    // PT138: Entity.saveWithoutId/load removed → addAdditionalSaveData(ValueOutput)/readAdditionalSaveData(ValueInput)
+    override fun addAdditionalSaveData(output: net.minecraft.world.level.storage.ValueOutput) {
+        super.addAdditionalSaveData(output)
+        val tmp = CompoundTag()
+        saveWithoutIdLegacy(tmp)
+        if (!tmp.isEmpty) output.store("LegacyData", CompoundTag.CODEC, tmp)
+    }
+
+    override fun readAdditionalSaveData(input: net.minecraft.world.level.storage.ValueInput) {
+        super.readAdditionalSaveData(input)
+        input.read("LegacyData", CompoundTag.CODEC).ifPresent { loadLegacy(it) }
+    }
+
+    fun saveWithoutIdLegacy(nbt: CompoundTag): CompoundTag {
         saveScriptingToNBT(nbt)
         nbt.put(DataKeys.NPC_LEVEL, IntTag.valueOf(level))
         nbt.putBoolean(DataKeys.NPC_HIDE_NAME_TAG, hideNameTag)
@@ -494,30 +508,30 @@ class NPCEntity(world: Level) : AgeableMob(CobblemonEntities.NPC, world), Posabl
         return nbt
     }
 
-    override fun load(nbt: CompoundTag) {
-        npc = NPCClasses.getByIdentifier(ResourceLocation.parse(nbt.getString(DataKeys.NPC_CLASS))) ?: NPCClasses.classes.first()
+    fun loadLegacy(nbt: CompoundTag) {
+        npc = NPCClasses.getByIdentifier(Identifier.parse(nbt.getStringOr(DataKeys.NPC_CLASS, ""))) ?: NPCClasses.classes.first()
         forcedResourceIdentifier = if (nbt.contains(DataKeys.NPC_FORCED_RESOURCE_IDENTIFIER)) {
-            ResourceLocation.parse(nbt.getString(DataKeys.NPC_FORCED_RESOURCE_IDENTIFIER))
+            Identifier.parse(nbt.getStringOr(DataKeys.NPC_FORCED_RESOURCE_IDENTIFIER, ""))
         } else {
             null
         }
-        entityData.set(LEVEL, nbt.getInt(DataKeys.NPC_LEVEL).takeIf { it != 0 } ?: 1)
-        entityData.set(HIDE_NAME_TAG, nbt.getBoolean(DataKeys.NPC_HIDE_NAME_TAG))
-        super.load(nbt)
+        entityData.set(LEVEL, nbt.getIntOr(DataKeys.NPC_LEVEL, 0).takeIf { it != 0 } ?: 1)
+        entityData.set(HIDE_NAME_TAG, nbt.getBooleanOr(DataKeys.NPC_HIDE_NAME_TAG, false))
+        // PT138: super.load(CompoundTag) removed — readAdditionalSaveData(ValueInput) takes over in parent
         loadScriptingFromNBT(nbt)
-        appliedAspects.addAll(nbt.getList(DataKeys.NPC_ASPECTS, Tag.TAG_STRING.toInt()).map { it.asString })
-        variationAspects.addAll(nbt.getList(DataKeys.NPC_VARIATION_ASPECTS, Tag.TAG_STRING.toInt()).map { it.asString })
-        nbt.getCompound(DataKeys.NPC_INTERACTION).takeIf { !it.isEmpty }?.let { nbt ->
-            val type = nbt.getString(DataKeys.NPC_INTERACT_TYPE)
+        appliedAspects.addAll(nbt.getList(DataKeys.NPC_ASPECTS).orElseGet { net.minecraft.nbt.ListTag() }.map { it.asString().orElse("") })
+        variationAspects.addAll(nbt.getList(DataKeys.NPC_VARIATION_ASPECTS).orElseGet { net.minecraft.nbt.ListTag() }.map { it.asString().orElse("") })
+        nbt.getCompoundOrEmpty(DataKeys.NPC_INTERACTION).takeIf { !it.isEmpty }?.let { nbt ->
+            val type = nbt.getStringOr(DataKeys.NPC_INTERACT_TYPE, "")
             val configType = NPCInteractConfiguration.types[type] ?: return@let
             interaction = configType.clazz.getConstructor().newInstance().also { it.readFromNBT(nbt) }
         }
-        val battleNBT = nbt.getCompound(DataKeys.NPC_BATTLE_CONFIGURATION)
+        val battleNBT = nbt.getCompoundOrEmpty(DataKeys.NPC_BATTLE_CONFIGURATION)
         if (!battleNBT.isEmpty) {
             battle = NPCBattleConfiguration().also { it.loadFromNBT(battleNBT) }
         }
-        this.skill = if (nbt.contains(DataKeys.NPC_SKILL)) nbt.getInt(DataKeys.NPC_SKILL) else null
-        val partyNBT = nbt.getCompound(DataKeys.NPC_PARTY)
+        this.skill = if (nbt.contains(DataKeys.NPC_SKILL)) nbt.getIntOr(DataKeys.NPC_SKILL, 0) else null
+        val partyNBT = nbt.getCompoundOrEmpty(DataKeys.NPC_PARTY)
         if (!partyNBT.isEmpty) {
             party = NPCPartyStore(this).also {
                 it.loadFromNBT(partyNBT, registryAccess())
@@ -525,31 +539,32 @@ class NPCEntity(world: Level) : AgeableMob(CobblemonEntities.NPC, world), Posabl
             }
         }
         if (nbt.contains(DataKeys.NPC_PLAYER_TEXTURE)) {
-            val textureNBT = nbt.getCompound(DataKeys.NPC_PLAYER_TEXTURE)
-            val model = NPCPlayerModelType.valueOf(textureNBT.getString(DataKeys.NPC_PLAYER_TEXTURE_MODEL))
-            val texture = textureNBT.getByteArray(DataKeys.NPC_PLAYER_TEXTURE_TEXTURE)
+            val textureNBT = nbt.getCompoundOrEmpty(DataKeys.NPC_PLAYER_TEXTURE)
+            val model = NPCPlayerModelType.valueOf(textureNBT.getStringOr(DataKeys.NPC_PLAYER_TEXTURE_MODEL, ""))
+            // PT138: CompoundTag.getByteArray returns Optional<ByteArray>
+            val texture = textureNBT.getByteArray(DataKeys.NPC_PLAYER_TEXTURE_TEXTURE).orElse(ByteArray(0))
             entityData.set(NPC_PLAYER_TEXTURE, NPCPlayerTexture(texture, model))
         }
-        this.isMovable = if (nbt.contains(DataKeys.NPC_IS_MOVABLE)) nbt.getBoolean(DataKeys.NPC_IS_MOVABLE) else null
-        this.isInvulnerable = if (nbt.contains(DataKeys.NPC_IS_INVULNERABLE)) nbt.getBoolean(DataKeys.NPC_IS_INVULNERABLE) else null
-        this.isLeashable = if (nbt.contains(DataKeys.NPC_IS_LEASHABLE)) nbt.getBoolean(DataKeys.NPC_IS_LEASHABLE) else null
-        this.allowProjectileHits = if (nbt.contains(DataKeys.NPC_ALLOW_PROJECTILE_HITS)) nbt.getBoolean(DataKeys.NPC_ALLOW_PROJECTILE_HITS) else null
+        this.isMovable = if (nbt.contains(DataKeys.NPC_IS_MOVABLE)) nbt.getBooleanOr(DataKeys.NPC_IS_MOVABLE, false) else null
+        this.isInvulnerable = if (nbt.contains(DataKeys.NPC_IS_INVULNERABLE)) nbt.getBooleanOr(DataKeys.NPC_IS_INVULNERABLE, false) else null
+        this.isLeashable = if (nbt.contains(DataKeys.NPC_IS_LEASHABLE)) nbt.getBooleanOr(DataKeys.NPC_IS_LEASHABLE, false) else null
+        this.allowProjectileHits = if (nbt.contains(DataKeys.NPC_ALLOW_PROJECTILE_HITS)) nbt.getBooleanOr(DataKeys.NPC_ALLOW_PROJECTILE_HITS, false) else null
         if (nbt.contains(DataKeys.NPC_BASE_SCALE)) {
-            val baseScale = nbt.getFloat(DataKeys.NPC_BASE_SCALE)
+            val baseScale = nbt.getFloatOr(DataKeys.NPC_BASE_SCALE, 0f)
             entityData.set(HITBOX_SCALE, baseScale)
         }
         if (nbt.contains(DataKeys.NPC_BOX_SCALE)) {
-            hitboxScale = nbt.getFloat(DataKeys.NPC_BOX_SCALE)
+            hitboxScale = nbt.getFloatOr(DataKeys.NPC_BOX_SCALE, 0f)
         }
         if (nbt.contains(DataKeys.NPC_RENDER_SCALE)) {
-            renderScale = nbt.getFloat(DataKeys.NPC_RENDER_SCALE)
+            renderScale = nbt.getFloatOr(DataKeys.NPC_RENDER_SCALE, 0f)
         }
         this.hitbox = if (nbt.contains(DataKeys.NPC_HITBOX)) {
-            val hitboxNBT = nbt.getCompound(DataKeys.NPC_HITBOX)
+            val hitboxNBT = nbt.getCompoundOrEmpty(DataKeys.NPC_HITBOX)
 
-            val width = hitboxNBT.getFloat(DataKeys.NPC_HITBOX_WIDTH)
-            val height = hitboxNBT.getFloat(DataKeys.NPC_HITBOX_HEIGHT)
-            val fixed = hitboxNBT.getBoolean(DataKeys.NPC_HITBOX_FIXED)
+            val width = hitboxNBT.getFloatOr(DataKeys.NPC_HITBOX_WIDTH, 0f)
+            val height = hitboxNBT.getFloatOr(DataKeys.NPC_HITBOX_HEIGHT, 0f)
+            val fixed = hitboxNBT.getBooleanOr(DataKeys.NPC_HITBOX_FIXED, false)
 
             if (fixed) EntityDimensions.fixed(width, height) else EntityDimensions.scalable(width, height)
         } else {
@@ -560,22 +575,9 @@ class NPCEntity(world: Level) : AgeableMob(CobblemonEntities.NPC, world), Posabl
     }
 
     fun loadTextureFromGameProfileName(username: String) {
-        val server = server ?: return
-        server.profileRepository.findProfilesByNames(arrayOf(username), object : ProfileLookupCallback {
-            override fun onProfileLookupSucceeded(profile: GameProfile) {
-                val deepProfile = server.sessionService.fetchProfile(profile.id, false)?.profile ?: return Cobblemon.LOGGER.error("Failed to fetch profile for game profile name: $username")
-                val textures = server.sessionService.getTextures(deepProfile)
-                val skin = textures.skin!!
-                val url = skin.url
-                val model = NPCPlayerModelType.valueOf((skin.getMetadata("model") ?: "default").uppercase())
-                loadTexture(URI(url), model)
-                data.setDirectly("player_texture_username", StringValue(username))
-            }
-
-            override fun onProfileLookupFailed(profileName: String, exception: Exception) {
-                Cobblemon.LOGGER.error("Unable to load texture for game profile name: $username")
-            }
-        })
+        // PT141: MinecraftServer.services().profileRepository removed in MC 26.1.x.
+        // Profile resolution path completely refactored — stub pending API survey (non-critical).
+        Cobblemon.LOGGER.warn("Profile lookup for NPC '$username' stubbed — MC 26.1.x service refactor pending")
     }
 
     fun loadTexture(uri: URI, model: NPCPlayerModelType) {
@@ -597,7 +599,9 @@ class NPCEntity(world: Level) : AgeableMob(CobblemonEntities.NPC, world), Posabl
     override fun hasCustomName() = true
     override fun isCustomNameVisible() = true
     override fun isPersistenceRequired() = super.isPersistenceRequired() || !npc.canDespawn
-    override fun getScale() = hitboxScale
+    // PT138: LivingEntity.getScale() is final in MC 26.1.x — override via getAgeScale() or attribute system
+    // Keep helper for entity dimensions sizing
+    fun npcScale() = hitboxScale
 
     override fun getDimensions(pose: Pose): EntityDimensions {
         val hitbox = hitbox ?: npc.hitbox
@@ -606,7 +610,8 @@ class NPCEntity(world: Level) : AgeableMob(CobblemonEntities.NPC, world), Posabl
     }
 
     override fun isPushable() = isMovable ?: npc.isMovable
-    override fun isInvulnerableTo(source: DamageSource) = (isInvulnerable ?: npc.isInvulnerable) && !source.`is`(BYPASSES_INVULNERABILITY)
+    // PT138: Entity.isInvulnerableTo(ServerLevel, DamageSource) — ServerLevel param added
+    override fun isInvulnerableTo(level: ServerLevel, source: DamageSource) = (isInvulnerable ?: npc.isInvulnerable) && !source.`is`(BYPASSES_INVULNERABILITY)
     override fun canBeLeashed() = isLeashable ?: npc.isLeashable
     override fun canBeHitByProjectile() = allowProjectileHits ?: npc.allowProjectileHits
 

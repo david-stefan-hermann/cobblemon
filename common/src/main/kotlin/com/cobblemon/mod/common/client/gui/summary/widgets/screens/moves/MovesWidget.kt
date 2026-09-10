@@ -21,8 +21,9 @@ import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
 import java.math.RoundingMode
 import java.text.DecimalFormat
+import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Component
 
 class MovesWidget(
@@ -77,7 +78,7 @@ class MovesWidget(
     )
 
 
-    override fun renderWidget(context: GuiGraphics, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, pMouseX: Int, pMouseY: Int, pPartialTicks: Float) {
         val matrices = context.pose()
 
         blitk(
@@ -90,7 +91,7 @@ class MovesWidget(
         )
 
         moves.forEach {
-            it.render(context, pMouseX, pMouseY, pPartialTicks)
+            it.extractRenderState(context, pMouseX, pMouseY, pPartialTicks)
         }
 
         // Move icons
@@ -184,7 +185,7 @@ class MovesWidget(
 
          // Render move description
         if (selectedMove != null) {
-            descriptionScrollList.renderWidget(context, pMouseX, pMouseY, pPartialTicks)
+            descriptionScrollList.extractRenderState(context, pMouseX, pMouseY, pPartialTicks)
         }
     }
 
@@ -218,9 +219,12 @@ class MovesWidget(
         descriptionScrollList.setMoveDescription(selectedMove?.description ?: "".text())
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if (descriptionScrollList.isHovered) descriptionScrollList.mouseClicked(mouseX, mouseY, button)
-        return super.mouseClicked(mouseX, mouseY, button)
+    override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
+        if (descriptionScrollList.isHovered) descriptionScrollList.mouseClicked(event, fromOnClick)
+        return super.mouseClicked(event, fromOnClick)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
@@ -228,8 +232,11 @@ class MovesWidget(
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
-        if (descriptionScrollList.isHovered) descriptionScrollList.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+    override fun mouseDragged(event: MouseButtonEvent, deltaX: Double, deltaY: Double): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
+        if (descriptionScrollList.isHovered) descriptionScrollList.mouseDragged(event, deltaX, deltaY)
+        return super.mouseDragged(event, deltaX, deltaY)
     }
 }

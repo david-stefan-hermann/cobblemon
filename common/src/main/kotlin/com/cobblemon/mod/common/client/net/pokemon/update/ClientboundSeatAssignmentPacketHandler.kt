@@ -31,7 +31,7 @@ object ClientboundSeatAssignmentPacketHandler : ClientNetworkPacketHandler<Clien
         vehicle.occupiedSeats[seat] = passenger
 
         if (!vehicle.hasPassenger(passenger)) {
-            passenger.startRiding(vehicle, true)
+            passenger.startRiding(vehicle, true, true)
         }
     }
 }

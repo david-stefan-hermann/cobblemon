@@ -443,7 +443,7 @@ class JetBehaviour : RidingBehaviour<JetSettings, JetState> {
         impactVec: Vec3
     ): Boolean {
         val impactSpeed = impactVec.horizontalDistance().toFloat() * 10f
-        return vehicle.causeFallDamage(impactSpeed, 1f, vehicle.damageSources().flyIntoWall())
+        return vehicle.causeFallDamage(impactSpeed.toDouble(), 1f, vehicle.damageSources().flyIntoWall())
     }
 
     override fun asMoLangValue(

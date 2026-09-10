@@ -8,6 +8,10 @@
 
 package com.cobblemon.mod.common.pokemon.activestate
 
+import com.cobblemon.mod.common.util.getUUID
+import com.cobblemon.mod.common.util.putUUID
+import com.cobblemon.mod.common.util.hasUUID
+
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.entity.pokemon.PokemonEntity
 import com.cobblemon.mod.common.pokemon.Pokemon
@@ -29,7 +33,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.resources.ResourceKey
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvents
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.world.level.Level
 
 sealed class PokemonState {
@@ -51,7 +55,7 @@ sealed class PokemonState {
     val name: String
         get() = states.entries.find { it.value == this::class.java }!!.key
 
-    open fun getIcon(pokemon: Pokemon): ResourceLocation? = null
+    open fun getIcon(pokemon: Pokemon): Identifier? = null
 
     open fun writeToNBT(nbt: CompoundTag): CompoundTag? {
         nbt.putString(DataKeys.POKEMON_STATE_TYPE, name)
@@ -73,7 +77,8 @@ class InactivePokemonState : PokemonState() {
     override fun hashCode() = 0
     companion object {
         @JvmStatic
-        val CODEC: Codec<InactivePokemonState> = Codec.unit { InactivePokemonState() }
+        // PT136: Codec.unit removed in DFU 9.0.19 — use MapCodec.unitCodec
+        val CODEC: Codec<InactivePokemonState> = com.mojang.serialization.MapCodec.unitCodec { InactivePokemonState() }
     }
 }
 
@@ -93,7 +98,7 @@ class SentOutState() : ActivePokemonState() {
         this.dimension = entity.level().dimension()
     }
 
-    override fun getIcon(pokemon: Pokemon): ResourceLocation {
+    override fun getIcon(pokemon: Pokemon): Identifier {
         val isBeingRidden = (pokemon.entity?.countPlayerPassengers() ?: 0) > 0
         val icon = if (isBeingRidden) "mounted" else "released"
 
@@ -106,13 +111,13 @@ class SentOutState() : ActivePokemonState() {
     override fun writeToBuffer(buffer: RegistryFriendlyByteBuf) {
         super.writeToBuffer(buffer)
         buffer.writeInt(entityId)
-        buffer.writeString(dimension.location().toString())
+        buffer.writeString(dimension.identifier().toString())
     }
 
     override fun readFromBuffer(buffer: RegistryFriendlyByteBuf): SentOutState {
         super.readFromBuffer(buffer)
         entityId = buffer.readInt()
-        dimension = ResourceKey.create(ResourceKey.createRegistryKey(dimension.location()), ResourceLocation.parse(buffer.readString()))
+        dimension = ResourceKey.create(ResourceKey.createRegistryKey(dimension.identifier()), Identifier.parse(buffer.readString()))
         return this
     }
 
@@ -139,7 +144,7 @@ class ShoulderedState() : ActivePokemonState() {
 
     override val entity: PokemonEntity? = null
 
-    override fun getIcon(pokemon: Pokemon): ResourceLocation {
+    override fun getIcon(pokemon: Pokemon): Identifier {
         val suffix = if (isLeftShoulder) "left" else "right"
         return cobblemonResource("textures/gui/party/party_icon_shoulder_$suffix.png")
     }
@@ -154,7 +159,7 @@ class ShoulderedState() : ActivePokemonState() {
 
     override fun readFromNBT(nbt: CompoundTag): PokemonState {
         super.readFromNBT(nbt)
-        isLeftShoulder = nbt.getBoolean(DataKeys.POKEMON_STATE_SHOULDER)
+        isLeftShoulder = nbt.getBooleanOr(DataKeys.POKEMON_STATE_SHOULDER, false)
         playerUUID = nbt.getUUID(DataKeys.POKEMON_STATE_PLAYER_UUID)
         stateId = nbt.getUUID(DataKeys.POKEMON_STATE_ID)
         pokemonUUID = nbt.getUUID(DataKeys.POKEMON_STATE_POKEMON_UUID)
@@ -201,13 +206,15 @@ class ShoulderedState() : ActivePokemonState() {
      */
     override fun recall() {
         val player = playerUUID.getPlayer() ?: return
-        val nbt = if (isLeftShoulder) player.shoulderEntityLeft else player.shoulderEntityRight
+        // PT142: shoulderEntityLeft/Right privatized; access via PlayerDuck
+        val duck = player as com.cobblemon.mod.common.duck.PlayerDuck
+        val nbt = if (isLeftShoulder) duck.`cobblemon$getShoulderEntityLeft`() else duck.`cobblemon$getShoulderEntityRight`()
         if (this.isShoulderedPokemon(nbt)) {
             player.level().playSoundServer(player.position(), SoundEvents.CANDLE_FALL)
             if (isLeftShoulder) {
-                player.shoulderEntityLeft = CompoundTag()
+                duck.`cobblemon$setShoulderEntityLeft`(CompoundTag())
             } else {
-                player.shoulderEntityRight = CompoundTag()
+                duck.`cobblemon$setShoulderEntityRight`(CompoundTag())
             }
             this.removeShoulderEffects(player)
         }
@@ -219,11 +226,14 @@ class ShoulderedState() : ActivePokemonState() {
     }
 
     private fun isShoulderedPokemon(nbt: CompoundTag): Boolean = nbt.isPokemonEntity()
-            && nbt.getCompound(DataKeys.POKEMON)
-            .getCompound(DataKeys.POKEMON_STATE)
+            && nbt.getCompoundOrEmpty(DataKeys.POKEMON)
+            .getCompoundOrEmpty(DataKeys.POKEMON_STATE)
             .getUUID(DataKeys.POKEMON_STATE_ID) == this.stateId
 
-    fun isStillShouldered(player: ServerPlayer) = isShoulderedPokemon(if (isLeftShoulder) player.shoulderEntityLeft else player.shoulderEntityRight)
+    fun isStillShouldered(player: ServerPlayer): Boolean {
+        val duck = player as com.cobblemon.mod.common.duck.PlayerDuck
+        return isShoulderedPokemon(if (isLeftShoulder) duck.`cobblemon$getShoulderEntityLeft`() else duck.`cobblemon$getShoulderEntityRight`())
+    }
 
     companion object {
 

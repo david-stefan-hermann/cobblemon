@@ -82,15 +82,15 @@ class ActivatedHabitatSpawning(val habitatBlockEntity: HabitatBlockEntity) : Hab
     }
 
     override fun readFromNBT(nbt: CompoundTag) {
-        chance = nbt.getFloat(DataKeys.HABITAT_ACTIVATED_CHANCE)
-        trigger = Trigger.valueOf(nbt.getString(DataKeys.HABITAT_ACTIVATED_TRIGGER) ?: Trigger.REDSTONE.name)
-        cancelledNaturalSpawningRange = nbt.getInt(DataKeys.HABITAT_ACTIVATED_CANCEL_RANGE)
-        spawnRange = nbt.getInt(DataKeys.HABITAT_ACTIVATED_SPAWN_RANGE)
-        maxSpawns = nbt.getInt(DataKeys.HABITAT_ACTIVATED_MAX_SPAWNS)
-        maxSpawnsPerActivation = nbt.getInt(DataKeys.HABITAT_ACTIVATED_MAX_SPAWNS_PER_ACTIVATION)
+        chance = nbt.getFloatOr(DataKeys.HABITAT_ACTIVATED_CHANCE, 0f)
+        trigger = Trigger.valueOf(nbt.getStringOr(DataKeys.HABITAT_ACTIVATED_TRIGGER, "") ?: Trigger.REDSTONE.name)
+        cancelledNaturalSpawningRange = nbt.getIntOr(DataKeys.HABITAT_ACTIVATED_CANCEL_RANGE, 0)
+        spawnRange = nbt.getIntOr(DataKeys.HABITAT_ACTIVATED_SPAWN_RANGE, 0)
+        maxSpawns = nbt.getIntOr(DataKeys.HABITAT_ACTIVATED_MAX_SPAWNS, 0)
+        maxSpawnsPerActivation = nbt.getIntOr(DataKeys.HABITAT_ACTIVATED_MAX_SPAWNS_PER_ACTIVATION, 0)
 
         pool = HabitatSpawningStyle.readPoolFromNBT(
-            nbt = nbt.getCompound(DataKeys.HABITAT_POOL),
+            nbt = nbt.getCompoundOrEmpty(DataKeys.HABITAT_POOL),
             poolInitializer = ::ActivatedHabitatPool,
             spawnInitializer = ::ActivatedHabitatSpawn,
             defaultPool = ActivatedHabitatPool::default

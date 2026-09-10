@@ -8,9 +8,10 @@
 
 package com.cobblemon.mod.common
 
-import net.minecraft.client.RecipeBookCategories
+import net.minecraft.world.item.crafting.RecipeBookCategory
 import net.minecraft.world.inventory.RecipeBookType
 
+// PT144: RecipeBookCategories no longer enum in MC 26.1.x — each category is an RecipeBookCategory instance.
 enum class CobblemonRecipeCategories {
 
     COOKING_POT_SEARCH("COBBLEMON_COOKING_POT_SEARCH"),
@@ -20,11 +21,14 @@ enum class CobblemonRecipeCategories {
     COOKING_POT_MISC("COBBLEMON_COOKING_POT_MISC");
 
     companion object {
-        val customAggregateCategories: Map<RecipeBookCategories, List<RecipeBookCategories>> = mapOf(
-            COOKING_POT_SEARCH.toVanillaCategory() to listOf(
-                COOKING_POT_FOODS.toVanillaCategory(), COOKING_POT_MISC.toVanillaCategory(), COOKING_POT_MEDICINES.toVanillaCategory(), COOKING_POT_COMPLEX_DISHES.toVanillaCategory()
+        private val categoryByName: MutableMap<String, RecipeBookCategory> = mutableMapOf()
+        val customAggregateCategories: Map<RecipeBookCategory, List<RecipeBookCategory>> by lazy {
+            mapOf(
+                COOKING_POT_SEARCH.toVanillaCategory() to listOf(
+                    COOKING_POT_FOODS.toVanillaCategory(), COOKING_POT_MISC.toVanillaCategory(), COOKING_POT_MEDICINES.toVanillaCategory(), COOKING_POT_COMPLEX_DISHES.toVanillaCategory()
+                )
             )
-        )
+        }
     }
 
     var id: String
@@ -33,12 +37,13 @@ enum class CobblemonRecipeCategories {
         this.id = id
     }
 
-    fun toVanillaCategory(): RecipeBookCategories {
-        return RecipeBookCategories.valueOf(this.id)
+    fun toVanillaCategory(): RecipeBookCategory {
+        return categoryByName.getOrPut(this.id) { RecipeBookCategory() }
     }
 }
 
 object CobblemonRecipeBookTypes {
     const val COOKING_POT_NAME = "COBBLEMON_COOKING_POT"
-    val COOKING_POT: RecipeBookType = RecipeBookType.valueOf(COOKING_POT_NAME)
+    // PT144: RecipeBookType enum no longer has cobblemon entry; fall back to CRAFTING until vanilla extension API surfaces.
+    val COOKING_POT: RecipeBookType = RecipeBookType.CRAFTING
 }

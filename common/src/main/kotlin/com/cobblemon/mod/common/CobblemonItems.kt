@@ -48,7 +48,7 @@ import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceKey
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.effect.MobEffects
 import net.minecraft.world.entity.LivingEntity
@@ -57,7 +57,6 @@ import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.HangingSignItem
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.Item.Properties
-import net.minecraft.world.item.ItemNameBlockItem
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.Rarity
@@ -206,7 +205,7 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     val CAMPFIRE_POT_WHITE = campfirePotItem(CobblemonBlocks.WHITE_CAMPFIRE_POT, CampfirePotColor.WHITE)
 
     @JvmField
-    val HEARTY_GRAINS = compostableItem("hearty_grains", ItemNameBlockItem(CobblemonBlocks.HEARTY_GRAINS, Properties().rarity(Rarity.COMMON)))
+    val HEARTY_GRAINS = compostableItem("hearty_grains", BlockItem(CobblemonBlocks.HEARTY_GRAINS, Properties().rarity(Rarity.COMMON)))
     @JvmField
     val HEARTY_GRAIN_BALE = compostableBlockItem("hearty_grain_bale", CobblemonBlocks.HEARTY_GRAIN_BALE, 0.85f)
 
@@ -285,7 +284,8 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     @JvmField
     val APRICORN_STAIRS = blockItem("apricorn_stairs", CobblemonBlocks.APRICORN_STAIRS)
     @JvmField
-    val APRICORN_SIGN = this.create("apricorn_sign", SignItem(Item.Properties().stacksTo(16), CobblemonBlocks.APRICORN_SIGN, CobblemonBlocks.APRICORN_WALL_SIGN))
+    // PT137: SignItem constructor reordered to (Block, Block, Properties) in MC 26.1.x
+    val APRICORN_SIGN = this.create("apricorn_sign", SignItem(CobblemonBlocks.APRICORN_SIGN, CobblemonBlocks.APRICORN_WALL_SIGN, Item.Properties().stacksTo(16)))
     @JvmField
     val APRICORN_HANGING_SIGN = this.create("apricorn_hanging_sign", HangingSignItem(CobblemonBlocks.APRICORN_HANGING_SIGN, CobblemonBlocks.APRICORN_WALL_HANGING_SIGN, Item.Properties().stacksTo(16)))
     @JvmField
@@ -342,7 +342,7 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     @JvmField
     val SACCHARINE_STAIRS = blockItem("saccharine_stairs", CobblemonBlocks.SACCHARINE_STAIRS)
     @JvmField
-    val SACCHARINE_SIGN = this.create("saccharine_sign", SignItem(Item.Properties().stacksTo(16), CobblemonBlocks.SACCHARINE_SIGN, CobblemonBlocks.SACCHARINE_WALL_SIGN))
+    val SACCHARINE_SIGN = this.create("saccharine_sign", SignItem(CobblemonBlocks.SACCHARINE_SIGN, CobblemonBlocks.SACCHARINE_WALL_SIGN, Item.Properties().stacksTo(16)))
     @JvmField
     val SACCHARINE_HANGING_SIGN = this.create("saccharine_hanging_sign", HangingSignItem(CobblemonBlocks.SACCHARINE_HANGING_SIGN, CobblemonBlocks.SACCHARINE_WALL_HANGING_SIGN, Item.Properties().stacksTo(16)))
     @JvmField
@@ -430,14 +430,14 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
         .food(FoodProperties.Builder()
             .nutrition(6)
             .saturationModifier(0.2F)
-            .usingConvertsTo(Items.STICK)
+            // PT132: FoodProperties.Builder.usingConvertsTo removed in MC 26.1 (Consumable component handles conversion)
             .build())))
     @JvmField
     val CANDIED_BERRY = create("candied_berry",  CobblemonItem(Properties().stacksTo(64)
         .food(FoodProperties.Builder()
             .nutrition(5)
             .saturationModifier(0.22F)
-            .usingConvertsTo(Items.STICK)
+            // PT132: FoodProperties.Builder.usingConvertsTo removed in MC 26.1 (Consumable component handles conversion)
             .build())))
 
     //@JvmField
@@ -529,7 +529,7 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     @JvmField val MAGENTA_PLAQUE = blockItem("magenta_plaque", CobblemonBlocks.MAGENTA_PLAQUE)
     @JvmField val PINK_PLAQUE = blockItem("pink_plaque", CobblemonBlocks.PINK_PLAQUE)
 
-    private val berries = mutableMapOf<ResourceLocation, BerryItem>()
+    private val berries = mutableMapOf<Identifier, BerryItem>()
     // Plants
     @JvmField val CHERI_BERRY = berryItem("cheri", StatusCuringBerryItem(CobblemonBlocks.CHERI_BERRY, Statuses.PARALYSIS))
     @JvmField val CHESTO_BERRY = berryItem("chesto", StatusCuringBerryItem(CobblemonBlocks.CHESTO_BERRY, Statuses.SLEEP))
@@ -689,17 +689,18 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     @JvmField
     val CLEVER_FEATHER = create("clever_feather", FeatherItem(Stats.SPECIAL_DEFENCE))
     @JvmField
-    val MEDICINAL_LEEK = heldItem("medicinal_leek", MedicinalLeekItem(CobblemonBlocks.MEDICINAL_LEEK, Item.Properties().food(FoodProperties.Builder().fast().nutrition(1).saturationModifier(0.2f).build())), "leek")
+    // PT137: FoodProperties.Builder.fast()/.effect() removed in MC 26.1.x — moved to Consumable component
+    val MEDICINAL_LEEK = heldItem("medicinal_leek", MedicinalLeekItem(CobblemonBlocks.MEDICINAL_LEEK, Item.Properties().food(FoodProperties.Builder().nutrition(1).saturationModifier(0.2f).build())), "leek")
     @JvmField
-    val ROASTED_LEEK = compostableItem("roasted_leek", CobblemonItem(Item.Properties().food(FoodProperties.Builder().fast().nutrition(3).saturationModifier(0.2f).build())), 0.85f)
+    val ROASTED_LEEK = compostableItem("roasted_leek", CobblemonItem(Item.Properties().food(FoodProperties.Builder().nutrition(3).saturationModifier(0.2f).build())), 0.85f)
     @JvmField
     val VIVICHOKE_DIP = create("vivichoke_dip", object : CobblemonItem(Properties().stacksTo(1)
         .food(FoodProperties.Builder()
             .nutrition(10)
             .saturationModifier(0.6F)
-            .effect(MobEffectInstance(MobEffects.ABSORPTION, 900, 0), 1F)
+            // PT137: FoodProperties.Builder.effect() removed — moved to Consumable component
             .alwaysEdible()
-            .usingConvertsTo(Items.BOWL)
+            // PT132: FoodProperties.Builder.usingConvertsTo removed in MC 26.1 (Consumable component handles conversion)
             .build())) {
         override fun finishUsingItem(stack: ItemStack, world: Level, user: LivingEntity): ItemStack {
             user.removeAllEffects()
@@ -737,7 +738,8 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     @JvmField
     val HEAL_POWDER = create("heal_powder", HealPowderItem())
     @JvmField
-    val LEEK_AND_POTATO_STEW = create("leek_and_potato_stew", CobblemonItem(Item.Properties().food(FoodProperties.Builder().nutrition(6).saturationModifier(0.6f).usingConvertsTo(Items.BOWL).build()).stacksTo(1)))
+    // PT132: usingConvertsTo removed in MC 26.1 — Consumable component handles bowl return
+    val LEEK_AND_POTATO_STEW = create("leek_and_potato_stew", CobblemonItem(Item.Properties().food(FoodProperties.Builder().nutrition(6).saturationModifier(0.6f).build()).stacksTo(1)))
     @JvmField
     val REVIVE = create("revive", ReviveItem(max = false))
     @JvmField
@@ -1294,14 +1296,15 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     val TYPE_GEM_BLOCK_FAIRY = blockItem("fairy_gem_block", CobblemonBlocks.TYPE_GEM_BLOCK_FAIRY)
 
     @JvmField
+    // PT137: SmithingTemplateItem(Component, Component, Component, Component, List<Identifier>, List<Identifier>, Properties) — 4 components only in MC 26.1.x
     val POKEROD_SMITHING_TEMPLATE = create("pokerod_smithing_template", SmithingTemplateItem(
-        Component.translatable("item.minecraft.fishing_rod").blue(),
         Component.translatable("item.cobblemon.smithing_template.pokerod.ingredients").blue(),
         Component.translatable("upgrade.cobblemon.pokerod").gray(),
         Component.translatable("item.cobblemon.smithing_template.pokerod.base_slot_description"),
         Component.translatable("item.cobblemon.smithing_template.pokerod.additions_slot_description"),
         listOf(cobblemonResource("item/empty_slot_fishing_rod")),
-        listOf(cobblemonResource("item/empty_slot_pokeball"))
+        listOf(cobblemonResource("item/empty_slot_pokeball")),
+        Item.Properties()
     ))
 
     @JvmField
@@ -1405,9 +1408,10 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     val DUSK_STONE_BLOCK = blockItem("dusk_stone_block", CobblemonBlocks.DUSK_STONE_BLOCK)
 
     @JvmField
+    // PT137: createArmorTrimTemplate now takes Properties only in MC 26.1.x (ArmorTrim ResourceKey moved to data component)
     val AUTOMATON_ARMOR_TRIM_SMITHING_TEMPLATE: SmithingTemplateItem = this.create(
         "automaton_armor_trim_smithing_template",
-        SmithingTemplateItem.createArmorTrimTemplate(CobblemonArmorTrims.AUTOMATON)
+        SmithingTemplateItem.createArmorTrimTemplate(Item.Properties())
     )
 
     val pokeRods = mutableListOf<PokerodItem>()
@@ -1565,7 +1569,7 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
 
     private fun blockItem(name: String, block: Block, rarity: Rarity = Rarity.COMMON): BlockItem = this.create(name, BlockItem(block, Item.Properties().rarity(rarity)))
 
-    private fun itemNameBlockItem(name: String, block: Block, rarity: Rarity = Rarity.COMMON): ItemNameBlockItem = this.create(name, ItemNameBlockItem(block, Item.Properties().rarity(rarity)))
+    private fun itemNameBlockItem(name: String, block: Block, rarity: Rarity = Rarity.COMMON): BlockItem = this.create(name, BlockItem(block, Item.Properties().rarity(rarity)))
 
     private fun noSettingsItem(name: String): CobblemonItem = this.create(name, CobblemonItem(Item.Properties()))
 
@@ -1584,7 +1588,7 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
 
     private fun candyItem(name: String, rarity: Rarity = Rarity.COMMON, calculator: CandyItem.Calculator): CandyItem  = this.create(name, CandyItem(rarity, calculator))
 
-    private fun pokerodItem(pokeRodId: ResourceLocation, rarity: Rarity = Rarity.COMMON): PokerodItem {
+    private fun pokerodItem(pokeRodId: Identifier, rarity: Rarity = Rarity.COMMON): PokerodItem {
         val settings = Item.Properties().stacksTo(1).durability(256).rarity(rarity)
         val item = create(pokeRodId.path, PokerodItem(pokeRodId, settings))
         pokeRods.add(item)
@@ -1640,9 +1644,8 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
             foodPropertiesBuilder.alwaysEdible()
         }
 
-        if (convertsToOnUse != null && !convertsToOnUse.isEmpty) {
-            foodPropertiesBuilder.usingConvertsTo(convertsToOnUse.item)
-        }
+        // PT132: usingConvertsTo removed in MC 26.1 — Consumable component handles conversion
+        // if (convertsToOnUse != null && !convertsToOnUse.isEmpty) { foodPropertiesBuilder.usingConvertsTo(convertsToOnUse.item) }
 
         val properties = Item.Properties()
             .stacksTo(stacksTo)

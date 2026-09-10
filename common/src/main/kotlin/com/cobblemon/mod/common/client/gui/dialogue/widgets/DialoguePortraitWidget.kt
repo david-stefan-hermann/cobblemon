@@ -8,11 +8,14 @@
 
 package com.cobblemon.mod.common.client.gui.dialogue.widgets
 
+import com.cobblemon.mod.common.util.translate
+import com.cobblemon.mod.common.util.scale
+
 import com.cobblemon.mod.common.api.gui.blitk
 import com.cobblemon.mod.common.client.gui.CobblemonRenderable
 import com.cobblemon.mod.common.client.gui.dialogue.DialogueScreen
 import com.cobblemon.mod.common.util.cobblemonResource
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.Renderable
 import net.minecraft.client.gui.components.events.GuiEventListener
 import kotlin.math.ceil
@@ -33,7 +36,7 @@ class DialoguePortraitWidget(
     }
     override fun setFocused(focused: Boolean) {}
     override fun isFocused() = false
-    override fun render(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         val face = dialogueScreen.dialogueDTO.currentPageDTO.speaker?.let { dialogueScreen.speakers[it] }?.face ?: return
         val startX = if (face.isLeftSide) (x + 1) else (x + DialogueScreen.BOX_WIDTH + DialogueScreen.PORTRAIT_WIDTH - 1)
         blitk(
@@ -52,13 +55,13 @@ class DialoguePortraitWidget(
             y + 3 + height - 6
         )
 
-        context.pose().pushPose()
+        context.pose().pushMatrix()
         context.pose().translate(startX.toDouble() + width / 2, y.toDouble(), 0.0)
-        face.render(context, delta)
+        face.extractRenderState(context, delta)
         context.disableScissor()
-        context.pose().popPose()
+        context.pose().popMatrix()
 
-        context.pose().pushPose()
+        context.pose().pushMatrix()
         context.pose().translate(0F, 0F, 100F)
         blitk(
             texture = if (face.isLeftSide) frameLeftResource else frameRightResource,
@@ -68,7 +71,7 @@ class DialoguePortraitWidget(
             width = width,
             height = height
         )
-        context.pose().popPose()
+        context.pose().popMatrix()
 
         blitk(
             texture = DialogueBox.boxResource,

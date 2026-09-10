@@ -8,6 +8,10 @@
 
 package com.cobblemon.mod.common.api.storage.party
 
+import com.cobblemon.mod.common.util.getUUID
+import com.cobblemon.mod.common.util.putUUID
+import com.cobblemon.mod.common.util.hasUUID
+
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.advancement.CobblemonCriteria
 import com.cobblemon.mod.common.api.events.CobblemonEvents
@@ -69,7 +73,7 @@ open class PlayerPartyStore(
             true
         } else {
             val player = playerUUID.getPlayer()
-            val pc = getOverflowPC(player?.server?.registryAccess() ?: server()!!.registryAccess())
+            val pc = getOverflowPC((player?.level() as? net.minecraft.server.level.ServerLevel)?.server?.registryAccess() ?: server()!!.registryAccess())
 
             if (pc == null || !pc.add(pokemon)) {
                 if (pc == null) {
@@ -162,7 +166,7 @@ open class PlayerPartyStore(
                     pokemon.tickInteractionCooldown(20)
                 }
 
-                pokemon.features.filterIsInstance<TickingSpeciesFeature>().forEach { it.onSecondPassed(player.serverLevel(), pokemon, null) }
+                pokemon.features.filterIsInstance<TickingSpeciesFeature>().forEach { it.onSecondPassed(player.level(), pokemon, null) }
 
                 if (pokemon.entity?.passengers?.isNotEmpty() != true) {
                     pokemon.rideStamina += 0.1F // Recover all stamina in 10 seconds, as long as no one's on it
@@ -200,7 +204,8 @@ open class PlayerPartyStore(
 
     private fun validateShoulder(player: ServerPlayer, isLeft: Boolean): Boolean {
         val shoulderEntity = if(isLeft) player.shoulderEntityLeft else player.shoulderEntityRight
-        val pokemon = find { it.uuid == shoulderEntity.getCompound("Pokemon").getUUID(DataKeys.POKEMON_UUID) }
+        // PT143: CompoundTag.getCompound returns Optional<CompoundTag> in MC 26.1.x — use getCompoundOrEmpty.
+        val pokemon = find { it.uuid == shoulderEntity.getCompoundOrEmpty("Pokemon").getUUID(DataKeys.POKEMON_UUID) }
         // No longer valid if (in order): not in party, not the correct shoulder, no longer shoulder mountable
         if (pokemon == null || (pokemon.state as? ShoulderedState)?.isLeftShoulder != isLeft || !pokemon.form.shoulderMountable || pokemon.isAlpha) {
             return false

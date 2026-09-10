@@ -45,17 +45,10 @@ val mobEffectHeader by lazy { lang("seasoning_mob_effect_header").gray() }
 val rideBoostSeasoningHeader by lazy { lang("seasoning_ride_boosts_info_header").blue() }
 
 private fun recipeUsesProcessor(stack: ItemStack, processorType: String): Boolean {
-    val level = Minecraft.getInstance().level ?: return false
-    val recipeManager = level.recipeManager
-
-    val allCookingRecipes = recipeManager.getAllRecipesFor(CobblemonRecipeTypes.COOKING_POT_COOKING) +
-            recipeManager.getAllRecipesFor(CobblemonRecipeTypes.COOKING_POT_SHAPELESS)
-
-    return allCookingRecipes
-        .any { recipe ->
-            stack.item == recipe.value.result.item &&
-                    recipe.value.seasoningProcessors.any { it.type == processorType }
-        }
+    Minecraft.getInstance().level ?: return false
+    // PT135-DEFER: ClientLevel.recipeManager removed in MC 26.1.x — tooltip seasoning lookup needs ClientRecipeAccess refactor.
+    // PT137: removed unreachable code (RecipeHolder/CookingPotRecipeBase references unresolved without recipe lookup).
+    return false
 }
 
 fun itemTakesSeasoningData(stack: ItemStack): Boolean {

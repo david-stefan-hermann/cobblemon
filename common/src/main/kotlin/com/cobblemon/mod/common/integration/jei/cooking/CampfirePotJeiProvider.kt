@@ -22,10 +22,9 @@ class CampfirePotJeiProvider : CobblemonJeiProvider {
     }
 
     override fun registerRecipes(registration: IRecipeRegistration) {
-        val recipeManger = Minecraft.getInstance().level?.recipeManager ?: throw IllegalStateException("Recipe manager not found")
-
-        val shapelessRecipes = recipeManger.getAllRecipesFor(CobblemonRecipeTypes.COOKING_POT_SHAPELESS).map { it.value }
-        val cookingRecipes = recipeManger.getAllRecipesFor(CobblemonRecipeTypes.COOKING_POT_COOKING).map { it.value }
+        // PT135-DEFER: ClientLevel.recipeManager removed in MC 26.1.x — JEI integration needs ClientRecipeAccess refactor.
+        val shapelessRecipes = emptyList<com.cobblemon.mod.common.item.crafting.CookingPotShapelessRecipe>()
+        val cookingRecipes = emptyList<com.cobblemon.mod.common.item.crafting.CookingPotRecipe>()
 
         registration.addRecipes(CampfirePotRecipeCategory.RECIPE_TYPE, shapelessRecipes)
         registration.addRecipes(CampfirePotRecipeCategory.RECIPE_TYPE, cookingRecipes)

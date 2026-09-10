@@ -51,7 +51,8 @@ class NatureUpdatePacket(pokemon: () -> Pokemon?, val nature: Nature?, val minte
 
     companion object {
         val ID = cobblemonResource("nature_update")
-        fun decode(buffer: RegistryFriendlyByteBuf) = NatureUpdatePacket(decodePokemon(buffer), buffer.readNullable { Natures.getNature(buffer.readIdentifier()) }, buffer.readBoolean())
+        // PT144: readNullable<T> bound tightened to T : Any in MC 26.1.x; decoder forced non-null via error() fallback.
+        fun decode(buffer: RegistryFriendlyByteBuf) = NatureUpdatePacket(decodePokemon(buffer), buffer.readNullable<com.cobblemon.mod.common.pokemon.Nature> { Natures.getNature(buffer.readIdentifier()) ?: error("Unknown Nature id") }, buffer.readBoolean())
     }
 
 }

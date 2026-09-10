@@ -8,6 +8,9 @@
 
 package com.cobblemon.mod.common.client.gui.pokedex.widgets
 
+import com.cobblemon.mod.common.util.translate
+import com.cobblemon.mod.common.util.scale
+
 import com.bedrockk.molang.runtime.MoLangRuntime
 import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.api.gui.blitk
@@ -33,8 +36,9 @@ import com.cobblemon.mod.common.pokemon.Gender
 import com.cobblemon.mod.common.pokemon.RenderablePokemon
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.math.fromEulerXYZDegrees
+import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.network.chat.Component
 import net.minecraft.util.Mth
@@ -69,20 +73,20 @@ class EntriesScrollingWidget(val pX: Int, val pY: Int, val setPokedexEntry: (Pok
         return super.addEntry(entry)
     }
 
-    override fun getScrollbarPosition(): Int {
+    override fun scrollBarX(): Int {
         return pX + width - SCROLL_BAR_WIDTH
     }
 
-    override fun renderScrollbar(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
-        val xLeft = this.scrollbarPosition
+    override fun renderScrollbar(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        val xLeft = this.scrollBarX()
         val yMargin = 3
         val yStart = y + yMargin
 
         val barHeight = this.bottom - yMargin - yStart
 
-        var yBottom = ((barHeight * barHeight).toFloat() / this.maxPosition.toFloat()).toInt()
+        var yBottom = ((barHeight * barHeight).toFloat() / this.contentHeight().toFloat()).toInt()
         yBottom = Mth.clamp(yBottom, 32, barHeight - 8)
-        var yTop = scrollAmount.toInt() * (barHeight - yBottom) / this.maxScroll + yStart
+        var yTop = scrollAmount.toInt() * (barHeight - yBottom) / this.maxScrollAmount() + yStart
         if (yTop < yStart) yTop = yStart
 
         // Scroll Track
@@ -106,8 +110,9 @@ class EntriesScrollingWidget(val pX: Int, val pY: Int, val setPokedexEntry: (Pok
         )
     }
 
-    override fun renderItem(
-        context: GuiGraphics,
+    // PT144: AbstractSelectionList.renderItem / getEntry removed in MC 26.1.x — entry extraction is now state-driven via extractContent.
+    fun renderItem_DEFER_NO_OVERRIDE(
+        context: GuiGraphicsExtractor,
         mouseX: Int,
         mouseY: Int,
         delta: Float,
@@ -118,15 +123,12 @@ class EntriesScrollingWidget(val pX: Int, val pY: Int, val setPokedexEntry: (Pok
         entryHeight: Int
     ) {
         val entry =  this.getEntry(index)
-        entry.x = x
-        entry.y = y
-        entry.render(
-            context, index, y, x, entryWidth, entryHeight, mouseX, mouseY,
-            focused == entry, delta
-        )
+        entry.slotX = x
+        entry.slotY = y
+        // PT144: PokemonScrollSlotRow.render call deferred — replaced by per-slot extractContent in new MC 26.1.x flow.
     }
 
-    override fun getEntry(index: Int): PokemonScrollSlotRow {
+    fun getEntry(index: Int): PokemonScrollSlotRow {
         return children()[index] as PokemonScrollSlotRow
     }
 
@@ -146,21 +148,22 @@ class EntriesScrollingWidget(val pX: Int, val pY: Int, val setPokedexEntry: (Pok
             it.environment.query.addFunction("get_pokedex") { CobblemonClient.clientPokedexData.struct }
         }
 
-        var x: Int = 0
-        var y: Int = 0
+        // PT145: 'x'/'y' clash with parent Slot's getX()/setX()/getY()/setY() in MC 26.1.x — renamed to slotX/slotY.
+        var slotX: Int = 0
+        var slotY: Int = 0
 
-        override fun render(
-            context: GuiGraphics,
-            index: Int,
-            y: Int,
-            x: Int,
-            entryWidth: Int,
-            entryHeight: Int,
+        override fun extractContent(
+            context: GuiGraphicsExtractor,
             mouseX: Int,
             mouseY: Int,
             hovered: Boolean,
             tickDelta: Float
         ) {
+            val index = 0
+            val y = contentY
+            val x = contentX
+            val entryWidth = width
+            val entryHeight = contentHeight
             dexDataList.forEachIndexed { index, dexData ->
                 val state = FloatingState()
                 val species = PokemonSpecies.getByIdentifier(dexData.speciesId)
@@ -221,9 +224,9 @@ class EntriesScrollingWidget(val pX: Int, val pY: Int, val setPokedexEntry: (Pok
                         aspectsToDraw.add("shiny")
                     }
                     state.currentAspects = aspectsToDraw
-                    matrices.pushPose()
-                    matrices.translate(startPosX + (SCROLL_SLOT_SIZE / 2.0), startPosY + 1.0, 0.0)
-                    matrices.scale(2.5F, 2.5F, 1F)
+                    matrices.pushMatrix()
+                    matrices.translate((startPosX + (SCROLL_SLOT_SIZE / 2.0)).toFloat(), (startPosY + 1.0).toFloat())
+                    matrices.scale(2.5F, 2.5F)
                     drawProfilePokemon(
                         renderablePokemon = RenderablePokemon(species, aspectsToDraw),
                         matrixStack = matrices,
@@ -232,7 +235,7 @@ class EntriesScrollingWidget(val pX: Int, val pY: Int, val setPokedexEntry: (Pok
                         partialTicks = 0F,
                         scale = 4.5F
                     )
-                    matrices.popPose()
+                    matrices.popMatrix()
                     context.disableScissor()
                 } else {
                     blitk(
@@ -258,7 +261,7 @@ class EntriesScrollingWidget(val pX: Int, val pY: Int, val setPokedexEntry: (Pok
                 }
 
                 // Ensure elements are not hidden behind Pokémon render
-                matrices.pushPose()
+                matrices.pushMatrix()
                 matrices.translate(0.0, 0.0, 100.0)
 
                 drawScaledText(
@@ -282,11 +285,14 @@ class EntriesScrollingWidget(val pX: Int, val pY: Int, val setPokedexEntry: (Pok
                     )
                 }
 
-                matrices.popPose()
+                matrices.popMatrix()
             }
         }
 
-        override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
             val hoverIndex = getHoveredSlotIndex(mouseX.toInt(), mouseY.toInt())
             if (hoverIndex > -1 && hoverIndex < dexDataList.size) {
                 setPokedexEntry.invoke(dexDataList[hoverIndex])

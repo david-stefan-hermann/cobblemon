@@ -22,8 +22,9 @@ import com.cobblemon.mod.common.client.render.models.blockbench.FloatingState
 import com.cobblemon.mod.common.config.starter.RenderableStarterCategory
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.math.fromEulerXYZDegrees
+import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import org.joml.Quaternionf
 import org.joml.Vector3f
@@ -76,7 +77,7 @@ class CategoryList(
     inner class Category(private val category: RenderableStarterCategory, height: Int) : Entry(height) {
 
         override fun render(
-            guiGraphics: GuiGraphics,
+            guiGraphics: GuiGraphicsExtractor,
             index: Int,
             x: Int,
             y: Int,
@@ -173,9 +174,9 @@ class CategoryList(
                     vOffset = if (hovered) CONTAINER_BUTTON_SIZE else 0
                 )
 
-                matrices.pushPose()
-                matrices.translate(startX + (CONTAINER_BUTTON_SIZE / 2.0), startY.toDouble() - 6, 0.0)
-                matrices.scale(3.5F, 3.5F, 1F)
+                matrices.pushMatrix()
+                matrices.translate((startX + (CONTAINER_BUTTON_SIZE / 2.0)).toFloat(), (startY.toDouble() - 6).toFloat())
+                matrices.scale(3.5F, 3.5F)
 
                 val state = FloatingState()
                 state.currentAspects = category.pokemon[index].aspects
@@ -187,11 +188,14 @@ class CategoryList(
                     scale = 4.5F,
                     partialTicks = 0F
                 )
-                matrices.popPose()
+                matrices.popMatrix()
             }
         }
 
-        override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
             val entryY = getRowTop(this)
             val hoveredButton = getButtonHovered(x, entryY, mouseX, mouseY)
             if (hoveredButton != -1) {

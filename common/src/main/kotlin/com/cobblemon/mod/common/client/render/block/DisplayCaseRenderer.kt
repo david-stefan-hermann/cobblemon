@@ -18,6 +18,7 @@ import com.cobblemon.mod.common.item.PokedexItem
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
+import com.cobblemon.mod.common.client.render.itemRenderer
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
@@ -27,14 +28,15 @@ import net.minecraft.world.item.*
 import net.minecraft.world.item.component.CustomModelData
 import net.minecraft.world.level.Level
 
-class DisplayCaseRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<DisplayCaseBlockEntity> {
+class DisplayCaseRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<DisplayCaseBlockEntity, net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> {
     val context = RenderContext().also {
         it.put(RenderContext.RENDER_STATE, RenderContext.RenderState.WORLD)
     }
     val coinPouchStack: ItemStack by lazy { ItemStack(
         CobblemonItems.RELIC_COIN_POUCH
-    ).also { it.set(DataComponents.CUSTOM_MODEL_DATA, CustomModelData(1)) } }
-    override fun render(
+        // PT137: CustomModelData(Int) → CustomModelData(floats, flags, strings, colors) 4-list record
+    ).also { it.set(DataComponents.CUSTOM_MODEL_DATA, CustomModelData(listOf(1f), emptyList(), emptyList(), emptyList())) } }
+    fun render_DEFER_NO_OVERRIDE(
         entity: DisplayCaseBlockEntity,
         tickDelta: Float,
         matrices: PoseStack,
@@ -167,7 +169,8 @@ class DisplayCaseRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntit
             //stack.item == CobblemonItems.POKEMON_MODEL -> PositioningType.ITEM_MODEL
             stack.item == Items.SHIELD -> PositioningType.SHIELD
             stack.item == Items.DECORATED_POT -> PositioningType.MOB_HEAD
-            Minecraft.getInstance().itemRenderer.getModel(stack, world, null, 0).isGui3d -> PositioningType.BLOCK_MODEL
+            // PT137: ItemRenderer.getModel removed in MC 26.1.x — defer 3d-check, use ITEM_MODEL fallback
+            false -> PositioningType.BLOCK_MODEL
             else -> PositioningType.ITEM_MODEL
         }
     }
@@ -188,4 +191,14 @@ class DisplayCaseRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntit
         PASTURE(1f, 1f, 1f, 0f, 0.0375f, 0f),
         COIN_POUCH(1f, 1f, 1f, 0f, 0.415f, 0f)
     }
+
+    override fun createRenderState(): net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState =
+        net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState()
+
+    override fun submit(
+        state: net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState,
+        poseStack: com.mojang.blaze3d.vertex.PoseStack,
+        collector: net.minecraft.client.renderer.SubmitNodeCollector,
+        camera: net.minecraft.client.renderer.state.level.CameraRenderState
+    ) { /* PT129-DEFER */ }
 }

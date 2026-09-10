@@ -226,6 +226,7 @@ class ApricornTreeFeature : Feature<BlockStateConfiguration>(BlockStateConfigura
     }
 
     private fun isAir(testableWorld: LevelSimulatedReader, blockPos: BlockPos?): Boolean {
+        if (blockPos == null) return false
         return testableWorld.isStateAtPosition(blockPos) { blockState: BlockState ->
             blockState.`is`(Blocks.AIR)
         }

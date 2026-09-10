@@ -39,7 +39,7 @@ enum class MoonPhase {
          *
          * @throws IndexOutOfBoundsException if the moon phase cannot be resolved, this should never happen.
          */
-        fun ofWorld(world: Level): MoonPhase = VALUES[world.moonPhase]
+        fun ofWorld(world: Level): MoonPhase = VALUES[((world.overworldClockTime / 24000L) % 8L).toInt()]
     }
 
 }

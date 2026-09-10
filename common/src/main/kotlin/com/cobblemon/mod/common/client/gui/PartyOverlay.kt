@@ -35,12 +35,12 @@ import java.util.UUID
 import net.minecraft.client.DeltaTracker
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Gui
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.toasts.AdvancementToast
 import net.minecraft.client.gui.components.toasts.Toast
 import net.minecraft.client.gui.screens.ChatScreen
 import net.minecraft.client.gui.screens.Screen
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.util.Mth
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -92,11 +92,12 @@ class PartyOverlay : Gui(Minecraft.getInstance()) {
     private val stateAtIndex = hashMapOf<Int, Pair<UUID, FloatingState>>()
 
     val starterToast = CobblemonToast(
-        Mth.createInsecureUUID(),
+        // PT144: Mth.createInsecureUUID requires RandomSource; AdvancementToast.BACKGROUND_SPRITE is now private.
+        Mth.createInsecureUUID(net.minecraft.util.RandomSource.create()),
         listOf(CobblemonItems.POKE_BALL.defaultInstance),
         lang("ui.starter.choose_starter_title", SummaryBinding.boundKey().displayName).red(),
         lang("ui.starter.choose_starter_description", SummaryBinding.boundKey().displayName).darkGray(),
-        AdvancementToast.BACKGROUND_SPRITE,
+        net.minecraft.resources.Identifier.withDefaultNamespace("toast/advancement"),
         -1F,
         0
     )
@@ -105,7 +106,7 @@ class PartyOverlay : Gui(Minecraft.getInstance()) {
 
     fun resetAttachedToast() {
         val minecraft = Minecraft.getInstance()
-        minecraft.toasts.clear()
+        minecraft.toastManager.clear()
         starterToast.nextVisibility = Toast.Visibility.SHOW
         attachedToast = false
     }
@@ -120,7 +121,7 @@ class PartyOverlay : Gui(Minecraft.getInstance()) {
         return state.second
     }
 
-    override fun render(context: GuiGraphics, tickCounter: DeltaTracker) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, tickCounter: DeltaTracker) {
         if (!canRender()) return
 
         val partialDeltaTicks = tickCounter.realtimeDeltaTicks
@@ -137,7 +138,7 @@ class PartyOverlay : Gui(Minecraft.getInstance()) {
             ) {
                 if (!this.attachedToast) {
                     // Adding starter toast on start and connect of client to server.
-                    minecraft.toasts.addToast(this.starterToast)
+                    minecraft.toastManager.addToast(this.starterToast)
                     this.attachedToast = true
                 }
             }
@@ -176,12 +177,8 @@ class PartyOverlay : Gui(Minecraft.getInstance()) {
                     y + PORTRAIT_DIAMETER
                 )
 
-                matrices.pushPose()
-                matrices.translate(
-                    panelX + portraitFrameOffsetX + selectedOffsetX + PORTRAIT_DIAMETER / 2.0 - 1.0,
-                    y.toDouble() - 12,
-                    0.0
-                )
+                matrices.pushMatrix()
+                matrices.translate((panelX + portraitFrameOffsetX + selectedOffsetX + PORTRAIT_DIAMETER / 2.0 - 1.0).toFloat(), (y.toDouble() - 12).toFloat())
 
                 val shouldAnimate = when (Cobblemon.config.partyPortraitAnimations) {
                     PokemonGUIAnimationStyle.NEVER_ANIMATE -> false
@@ -198,7 +195,7 @@ class PartyOverlay : Gui(Minecraft.getInstance()) {
                     state = getPokemonState(index = index, pokemonUUID = pokemon.uuid).also { it.currentAspects = pokemon.aspects }
                 )
 
-                matrices.popPose()
+                matrices.popMatrix()
                 context.disableScissor()
             }
 

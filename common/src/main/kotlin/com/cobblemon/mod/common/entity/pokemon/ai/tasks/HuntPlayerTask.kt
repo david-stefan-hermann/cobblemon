@@ -112,8 +112,8 @@ class HuntPlayerTask : Behavior<LivingEntity>(
             if (target.isAlive) {
                 // if entity is in range of target
                 if (entity.distanceToSqr(target) <= ATTACK_RANGE * ATTACK_RANGE) {
-                    // try to attack the target
-                    entity.doHurtTarget(target)
+                    // PT143: doHurtTarget(ServerLevel, Entity) in MC 26.1.x.
+                    entity.doHurtTarget(world, target)
                 } else {
                     // add target to LookWalkTarget memory
                     addLookWalkTargets(entity)

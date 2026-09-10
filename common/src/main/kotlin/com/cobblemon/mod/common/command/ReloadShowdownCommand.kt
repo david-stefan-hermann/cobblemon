@@ -20,12 +20,14 @@ import com.mojang.brigadier.context.CommandContext
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands
 import net.minecraft.network.chat.Component
+import net.minecraft.server.permissions.Permission as MinecraftPermission
+import net.minecraft.server.permissions.PermissionLevel as MinecraftPermissionLevel
 
 object ReloadShowdownCommand {
 
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>) {
         val command = Commands.literal("reloadshowdown")
-            .requires { it.hasPermission(4) }
+            .requires { it.permissions().hasPermission(MinecraftPermission.HasCommandLevel(MinecraftPermissionLevel.byId(4))) }
             .executes(::execute)
         dispatcher.register(command)
     }

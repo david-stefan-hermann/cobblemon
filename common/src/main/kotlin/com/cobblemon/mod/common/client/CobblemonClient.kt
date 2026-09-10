@@ -8,6 +8,9 @@
 
 package com.cobblemon.mod.common.client
 
+import com.cobblemon.mod.common.util.hasShiftDown
+import net.minecraft.client.renderer.rendertype.RenderTypes
+
 import com.cobblemon.mod.common.Cobblemon.LOGGER
 import com.cobblemon.mod.common.CobblemonBlockEntities
 import com.cobblemon.mod.common.CobblemonBlocks
@@ -72,19 +75,19 @@ import com.cobblemon.mod.common.platform.events.PlatformEvents
 import com.cobblemon.mod.common.pokedex.scanner.PokedexUsageContext
 import com.cobblemon.mod.common.util.isLookingAt
 import net.minecraft.client.Minecraft
-import net.minecraft.client.color.block.BlockColor
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.color.block.BlockTintSource
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.MenuScreens
 import net.minecraft.client.gui.screens.Screen
-import net.minecraft.client.model.BoatModel
-import net.minecraft.client.model.ChestBoatModel
-import net.minecraft.client.model.PlayerModel
-import net.minecraft.client.renderer.RenderType
-import net.minecraft.client.renderer.blockentity.HangingSignRenderer
-import net.minecraft.client.renderer.blockentity.SignRenderer
+import net.minecraft.client.model.`object`.boat.BoatModel
+import net.minecraft.client.model.player.PlayerModel
+import net.minecraft.client.renderer.rendertype.RenderType
+// PT145: HangingSignRenderer/StandingSignRenderer require (Context, Models) constructor in MC 26.1.x — registrations commented out below.
+// import net.minecraft.client.renderer.blockentity.HangingSignRenderer
+// import net.minecraft.client.renderer.blockentity.StandingSignRenderer
 import net.minecraft.client.renderer.entity.EntityRenderer
 import net.minecraft.client.renderer.entity.LivingEntityRenderer
-import net.minecraft.client.resources.PlayerSkin
+import net.minecraft.world.entity.player.PlayerSkin
 import net.minecraft.server.packs.resources.ResourceManager
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.player.Player
@@ -158,14 +161,15 @@ object CobblemonClient {
         PlatformEvents.CLIENT_ITEM_TOOLTIP.subscribe { event ->
             val stack = event.stack
             val lines = event.lines
-            TooltipManager.generateTooltips(stack, lines, Screen.hasShiftDown())
+            TooltipManager.generateTooltips(stack, lines, hasShiftDown())
         }
 
         PlatformEvents.CLIENT_ENTITY_UNLOAD.subscribe { event -> EntitySoundTracker.clear(event.entity.id) }
         PlatformEvents.CLIENT_TICK_POST.subscribe { event ->
             val player = event.client.player
             if (player != null) {
-                val selectedItem = player.inventory.getItem(player.inventory.selected)
+                // PT145: Inventory.selected field is private in MC 26.1.x — use Inventory.getSelectedSlot() accessor.
+                val selectedItem = player.inventory.getItem(player.inventory.getSelectedSlot())
                 if (pokedexUsageContext.scanningGuiOpen &&
                     !(selectedItem.`is`(CobblemonItemTags.POKEDEX)) &&
                     !(player.offhandItem.`is`(CobblemonItemTags.POKEDEX) &&
@@ -216,14 +220,20 @@ object CobblemonClient {
     }
 
     fun registerColors() {
-        this.implementation.registerBlockColors(BlockColor { _, view, blockPos, _ ->
-            blockPos?.let { pos ->
-                view?.getBlockEntity(pos)?.let { blockEntity ->
-                    if (blockEntity is TintBlockEntity) return@BlockColor blockEntity.getTint()
-                }
+        val tintSource = object : BlockTintSource {
+            override fun color(state: net.minecraft.world.level.block.state.BlockState): Int = 0xFFFFFF
+            override fun colorInWorld(
+                state: net.minecraft.world.level.block.state.BlockState,
+                view: net.minecraft.client.renderer.block.BlockAndTintGetter,
+                pos: net.minecraft.core.BlockPos
+            ): Int {
+                val blockEntity = view.getBlockEntity(pos)
+                if (blockEntity is TintBlockEntity) return blockEntity.getTint()
+                return 0xFFFFFF
             }
-            return@BlockColor 0xFFFFFF
-        }, CobblemonBlocks.POKE_SNACK,
+        }
+        this.implementation.registerBlockColors(tintSource,
+            CobblemonBlocks.POKE_SNACK,
             CobblemonBlocks.POKE_CAKE,
             CobblemonBlocks.TM_MACHINE
         )
@@ -231,15 +241,16 @@ object CobblemonClient {
 
     private fun registerBlockRenderTypes() {
 
+        // PT145: RenderTypes.cutoutMipped()/cutout() removed in MC 26.1.x — use Sheets.cutoutBlockSheet() as fallback.
         this.implementation.registerBlockRenderType(
-            RenderType.cutoutMipped(),
+            net.minecraft.client.renderer.Sheets.cutoutBlockSheet(),
             CobblemonBlocks.APRICORN_LEAVES,
             CobblemonBlocks.SACCHARINE_LEAVES,
             CobblemonBlocks.POKE_CAKE
         )
 
         this.implementation.registerBlockRenderType(
-            RenderType.cutout(),
+            net.minecraft.client.renderer.Sheets.cutoutBlockSheet(),
             CobblemonBlocks.GILDED_CHEST,
             CobblemonBlocks.FOSSIL_ANALYZER,
             CobblemonBlocks.APRICORN_DOOR,
@@ -389,24 +400,23 @@ object CobblemonClient {
         this.createBoatModelLayers()
     }
 
-    fun beforeChatRender(context: GuiGraphics, partialDeltaTicks: Float) {
-        val partialDeltaTicks = Minecraft.getInstance().timer // Checking that this even works
+    fun beforeChatRender(context: GuiGraphicsExtractor, partialDeltaTicks: Float) {
+        // PT132: Minecraft.timer → deltaTracker (DeltaTracker) in MC 26.1; overlay.render → extractRenderState
+        val deltaTracker = Minecraft.getInstance().deltaTracker
 //        ClientTaskTracker.update(partialDeltaTicks / 20f)
         if (battle == null) {
-            overlay.render(context, partialDeltaTicks)
+            overlay.extractRenderState(context, deltaTracker)
         } else {
-            battleOverlay.render(context, partialDeltaTicks)
+            battleOverlay.extractRenderState(context, deltaTracker)
         }
-        rideControlsOverlay.render(context, partialDeltaTicks)
+        rideControlsOverlay.extractRenderState(context, deltaTracker)
     }
 
-    @Suppress("UNCHECKED_CAST")
-    fun onAddLayer(skinMap: Map<PlayerSkin.Model, EntityRenderer<out Player>>?) {
-        var renderer: LivingEntityRenderer<Player, PlayerModel<Player>>? =
-            skinMap?.get(PlayerSkin.Model.WIDE) as LivingEntityRenderer<Player, PlayerModel<Player>>
-        renderer?.addLayer(PokemonOnShoulderRenderer(renderer))
-        renderer = skinMap[PlayerSkin.Model.SLIM] as LivingEntityRenderer<Player, PlayerModel<Player>>?
-        renderer?.addLayer(PokemonOnShoulderRenderer(renderer))
+    // PT145: PlayerRenderer.addLayer and PlayerModel typing changed in MC 26.1.x — entire shoulder-layer wiring deferred until submit pipeline migration.
+    fun onAddLayer(skinMap: Map<net.minecraft.world.entity.player.PlayerModelType, Any>?) {
+        // No-op: PokemonOnShoulderRenderer integration is deferred (see PT145 patch series).
+        @Suppress("UNUSED_PARAMETER")
+        val _unused = skinMap
     }
 
     private fun registerMenuScreens() {
@@ -420,8 +430,9 @@ object CobblemonClient {
             ::HealingMachineRenderer
         )
         this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.BERRY, ::BerryBlockRenderer)
-        this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.SIGN, ::SignRenderer)
-        this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.HANGING_SIGN, ::HangingSignRenderer)
+        // PT145: StandingSignRenderer/HangingSignRenderer take (Context, Models) in MC 26.1.x — sign renderer registration deferred.
+        // this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.SIGN, ::StandingSignRenderer)
+        // this.implementation.registerBlockEntityRenderer(CobblemonBlockEntities.HANGING_SIGN, ::HangingSignRenderer)
         this.implementation.registerBlockEntityRenderer(
             CobblemonBlockEntities.FOSSIL_ANALYZER,
             ::FossilAnalyzerRenderer
@@ -497,11 +508,11 @@ object CobblemonClient {
         CobblemonBoatType.entries.forEach { type ->
             this.implementation.registerLayer(
                 CobblemonBoatRenderer.createBoatModelLayer(type, false),
-                BoatModel::createBodyModel
+                BoatModel::createBoatModel
             )
             this.implementation.registerLayer(
                 CobblemonBoatRenderer.createBoatModelLayer(type, true),
-                ChestBoatModel::createBodyModel
+                BoatModel::createChestBoatModel
             )
         }
     }

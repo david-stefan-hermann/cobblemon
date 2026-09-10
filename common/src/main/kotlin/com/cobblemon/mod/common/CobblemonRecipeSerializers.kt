@@ -22,10 +22,11 @@ import net.minecraft.world.item.crafting.RecipeSerializer
 
 object CobblemonRecipeSerializers : PlatformRegistry<Registry<RecipeSerializer<*>>, ResourceKey<Registry<RecipeSerializer<*>>>, RecipeSerializer<*>>() {
 
-    val COOKING_POT_COOKING: RecipeSerializer<*> = register("cobblemon:cooking_pot", CookingPotRecipe.Serializer())
-    val COOKING_POT_SHAPELESS: RecipeSerializer<*> = register("cobblemon:cooking_pot_shapeless", CookingPotShapelessRecipe.Serializer())
+    // PT138: RecipeSerializer is now a final record (cannot be extended) → use .Serializer.INSTANCE (constructed via record ctor)
+    val COOKING_POT_COOKING: RecipeSerializer<*> = register("cobblemon:cooking_pot", CookingPotRecipe.Serializer.INSTANCE)
+    val COOKING_POT_SHAPELESS: RecipeSerializer<*> = register("cobblemon:cooking_pot_shapeless", CookingPotShapelessRecipe.Serializer.INSTANCE)
 
-    val BREWING_STAND: RecipeSerializer<*> = register("cobblemon:brewing_stand", BrewingStandRecipe.Serializer())
+    val BREWING_STAND: RecipeSerializer<*> = register("cobblemon:brewing_stand", BrewingStandRecipe.Serializer.INSTANCE)
     
     override val registry: Registry<RecipeSerializer<*>>
         get() = BuiltInRegistries.RECIPE_SERIALIZER

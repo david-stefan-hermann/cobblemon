@@ -8,6 +8,8 @@
 
 package com.cobblemon.mod.common.client.render.block
 
+import net.minecraft.client.renderer.rendertype.RenderTypes
+
 import com.cobblemon.mod.common.CobblemonBlocks
 import com.cobblemon.mod.common.block.entity.RestorationTankBlockEntity
 import com.cobblemon.mod.common.block.multiblock.FossilMultiblockStructure
@@ -24,20 +26,20 @@ import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import kotlin.math.pow
 import net.minecraft.client.renderer.MultiBufferSource
-import net.minecraft.client.renderer.RenderType
+import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.core.Direction
 import net.minecraft.world.level.block.HorizontalDirectionalBlock
 
-class RestorationTankRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<RestorationTankBlockEntity> {
+class RestorationTankRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<RestorationTankBlockEntity, net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> {
     val context = RenderContext().also {
         it.put(RenderContext.DO_QUIRKS, true)
         it.put(RenderContext.RENDER_STATE, RenderContext.RenderState.RESURRECTION_MACHINE)
     }
 
-    override fun render(
+    fun render_DEFER_NO_OVERRIDE(
         entity: RestorationTankBlockEntity,
         tickDelta: Float,
         matrices: PoseStack,
@@ -59,12 +61,10 @@ class RestorationTankRenderer(ctx: BlockEntityRendererProvider.Context) : BlockE
             else -> {}
         }
 
-        val cutoutBuffer = vertexConsumers.getBuffer(RenderType.cutout())
+        val cutoutBuffer = vertexConsumers.getBuffer(net.minecraft.client.renderer.Sheets.cutoutBlockSheet())
         if (connectionDir != null) {
+            // PT136-DEFER: BlockModel.getQuads + VertexConsumer.putBulkData removed in MC 26.1.x — connector model disabled
             matrices.pushPose()
-            CONNECTOR_MODEL.getQuads(entity.blockState, null, entity.level?.random).forEach { quad ->
-                cutoutBuffer.putBulkData(matrices.last(), quad, 0.75f, 0.75f, 0.75f, 1f, light, OverlayTexture.NO_OVERLAY)
-            }
             matrices.popPose()
         }
         val fillLevel = struct.fillLevel
@@ -77,14 +77,13 @@ class RestorationTankRenderer(ctx: BlockEntityRendererProvider.Context) : BlockE
         }
 
         matrices.pushPose()
-        val transparentBuffer = vertexConsumers.getBuffer(RenderType.translucent())
+        val transparentBuffer = vertexConsumers.getBuffer(net.minecraft.client.renderer.Sheets.translucentBlockSheet())
 
         val fluidModel = if (struct.isRunning()) FLUID_MODELS[8]
         else if (struct.hasCreatedPokemon) FLUID_MODELS[7]
         else FLUID_MODELS[fillLevel.coerceAtMost(FLUID_MODELS.size - 1) - 1]
-        fluidModel.getQuads(entity.blockState, null, entity.level!!.random).forEach { quad ->
-            transparentBuffer.putBulkData(matrices.last(), quad, 0.75f, 0.75f, 0.75f, 1f, light, OverlayTexture.NO_OVERLAY)
-        }
+        // PT136-DEFER: BlockModel.getQuads + VertexConsumer.putBulkData removed in MC 26.1.x — fluid model disabled
+        fluidModel.let { /* disabled until quad mesher API migrated */ }
 
         matrices.popPose()
     }
@@ -141,7 +140,7 @@ class RestorationTankRenderer(ctx: BlockEntityRendererProvider.Context) : BlockE
             val texture = VaryingModelRepository.getTexture(identifier, state)
 
             if (scale > 0F) {
-                val vertexConsumer = vertexConsumers.getBuffer(RenderType.entityCutout(texture))
+                val vertexConsumer = vertexConsumers.getBuffer(RenderTypes.entityCutout(texture))
                 state.currentModel = model
                 state.setPoseToFirstSuitable()
 
@@ -170,7 +169,7 @@ class RestorationTankRenderer(ctx: BlockEntityRendererProvider.Context) : BlockE
 
                 matrices.pushPose()
                 matrices.scale(scale, scale, scale)
-                matrices.translate(0.0, model.yGrowthPoint.toDouble(), 0.0)
+                matrices.translate(0.0f, model.yGrowthPoint.toFloat(), 0.0f)
                 model.applyAnimations(
                     entity = null,
                     state = state,
@@ -219,4 +218,14 @@ class RestorationTankRenderer(ctx: BlockEntityRendererProvider.Context) : BlockE
         val FOSSIL_CURVE: WaveFunction = { t: Float -> -0.4F * (t - 2.5F).pow(2) + 1F }.timeDilate(2.5F)
 
     }
+
+    override fun createRenderState(): net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState =
+        net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState()
+
+    override fun submit(
+        state: net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState,
+        poseStack: com.mojang.blaze3d.vertex.PoseStack,
+        collector: net.minecraft.client.renderer.SubmitNodeCollector,
+        camera: net.minecraft.client.renderer.state.level.CameraRenderState
+    ) { /* PT129-DEFER */ }
 }

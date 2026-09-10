@@ -67,7 +67,7 @@ import net.minecraft.util.Mth
 import net.minecraft.util.Mth.PI
 import net.minecraft.world.entity.*
 import net.minecraft.world.entity.decoration.LeashFenceKnotEntity
-import net.minecraft.world.entity.projectile.ThrowableItemProjectile
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.BlockHitResult
@@ -122,7 +122,8 @@ class EmptyPokeBallEntity : ThrowableItemProjectile, PosableEntity, WaterDragMod
         .addFunction("capture_state") { StringValue(captureState.name) }
         .addFunction("ball_type") { StringValue(pokeBall.name.toString()) }
         .addFunction("aspects") { aspects.asArrayValue { StringValue(it) } }
-        .addFunction("thrower") { owner?.asMostSpecificMoLangValue() ?: DoubleValue.ZERO }
+        // PT137: Projectile.owner protected field is EntityReference<Entity>; getOwner() returns Entity
+        .addFunction("thrower") { (getOwner())?.asMostSpecificMoLangValue() ?: DoubleValue.ZERO }
 
     override fun defineSynchedData(builder: SynchedEntityData.Builder) {
         pokeBall = PokeBalls.POKE_BALL
@@ -172,7 +173,8 @@ class EmptyPokeBallEntity : ThrowableItemProjectile, PosableEntity, WaterDragMod
         world: Level,
         ownerEntity: LivingEntity,
         entityType: EntityType<out EmptyPokeBallEntity> = EMPTY_POKEBALL
-    ): super(entityType, ownerEntity, world) {
+        // PT137: ThrowableItemProjectile(EntityType, LivingEntity, Level, ItemStack) — 4-arg requires ItemStack
+    ): super(entityType, ownerEntity, world, net.minecraft.world.item.ItemStack(pokeBall.item())) {
         this.pokeBall = pokeBall
     }
 
@@ -185,9 +187,10 @@ class EmptyPokeBallEntity : ThrowableItemProjectile, PosableEntity, WaterDragMod
                 level().sendParticlesServer(ParticleTypes.CLOUD, hitResult.location, 2, hitResult.location.subtract(position()).normalize().scale(-0.1), 0.0)
                 level().playSoundServer(position(), SoundEvents.WOOD_PLACE, pitch = 2.5F)
                 discard()
-                val player = this.owner as? ServerPlayer
+                val player = this.getOwner() as? ServerPlayer
                 if (player?.isCreative == false) {
-                    spawnAtLocation(defaultItem)
+                    // PT137: Entity.spawnAtLocation now requires ServerLevel as first arg
+                    (level() as? net.minecraft.server.level.ServerLevel)?.let { spawnAtLocation(it, defaultItem) }
                 }
             }
         } else {
@@ -205,12 +208,12 @@ class EmptyPokeBallEntity : ThrowableItemProjectile, PosableEntity, WaterDragMod
                 val owner = owner
 
                 if (!pokemonEntity.pokemon.isWild()) {
-                    owner?.sendSystemMessage(lang("capture.not_wild", pokemonEntity.exposedSpecies.translatedName).red())
+                    (owner as? ServerPlayer)?.sendSystemMessage(lang("capture.not_wild", pokemonEntity.exposedSpecies.translatedName).red())
                     return drop()
                 }
 
                 if (!UncatchableProperty.isCatchable(pokemonEntity)) {
-                    owner?.sendSystemMessage(lang("capture.cannot_be_caught").red())
+                    (owner as? ServerPlayer)?.sendSystemMessage(lang("capture.cannot_be_caught").red())
                     return drop()
                 }
 
@@ -220,7 +223,7 @@ class EmptyPokeBallEntity : ThrowableItemProjectile, PosableEntity, WaterDragMod
                     val hitBattlePokemon = hitActor?.activePokemon?.find { it.battlePokemon?.effectedPokemon?.entity == pokemonEntity }
 
                     if (throwerActor == null) {
-                        owner.sendSystemMessage(lang("capture.in_battle", pokemonEntity.exposedSpecies.translatedName).red())
+                        (owner as? ServerPlayer)?.sendSystemMessage(lang("capture.in_battle", pokemonEntity.exposedSpecies.translatedName).red())
                         return drop()
                     }
 
@@ -229,13 +232,13 @@ class EmptyPokeBallEntity : ThrowableItemProjectile, PosableEntity, WaterDragMod
                     }
 
                     if (battle.format.battleType != BattleTypes.SINGLES || hitActor.pokemonList.count { it.health > 0 } > 1) {
-                        owner.sendSystemMessage(lang("capture.not_single").red())
+                        (owner as? ServerPlayer)?.sendSystemMessage(lang("capture.not_single").red())
                         return drop()
                     }
 
                     val canFitForcedAction = throwerActor.canFitForcedAction()
                     if (!canFitForcedAction) {
-                        owner.sendSystemMessage(lang("capture.not_your_turn").red())
+                        (owner as? ServerPlayer)?.sendSystemMessage(lang("capture.not_your_turn").red())
                         return drop()
                     }
 
@@ -252,10 +255,10 @@ class EmptyPokeBallEntity : ThrowableItemProjectile, PosableEntity, WaterDragMod
                     battle.sendUpdate(BattleCaptureStartPacket(pokeBall.name, aspects, hitBattlePokemon.getPNX()))
                     throwerActor.forceChoose(ForcePassActionResponse())
                 } else if (pokemonEntity.isBusy) {
-                    owner?.sendSystemMessage(lang("capture.busy", pokemonEntity.exposedSpecies.translatedName).red())
+                    (owner as? ServerPlayer)?.sendSystemMessage(lang("capture.busy", pokemonEntity.exposedSpecies.translatedName).red())
                     return drop()
                 } else if (owner is ServerPlayer && BattleRegistry.getBattleByParticipatingPlayer(owner) != null) {
-                    owner.sendSystemMessage(lang("you_in_battle").red())
+                    (owner as? ServerPlayer)?.sendSystemMessage(lang("you_in_battle").red())
                     return drop()
                 }
 
@@ -280,10 +283,11 @@ class EmptyPokeBallEntity : ThrowableItemProjectile, PosableEntity, WaterDragMod
     }
 
     private fun drop() {
-        val owner = owner
+        val owner = getOwner()
         discard()
         val player = owner?.takeIf { it is ServerPlayer } as? ServerPlayer
-        if (player?.isCreative != true) spawnAtLocation(defaultItem)
+        // PT137: Entity.spawnAtLocation now requires ServerLevel
+        if (player?.isCreative != true) (level() as? net.minecraft.server.level.ServerLevel)?.let { spawnAtLocation(it, defaultItem) }
         return
     }
 
@@ -301,7 +305,8 @@ class EmptyPokeBallEntity : ThrowableItemProjectile, PosableEntity, WaterDragMod
                 this.remove(RemovalReason.DISCARDED)
             }
 
-            if (owner == null || !owner!!.isAlive || (captureState != CaptureState.NOT && capturingPokemon?.isAlive != true)) {
+            // PT137: getOwner() returns Entity (owner field is EntityReference<Entity>)
+            if (getOwner() == null || getOwner()?.isAlive != true || (captureState != CaptureState.NOT && capturingPokemon?.isAlive != true)) {
                 breakFree()
                 discard()
                 return
@@ -330,7 +335,8 @@ class EmptyPokeBallEntity : ThrowableItemProjectile, PosableEntity, WaterDragMod
     }
 
     private fun shakeBall(task: ScheduledTask, rollsRemaining: Int, captureResult: CaptureContext) {
-        if (this.capturingPokemon?.isAlive != true || !this.isAlive || this.owner == null|| owner?.isAlive != true) {
+        // PT137: getOwner() unwraps EntityReference<Entity> to Entity
+        if (this.capturingPokemon?.isAlive != true || !this.isAlive || this.getOwner() == null || getOwner()?.isAlive != true) {
             if (this.capturingPokemon?.isAlive == true) {
                 this.breakFree()
             }
@@ -364,7 +370,8 @@ class EmptyPokeBallEntity : ThrowableItemProjectile, PosableEntity, WaterDragMod
                             val blockState = level().getBlockState(blockPos)
                             val leashKnot = LeashFenceKnotEntity.getOrCreateKnot(level(), blockPos)
                             leashKnot?.discard()
-                            pokemon.dropLeash(true, true)
+                            // PT137: Leashable.dropLeash() is now 0-arg (private static 3-arg overload not accessible)
+                            pokemon.dropLeash()
                             level().sendBlockUpdated(blockPos, blockState, blockState, 3)
                         }
 
@@ -401,7 +408,8 @@ class EmptyPokeBallEntity : ThrowableItemProjectile, PosableEntity, WaterDragMod
 
         if (pokemon.battleId == null) {
             pokemon.pokemon.status?.takeIf { it.status == Statuses.SLEEP }?.let { pokemon.pokemon.status = null }
-            owner?.let { PokemonBrain.onCaptureFailed(pokemon, it) }
+            // PT137: getOwner() returns Entity, not EntityReference<Entity>
+            getOwner()?.let { PokemonBrain.onCaptureFailed(pokemon, it) }
         }
 
         captureState = CaptureState.BROKEN_FREE

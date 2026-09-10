@@ -46,7 +46,7 @@ import com.cobblemon.mod.common.util.pokedex
 import com.cobblemon.mod.common.util.server
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundSource
 import net.minecraft.world.entity.player.Player
@@ -84,8 +84,9 @@ object PlayerMoLangFunctions : AbstractMoLangFunctionHolder<Player>() {
             val stack: ItemStack? = when (value) {
                 is ObjectValue<*> -> value.obj as? ItemStack
                 is StringValue -> {
-                    val id = ResourceLocation.parse(value.value)
-                    val item = player.registryAccess().registryOrThrow(Registries.ITEM).get(id)
+                    val id = Identifier.parse(value.value)
+                    // PT143: HolderLookup.RegistryLookup.get returns Optional<Holder.Reference<T>>.
+                    val item = player.registryAccess().lookupOrThrow(Registries.ITEM).get(id).orElse(null)?.value()
                         ?: return@put DoubleValue.ZERO
                     ItemStack(item)
                 }
@@ -107,8 +108,9 @@ object PlayerMoLangFunctions : AbstractMoLangFunctionHolder<Player>() {
             val stack: ItemStack? = when (value) {
                 is ObjectValue<*> -> value.obj as? ItemStack
                 is StringValue -> {
-                    val id = ResourceLocation.parse(value.value)
-                    val item = player.registryAccess().registryOrThrow(Registries.ITEM).get(id)
+                    val id = Identifier.parse(value.value)
+                    // PT143: HolderLookup.RegistryLookup.get returns Optional<Holder.Reference<T>>.
+                    val item = player.registryAccess().lookupOrThrow(Registries.ITEM).get(id).orElse(null)?.value()
                         ?: return@put DoubleValue.ZERO
                     ItemStack(item)
                 }
@@ -144,7 +146,7 @@ object PlayerMoLangFunctions : AbstractMoLangFunctionHolder<Player>() {
         map["tell"] = { params ->
             val message = params.getString(0).text()
             val overlay = params.getBooleanOrNull(1) == true
-            player.displayClientMessage(message, overlay)
+            if (overlay) player.sendOverlayMessage(message) else player.sendSystemMessage(message)
         }
         map["teleport"] = { params ->
             val x = params.getDouble(0)
@@ -191,7 +193,9 @@ object PlayerMoLangFunctions : AbstractMoLangFunctionHolder<Player>() {
             map["is_adventure"] = { DoubleValue(player.gameMode.gameModeForPlayer == GameType.ADVENTURE) }
             map["run_command"] = { params ->
                 val command = params.getString(0)
-                player.server.commands.performPrefixedCommand(player.createCommandSourceStack(), command)
+                // PT143: ServerPlayer.server field private — fetch through ServerLevel; lambda needs Any return.
+                (player.level() as? net.minecraft.server.level.ServerLevel)?.server?.commands?.performPrefixedCommand(player.createCommandSourceStack(), command)
+                DoubleValue.ONE
             }
             map["set_battle_theme"] = put@{ params ->
                 val soundId = params.getString(0).asResource()
@@ -304,7 +308,7 @@ object PlayerMoLangFunctions : AbstractMoLangFunctionHolder<Player>() {
             }
             map["pokedex"] = { player.pokedex().struct }
             map["has_advancement"] = put@{ params ->
-                val requiredAdvancement = ResourceLocation.parse(params.getString(0))
+                val requiredAdvancement = Identifier.parse(params.getString(0))
                 for (entry in player.advancements.progress) {
                     if (entry.key.id == requiredAdvancement && entry.value.isDone) {
                         return@put DoubleValue.ONE
@@ -359,9 +363,9 @@ object PlayerMoLangFunctions : AbstractMoLangFunctionHolder<Player>() {
             map["get_custom_stat"] = put@{ params ->
                 val statName = params.getString(0)
 
-                val resourceLocation = ResourceLocation.tryParse(statName) ?: return@put DoubleValue.ZERO
+                val resourceLocation = Identifier.tryParse(statName) ?: return@put DoubleValue.ZERO
                 val statResourceLocation =
-                    BuiltInRegistries.CUSTOM_STAT.get(resourceLocation) ?: return@put DoubleValue.ZERO
+                    BuiltInRegistries.CUSTOM_STAT.get(resourceLocation).orElse(null)?.value() ?: return@put DoubleValue.ZERO
 
                 val exists = net.minecraft.stats.Stats.CUSTOM.contains(statResourceLocation)
                 if (!exists) return@put DoubleValue.ZERO

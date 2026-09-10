@@ -13,7 +13,7 @@ import com.cobblemon.mod.common.client.gui.summary.widgets.SoundlessWidget
 import com.cobblemon.mod.common.client.render.models.blockbench.FloatingState
 import com.cobblemon.mod.common.pokemon.RenderablePokemon
 import com.cobblemon.mod.common.util.math.fromEulerXYZDegrees
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Component
 import org.joml.Quaternionf
 import org.joml.Vector3f
@@ -29,11 +29,12 @@ class ModelWidget(
     var state = FloatingState()
     private var rotVec = Vector3f(13F, rotationY, 0F)
 
-    override fun renderWidget(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         val matrices = context.pose()
-        matrices.pushPose()
-        matrices.translate(x + width * 0.5, y.toDouble() + offsetY, 0.0)
-        matrices.scale(baseScale, baseScale, baseScale)
+        matrices.pushMatrix()
+        matrices.translate((x + width * 0.5).toFloat(), (y.toDouble() + offsetY).toFloat())
+        // PT144: Matrix3x2f is 2D; only 2-arg scale is valid in MC 26.1.x.
+        matrices.scale(baseScale, baseScale)
 
         drawProfilePokemon(
             renderablePokemon = pokemon,
@@ -43,6 +44,6 @@ class ModelWidget(
             partialTicks = delta
         )
 
-        matrices.popPose()
+        matrices.popMatrix()
     }
 }

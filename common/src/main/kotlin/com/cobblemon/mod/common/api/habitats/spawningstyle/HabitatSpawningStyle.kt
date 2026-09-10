@@ -17,7 +17,7 @@ import com.cobblemon.mod.common.util.asIdentifierDefaultingNamespace
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.ListTag
 import net.minecraft.nbt.Tag
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 /**
  * Holds habitat block specific details about the methodology behind how the habitat block will spawn Pokémon. This is
@@ -29,7 +29,7 @@ import net.minecraft.resources.ResourceLocation
  * @since February 14th, 2026
  */
 sealed interface HabitatSpawningStyle {
-    val type: ResourceLocation
+    val type: Identifier
 
     fun writeToNBT(nbt: CompoundTag)
     fun readFromNBT(nbt: CompoundTag)
@@ -51,13 +51,13 @@ sealed interface HabitatSpawningStyle {
     companion object {
         fun <T : HabitatSpawn, P : HabitatPool<T>> readPoolFromNBT(nbt: CompoundTag, poolInitializer: () -> P, spawnInitializer: () -> T, defaultPool: () -> P): P {
             var pool: P
-            val poolId = nbt.getString(DataKeys.HABITAT_POOL_ID).asIdentifierDefaultingNamespace()
+            val poolId = nbt.getStringOr(DataKeys.HABITAT_POOL_ID, "").asIdentifierDefaultingNamespace()
             if (nbt.contains(DataKeys.HABITAT_POOL_NAME)) {
                 // It's one that was stored on the block
                 pool = poolInitializer()
                 pool.id = poolId
-                pool.name = nbt.getString(DataKeys.HABITAT_POOL_NAME)
-                val spawnsListNBT = nbt.getList(DataKeys.HABITAT_POOL_SPAWNS, Tag.TAG_COMPOUND.toInt())
+                pool.name = nbt.getStringOr(DataKeys.HABITAT_POOL_NAME, "")
+                val spawnsListNBT = nbt.getList(DataKeys.HABITAT_POOL_SPAWNS).orElseGet { net.minecraft.nbt.ListTag() }
                 val spawns = mutableListOf<T>()
                 spawnsListNBT.forEach { spawnTag ->
                     try {

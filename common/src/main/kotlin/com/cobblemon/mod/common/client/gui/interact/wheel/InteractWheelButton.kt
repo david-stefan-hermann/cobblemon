@@ -11,19 +11,20 @@ package com.cobblemon.mod.common.client.gui.interact.wheel
 import com.cobblemon.mod.common.api.gui.blitk
 import com.cobblemon.mod.common.client.gui.CobblemonRenderable
 import com.cobblemon.mod.common.util.cobblemonResource
+import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.navigation.ScreenRectangle
 import net.minecraft.client.sounds.SoundManager
 import net.minecraft.network.chat.Component
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import org.joml.Vector3f
 
 class InteractWheelButton(
-    private val iconResource: ResourceLocation?,
-    private val secondaryIconResource: ResourceLocation? = null,
+    private val iconResource: Identifier?,
+    private val secondaryIconResource: Identifier? = null,
     private val orientation: Orientation,
     private val tooltipText: String?,
     x: Int,
@@ -63,7 +64,7 @@ class InteractWheelButton(
     private var passedTicks = 0F
     private val blinkInterval = 35
 
-    override fun renderWidget(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractContents(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         val matrices = context.pose()
         passedTicks += delta
 
@@ -81,7 +82,7 @@ class InteractWheelButton(
 
         if(isEnabled && isHovered(mouseX.toFloat(), mouseY.toFloat())){
             tooltipText?.let {
-                context.renderTooltip(Minecraft.getInstance().font, Component.translatable(it), mouseX, mouseY)
+                context.setTooltipForNextFrame(Minecraft.getInstance().font, Component.translatable(it), mouseX, mouseY)
             }
         }
 
@@ -161,11 +162,15 @@ class InteractWheelButton(
         return canHover(mouseX.toDouble(), mouseY.toDouble()) && mouseX in xMin..xMax && mouseY in yMin..yMax
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return if (isHovered(mouseX.toFloat(), mouseY.toFloat())) super.mouseClicked(mouseX, mouseY, button) else false
+    override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
+        return if (isHovered(mouseX.toFloat(), mouseY.toFloat())) super.mouseClicked(event, fromOnClick) else false
     }
 
-    override fun getTooltip(): Tooltip? {
-        tooltipText?.let { return Tooltip.create(Component.translatable(it)) } ?: return super.getTooltip()
+    // PT144: AbstractWidget.getTooltip removed in MC 26.1.x — apply via setTooltip in init.
+    init {
+        tooltipText?.let { setTooltip(Tooltip.create(Component.translatable(it))) }
     }
 }

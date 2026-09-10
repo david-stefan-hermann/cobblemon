@@ -9,8 +9,22 @@
 package com.cobblemon.mod.common.util
 
 import com.cobblemon.mod.common.CobblemonEntities
+import net.minecraft.core.BlockPos
+import net.minecraft.core.UUIDUtil
 import net.minecraft.nbt.CompoundTag
+import java.util.Optional
+import java.util.UUID
 
 fun CompoundTag.isPokemonEntity() : Boolean {
-    return this.getString("id").equals(CobblemonEntities.POKEMON_KEY.toString())
+    return this.getStringOr("id", "").equals(CobblemonEntities.POKEMON_KEY.toString())
 }
+
+fun CompoundTag.getUUID(key: String): UUID = this.read(key, UUIDUtil.CODEC).orElse(UUID(0L, 0L))
+
+fun CompoundTag.putUUID(key: String, value: UUID) { this.store(key, UUIDUtil.CODEC, value) }
+
+fun CompoundTag.hasUUID(key: String): Boolean = this.read(key, UUIDUtil.CODEC).isPresent
+
+fun CompoundTag.getBlockPos(key: String): Optional<BlockPos> = this.read(key, BlockPos.CODEC)
+
+fun CompoundTag.putBlockPos(key: String, pos: BlockPos) { this.store(key, BlockPos.CODEC, pos) }

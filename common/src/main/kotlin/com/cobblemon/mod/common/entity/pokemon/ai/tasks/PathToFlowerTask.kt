@@ -8,6 +8,7 @@
 
 package com.cobblemon.mod.common.entity.pokemon.ai.tasks
 
+import com.cobblemon.mod.common.util.isNight
 import com.cobblemon.mod.common.CobblemonMemories
 import com.cobblemon.mod.common.util.getMemorySafely
 import net.minecraft.world.entity.LivingEntity

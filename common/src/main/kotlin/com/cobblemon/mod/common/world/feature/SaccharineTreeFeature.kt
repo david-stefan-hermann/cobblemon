@@ -238,10 +238,9 @@ class SaccharineTreeFeature : Feature<BlockStateConfiguration>(BlockStateConfigu
                             val compoundTag = CompoundTag()
                             compoundTag.putString("id", POKEMON_PLACEHOLD_ID)
                             compoundTag.putString("pokemonProperties", properties)
-                            val occupant = BeehiveBlockEntity.Occupant(
-                                CustomData.of(compoundTag), randomSource.nextInt(599), 600
-                            )
-                            beehiveBlockEntity?.storeBee(occupant)
+                            // PT142: Occupant ctor now requires TypedEntityData<EntityType<*>> — fallback to default bee Occupant.create
+                            // The Pokemon placeholder data path is handled by BeeOccupantMixin which is being updated separately.
+                            beehiveBlockEntity?.storeBee(BeehiveBlockEntity.Occupant.create(randomSource.nextInt(599)))
                         }
                     }
                 })

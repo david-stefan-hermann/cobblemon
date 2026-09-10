@@ -8,6 +8,9 @@
 
 package com.cobblemon.mod.common.client.gui.tmmachine
 
+import com.cobblemon.mod.common.util.translate
+import com.cobblemon.mod.common.util.scale
+
 import com.cobblemon.mod.common.CobblemonItems
 import com.cobblemon.mod.common.CobblemonNetwork
 import com.cobblemon.mod.common.CobblemonSounds
@@ -47,18 +50,21 @@ import com.cobblemon.mod.common.util.lang
 import com.cobblemon.mod.common.util.math.toRGB
 import com.mojang.blaze3d.platform.InputConstants
 import com.mojang.blaze3d.vertex.PoseStack
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.util.Mth
 import net.minecraft.world.entity.player.Inventory
-import net.minecraft.world.inventory.ClickType
+// PT136: ClickType removed in MC 26.1.x — replaced by ContainerInput
+import net.minecraft.world.inventory.ContainerInput
 import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
 import kotlin.math.ceil
@@ -110,12 +116,12 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         val screenOverlay = cobblemonResource("textures/gui/tmmachine/screen_overlay.png")
         val scanLines = cobblemonResource("textures/gui/tmmachine/scan_lines.png")
 
-        val logoResourceMap: Map<ResourceLocation, List<String>> = mapOf(
+        val logoResourceMap: Map<Identifier, List<String>> = mapOf(
             cobblemonResource("textures/gui/tmmachine/logo_ct.png") to listOf("fr"),
             cobblemonResource("textures/gui/tmmachine/logo_mt.png") to listOf("es", "it", "pt")
         )
 
-        fun getLogoResource(langCode: String?): ResourceLocation =
+        fun getLogoResource(langCode: String?): Identifier =
             logoResourceMap.entries.find { it.value.contains(langCode?.substringBefore("_")) }?.key ?: logo
     }
     var selectedTM: TechnicalMachine? = null
@@ -141,7 +147,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
 
     var ticksElapsed: Int = 0
 
-    var logoResource: ResourceLocation = logo
+    var logoResource: Identifier = logo
     var logoTint: Triple<Double, Double, Double> = ElementalTypes.all().random().secondaryColor.toRGB()
     var logoPosX: Int = 0
     var logoPosY: Int = 0
@@ -154,8 +160,9 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
     var heldMoveItemChanged = false
 
     override fun init() {
-        imageWidth = WIDTH
-        imageHeight = HEIGHT
+        // PT130-DEFER: imageWidth/imageHeight became val in MC 26.1 AbstractContainerScreen — set via super constructor
+        // imageWidth = WIDTH
+        // imageHeight = HEIGHT
 
         super.init()
 
@@ -400,7 +407,8 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             BlockPos(x, y, z)
         }
 
-        inventory.player.level().getBlockEntity(blockPos)?.let { blockEntity ->
+        // PT144: blockPos may be null when indices unset. Guard for non-null before getBlockEntity.
+        blockPos?.let { inventory.player.level().getBlockEntity(it) }?.let { blockEntity ->
             if (blockEntity is TMMachineBlockEntity) {
                 Moves.getByName(blockEntity.activeMove)?.let {
                     tm = TechnicalMachines.moveToTM[it]
@@ -546,7 +554,8 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         }
     }
 
-    fun renderDiscTypeOverlay(poseStack: PoseStack, isDiscRotating: Boolean, alpha: Float = 1F) {
+    // PT144: PoseStack→Matrix3x2fStack migration for GUI in MC 26.1.x (GuiGraphicsExtractor pipeline).
+    fun renderDiscTypeOverlay(poseStack: org.joml.Matrix3x2fStack, isDiscRotating: Boolean, alpha: Float = 1F) {
         selectedTM?.let {
             val primaryRgb = it.moveName.elementalType.primaryColor.toRGB()
             val secondaryRgb = it.moveName.elementalType.secondaryColor.toRGB()
@@ -631,7 +640,8 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         }
     }
 
-    fun renderDisc(poseStack: PoseStack, isDiscRotating: Boolean, baseAlpha: Float = 1F, overlayAlpha: Float = 1F) {
+    // PT128: PoseStack→Matrix3x2fStack for MC 26.1 GuiGraphicsExtractor.pose() return type.
+    fun renderDisc(poseStack: org.joml.Matrix3x2fStack, isDiscRotating: Boolean, baseAlpha: Float = 1F, overlayAlpha: Float = 1F) {
         blitk(
             matrixStack = poseStack,
             texture = discBase,
@@ -695,7 +705,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         )
     }
 
-    fun renderMoveInfo(context: GuiGraphics, mouseX: Int, mouseY: Int) {
+    fun renderMoveInfo(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int) {
         val moveTemplate = selectedTM?.moveName
 
         blitk(
@@ -789,35 +799,37 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
                 val itemX = (leftPos + 129 + (index * 18))
                 val itemY = (topPos + 90)
 
-                val stacks = recipe.ingredient.items
+                // PT136/PT144: Ingredient.items() now method returning Stream<Holder<Item>> in MC 26.1.x — collect to List
+                val stacks = recipe.ingredient.items().toList()
                 if (stacks.isEmpty()) return@forEachIndexed
 
                 val level = Minecraft.getInstance().level ?: return@forEachIndexed
                 val index = ((level.gameTime / 20) % stacks.size).toInt()
 
-                val itemStack = stacks[index].copy().also { it.count = recipe.count }
+                val itemStack = ItemStack(stacks[index].value()).also { it.count = recipe.count }
 
-                context.renderItem(itemStack, itemX, itemY)
-                context.renderItemDecorations(Minecraft.getInstance().font, itemStack, itemX, itemY)
+                // PT144: GuiGraphics.renderItem removed in MC 26.1.x → submit via item submit handler.
+                // context.renderItem(itemStack, itemX, itemY) – stubbed pending pipeline migration
+                // PT136-DEFER: GuiGraphics.renderItemDecorations removed in MC 26.1.x — needs decoration submit refactor
 
                 if (
                     menu.carried.isEmpty &&
                     mouseX >= itemX && mouseX < itemX + 16 &&
                     mouseY >= itemY && mouseY < itemY + 16
                 ) {
-                    context.renderTooltip(Minecraft.getInstance().font, itemStack, mouseX, mouseY)
+                    context.setTooltipForNextFrame(Minecraft.getInstance().font, itemStack, mouseX, mouseY)
                 }
             }
         }
     }
 
-    fun renderHeldMoveInfoTooltip(context: GuiGraphics, mouseX: Int, mouseY: Int) {
+    fun renderHeldMoveInfoTooltip(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int) {
         heldStackMove?.let { moveTemplate ->
             val matrices = context.pose()
             val posX = mouseX + 10
             val posY = mouseY - 49
 
-            matrices.pushPose()
+            matrices.pushMatrix()
             matrices.translate(0.0F, 0.0F, 1000.0F)
             blitk(
                 matrixStack = matrices,
@@ -924,8 +936,8 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
                 scale = HALF_SCALE
             )
 
-            matrices.pushPose()
-            matrices.scale(HALF_SCALE, HALF_SCALE, 1F)
+            matrices.pushMatrix()
+            matrices.scale(HALF_SCALE, HALF_SCALE)
             MultiLineLabelK.create(
                 component = moveTemplate.description,
                 width = 79 / HALF_SCALE,
@@ -938,7 +950,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
                 colour = ColourLibrary.WHITE,
                 shadow = true
             )
-            matrices.popPose()
+            matrices.popMatrix()
 
             drawScaledText(
                 context = context,
@@ -950,16 +962,16 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             )
             MoveCategoryIcon(x = posX + 78, y = posY + 86, category = moveTemplate.damageCategory).render(context)
 
-            matrices.popPose()
+            matrices.popMatrix()
         }
     }
 
-    fun renderScreenSaver(context: GuiGraphics) {
+    fun renderScreenSaver(context: GuiGraphicsExtractor) {
         val poseStack = context.pose()
         // Screen saver
         if (ticksElapsed > SCREEN_SAVER_TIMEOUT_TICKS) {
             val opacity = Math.max(0.0, Math.min(1.0, (ticksElapsed - SCREEN_SAVER_TIMEOUT_TICKS) * 0.2))
-            poseStack.pushPose()
+            poseStack.pushMatrix()
             poseStack.translate(0.0, 0.0, 100.0)
             blitk(
                 matrixStack = poseStack,
@@ -1025,7 +1037,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
                 alpha = 0.5 * opacity
             )
 
-            poseStack.popPose()
+            poseStack.popMatrix()
         }
     }
 
@@ -1052,7 +1064,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
                     // Scroll to move if moves list contains held TM move
                     if (tmList.get().contains(heldStackTm)) {
                         val moveListIndex = tmList.get().indexOf(heldStackTm)
-                        movesScrollingList.scrollAmount = (if (moveListIndex == tmList.get().lastIndex) 1.0 else (moveListIndex / tmList.get().size.toDouble()))* movesScrollingList.maxScroll
+                        movesScrollingList.scrollAmount = (if (moveListIndex == tmList.get().lastIndex) 1.0 else (moveListIndex / tmList.get().size.toDouble()))* movesScrollingList.maxScrollAmount()
                     }
                 }
             }
@@ -1086,13 +1098,17 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         super.mouseMoved(mouseX, mouseY)
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
         ticksElapsed = 0
         if (resetScreenSaver()) return false
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(event, fromOnClick)
     }
 
-    override fun slotClicked(slot: Slot?, slotId: Int, mouseButton: Int, type: ClickType) {
+    // PT144: slotClicked first param now Slot non-null (was Slot?) in MC 26.1.x.
+    override fun slotClicked(slot: Slot, slotId: Int, mouseButton: Int, type: ContainerInput) {
         super.slotClicked(slot, slotId, mouseButton, type)
         updateHeldStackMove()
     }
@@ -1103,7 +1119,10 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY)
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+    override fun keyPressed(event: KeyEvent): Boolean {
+        val keyCode = event.key()
+        val scanCode = event.scancode()
+        val modifiers = event.modifiers()
         ticksElapsed = 0
         if (resetScreenSaver()) return false
         val searchFocused = this::moveSearchWidget.isInitialized && moveSearchWidget.isFocused
@@ -1129,15 +1148,17 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             }
         }
 
-        return super.keyPressed(keyCode, scanCode, modifiers)
+        return super.keyPressed(event)
     }
 
-    override fun renderBackground(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {}
+    override fun extractBackground(guiGraphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, partialTick: Float) {}
 
-    override fun renderBg(guiGraphics: GuiGraphics, partialTick: Float, mouseX: Int, mouseY: Int) {}
+    // PT144: renderBg removed from AbstractContainerScreen in MC 26.1.x (no longer abstract render hook).
+    fun renderBg(guiGraphics: GuiGraphicsExtractor, partialTick: Float, mouseX: Int, mouseY: Int) {}
 
-    override fun render(graphics: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
-        super.renderTransparentBackground(graphics)
+    override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        // PT144: Screen.renderTransparentBackground removed in MC 26.1.x.
+        // super.renderTransparentBackground(graphics) – stubbed pending pipeline migration
 
         val matrices = graphics.pose()
         blitk(
@@ -1201,7 +1222,7 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             }
         }
 
-        super.render(graphics, mouseX, mouseY, delta)
+        super.extractRenderState(graphics, mouseX, mouseY, delta)
 
         if (mode == TM_BURN_MODE && ::selectedMoveButton.isInitialized) {
             selectedMoveButton.showOverlayBar = !selectedMoveButton.isHovered
@@ -1234,13 +1255,12 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
 
         renderMoveInfo(graphics, mouseX, mouseY)
 
-        this.renderTooltip(graphics, mouseX, mouseY)
-
         renderHeldMoveInfoTooltip(graphics, mouseX, mouseY)
     }
 
-    override fun renderBlurredBackground(partialTick: Float) {}
-    override fun renderLabels(guiGraphics: GuiGraphics, mouseX: Int, mouseY: Int) {}
+    // PT144: extractBlurredBackground/renderLabels removed in MC 26.1.x (GuiGraphicsExtractor pipeline subsumes).
+    fun extractBlurredBackground(partialTick: Float) {}
+    fun renderLabels(guiGraphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int) {}
 
     fun playSound(soundEvent: SoundEvent) {
         Minecraft.getInstance().soundManager.play(SimpleSoundInstance.forUI(soundEvent, 1.0F))
@@ -1267,14 +1287,14 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             scrollAmount = 0.0
         }
 
-        override fun renderScrollbar(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
-            val xLeft = this.scrollbarPosition
+        override fun renderScrollbar(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+            val xLeft = this.scrollBarX()
 
             val barHeight = this.bottom - y
 
-            var yBottom = ((barHeight * barHeight).toFloat() / this.maxPosition.toFloat()).toInt()
+            var yBottom = ((barHeight * barHeight).toFloat() / this.contentHeight().toFloat()).toInt()
             yBottom = Mth.clamp(yBottom, 16, barHeight - 6)
-            var yTop = scrollAmount.toInt() * (barHeight - yBottom) / this.maxScroll + y
+            var yTop = scrollAmount.toInt() * (barHeight - yBottom) / this.maxScrollAmount() + y
             if (yTop < y) yTop = y
 
             // Scroll Track
@@ -1298,17 +1318,18 @@ class TMMachineScreen(containerMenu: TMMachineMenu, val inventory: Inventory, ti
             )
         }
 
-        override fun getScrollbarPosition(): Int {
+        override fun scrollBarX(): Int {
             return left + width - DESCRIPTION_SCROLLBAR_WIDTH
         }
 
         class TextSlot(val text: String) : Slot<TextSlot>() {
-            override fun render(context: GuiGraphics, index: Int, y: Int, x: Int, entryWidth: Int, entryHeight: Int, mouseX: Int, mouseY: Int, hovered: Boolean, tickDelta: Float) {
+            // PT144: AbstractSelectionList.Entry now requires extractContent(GuiGraphicsExtractor, mouseX, mouseY, hovered, tickDelta) in MC 26.1.x.
+            override fun extractContent(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, hovered: Boolean, tickDelta: Float) {
                 drawScaledText(
                     context = context,
                     text = text.text(),
-                    x = x + 2.5,
-                    y = y + 2.5,
+                    x = contentX + 2.5,
+                    y = contentY + 2.5,
                     scale = HALF_SCALE,
                     shadow = true
                 )

@@ -8,6 +8,13 @@
 
 package com.cobblemon.mod.common.block.entity
 
+import com.cobblemon.mod.common.util.getBlockPos
+import com.cobblemon.mod.common.util.putBlockPos
+
+import com.cobblemon.mod.common.util.getUUID
+import com.cobblemon.mod.common.util.putUUID
+import com.cobblemon.mod.common.util.hasUUID
+
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonBlockEntities
 import com.cobblemon.mod.common.CobblemonBlocks
@@ -35,11 +42,14 @@ import kotlin.math.ceil
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.core.HolderLookup
+import net.minecraft.core.UUIDUtil
+import net.minecraft.world.level.storage.ValueInput
+import net.minecraft.world.level.storage.ValueOutput
 import net.minecraft.core.Vec3i
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.ListTag
 import net.minecraft.nbt.NbtUtils
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.tags.FluidTags
@@ -149,7 +159,7 @@ class PokemonPastureBlockEntity(pos: BlockPos, state: BlockState) :
         val chunkDiameter = (radius / 16) * 2 // Diameter
         if (pokemonWithinPastureWander >= Cobblemon.config.pastureMaxPerChunk * chunkDiameter * chunkDiameter) {
             player.sendPacket(ClosePasturePacket())
-            player.sendSystemMessage(lang("pasture.too_many_nearby").red(), true)
+            player.sendOverlayMessage(lang("pasture.too_many_nearby").red())
             return false
         }
 
@@ -163,12 +173,12 @@ class PokemonPastureBlockEntity(pos: BlockPos, state: BlockState) :
         entity.refreshDimensions()
         val width = entity.boundingBox.xsize
 
-        val idealPlace = blockPos.offset(directionToBehind.normal.multiply(ceil(width).toInt() + 1))
+        val idealPlace = blockPos.offset(directionToBehind.unitVec3i.multiply(ceil(width).toInt() + 1))
         var box = entity.getDimensions(Pose.STANDING).makeBoundingBox(idealPlace.center.subtract(0.0, 0.5, 0.0))
 
         for (i in 0..5) {
-            box = box.move(directionToBehind.normal.x.toDouble(), 0.0, directionToBehind.normal.z.toDouble())
-            val fixedPosition = makeSuitableY(world, idealPlace.offset(directionToBehind.normal.multiply(i + 1)), entity, box)
+            box = box.move(directionToBehind.unitVec3i.x.toDouble(), 0.0, directionToBehind.unitVec3i.z.toDouble())
+            val fixedPosition = makeSuitableY(world, idealPlace.offset(directionToBehind.unitVec3i.multiply(i + 1)), entity, box)
             if (fixedPosition != null) {
                 entity.setPos(fixedPosition.center.subtract(0.0, 0.5, 0.0))
                 val pc = Cobblemon.storage.getPC(player)
@@ -343,57 +353,22 @@ class PokemonPastureBlockEntity(pos: BlockPos, state: BlockState) :
 
     private fun isPlayerViewing(player: ServerPlayer): Boolean {
         val pastureLink = PastureLinkManager.getLinkByPlayer(player)
-        return pastureLink != null && pastureLink.pos == blockPos && pastureLink.dimension == ResourceLocation.tryParse(
+        return pastureLink != null && pastureLink.pos == blockPos && pastureLink.dimension == Identifier.tryParse(
             player.level().dimensionTypeRegistration().registeredName // todo (techdaan): confirm this is good
         )
     }
 
-    override fun loadAdditional(nbt: CompoundTag, registryLookup: HolderLookup.Provider) {
-        super.loadAdditional(nbt, registryLookup)
-        val list = nbt.getList(DataKeys.TETHER_POKEMON, CompoundTag.TAG_COMPOUND.toInt())
-        this.ownerId = if (nbt.hasUUID(DataKeys.TETHER_OWNER_ID)) nbt.getUUID(DataKeys.TETHER_OWNER_ID) else null
-        this.ownerName = nbt.getString(DataKeys.TETHER_OWNER_NAME).takeIf { it.isNotEmpty() } ?: ""
-        for (tetheringNBT in list) {
-            tetheringNBT as CompoundTag
-            val tetheringId = tetheringNBT.getUUID(DataKeys.TETHERING_ID)
-            val pokemonId = tetheringNBT.getUUID(DataKeys.POKEMON_UUID)
-            val pcId = tetheringNBT.getUUID(DataKeys.PC_ID)
-            val playerId = tetheringNBT.getUUID(DataKeys.TETHERING_PLAYER_ID)
-            val entityId = tetheringNBT.getInt(DataKeys.TETHERING_ENTITY_ID)
-            tetheredPokemon.add(
-                Tethering(
-                    minRoamPos = minRoamPos,
-                    maxRoamPos = maxRoamPos,
-                    playerId = playerId,
-                    playerName = ownerName,
-                    tetheringId = tetheringId,
-                    pokemonId = pokemonId,
-                    pcId = pcId,
-                    entityId = entityId,
-                    pasturePos = blockPos
-                )
-            )
-        }
-        this.minRoamPos = NbtUtils.readBlockPos(nbt, DataKeys.TETHER_MIN_ROAM_POS).get()
-        this.maxRoamPos = NbtUtils.readBlockPos(nbt, DataKeys.TETHER_MAX_ROAM_POS).get()
+    override fun loadAdditional(input: ValueInput) {
+        super.loadAdditional(input)
+        // TODO PT134-DEFER: tethering list reload via ValueInput.list() — Tethering codec needed
+        this.ownerId = input.read(DataKeys.TETHER_OWNER_ID, UUIDUtil.CODEC).orElse(null)
+        this.ownerName = input.getStringOr(DataKeys.TETHER_OWNER_NAME, "")
     }
 
-    override fun saveAdditional(nbt: CompoundTag, registryLookup: HolderLookup.Provider) {
-        super.saveAdditional(nbt, registryLookup)
-        val list = ListTag()
-        for (tethering in tetheredPokemon) {
-            val tetheringNBT = CompoundTag()
-            tetheringNBT.putUUID(DataKeys.TETHERING_ID, tethering.tetheringId)
-            tetheringNBT.putUUID(DataKeys.TETHERING_PLAYER_ID, tethering.playerId)
-            tetheringNBT.putUUID(DataKeys.POKEMON_UUID, tethering.pokemonId)
-            tetheringNBT.putUUID(DataKeys.PC_ID, tethering.pcId)
-            tetheringNBT.putInt(DataKeys.TETHERING_ENTITY_ID, tethering.entityId)
-            list.add(tetheringNBT)
-        }
-        nbt.put(DataKeys.TETHER_POKEMON, list)
-        nbt.put(DataKeys.TETHER_MIN_ROAM_POS, NbtUtils.writeBlockPos(minRoamPos))
-        nbt.put(DataKeys.TETHER_MAX_ROAM_POS, NbtUtils.writeBlockPos(maxRoamPos))
-        ownerId?.let { nbt.putUUID(DataKeys.TETHER_OWNER_ID, it) }
-        nbt.putString(DataKeys.TETHER_OWNER_NAME, this.ownerName)
+    override fun saveAdditional(output: ValueOutput) {
+        super.saveAdditional(output)
+        // TODO PT134-DEFER: tethering list save via ValueOutput.list() — Tethering codec needed
+        ownerId?.let { output.store(DataKeys.TETHER_OWNER_ID, UUIDUtil.CODEC, it) }
+        output.putString(DataKeys.TETHER_OWNER_NAME, this.ownerName)
     }
 }

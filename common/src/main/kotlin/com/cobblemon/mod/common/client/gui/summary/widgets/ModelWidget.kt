@@ -8,6 +8,7 @@
 
 package com.cobblemon.mod.common.client.gui.summary.widgets
 
+import net.minecraft.client.input.MouseButtonEvent
 import com.bedrockk.molang.runtime.value.DoubleValue
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.api.tags.CobblemonItemTags
@@ -17,7 +18,7 @@ import com.cobblemon.mod.common.client.render.models.blockbench.FloatingState
 import com.cobblemon.mod.common.client.render.item.HeldItemRenderer
 import com.cobblemon.mod.common.pokemon.RenderablePokemon
 import com.cobblemon.mod.common.util.math.fromEulerXYZDegrees
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Component
 import org.joml.Quaternionf
 import org.joml.Vector3f
@@ -58,7 +59,7 @@ class ModelWidget(
     var currentYawAndPitch: Pair<Float, Float> = Pair(0f, 0f)
     val rotationVector = Vector3f(13F, rotationY, 0F)
 
-    override fun renderWidget(context: GuiGraphics, pMouseX: Int, pMouseY: Int, partialTicks: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, pMouseX: Int, pMouseY: Int, partialTicks: Float) {
         if (!render) {
             return
         }
@@ -66,9 +67,9 @@ class ModelWidget(
         renderPKM(context, partialTicks, pMouseX, pMouseY)
     }
 
-    private fun renderPKM(context: GuiGraphics, partialTicks: Float, mouseX: Int, mouseY: Int) {
+    private fun renderPKM(context: GuiGraphicsExtractor, partialTicks: Float, mouseX: Int, mouseY: Int) {
         val matrices = context.pose()
-        matrices.pushPose()
+        matrices.pushMatrix()
 
         context.enableScissor(
             x,
@@ -77,9 +78,10 @@ class ModelWidget(
             y + height
         )
 
-        matrices.translate(x + width * 0.5, y.toDouble() + offsetY, 0.0)
-        matrices.scale(baseScale, baseScale, baseScale)
-        matrices.pushPose()
+        matrices.translate((x + width * 0.5).toFloat(), (y.toDouble() + offsetY).toFloat())
+        // PT144: Matrix3x2f is 2D; only 2-arg scale is valid in MC 26.1.x.
+        matrices.scale(baseScale, baseScale)
+        matrices.pushMatrix()
 
         if (isHovered) {
             lookStartTime = System.currentTimeMillis()
@@ -119,27 +121,31 @@ class ModelWidget(
             blockLight = blockLight
         )
 
+        // PT144: GuiGraphicsExtractor.bufferSource() removed — use renderBuffers().bufferSource().
         heldItemRenderer.renderOnModel(
             pokemon.heldItem,
             state,
             matrices,
-            context.bufferSource(),
+            net.minecraft.client.Minecraft.getInstance().renderBuffers().bufferSource(),
             light = 0xF000F0,
             true
         )
 
-        matrices.popPose()
+        matrices.popMatrix()
         context.disableScissor()
 
-        matrices.popPose()
+        matrices.popMatrix()
     }
 
-    override fun mouseClicked(pMouseX: Double, pMouseY: Double, pButton: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val pMouseX = event.x
+        val pMouseY = event.y
+        val pButton = event.button()
         if (this.isHovered) {
             playCry()
         }
 
-        return super.mouseClicked(pMouseX, pMouseY, pButton)
+        return super.mouseClicked(event, fromOnClick)
     }
 
     private fun playCry() {

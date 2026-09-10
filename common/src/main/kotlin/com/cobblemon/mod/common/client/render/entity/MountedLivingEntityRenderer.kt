@@ -55,7 +55,7 @@ object MountedLivingEntityRenderer {
             matrix.translate(playerPos.subtract(entityPos).toVector3f().negate())
             matrix.translate(locator.matrix.getTranslation(Vector3f()))
 
-            val offset = Vector3f(0f, entity.bbHeight / 2, 0f).mul(-1f)
+            val offset = Vector3f(0f, (entity.bbHeight / 2), 0f).mul(-1f)
 
             matrix.rotate(locator.matrix.getRotation(AxisAngle4f()))
             matrix.rotate(Axis.YP.rotationDegrees(180 + yBodyRot))

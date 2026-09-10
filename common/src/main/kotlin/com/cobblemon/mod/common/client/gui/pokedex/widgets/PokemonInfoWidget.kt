@@ -8,6 +8,11 @@
 
 package com.cobblemon.mod.common.client.gui.pokedex.widgets
 
+import com.cobblemon.mod.common.util.translate
+import com.cobblemon.mod.common.util.scale
+
+import com.cobblemon.mod.common.client.gui.pokedex.setTooltipForNextFrame
+
 import com.bedrockk.molang.runtime.MoLangRuntime
 import com.cobblemon.mod.common.api.gui.blitk
 import com.cobblemon.mod.common.api.pokedex.entry.PokedexEntry
@@ -32,7 +37,7 @@ import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.PORTRAIT_
 import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.PORTRAIT_POKE_BALL_WIDTH
 import com.cobblemon.mod.common.client.gui.pokedex.PokedexGUIConstants.SCALE
 import com.cobblemon.mod.common.client.gui.pokedex.ScaledButton
-import com.cobblemon.mod.common.client.gui.pokedex.renderTooltip
+// PT136: orphaned import — renderTooltip helper removed/missing
 import com.cobblemon.mod.common.client.gui.summary.widgets.SoundlessWidget
 import com.cobblemon.mod.common.client.render.drawScaledText
 import com.cobblemon.mod.common.client.render.drawScaledTextJustifiedRight
@@ -48,12 +53,13 @@ import com.cobblemon.mod.common.util.asTranslated
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
 import com.cobblemon.mod.common.util.math.fromEulerXYZDegrees
+import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.sounds.SoundEvent
 import org.joml.Quaternionf
 import org.joml.Vector3f
@@ -259,7 +265,7 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
         clickAction = { switchPose(true) }
     ).apply { addWidget(this) }
 
-    override fun renderWidget(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         val currentEntry = this.currentEntry ?: return
 
         val hasKnowledge =
@@ -370,7 +376,7 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
                     pY + portraitStartY + POKEMON_PORTRAIT_HEIGHT
                 )
 
-                matrices.pushPose()
+                matrices.pushMatrix()
                 matrices.translate(
                     pX.toDouble() + (POKEMON_PORTRAIT_WIDTH.toDouble() + 2) / 2,
                     pY.toDouble() + portraitStartY - 12,
@@ -389,7 +395,7 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
                     blockLight = 15
                 )
 
-                matrices.popPose()
+                matrices.popMatrix()
                 context.disableScissor()
             } else {
                 // Render question mark
@@ -404,7 +410,7 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
             }
 
             // Ensure elements are not hidden behind Pokémon render
-            matrices.pushPose()
+            matrices.pushMatrix()
             matrices.translate(0.0, 0.0, 2000.0)
 
             if (isSelectedPokemonOwned()) {
@@ -439,17 +445,17 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
             }
 
             if (hasKnowledge) {
-                if (genderButton.visible) genderButton.render(context, mouseX, mouseY, delta)
+                if (genderButton.visible) genderButton.extractRenderState(context, mouseX, mouseY, delta)
 
-                shinyButton.render(context, mouseX, mouseY, delta)
+                shinyButton.extractRenderState(context, mouseX, mouseY, delta)
 
                 variationButtons.forEach {
-                    it.getWidget().render(context, mouseX, mouseY, delta)
+                    it.getWidget().extractRenderState(context, mouseX, mouseY, delta)
 
                     // Tooltip
                     if (it.isVisible() && it.getWidget().isButtonHovered(mouseX, mouseY)) {
                         val variationText = it.variation.displayName.asTranslated().bold()
-                        renderTooltip(
+                        setTooltipForNextFrame(
                             context,
                             variationText,
                             mouseX,
@@ -464,8 +470,8 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
                 val showableForms = CobblemonClient.clientPokedexData.getEncounteredForms(currentEntry)
 
                 if (showableForms.size > 1 && showableForms.size > selectedFormIndex) {
-                    formLeftButton.render(context, mouseX, mouseY, delta)
-                    formRightButton.render(context, mouseX, mouseY, delta)
+                    formLeftButton.extractRenderState(context, mouseX, mouseY, delta)
+                    formRightButton.extractRenderState(context, mouseX, mouseY, delta)
 
                     val form = showableForms[selectedFormIndex]
                     val formName = if (form.displayForm.lowercase() == "normal") "" else "-${
@@ -492,7 +498,7 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
                     scale = SCALE
                 )
 
-                cryButton.render(context, mouseX, mouseY, delta)
+                cryButton.extractRenderState(context, mouseX, mouseY, delta)
 
                 // Animation
                 blitk(
@@ -505,8 +511,8 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
                     scale = SCALE
                 )
 
-                animationLeftButton.render(context, mouseX, mouseY, delta)
-                animationRightButton.render(context, mouseX, mouseY, delta)
+                animationLeftButton.extractRenderState(context, mouseX, mouseY, delta)
+                animationRightButton.extractRenderState(context, mouseX, mouseY, delta)
             } else if (renderablePokemon == null) {
                 // Render unimplemented label
                 if (!species.implemented) {
@@ -521,22 +527,28 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
                 }
             }
 
-            matrices.popPose()
+            matrices.popMatrix()
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
         if (suppressViewport) {
             return false
         }
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(event, fromOnClick)
     }
 
-    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseReleased(event: MouseButtonEvent): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
         if (suppressViewport) {
             return false
         }
-        return super.mouseReleased(mouseX, mouseY, button)
+        return super.mouseReleased(event)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
@@ -546,11 +558,14 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
+    override fun mouseDragged(event: MouseButtonEvent, deltaX: Double, deltaY: Double): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
         if (suppressViewport) {
             return false
         }
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+        return super.mouseDragged(event, deltaX, deltaY)
     }
 
     override fun mouseMoved(mouseX: Double, mouseY: Double) {
@@ -735,7 +750,7 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
             .toTypedArray()
     }
 
-    fun getPlatformResource(): ResourceLocation? {
+    fun getPlatformResource(): Identifier? {
         val primaryType = type[0]
         if (primaryType != null) {
             return try {

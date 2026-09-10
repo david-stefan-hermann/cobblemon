@@ -14,65 +14,23 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
-import com.mojang.serialization.JsonOps
-import net.minecraft.advancements.critereon.ItemCustomDataPredicate
-import net.minecraft.advancements.critereon.ItemPredicate
-import net.minecraft.advancements.critereon.ItemSubPredicates
-import net.minecraft.advancements.critereon.NbtPredicate
-import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.core.registries.Registries
-import net.minecraft.resources.ResourceLocation
-import net.minecraft.tags.TagKey
+import net.minecraft.advancements.criterion.ItemPredicate
 import java.lang.reflect.Type
 
-// This is an ugly adapter because breaking changes are scary and people would ;(
+// PT137: This adapter is legacy compat for pre-data-component ItemPredicate JSON.
+// MC 26.1.x removed ItemCustomDataPredicate / ItemSubPredicates; legacy NBT branch and
+// builder.of(Tag/Item) calls require HolderGetter<Item> + new component system.
+// Delegating fully to codec-backed adapter — legacy short-form unsupported in 26.1+.
 object LegacyItemConditionWrapperAdapter : JsonDeserializer<ItemPredicate>, JsonSerializer<ItemPredicate> {
-
-    private const val TAG_PREFIX = "#"
-    private const val LEGACY_ITEM = "item"
-    private const val LEGACY_NBT = "nbt"
 
     private val codecAdapter = CodecBackedAdapter(ItemPredicate.CODEC)
 
     override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): ItemPredicate {
-        if (json.isJsonPrimitive) {
-            return this.createBuilderForItem(json.asString).build()
-        }
-        else if (json.isJsonObject) {
-            val jObject = json.asJsonObject
-            if (jObject.size() == 2 && jObject.has(LEGACY_ITEM) && jObject.has(LEGACY_NBT)) {
-                val builder = this.createBuilderForItem(jObject.get(LEGACY_ITEM).asString)
-                val nbtPredicate = NbtPredicate.CODEC.decode(JsonOps.INSTANCE, jObject.get(LEGACY_NBT)).result().get().first
-                val itemCustomDataPredicate = ItemCustomDataPredicate(nbtPredicate)
-                return builder
-                    .withSubPredicate(ItemSubPredicates.CUSTOM_DATA, itemCustomDataPredicate)
-                    .build()
-            }
-        }
         return this.codecAdapter.deserialize(json, typeOfT, context)
     }
 
     override fun serialize(src: ItemPredicate, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
         return this.codecAdapter.serialize(src, typeOfSrc, context)
-    }
-
-    private fun createBuilderForItem(raw: String): ItemPredicate.Builder {
-        val isTag = raw.startsWith(TAG_PREFIX)
-        val builder = ItemPredicate.Builder.item()
-        return ResourceLocation.read(if (isTag) raw.substring(1) else raw)
-            .mapOrElse(
-                { id ->
-                    if (isTag) {
-                        val tag = TagKey.create(Registries.ITEM, id)
-                        builder.of(tag)
-                    } else {
-                        BuiltInRegistries.ITEM.getOptional(id)
-                            .map { builder.of(it) }
-                            .orElseGet { builder }
-                    }
-                },
-                { builder }
-            )
     }
 
 }

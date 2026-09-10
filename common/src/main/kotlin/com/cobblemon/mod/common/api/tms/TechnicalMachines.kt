@@ -19,13 +19,13 @@ import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import java.io.BufferedReader
 import java.util.concurrent.ExecutionException
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.server.packs.PackType
 
 object TechnicalMachines : JsonDataRegistry<TechnicalMachine> {
     override val gson = GsonBuilder()
-            .registerTypeAdapter(ResourceLocation::class.java, IdentifierAdapter)
+            .registerTypeAdapter(Identifier::class.java, IdentifierAdapter)
             .registerTypeAdapter(ObtainMethod::class.java, TMObtainMethodAdapter)
             .registerTypeAdapter(MoveTemplate::class.java, MoveTemplateAdapter)
             .create()
@@ -36,7 +36,7 @@ object TechnicalMachines : JsonDataRegistry<TechnicalMachine> {
     override val type = PackType.SERVER_DATA
     override val observable = SimpleObservable<TechnicalMachines>()
 
-    val tmMap = mutableMapOf<ResourceLocation, TechnicalMachine>()
+    val tmMap = mutableMapOf<Identifier, TechnicalMachine>()
     val moveToTM = mutableMapOf<MoveTemplate, TechnicalMachine>()
 
     /**
@@ -46,7 +46,7 @@ object TechnicalMachines : JsonDataRegistry<TechnicalMachine> {
      */
     override fun parse(
         reader: BufferedReader,
-        identifier: ResourceLocation
+        identifier: Identifier
     ): TechnicalMachine {
         try {
             val technicalMachineDto = gson.fromJson(reader, TechnicalMachineDTO::class.java)
@@ -60,7 +60,7 @@ object TechnicalMachines : JsonDataRegistry<TechnicalMachine> {
         }
     }
 
-    override fun reload(data: Map<ResourceLocation, TechnicalMachine>) {
+    override fun reload(data: Map<Identifier, TechnicalMachine>) {
         data.forEach { (id, tm) ->
             tmMap[id] = tm
             tm.id = id
@@ -68,7 +68,7 @@ object TechnicalMachines : JsonDataRegistry<TechnicalMachine> {
         }
     }
 
-    fun getByResourceLocation(resourceLocation: ResourceLocation) = tmMap[resourceLocation]
+    fun getByResourceLocation(resourceLocation: Identifier) = tmMap[resourceLocation]
     fun getAllResourceLocations() = tmMap.keys.toSet()
     override fun sync(player: ServerPlayer) {}
 }

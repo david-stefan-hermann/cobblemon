@@ -9,16 +9,16 @@
 package com.cobblemon.mod.common.client.render.block
 
 import com.cobblemon.mod.common.block.entity.BerryBlockEntity
-import com.mojang.blaze3d.vertex.VertexBuffer
 
+// PT135-DEFER: VertexBuffer (com.mojang.blaze3d.vertex.VertexBuffer) removed in MC 26.1.x.
+// Berry block VBO-based rendering optimisation deferred — render path moves to BlockStateModel / SubmitNodeCollector.
 class BerryBlockEntityRenderState : BerryBlockEntity.RenderState {
     val lastRenderFrame = -1
     override var needsRebuild = true
-    val vbo: VertexBuffer = VertexBuffer(VertexBuffer.Usage.STATIC)
     var vboLightLevel: Int = 0
     var drawVbo: Boolean = false
 
     override fun close() {
-        vbo.close()
+        // no-op: VertexBuffer field removed
     }
 }

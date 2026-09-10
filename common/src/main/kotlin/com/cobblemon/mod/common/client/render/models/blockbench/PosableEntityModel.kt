@@ -11,14 +11,16 @@ package com.cobblemon.mod.common.client.render.models.blockbench
 import com.cobblemon.mod.common.client.render.models.blockbench.repository.RenderContext
 import com.cobblemon.mod.common.entity.PosableEntity
 import net.minecraft.client.renderer.texture.OverlayTexture
-import net.minecraft.client.renderer.RenderType
+import net.minecraft.client.renderer.rendertype.RenderType
+import net.minecraft.client.renderer.rendertype.RenderTypes
 import com.mojang.blaze3d.vertex.VertexConsumer
 import net.minecraft.client.renderer.entity.LivingEntityRenderer
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.model.EntityModel
+import net.minecraft.client.model.geom.ModelPart
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 /**
  * A wrapping around a [PosableModel] that presents as an [EntityModel]. This is used to continue using
@@ -28,15 +30,17 @@ import net.minecraft.resources.ResourceLocation
  * @author Hiroku
  * @since January 5th, 2024
  */
+// PT144: EntityModel<T : EntityRenderState> bound tightened in MC 26.1.x; ModelPart constructor required; renderToBuffer final.
 abstract class PosableEntityModel<T : Entity>(
-    renderTypeFunc: (ResourceLocation) -> RenderType = RenderType::entityCutout
-) : EntityModel<T>(renderTypeFunc) {
+    renderTypeFunc: (Identifier) -> RenderType = RenderTypes::entityCutout
+) : EntityModel<net.minecraft.client.renderer.entity.state.EntityRenderState>(ModelPart(emptyList(), emptyMap()), renderTypeFunc) {
     val context: RenderContext = RenderContext().also {
         it.put(RenderContext.RENDER_STATE, RenderContext.RenderState.WORLD)
     }
     lateinit var posableModel: PosableModel
 
-    override fun renderToBuffer(
+    // PT145: Model.renderToBuffer is final in MC 26.1.x — renamed to renderToBufferLegacy to avoid hide-conflict.
+    fun renderToBufferLegacy(
         stack: PoseStack,
         buffer: VertexConsumer,
         packedLight: Int,
@@ -66,8 +70,8 @@ abstract class PosableEntityModel<T : Entity>(
         }
     }
 
-    // Called by LivingEntityRenderer's render method before calling model.render (which is this.render in this case)
-    override fun setupAnim(
+    // PT144: setupAnim(S) in MC 26.1.x — keep legacy multi-arg as helper used by per-entity logic; new flow keys off RenderState.
+    fun setupAnim(
         entity: T,
         limbSwing: Float,
         limbSwingAmount: Float,

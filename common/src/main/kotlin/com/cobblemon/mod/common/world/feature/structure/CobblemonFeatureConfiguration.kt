@@ -11,13 +11,13 @@ package com.cobblemon.mod.common.world.feature.structure
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.core.Holder
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType
 
 class CobblemonFeatureConfiguration(
-    val cobblemonStructures: List<ResourceLocation>,
+    val cobblemonStructures: List<Identifier>,
     val cobblemonProcessors: Holder<StructureProcessorList>,
 ) : FeatureConfiguration {
     init {
@@ -29,7 +29,7 @@ class CobblemonFeatureConfiguration(
     companion object {
         val CODEC: Codec<CobblemonFeatureConfiguration> = RecordCodecBuilder.create { instance ->
             instance.group(
-                ResourceLocation.CODEC.listOf().fieldOf("cobblemon_structures").forGetter { it.cobblemonStructures },
+                Identifier.CODEC.listOf().fieldOf("cobblemon_structures").forGetter { it.cobblemonStructures },
                 StructureProcessorType.LIST_CODEC.fieldOf("cobblemon_processors").forGetter { it.cobblemonProcessors },
             ).apply(instance, ::CobblemonFeatureConfiguration)
         }

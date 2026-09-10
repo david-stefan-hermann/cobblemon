@@ -44,7 +44,8 @@ object PartyTutorialToasts {
         else downKey.displayName
 
     private val toast = CobblemonToast(
-        Mth.createInsecureUUID(),
+        // PT144: Mth.createInsecureUUID requires RandomSource; AdvancementToast.BACKGROUND_SPRITE is now private.
+        Mth.createInsecureUUID(net.minecraft.util.RandomSource.create()),
         listOf(CobblemonItems.POKEDEX_RED.defaultInstance),
         lang("ui.party.party_select_title").red(),
         lang(
@@ -53,7 +54,7 @@ object PartyTutorialToasts {
             downDisplay,
             PartySendBinding.boundKey().displayName
         ).darkGray(),
-        AdvancementToast.BACKGROUND_SPRITE,
+        net.minecraft.resources.Identifier.withDefaultNamespace("toast/advancement"),
         -1F,
         0
     )
@@ -88,7 +89,7 @@ object PartyTutorialToasts {
         val minecraft = Minecraft.getInstance()
         if (!toastAttached) {
             toast.nextVisibility = Toast.Visibility.SHOW
-            minecraft.toasts.addToast(toast)
+            minecraft.toastManager.addToast(toast)
             toastAttached = true
         }
     }

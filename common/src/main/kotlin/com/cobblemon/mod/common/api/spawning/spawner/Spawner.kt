@@ -216,7 +216,8 @@ interface Spawner {
         val (chunkX, chunkZ) = Pair(SectionPos.blockToSectionCoord(area.baseX), SectionPos.blockToSectionCoord(area.baseZ))
 
         // if the chunk isn't loaded, we don't want to go further & we don't want the getChunk function below to load/create the chunk.
-        if (!area.world.areEntitiesLoaded(ChunkPos.asLong(chunkX, chunkZ))) return null
+        // PT143: ChunkPos.toLong()/asLong removed in MC 26.1.x — use pack() instance method.
+        if (area.world is net.minecraft.server.level.ServerLevel && !(area.world as net.minecraft.server.level.ServerLevel).areEntitiesLoaded(ChunkPos(chunkX, chunkZ).pack())) return null
 
         val chunk = area.world.getChunk(chunkX, chunkZ, ChunkStatus.FULL) ?: return null
 

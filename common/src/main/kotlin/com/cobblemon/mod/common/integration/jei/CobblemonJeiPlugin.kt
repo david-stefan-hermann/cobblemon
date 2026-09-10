@@ -18,7 +18,7 @@ import mezz.jei.api.registration.IRecipeCatalystRegistration
 import mezz.jei.api.registration.IRecipeCategoryRegistration
 import mezz.jei.api.registration.IRecipeRegistration
 import mezz.jei.api.runtime.IJeiRuntime
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 @JeiPlugin
 class CobblemonJeiPlugin : IModPlugin {
@@ -28,9 +28,8 @@ class CobblemonJeiPlugin : IModPlugin {
         BrewingStandJeiProvider()
     )
 
-    override fun getPluginUid(): ResourceLocation {
-        return ID
-    }
+    // PT145: getPluginUid() abstract member added in MC 26.1.x.
+    override fun getPluginUid(): Identifier = ID
 
     override fun registerCategories(registration: IRecipeCategoryRegistration) {
         jeiProviders.forEach {

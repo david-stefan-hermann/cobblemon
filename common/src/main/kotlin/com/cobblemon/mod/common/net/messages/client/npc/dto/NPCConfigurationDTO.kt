@@ -28,18 +28,18 @@ import io.netty.buffer.ByteBuf
 import java.util.UUID
 import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.network.chat.MutableComponent
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 class NPCConfigurationDTO : Encodable, Decodable {
     var npcUUID: UUID = UUID.randomUUID()
     var npcName: MutableComponent = "".text()
-    var npcClass: ResourceLocation = cobblemonResource("default")
-    var resourceIdentifier: ResourceLocation = npcClass
+    var npcClass: Identifier = cobblemonResource("default")
+    var resourceIdentifier: Identifier = npcClass
     var battle: NPCBattleConfiguration? = null
     var interactionInherited: Boolean = false
     var interaction: NPCInteractConfiguration? = null
     var aspects: MutableSet<String> = mutableSetOf()
-    var behaviours: MutableSet<ResourceLocation> = mutableSetOf()
+    var behaviours: MutableSet<Identifier> = mutableSetOf()
     var registeredVariables: MutableList<MoLangConfigVariable> = mutableListOf()
     var variables: MutableMap<String, String> = mutableMapOf()
 
@@ -87,9 +87,10 @@ class NPCConfigurationDTO : Encodable, Decodable {
         resourceIdentifier = buffer.readIdentifier()
         battle = buffer.readNullable { NPCBattleConfiguration().apply { decode(buffer) } }
         interactionInherited = buffer.readBoolean()
-        interaction = buffer.readNullable {
+        // PT144: readNullable<T> bound tightened to T : Any in MC 26.1.x — wire prefix decides nullity, decoder must return non-null.
+        interaction = buffer.readNullable<NPCInteractConfiguration> {
             val type = buffer.readString()
-            val configType = NPCInteractConfiguration.types[type] ?: return@readNullable null
+            val configType = NPCInteractConfiguration.types[type] ?: error("Unknown NPC interaction type: $type")
             configType.clazz.getConstructor().newInstance().also { it.decode(buffer) }
         }
         aspects = buffer.readList { buffer.readString() }.toMutableSet()

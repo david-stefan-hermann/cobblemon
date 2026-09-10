@@ -8,6 +8,8 @@
 
 package com.cobblemon.mod.common.block
 
+import net.minecraft.world.level.ScheduledTickAccess
+
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonBlocks
 import com.cobblemon.mod.common.api.events.CobblemonEvents
@@ -60,7 +62,7 @@ abstract class RootBlock(settings: Properties) : Block(settings), BonemealableBl
             this.attemptShear(world, state, pos) {
                 stack.hurtAndBreak(1, player, EquipmentSlot.MAINHAND)
             }
-            return InteractionResult.sidedSuccess(world.isClientSide)
+            return (if (world.isClientSide) InteractionResult.SUCCESS else InteractionResult.SUCCESS_SERVER)
         }
         return super.useWithoutItem(state, world, pos, player, blockHitResult)
     }
@@ -84,14 +86,16 @@ abstract class RootBlock(settings: Properties) : Block(settings), BonemealableBl
 
     override fun updateShape(
         state: BlockState,
-        direction: Direction,
-        neighborState: BlockState,
-        world: LevelAccessor,
+        world: LevelReader,
+        scheduledTickAccess: ScheduledTickAccess,
         pos: BlockPos,
-        neighborPos: BlockPos
+        direction: Direction,
+        neighborPos: BlockPos,
+        neighborState: BlockState,
+        random: RandomSource
     ): BlockState {
         return if (direction == Direction.UP && !this.canSurvive(state, world, pos)) Blocks.AIR.defaultBlockState()
-        else super.updateShape(state, direction, neighborState, world, pos, neighborPos)
+        else super.updateShape(state, world, scheduledTickAccess, pos, direction, neighborPos, neighborState, random)
     }
 
     override fun isValidBonemealTarget(world: LevelReader, pos: BlockPos, state: BlockState) = this.canSpread(world, pos, state)

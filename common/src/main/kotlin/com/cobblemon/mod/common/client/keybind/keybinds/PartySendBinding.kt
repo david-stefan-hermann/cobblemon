@@ -8,6 +8,8 @@
 
 package com.cobblemon.mod.common.client.keybind.keybinds
 
+import com.cobblemon.mod.common.util.ownerUUID
+
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonNetwork.sendToServer
 import com.cobblemon.mod.common.api.riding.RidingStyle
@@ -53,7 +55,8 @@ object PartySendBinding : CobblemonBlockingKeyBinding(
     override fun onTick() {
         if (wasDown) {
             if (heldDownSeconds < 100) {
-                heldDownSeconds += Minecraft.getInstance().timer.getGameTimeDeltaPartialTick(false)
+                // PT136: Minecraft.timer renamed to getDeltaTracker() in MC 26.1.x
+                heldDownSeconds += Minecraft.getInstance().deltaTracker.getGameTimeDeltaPartialTick(false)
             }
         } else {
             heldDownSeconds = 0F

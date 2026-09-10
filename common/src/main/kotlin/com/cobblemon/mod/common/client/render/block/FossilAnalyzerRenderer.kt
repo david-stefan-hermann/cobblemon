@@ -14,6 +14,7 @@ import com.cobblemon.mod.common.block.multiblock.FossilMultiblockStructure
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
+import com.cobblemon.mod.common.client.render.itemRenderer
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
@@ -23,9 +24,9 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.Vec3
 
-class FossilAnalyzerRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<FossilAnalyzerBlockEntity> {
+class FossilAnalyzerRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<FossilAnalyzerBlockEntity, net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> {
 
-    override fun render(
+    fun render_DEFER_NO_OVERRIDE(
         entity: FossilAnalyzerBlockEntity,
         tickDelta: Float,
         matrices: PoseStack,
@@ -64,4 +65,14 @@ class FossilAnalyzerRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEn
             matrices.popPose()
         }
     }
+
+    override fun createRenderState(): net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState =
+        net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState()
+
+    override fun submit(
+        state: net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState,
+        poseStack: com.mojang.blaze3d.vertex.PoseStack,
+        collector: net.minecraft.client.renderer.SubmitNodeCollector,
+        camera: net.minecraft.client.renderer.state.level.CameraRenderState
+    ) { /* PT129-DEFER */ }
 }

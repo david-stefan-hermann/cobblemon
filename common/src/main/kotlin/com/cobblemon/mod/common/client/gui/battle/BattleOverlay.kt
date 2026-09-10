@@ -8,6 +8,8 @@
 
 package com.cobblemon.mod.common.client.gui.battle
 
+import net.minecraft.client.renderer.rendertype.RenderTypes
+
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.api.gui.blitk
 import com.cobblemon.mod.common.api.gui.drawPosablePortrait
@@ -49,10 +51,9 @@ import kotlin.math.floor
 import net.minecraft.client.DeltaTracker
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Gui
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.ChatScreen
-import net.minecraft.client.renderer.LightTexture
-import net.minecraft.client.renderer.RenderType
+import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.util.Mth.ceil
@@ -113,7 +114,7 @@ class BattleOverlay : Gui(Minecraft.getInstance()), Schedulable {
     var hidePortraits = false
     override val schedulingTracker = SchedulingTracker()
 
-    override fun render(context: GuiGraphics, tickCounter: DeltaTracker) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, tickCounter: DeltaTracker) {
         val tickDelta = tickCounter.realtimeDeltaTicks.takeIf { !Minecraft.getInstance()!!.isPaused } ?: 0F
         schedulingTracker.update(tickDelta / 20F)
         passedSeconds += tickDelta / 20
@@ -158,11 +159,11 @@ class BattleOverlay : Gui(Minecraft.getInstance()), Schedulable {
                 messagePane = BattleMessagePane(CobblemonClient.battle!!.messages)
             }
             messagePane.opacity = 0.3F
-            messagePane.render(context, 0, 0, 0F)
+            messagePane.extractRenderState(context, 0, 0, 0F)
         }
     }
 
-    fun drawTile(context: GuiGraphics, tickDelta: Float, activeBattlePokemon: ActiveClientBattlePokemon, left: Boolean, rank: Int, dexState: PokedexEntryProgress, hasCommand: Boolean = false, isHovered: Boolean = false, isCompact: Boolean = false) {
+    fun drawTile(context: GuiGraphicsExtractor, tickDelta: Float, activeBattlePokemon: ActiveClientBattlePokemon, left: Boolean, rank: Int, dexState: PokedexEntryProgress, hasCommand: Boolean = false, isHovered: Boolean = false, isCompact: Boolean = false) {
         val mc = Minecraft.getInstance()
 
         val battlePokemon = activeBattlePokemon.battlePokemon ?: return
@@ -222,7 +223,7 @@ class BattleOverlay : Gui(Minecraft.getInstance()), Schedulable {
     }
 
     fun drawBattleTile(
-        context: GuiGraphics,
+        context: GuiGraphicsExtractor,
         x: Float,
         y: Float,
         partialTicks: Float,
@@ -296,12 +297,8 @@ class BattleOverlay : Gui(Minecraft.getInstance()), Schedulable {
             (portraitStartX + portraitDiameter).toInt(),
             (y + portraitDiameter + portraitOffsetY).toInt(),
         )
-        matrixStack.pushPose()
-        matrixStack.translate(
-            portraitStartX + portraitDiameter / 2.0,
-            y.toDouble() + portraitOffsetY - if (isCompact) 15.0 else 5.0,
-            0.0
-        )
+        matrixStack.pushMatrix()
+        matrixStack.translate((portraitStartX + portraitDiameter / 2.0).toFloat(), (y.toDouble() + portraitOffsetY - if (isCompact) 15.0 else 5.0).toFloat())
 
         if (ballState != null && ballState.currentPose != "shut")  {
             ballState.currentPose = "shut"
@@ -326,7 +323,7 @@ class BattleOverlay : Gui(Minecraft.getInstance()), Schedulable {
                 partialTicks = if (Cobblemon.config.animateBattleTiles) partialTicks else 0F
             )
         }
-        matrixStack.popPose()
+        matrixStack.popMatrix()
         context.disableScissor()
 
         // Third render the tile
@@ -481,9 +478,10 @@ class BattleOverlay : Gui(Minecraft.getInstance()), Schedulable {
         }
     }
 
+    // PT128: drawPokeBall accepts Matrix3x2fStack (new GuiGraphicsExtractor.pose() type) and creates a fresh PoseStack for 3D model rendering.
     private fun drawPokeBall(
         state: ClientBallDisplay,
-        matrixStack: PoseStack,
+        matrixStack: org.joml.Matrix3x2fStack,
         scale: Float = 5F,
         partialTicks: Float,
         reversed: Boolean = false
@@ -491,9 +489,8 @@ class BattleOverlay : Gui(Minecraft.getInstance()), Schedulable {
         val context = RenderContext()
         val model = VaryingModelRepository.getPoser(state.pokeBall.name, state)
         val texture = VaryingModelRepository.getTexture(state.pokeBall.name, state)
-        val renderType = RenderType.entityCutout(texture)//model.getLayer(texture)
+        val renderType = RenderTypes.entityCutout(texture)
 
-        RenderSystem.applyModelViewMatrix()
         val quaternion1 = Axis.YP.rotationDegrees(-32F * if (reversed) -1F else 1F)
         val quaternion2 = Axis.XP.rotationDegrees(5F)
 
@@ -502,30 +499,23 @@ class BattleOverlay : Gui(Minecraft.getInstance()), Schedulable {
         state.updatePartialTicks(partialTicks)
         model.applyAnimations(null, state, 0F, 0F, 0F, 0F, 0F)
 
-        matrixStack.scale(scale, scale, -scale)
-        matrixStack.translate(0.0, 5.5, -4.0)
-        matrixStack.pushPose()
+        val poseStack = PoseStack()
+        poseStack.scale(scale, scale, -scale)
+        poseStack.translate(0.0, 5.5, -4.0)
+        poseStack.pushPose()
+        poseStack.scale(scale * state.scale, scale * state.scale, 1F)
+        poseStack.mulPose(quaternion1)
+        poseStack.mulPose(quaternion2)
 
-        matrixStack.scale(scale * state.scale, scale * state.scale, 0.1F)
-
-        matrixStack.mulPose(quaternion1)
-        matrixStack.mulPose(quaternion2)
-
-        val light1 = Vector3f(2.2F, 4.0F, -4.0F)
-        val light2 = Vector3f(1.1F, -4.0F, 7.0F)
-        RenderSystem.setShaderLights(light1, light2)
+        // PT144: RenderSystem.setShaderLights now takes a single GpuBufferSlice in MC 26.1.x — skip per-call lighting tweak.
         quaternion1.conjugate()
 
         val immediate = Minecraft.getInstance().renderBuffers().bufferSource()
         val buffer = immediate.getBuffer(renderType)
-        val packedLight = LightTexture.pack(11, 7)
-        model.render(context, matrixStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
-
+        val packedLight = ((11) or ((7) shl 16))
+        model.render(context, poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
         immediate.endBatch()
-
-        matrixStack.popPose()
-
-        Lighting.setupFor3DItems()
+        poseStack.popPose()
     }
 
     fun onLogout() {

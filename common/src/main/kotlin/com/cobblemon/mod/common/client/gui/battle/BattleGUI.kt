@@ -26,8 +26,10 @@ import com.cobblemon.mod.common.client.render.drawScaledText
 import com.cobblemon.mod.common.net.messages.server.battle.RemoveSpectatorPacket
 import com.cobblemon.mod.common.util.battleLang
 import com.cobblemon.mod.common.util.cobblemonResource
+import net.minecraft.client.input.CharacterEvent
+import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
 
 class BattleGUI : Screen(battleLang("gui.title")), CobblemonRenderable {
@@ -85,8 +87,8 @@ class BattleGUI : Screen(battleLang("gui.title")), CobblemonRenderable {
         }
     }
 
-    override fun render(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
-        super.render(context, mouseX, mouseY, delta)
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        super.extractRenderState(context, mouseX, mouseY, delta)
 
         opacity = CobblemonClient.battleOverlay.opacityRatio.toFloat()
         children().filterIsInstance<BattleMessagePane>().forEach { it.opacity = opacity.coerceAtLeast(0.3F) }
@@ -117,7 +119,7 @@ class BattleGUI : Screen(battleLang("gui.title")), CobblemonRenderable {
         }
 
         if (battle.spectating) {
-            specBackButton.render(context, mouseX, mouseY, delta)
+            specBackButton.extractRenderState(context, mouseX, mouseY, delta)
         }
 
         val currentSelection = getCurrentActionSelection()
@@ -146,7 +148,7 @@ class BattleGUI : Screen(battleLang("gui.title")), CobblemonRenderable {
         queuedActions.clear()
     }
 
-    override fun renderBackground(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractBackground(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
 
     }
 
@@ -175,19 +177,27 @@ class BattleGUI : Screen(battleLang("gui.title")), CobblemonRenderable {
         CobblemonClient.battle?.minimised = true
     }
 
-    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
-        if (this::messagePane.isInitialized) messagePane.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+    override fun mouseDragged(event: MouseButtonEvent, deltaX: Double, deltaY: Double): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
+        if (this::messagePane.isInitialized) messagePane.mouseDragged(event, deltaX, deltaY)
+        return super.mouseDragged(event, deltaX, deltaY)
     }
 
-    override fun charTyped(chr: Char, modifiers: Int): Boolean {
+    override fun charTyped(event: CharacterEvent): Boolean {
+        val chr = event.codepoint().toChar()
+        val modifiers = 0
         if (chr.toString().equals(PartySendBinding.boundKey().displayName.string, ignoreCase = true) && CobblemonClient.battleOverlay.opacity == BattleOverlay.MAX_OPACITY && PartySendBinding.canAction()) {
             return minimizeBattle()
         }
-        return super.charTyped(chr, modifiers)
+        return super.charTyped(event)
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(event: MouseButtonEvent, fromOnClick: Boolean): Boolean {
+        val mouseX = event.x
+        val mouseY = event.y
+        val button = event.button()
         if (button == PartySendBinding.boundKey().value && CobblemonClient.battleOverlay.opacity == BattleOverlay.MAX_OPACITY && PartySendBinding.canAction()) {
             return minimizeBattle()
         }
@@ -197,7 +207,7 @@ class BattleGUI : Screen(battleLang("gui.title")), CobblemonRenderable {
             RemoveSpectatorPacket(battle.battleId).sendToServer()
             CobblemonClient.endBattle()
         }
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(event, fromOnClick)
     }
 
     private fun minimizeBattle(): Boolean {

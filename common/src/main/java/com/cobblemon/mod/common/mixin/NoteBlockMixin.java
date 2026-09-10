@@ -33,7 +33,8 @@ public abstract class NoteBlockMixin {
             return;
         }
 
-        if (!level.isClientSide) {
+        // PT149: Level.isClientSide now private — must use accessor isClientSide().
+        if (!level.isClientSide()) {
             final BlockPos instrumentPos = shelfPos.below();
             final SoundEvent soundEvent;
             if (level.getBlockState(instrumentPos).isAir()) {

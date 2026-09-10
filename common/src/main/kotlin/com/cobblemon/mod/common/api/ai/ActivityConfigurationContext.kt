@@ -29,6 +29,6 @@ class ActivityConfigurationContext(val activity: Activity) {
             activityAwareBehavior.activities += activity
         }
 
-        entity.brain.addActivity(activity, ImmutableList.copyOf(tasks))
+        entity.brain.addActivity(activity, ImmutableList.copyOf(tasks), emptySet(), emptySet()) // PT130: addActivity 4-arg MC 26.1
     }
 }

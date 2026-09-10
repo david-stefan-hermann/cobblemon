@@ -13,6 +13,7 @@ import com.cobblemon.mod.common.CobblemonItemComponents
 import com.cobblemon.mod.common.api.item.HeldItems
 import com.cobblemon.mod.common.api.pokemon.helditem.HeldItemManager
 import com.cobblemon.mod.common.battles.pokemon.BattlePokemon
+import com.cobblemon.mod.common.util.description
 import com.google.common.collect.HashBiMap
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component

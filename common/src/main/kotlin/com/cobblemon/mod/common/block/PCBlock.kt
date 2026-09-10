@@ -8,6 +8,10 @@
 
 package com.cobblemon.mod.common.block
 
+import net.minecraft.util.RandomSource
+
+import net.minecraft.world.level.ScheduledTickAccess
+
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonBlockEntities
 import com.cobblemon.mod.common.CobblemonSounds
@@ -193,7 +197,7 @@ class PCBlock(properties: Properties): BaseEntityBlock(properties), SimpleWaterl
             .setValue(PART, PCPart.TOP)
             .setValue(WATERLOGGED, world.getFluidState((pos.above())).type == Fluids.WATER)
             , 3)
-        world.blockUpdated(pos, Blocks.AIR)
+        world.updateNeighborsAt(pos, Blocks.AIR, null)
         state.updateNeighbourShapes(world, pos, 3)
     }
 
@@ -256,8 +260,8 @@ class PCBlock(properties: Properties): BaseEntityBlock(properties), SimpleWaterl
         return blockState.rotate(mirror.getRotation(blockState.getValue(HorizontalDirectionalBlock.FACING)))
     }
 
-    override fun onRemove(state: BlockState, world: Level, pos: BlockPos, newState: BlockState, moved: Boolean) {
-        if (!state.`is`(newState.block)) super.onRemove(state, world, pos, newState, moved)
+    override fun affectNeighborsAfterRemoval(state: BlockState, world: net.minecraft.server.level.ServerLevel, pos: BlockPos, moved: Boolean) {
+        super.affectNeighborsAfterRemoval(state, world, pos, moved)
     }
 
     override fun useWithoutItem(
@@ -303,7 +307,7 @@ class PCBlock(properties: Properties): BaseEntityBlock(properties), SimpleWaterl
         return RenderShape.MODEL
     }
 
-    override fun getFluidState(state: BlockState): FluidState? {
+    override fun getFluidState(state: BlockState): FluidState {
         return if (state.getValue(WATERLOGGED)) {
             Fluids.WATER.getSource(false)
         } else super.getFluidState(state)
@@ -311,14 +315,16 @@ class PCBlock(properties: Properties): BaseEntityBlock(properties), SimpleWaterl
 
     override fun updateShape(
         state: BlockState,
-        direction: Direction,
-        neighborState: BlockState,
-        world: LevelAccessor,
+        world: LevelReader,
+        scheduledTickAccess: ScheduledTickAccess,
         pos: BlockPos,
-        neighborPos: BlockPos
+        direction: Direction,
+        neighborPos: BlockPos,
+        neighborState: BlockState,
+        random: RandomSource
     ): BlockState {
         if (state.getValue(WATERLOGGED)) {
-            world.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(world))
+            scheduledTickAccess.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(world))
         }
 
         val isPC = neighborState.`is`(this)

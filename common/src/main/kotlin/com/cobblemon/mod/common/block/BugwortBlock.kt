@@ -110,7 +110,7 @@ class BugwortBlock(settings: Properties) : CropBlock(settings), BonemealableBloc
 //                world.playSound(null, pos, CobblemonSounds.BERRY_HARVEST, SoundSource.BLOCKS, 0.4F, 1F)
 //                world.setBlock(pos, state.setValue(this.ageProperty, (0).coerceAtMost(this.maxAge)), UPDATE_CLIENTS)
 //                Block.popResource(world, pos, ItemStack(CobblemonItems.BUGWORT, Random.nextInt(2, 4)))
-//                return InteractionResult.sidedSuccess(world.isClientSide)
+//                return (if (world.isClientSide) InteractionResult.SUCCESS else InteractionResult.SUCCESS_SERVER)
 //            }
 //        }
 //        return super.useWithoutItem(state, world, pos, player, hit)

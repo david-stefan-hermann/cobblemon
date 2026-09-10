@@ -8,6 +8,9 @@
 
 package com.cobblemon.mod.common.api.multiblock
 
+import com.cobblemon.mod.common.util.getBlockPos
+import com.cobblemon.mod.common.util.putBlockPos
+
 import com.cobblemon.mod.common.api.multiblock.builder.MultiblockStructureBuilder
 import com.cobblemon.mod.common.util.DataKeys
 import net.minecraft.core.BlockPos
@@ -20,6 +23,8 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityType
 import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.storage.ValueInput
+import net.minecraft.world.level.storage.ValueOutput
 
 /**
  * Multiblock entities are kind of complicated. Basically every multiblock entity should have a MultiBlockStructureBuilder
@@ -42,25 +47,21 @@ abstract class MultiblockEntity(
     }
 
     override fun getUpdateTag(registryLookup: HolderLookup.Provider): CompoundTag {
-        val result = CompoundTag()
-        saveAdditional(result, registryLookup)
-        return result
+        return saveWithoutMetadata(registryLookup)
     }
 
-    override fun saveAdditional(nbt: CompoundTag, registryLookup: HolderLookup.Provider) {
-        super.saveAdditional(nbt, registryLookup)
-        //Used for checking build conditions in multiblocks (Dont count a block if it has the FORMED flag)
-        nbt.putBoolean(DataKeys.FORMED, masterBlockPos != null)
-        if (multiblockStructure != null && multiblockStructure!!.controllerBlockPos == blockPos) {
-            nbt.put(DataKeys.MULTIBLOCK_STORAGE, multiblockStructure!!.writeToNbt(registryLookup))
-        }
-        else if (masterBlockPos != null) {
-            nbt.put(DataKeys.CONTROLLER_BLOCK, NbtUtils.writeBlockPos(masterBlockPos))
-        }
+    override fun saveAdditional(output: ValueOutput) {
+        super.saveAdditional(output)
+        // TODO PT134-DEFER: multiblock structure NBT migration to ValueOutput — needs writeToValueOutput
+        output.putBoolean(DataKeys.FORMED, masterBlockPos != null)
     }
 
     override fun isValidBlockState(blockState: BlockState) = blockState.block is MultiblockBlock
 
-    abstract override fun loadAdditional(nbt: CompoundTag, registryLookup: HolderLookup.Provider)
+    // PT137: was `abstract override fun loadAdditional` — abstract members can't be called via super,
+    // so subclasses calling super.loadAdditional failed. Concrete body delegates to BlockEntity.
+    override fun loadAdditional(input: ValueInput) {
+        super.loadAdditional(input)
+    }
 
 }

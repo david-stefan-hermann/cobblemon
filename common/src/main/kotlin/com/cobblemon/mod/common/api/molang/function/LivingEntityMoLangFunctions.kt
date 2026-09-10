@@ -66,7 +66,7 @@ object LivingEntityMoLangFunctions : AbstractMoLangFunctionHolder<LivingEntity>(
         map["is_adult"] = { _ -> DoubleValue(!entity.isBaby) }
         map["remove_effect"] = put@{ params ->
             val effectId = params.getString(0).asIdentifierDefaultingNamespace()
-            val effectHolder = BuiltInRegistries.MOB_EFFECT.getHolder(effectId).orElse(null)
+            val effectHolder = BuiltInRegistries.MOB_EFFECT.get(effectId).orElse(null)
             if (effectHolder != null) {
                 entity.removeEffect(effectHolder)
                 return@put DoubleValue.ONE
@@ -78,7 +78,7 @@ object LivingEntityMoLangFunctions : AbstractMoLangFunctionHolder<LivingEntity>(
             val amplifier = params.getIntOrNull(2) ?: 0
             val ambient = params.getBooleanOrNull(3) ?: false
             val visible = params.getBooleanOrNull(4) ?: true
-            val effectHolder = BuiltInRegistries.MOB_EFFECT.getHolder(effectId).orElse(null)
+            val effectHolder = BuiltInRegistries.MOB_EFFECT.get(effectId).orElse(null)
             if (effectHolder != null) {
                 entity.addEffect(MobEffectInstance(effectHolder, duration, amplifier, ambient, visible))
                 return@put DoubleValue.ONE
@@ -86,7 +86,7 @@ object LivingEntityMoLangFunctions : AbstractMoLangFunctionHolder<LivingEntity>(
         }
         map["has_effect"] = put@{ params ->
             val effectId = params.getString(0).asIdentifierDefaultingNamespace()
-            val effectHolder = BuiltInRegistries.MOB_EFFECT.getHolder(effectId).orElse(null)
+            val effectHolder = BuiltInRegistries.MOB_EFFECT.get(effectId).orElse(null)
             return@put DoubleValue(if (effectHolder != null) entity.hasEffect(effectHolder) else false)
         }
         map["heal"] = { params ->
@@ -136,7 +136,9 @@ object LivingEntityMoLangFunctions : AbstractMoLangFunctionHolder<LivingEntity>(
         }
         map["get_position_memory"] = put@{ params ->
             val id = params.getString(0).asIdentifierDefaultingNamespace()
-            val memoryType = BuiltInRegistries.MEMORY_MODULE_TYPE.get(id)
+            // PT137: Brain.checkMemory(MemoryModuleType<?>); Brain.getMemory<U>(MemoryModuleType<U>) — Kotlin needs explicit cast
+            @Suppress("UNCHECKED_CAST")
+            val memoryType = (BuiltInRegistries.MEMORY_MODULE_TYPE.get(id).orElse(null)?.value() ?: return@put DoubleValue.ZERO) as MemoryModuleType<Any>
             if (entity.brain.checkMemory(memoryType, MemoryStatus.VALUE_PRESENT)) {
                 return@put when (val memory = entity.brain.getMemory(memoryType).get()) {
                     is Vec3i -> VariableStruct(
@@ -174,8 +176,10 @@ object LivingEntityMoLangFunctions : AbstractMoLangFunctionHolder<LivingEntity>(
             return@put DoubleValue.ONE
         }
         map["erase_memory"] = put@{ params ->
+            // PT137: BuiltInRegistries.get returns Optional<Holder.Reference<MemoryModuleType<*>>> in MC 26.1.x
+            @Suppress("UNCHECKED_CAST")
             val memories = params.params.map { it.asString().asIdentifierDefaultingNamespace() }
-                .map(BuiltInRegistries.MEMORY_MODULE_TYPE::get)
+                .mapNotNull { id -> BuiltInRegistries.MEMORY_MODULE_TYPE.get(id).orElse(null)?.value() as MemoryModuleType<Any>? }
             memories.forEach { entity.brain.eraseMemory(it) }
             return@put DoubleValue.ONE
         }

@@ -19,6 +19,7 @@ import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.ai.behavior.BehaviorControl
 import net.minecraft.world.entity.ai.behavior.OneShot
+import net.minecraft.world.entity.ai.memory.MemoryModuleType
 import net.minecraft.world.entity.schedule.Activity
 
 class ActivityChangeTaskConfig : SingleTaskConfig {
@@ -32,6 +33,7 @@ class ActivityChangeTaskConfig : SingleTaskConfig {
         behaviourConfigurationContext: BehaviourConfigurationContext
     ): BehaviorControl<in LivingEntity> {
         return object : OneShot<LivingEntity>() {
+            override fun getRequiredMemories(): Set<MemoryModuleType<*>> = emptySet()
             override fun trigger(serverLevel: ServerLevel, livingEntity: LivingEntity, l: Long): Boolean {
                 mainThreadRuntime.withQueryValue("entity", livingEntity.asMostSpecificMoLangValue())
                 if (condition.resolveBoolean(mainThreadRuntime)) {

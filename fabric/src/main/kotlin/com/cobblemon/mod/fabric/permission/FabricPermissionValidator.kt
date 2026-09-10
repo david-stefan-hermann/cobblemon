@@ -11,20 +11,25 @@ package com.cobblemon.mod.fabric.permission
 import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.api.permission.Permission
 import com.cobblemon.mod.common.api.permission.PermissionValidator
-import me.lucko.fabric.api.permissions.v0.Permissions
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.server.level.ServerPlayer
 
+/**
+ * PT150: fabric-permissions-api 0.3.1 not yet remapped for MC 26.1.x AND
+ * ServerPlayer.hasPermissions / CommandSourceStack.hasPermission are not resolvable in this Loom
+ * fabric module classpath (B173 confirmed). Fallback to deny-all to allow Fabric jar to compile.
+ * Reintroduce real permission checks in PT15X+ once fabric-permissions-api ships a 26.1.x build.
+ */
 class FabricPermissionValidator : PermissionValidator {
     override fun initialize() {
-        Cobblemon.LOGGER.info("Booting FabricPermissionValidator, permissions will be checked using fabric-permissions-api, see https://github.com/lucko/fabric-permissions-api")
+        Cobblemon.LOGGER.info("Booting FabricPermissionValidator (PT150 deny-all stub — fabric-permissions-api not yet ported)")
     }
 
-    override fun hasPermission(player: ServerPlayer, permission: Permission) = Permissions.check(player, permission.literal, permission.level.numericalValue)
+    override fun hasPermission(player: ServerPlayer, permission: Permission): Boolean = false
 
-    override fun hasPermission(source: CommandSourceStack, permission: Permission) = Permissions.check(source, permission.literal, permission.level.numericalValue)
+    override fun hasPermission(source: CommandSourceStack, permission: Permission): Boolean = false
 
-    override fun hasPermission(player: ServerPlayer, permission: String, level: Int) = Permissions.check(player, permission, level)
+    override fun hasPermission(player: ServerPlayer, permission: String, level: Int): Boolean = false
 
-    override fun hasPermission(source: CommandSourceStack, permission: String, level: Int) = Permissions.check(source, permission, level)
+    override fun hasPermission(source: CommandSourceStack, permission: String, level: Int): Boolean = false
 }
