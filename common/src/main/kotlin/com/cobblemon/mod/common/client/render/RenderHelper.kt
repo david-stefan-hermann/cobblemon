@@ -451,3 +451,33 @@ fun addVertex(
         .setLight(15728880)
         .setNormal(matrixEntry, 0.0f, 1.0f, 0.0f)
 }
+
+/**
+ * port/26.2: bridges Cobblemon's model rendering onto the submit pipeline.
+ *
+ * PosableModel.render walks the bone hierarchy against a live PoseStack, pushing and popping as it
+ * descends. SubmitNodeCollector.submitCustomGeometry instead hands its callback the single
+ * PoseStack.Pose captured at submit time, because the actual draw happens later in the render pass.
+ *
+ * This rebuilds a PoseStack seeded from that captured pose, so the model code carries on unchanged
+ * while still drawing in the right place.
+ */
+inline fun SubmitNodeCollector.submitPosableModel(
+    poseStack: PoseStack,
+    renderType: RenderType,
+    crossinline draw: (PoseStack, VertexConsumer) -> Unit
+) {
+    submitCustomGeometry(poseStack, renderType) { pose, consumer ->
+        val stack = PoseStack()
+        stack.last().set(pose)
+        draw(stack, consumer)
+    }
+}
+
+/**
+ * port/26.2: Sheets.cutoutBlockSheet() and translucentBlockSheet() were removed. They were only ever
+ * the entity cutout/translucent render types pointed at the block atlas, which is reproduced here.
+ */
+fun cutoutBlockSheet(): RenderType = RenderTypes.entityCutout(TextureAtlas.LOCATION_BLOCKS)
+
+fun translucentBlockSheet(): RenderType = RenderTypes.entityTranslucent(TextureAtlas.LOCATION_BLOCKS)

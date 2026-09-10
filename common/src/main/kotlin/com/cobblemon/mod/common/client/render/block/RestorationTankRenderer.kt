@@ -25,7 +25,18 @@ import com.cobblemon.mod.common.util.cobblemonResource
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import kotlin.math.pow
-import net.minecraft.client.renderer.MultiBufferSource
+import com.cobblemon.mod.common.client.render.cutoutBlockSheet
+import com.cobblemon.mod.common.client.render.submitPosableModel
+import com.cobblemon.mod.common.client.render.translucentBlockSheet
+import net.minecraft.client.renderer.SubmitNodeCollector
+import net.minecraft.client.renderer.block.BlockModelRenderState
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer
+import net.minecraft.client.renderer.state.level.CameraRenderState
+import net.minecraft.util.RandomSource
+import net.minecraft.world.phys.Vec3
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
@@ -33,24 +44,45 @@ import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.core.Direction
 import net.minecraft.world.level.block.HorizontalDirectionalBlock
 
-class RestorationTankRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<RestorationTankBlockEntity, net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> {
+class RestorationTankRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<RestorationTankBlockEntity, BlockEntityRenderState> {
     val context = RenderContext().also {
         it.put(RenderContext.DO_QUIRKS, true)
         it.put(RenderContext.RENDER_STATE, RenderContext.RenderState.RESURRECTION_MACHINE)
     }
 
-    fun render_DEFER_NO_OVERRIDE(
+    override fun createRenderState(): BlockEntityRenderState = BlockEntityRenderState()
+
+    // port/26.2: the fetus model and the fluid models need the live block entity (the multiblock
+    // structure, its fill level and animation clock), which the render state cannot carry, so the entity
+    // is held here between extract and submit. A block entity renderer instance is per block entity
+    // type, but extract and submit run back to back for one block entity at a time, so this is safe.
+    private var currentEntity: RestorationTankBlockEntity? = null
+    private var currentPartialTick: Float = 0F
+
+    override fun extractRenderState(
         entity: RestorationTankBlockEntity,
-        tickDelta: Float,
-        matrices: PoseStack,
-        vertexConsumers: MultiBufferSource,
-        light: Int,
-        overlay: Int
+        state: BlockEntityRenderState,
+        partialTick: Float,
+        cameraPos: Vec3,
+        crumbling: ModelFeatureRenderer.CrumblingOverlay?
     ) {
-        if (entity.multiblockStructure == null) {
-            return
-        }
-        val struct = entity.multiblockStructure as FossilMultiblockStructure
+        BlockEntityRenderState.extractBase(entity, state, crumbling)
+        currentEntity = entity
+        currentPartialTick = partialTick
+    }
+
+    override fun submit(
+        state: BlockEntityRenderState,
+        matrices: PoseStack,
+        collector: SubmitNodeCollector,
+        camera: CameraRenderState
+    ) {
+        val entity = currentEntity ?: return
+        val struct = entity.multiblockStructure as? FossilMultiblockStructure ?: return
+        val light = state.lightCoords
+        val overlay = OverlayTexture.NO_OVERLAY
+        val tickDelta = currentPartialTick
+
         val connectionDir = struct.tankConnectorDirection
         // FYI, rendering models this way ignores the pivots set in the model, so set the pivots manually
         when (connectionDir) {
@@ -61,30 +93,26 @@ class RestorationTankRenderer(ctx: BlockEntityRendererProvider.Context) : BlockE
             else -> {}
         }
 
-        val cutoutBuffer = vertexConsumers.getBuffer(net.minecraft.client.renderer.Sheets.cutoutBlockSheet())
         if (connectionDir != null) {
-            // PT136-DEFER: BlockModel.getQuads + VertexConsumer.putBulkData removed in MC 26.1.x — connector model disabled
             matrices.pushPose()
+            submitBlockStateModel(CONNECTOR_OVERRIDE.getModel(), matrices, collector, cutoutBlockSheet(), light, overlay)
             matrices.popPose()
         }
+
         val fillLevel = struct.fillLevel
         if (fillLevel == 0 && !struct.hasCreatedPokemon) {
             return
         }
 
         if (struct.isRunning() or (struct.hasCreatedPokemon)) {
-            renderFetus(entity, tickDelta, matrices, vertexConsumers, light, overlay)
+            renderFetus(entity, tickDelta, matrices, collector, light, overlay)
         }
 
         matrices.pushPose()
-        val transparentBuffer = vertexConsumers.getBuffer(net.minecraft.client.renderer.Sheets.translucentBlockSheet())
-
-        val fluidModel = if (struct.isRunning()) FLUID_MODELS[8]
-        else if (struct.hasCreatedPokemon) FLUID_MODELS[7]
-        else FLUID_MODELS[fillLevel.coerceAtMost(FLUID_MODELS.size - 1) - 1]
-        // PT136-DEFER: BlockModel.getQuads + VertexConsumer.putBulkData removed in MC 26.1.x — fluid model disabled
-        fluidModel.let { /* disabled until quad mesher API migrated */ }
-
+        val fluidOverride = if (struct.isRunning()) FLUID_OVERRIDES[8]
+            else if (struct.hasCreatedPokemon) FLUID_OVERRIDES[7]
+            else FLUID_OVERRIDES[fillLevel.coerceAtMost(FLUID_OVERRIDES.size - 1) - 1]
+        submitBlockStateModel(fluidOverride.getModel(), matrices, collector, translucentBlockSheet(), light, overlay)
         matrices.popPose()
     }
 
@@ -92,7 +120,7 @@ class RestorationTankRenderer(ctx: BlockEntityRendererProvider.Context) : BlockE
         entity: RestorationTankBlockEntity,
         tickDelta: Float,
         matrices: PoseStack,
-        vertexConsumers: MultiBufferSource,
+        collector: SubmitNodeCollector,
         light: Int,
         overlay: Int
     ) {
@@ -140,7 +168,6 @@ class RestorationTankRenderer(ctx: BlockEntityRendererProvider.Context) : BlockE
             val texture = VaryingModelRepository.getTexture(identifier, state)
 
             if (scale > 0F) {
-                val vertexConsumer = vertexConsumers.getBuffer(RenderTypes.entityCutout(texture))
                 state.currentModel = model
                 state.setPoseToFirstSuitable()
 
@@ -179,9 +206,11 @@ class RestorationTankRenderer(ctx: BlockEntityRendererProvider.Context) : BlockE
                     limbSwingAmount = 0F,
                     ageInTicks = state.animationSeconds * 20
                 )
-                model.render(context, matrices, vertexConsumer, light, overlay, -0x1)
-                model.withLayerContext(vertexConsumers, state, VaryingModelRepository.getLayers(fossilPoserId, state)) {
-                    model.render(context, matrices, vertexConsumer, light, OverlayTexture.NO_OVERLAY, -0x1)
+                collector.submitPosableModel(matrices, RenderTypes.entityCutout(texture)) { stack, consumer ->
+                    model.render(context, stack, consumer, light, overlay, -0x1)
+                    model.withLayerContext(collector, state, VaryingModelRepository.getLayers(fossilPoserId, state)) {
+                        model.render(context, stack, consumer, light, OverlayTexture.NO_OVERLAY, -0x1)
+                    }
                 }
                 model.setDefault()
                 matrices.popPose()
@@ -192,19 +221,46 @@ class RestorationTankRenderer(ctx: BlockEntityRendererProvider.Context) : BlockE
     }
 
     companion object {
-        val FLUID_MODELS = listOf(
-            CobblemonBakingOverrides.RESTORATION_TANK_FLUID_CHUNKED_1.getModel(),
-            CobblemonBakingOverrides.RESTORATION_TANK_FLUID_CHUNKED_2.getModel(),
-            CobblemonBakingOverrides.RESTORATION_TANK_FLUID_CHUNKED_3.getModel(),
-            CobblemonBakingOverrides.RESTORATION_TANK_FLUID_CHUNKED_4.getModel(),
-            CobblemonBakingOverrides.RESTORATION_TANK_FLUID_CHUNKED_5.getModel(),
-            CobblemonBakingOverrides.RESTORATION_TANK_FLUID_CHUNKED_6.getModel(),
-            CobblemonBakingOverrides.RESTORATION_TANK_FLUID_CHUNKED_7.getModel(),
-            CobblemonBakingOverrides.RESTORATION_TANK_FLUID_CHUNKED_8.getModel(),
-            CobblemonBakingOverrides.RESTORATION_TANK_FLUID_BUBBLING.getModel()
+        // port/26.2: these hold the overrides rather than the baked models. Baking happens on every
+        // resource reload, well after this companion initialises, so the model has to be looked up at
+        // draw time - resolving here would pin nulls forever.
+        val FLUID_OVERRIDES = listOf(
+            CobblemonBakingOverrides.RESTORATION_TANK_FLUID_CHUNKED_1,
+            CobblemonBakingOverrides.RESTORATION_TANK_FLUID_CHUNKED_2,
+            CobblemonBakingOverrides.RESTORATION_TANK_FLUID_CHUNKED_3,
+            CobblemonBakingOverrides.RESTORATION_TANK_FLUID_CHUNKED_4,
+            CobblemonBakingOverrides.RESTORATION_TANK_FLUID_CHUNKED_5,
+            CobblemonBakingOverrides.RESTORATION_TANK_FLUID_CHUNKED_6,
+            CobblemonBakingOverrides.RESTORATION_TANK_FLUID_CHUNKED_7,
+            CobblemonBakingOverrides.RESTORATION_TANK_FLUID_CHUNKED_8,
+            CobblemonBakingOverrides.RESTORATION_TANK_FLUID_BUBBLING
         )
 
-        val CONNECTOR_MODEL = CobblemonBakingOverrides.RESTORATION_TANK_CONNECTOR.getModel()
+        val CONNECTOR_OVERRIDE = CobblemonBakingOverrides.RESTORATION_TANK_CONNECTOR
+
+        /** Collects a baked block model's parts and submits them, or does nothing if it isn't baked yet. */
+        fun submitBlockStateModel(
+            model: BlockStateModel?,
+            matrices: PoseStack,
+            collector: SubmitNodeCollector,
+            renderType: RenderType,
+            light: Int,
+            overlay: Int
+        ) {
+            if (model == null) return
+            val parts = mutableListOf<BlockStateModelPart>()
+            model.collectParts(RandomSource.create(), parts)
+            if (parts.isEmpty()) return
+            collector.submitBlockModel(
+                matrices,
+                renderType,
+                parts,
+                BlockModelRenderState.EMPTY_TINTS,
+                light,
+                overlay,
+                0
+            )
+        }
 
         val EMBRYO_IDENTIFIERS = listOf(
             cobblemonResource("embryo_stage1"),
@@ -218,14 +274,4 @@ class RestorationTankRenderer(ctx: BlockEntityRendererProvider.Context) : BlockE
         val FOSSIL_CURVE: WaveFunction = { t: Float -> -0.4F * (t - 2.5F).pow(2) + 1F }.timeDilate(2.5F)
 
     }
-
-    override fun createRenderState(): net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState =
-        net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState()
-
-    override fun submit(
-        state: net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState,
-        poseStack: com.mojang.blaze3d.vertex.PoseStack,
-        collector: net.minecraft.client.renderer.SubmitNodeCollector,
-        camera: net.minecraft.client.renderer.state.level.CameraRenderState
-    ) { /* PT129-DEFER */ }
 }
