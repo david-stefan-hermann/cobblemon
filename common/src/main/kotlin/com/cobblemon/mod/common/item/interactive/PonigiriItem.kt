@@ -20,8 +20,8 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.ItemUseAnimation
 import net.minecraft.world.level.Level
 
-class PonigiriItem : Item(
-        Properties().stacksTo(64)
+class PonigiriItem (properties: Properties): Item(
+        properties.stacksTo(64)
                 .food(FoodProperties.Builder()
                         .nutrition(2)
                         .saturationModifier(0.55f)

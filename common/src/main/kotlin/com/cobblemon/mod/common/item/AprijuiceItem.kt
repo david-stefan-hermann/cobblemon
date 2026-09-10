@@ -29,7 +29,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.ItemUseAnimation
 import net.minecraft.world.level.Level
 
-class AprijuiceItem(val type: Apricorn): CobblemonItem(Properties().stacksTo(16)), PokemonSelectingItem {
+class AprijuiceItem(val type: Apricorn, properties: Properties): CobblemonItem(properties.stacksTo(16)), PokemonSelectingItem {
     override val bagItem = null
 
     fun hasRideBoosts(stack: ItemStack): Boolean {

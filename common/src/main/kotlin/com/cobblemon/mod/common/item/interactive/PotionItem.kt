@@ -37,7 +37,7 @@ import net.minecraft.world.item.Rarity
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Block
 
-class PotionItem(val type: PotionType, block: Block) : BlockItem(block, Properties().apply {
+class PotionItem(val type: PotionType, block: Block, properties: Properties) : BlockItem(block, properties.apply {
     when (type.name) {
         PotionType.MAX_POTION.name -> rarity(Rarity.UNCOMMON)
         PotionType.FULL_RESTORE.name -> rarity(Rarity.UNCOMMON)

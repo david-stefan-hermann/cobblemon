@@ -34,7 +34,9 @@ import kotlin.math.max
  * @author Hiroku
  * @since August 4th, 2023
  */
-class FriendshipRaisingBerryItem(block: BerryBlock, val stat: Stat) : BerryItem(block), PokemonSelectingItem {
+import net.minecraft.world.item.Item.Properties
+
+class FriendshipRaisingBerryItem(block: BerryBlock, val stat: Stat, properties: Properties) : BerryItem(block, properties), PokemonSelectingItem {
     override val bagItem = null
 
     override fun canUseOnPokemon(stack: ItemStack, pokemon: Pokemon) = (pokemon.evs.getOrDefault(stat) > 0 || pokemon.friendship < Cobblemon.config.maxPokemonFriendship)

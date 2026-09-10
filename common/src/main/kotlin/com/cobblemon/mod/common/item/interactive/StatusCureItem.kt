@@ -35,7 +35,7 @@ import net.minecraft.world.level.block.Block
  * @author Hiroku
  * @since June 30th, 2023
  */
-class StatusCureItem(val itemName: String, vararg val status: Status, block: Block) : BlockItem(block, Properties()), PokemonSelectingItem {
+class StatusCureItem(val itemName: String, vararg val status: Status, block: Block, properties: Properties) : BlockItem(block, properties), PokemonSelectingItem {
     override val bagItem = object : BagItem {
         override val itemName = this@StatusCureItem.itemName
         override val returnItem = Items.AIR

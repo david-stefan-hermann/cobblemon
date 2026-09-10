@@ -22,7 +22,7 @@ import org.joml.Vector4f
 
 // PT143: Item.Properties.component<T>(type, T) — T non-nullable in MC 26.1.x; cannot pass null.
 // Component is set per-stack at use time (see species()/aspects() extension).
-class PokemonItem : CobblemonItem(Properties().stacksTo(1)) {
+class PokemonItem (properties: Properties): CobblemonItem(properties.stacksTo(1)) {
 
     override fun getName(stack: ItemStack): Component = this.species(stack)?.translatedName ?: super.getName(stack)
 

@@ -28,7 +28,7 @@ import net.minecraft.world.item.ItemUseAnimation
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.AABB
 
-class PokedexItem(val type: PokedexType): CobblemonItem(Item.Properties().stacksTo(1)) {
+class PokedexItem(val type: PokedexType, properties: Properties): CobblemonItem(properties.stacksTo(1)) {
 
     // PT143: getUseAnimation return type is non-null in MC 26.1.x.
     override fun getUseAnimation(itemStack: ItemStack): ItemUseAnimation = ItemUseAnimation.TOOT_HORN

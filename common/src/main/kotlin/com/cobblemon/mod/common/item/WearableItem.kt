@@ -14,7 +14,7 @@ import net.minecraft.world.entity.EquipmentSlot
 
 // PT143: Equipable interface removed in MC 26.1.x → replaced by Equippable data component on item registration.
 // Slot info retained as helper for downstream registration code.
-class WearableItem(val name: String): CobblemonItem(Properties()) {
+class WearableItem(val name: String, properties: Properties): CobblemonItem(properties) {
     companion object {
         const val MODEL_PATH = "item/wearable"
     }

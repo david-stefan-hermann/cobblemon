@@ -36,8 +36,9 @@ import net.minecraft.world.level.Level
  */
 class CandyItem(
     val item_rarity: Rarity,
-    val calculator: Calculator
-) : CobblemonItem(Properties().apply {
+    val calculator: Calculator,
+    properties: Properties
+) : CobblemonItem(properties.apply {
     rarity(item_rarity)
 }), PokemonSelectingItem {
 

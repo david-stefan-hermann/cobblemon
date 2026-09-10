@@ -46,8 +46,9 @@ import kotlin.math.ceil
  * @since July 7th, 2023
  */
 class ReviveItem(
-    val max: Boolean
-) : CobblemonItem(Properties().apply {
+    val max: Boolean,
+    properties: Properties
+) : CobblemonItem(properties.apply {
         if (max) rarity(Rarity.UNCOMMON)
 }), HealingSource {
 
