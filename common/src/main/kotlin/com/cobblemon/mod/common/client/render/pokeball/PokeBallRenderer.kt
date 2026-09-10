@@ -22,7 +22,7 @@ import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.entity.EntityRenderer
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 // PT144: ItemRenderer class restructured in MC 26.1.x — getFoilBufferDirect access via ItemRendererStub.
-import com.cobblemon.mod.common.client.render.ItemRendererStub
+import com.cobblemon.mod.common.client.render.CobblemonItemRenderer
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.resources.Identifier
 

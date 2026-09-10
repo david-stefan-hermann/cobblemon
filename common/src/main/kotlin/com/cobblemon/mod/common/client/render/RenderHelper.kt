@@ -22,7 +22,8 @@ import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
-import net.minecraft.client.renderer.MultiBufferSource
+import net.minecraft.client.renderer.SubmitNodeCollector
+import net.minecraft.client.renderer.item.ItemStackRenderState
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.client.renderer.texture.TextureAtlas
@@ -34,21 +35,53 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.entity.LivingEntity
 
-// PT128: Minecraft.itemRenderer removed in MC 26.1 — bridge via extension property + stub.
-// Original API: Minecraft.getInstance().itemRenderer.renderStatic(stack, ctx, light, overlay, pose, buffer, level, seed)
-// New API: ItemModelResolver.appendItemLayers — full rewrite deferred.
-class ItemRendererStub {
+/**
+ * port/26.2: Minecraft.itemRenderer and its immediate-mode renderStatic are gone. Items are now built
+ * into an [ItemStackRenderState] by [net.minecraft.client.renderer.item.ItemModelResolver] and then
+ * submitted to the collector, which draws them in the later render pass.
+ *
+ * This keeps the old renderStatic call shape so the mod's item-rendering sites (held items, display
+ * cases, the healing machine, the lectern, the campfire pot, the fossil analyser and the fishing
+ * bobber) read the same as before.
+ *
+ * A fresh render state is allocated per call rather than reused: submission is deferred, so a shared
+ * instance would be overwritten before the render pass consumed it.
+ */
+class CobblemonItemRenderer {
     fun renderStatic(
         stack: ItemStack, ctx: ItemDisplayContext, light: Int, overlay: Int,
-        pose: PoseStack, buffer: MultiBufferSource, level: Level?, seed: Int
-    ) { /* PT128-DEFER: ItemModelResolver-based redraw */ }
+        pose: PoseStack, buffer: SubmitNodeCollector, level: Level?, seed: Int
+    ) {
+        if (stack.isEmpty) return
+        val state = ItemStackRenderState()
+        Minecraft.getInstance().itemModelResolver.updateForTopItem(state, stack, ctx, level, null, seed)
+        state.submit(pose, buffer, light, overlay, NO_OUTLINE)
+    }
+
     fun renderStatic(
         entity: LivingEntity?, stack: ItemStack, ctx: ItemDisplayContext, leftHand: Boolean,
-        pose: PoseStack, buffer: MultiBufferSource, level: Level?, light: Int, overlay: Int, seed: Int
-    ) { /* PT128-DEFER: ItemModelResolver-based redraw */ }
+        pose: PoseStack, buffer: SubmitNodeCollector, level: Level?, light: Int, overlay: Int, seed: Int
+    ) {
+        if (stack.isEmpty) return
+        val state = ItemStackRenderState()
+        val resolver = Minecraft.getInstance().itemModelResolver
+        // port/26.2: updateForLiving no longer takes a leftHand flag - which hand is being drawn is
+        // carried by the display context (THIRD_PERSON_LEFT_HAND vs THIRD_PERSON_RIGHT_HAND) instead.
+        if (entity != null) {
+            resolver.updateForLiving(state, stack, ctx, entity)
+        } else {
+            resolver.updateForTopItem(state, stack, ctx, level, null, seed)
+        }
+        state.submit(pose, buffer, light, overlay, NO_OUTLINE)
+    }
+
+    companion object {
+        /** The outline colour argument of ItemStackRenderState.submit; 0 means no glow outline. */
+        const val NO_OUTLINE = 0
+    }
 }
-private val ITEM_RENDERER_STUB = ItemRendererStub()
-val Minecraft.itemRenderer: ItemRendererStub get() = ITEM_RENDERER_STUB
+private val ITEM_RENDERER = CobblemonItemRenderer()
+val Minecraft.itemRenderer: CobblemonItemRenderer get() = ITEM_RENDERER
 
 fun renderScaledGuiItemIcon(itemStack: ItemStack, x: Double, y: Double, scale: Double = 1.0, zTranslation: Float = 100.0F, matrixStack: org.joml.Matrix3x2fStack? = null) {
     // TODO PT128-DEFER: ItemRenderer.render(stack, ItemDisplayContext, ...) API rework
@@ -226,7 +259,7 @@ fun drawScaledTextJustifiedRight(
 
 fun renderBeaconBeam(
     matrixStack: PoseStack,
-    buffer: MultiBufferSource,
+    buffer: SubmitNodeCollector,
     textureLocation: Identifier = CobblemonResources.PHASE_BEAM,
     partialTicks: Float,
     totalLevelTime: Long,
@@ -242,56 +275,65 @@ fun renderBeaconBeam(
 ) {
     val i = yOffset + height
     val beamRotation = Math.floorMod(totalLevelTime, 40).toFloat() + partialTicks
+
+    // port/26.2: MultiBufferSource is gone, so the beam can no longer fetch a VertexConsumer and write
+    // vertices immediately. Each pass is handed to the collector, which replays it during the render
+    // pass; the pose is captured at submit time, so the rotation below still applies to the core beam
+    // only and the glow is still submitted after it has been undone.
     matrixStack.pushPose()
     matrixStack.mulPose(Axis.YP.rotationDegrees(beamRotation * 2.25f - 45.0f))
-    var f9 = -beamRadius
-    val f12 = -beamRadius
-    renderPart(
-        matrixStack,
-        buffer.getBuffer(RenderTypes.beaconBeam(textureLocation, false)),
-        red,
-        green,
-        blue,
-        alpha,
-        yOffset,
-        i,
-        0.0f,
-        beamRadius,
-        beamRadius,
-        0.0f,
-        f9,
-        0.0f,
-        0.0f,
-        f12
-    )
+    val coreOffset = -beamRadius
+    buffer.submitCustomGeometry(matrixStack, RenderTypes.beaconBeam(textureLocation, false)) { pose, consumer ->
+        renderPart(
+            pose,
+            consumer,
+            red,
+            green,
+            blue,
+            alpha,
+            yOffset,
+            i,
+            0.0f,
+            beamRadius,
+            beamRadius,
+            0.0f,
+            coreOffset,
+            0.0f,
+            0.0f,
+            coreOffset
+        )
+    }
     // Undo the rotation so that the glow is at a rotated offset
     matrixStack.popPose()
-    val f6 = -glowRadius
-    val f7 = -glowRadius
-    val f8 = -glowRadius
-    f9 = -glowRadius
-    renderPart(
-        matrixStack,
-        buffer.getBuffer(RenderTypes.beaconBeam(textureLocation, true)),
-        red,
-        green,
-        blue,
-        glowAlpha,
-        yOffset,
-        i,
-        f6,
-        f7,
-        glowRadius,
-        f8,
-        f9,
-        glowRadius,
-        glowRadius,
-        glowRadius
-    )
+
+    val glowOffset = -glowRadius
+    buffer.submitCustomGeometry(matrixStack, RenderTypes.beaconBeam(textureLocation, true)) { pose, consumer ->
+        renderPart(
+            pose,
+            consumer,
+            red,
+            green,
+            blue,
+            glowAlpha,
+            yOffset,
+            i,
+            glowOffset,
+            glowOffset,
+            glowRadius,
+            glowOffset,
+            glowOffset,
+            glowRadius,
+            glowRadius,
+            glowRadius
+        )
+    }
 }
 
+
+// port/26.2: takes a PoseStack.Pose rather than the whole stack - it only ever used last(), and this is
+// exactly what SubmitNodeCollector.submitCustomGeometry hands to its callback.
 fun renderPart(
-    matrixStack: PoseStack,
+    pose: PoseStack.Pose,
     vertexBuffer: VertexConsumer,
     red: Float,
     green: Float,
@@ -308,7 +350,6 @@ fun renderPart(
     p_112170_: Float,
     p_112171_: Float
 ) {
-    val pose = matrixStack.last()
     val matrix4f = pose.pose()
     val matrix3f = pose.normal()
     renderQuad(

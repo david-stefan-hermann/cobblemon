@@ -20,9 +20,9 @@ import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
 import com.cobblemon.mod.common.client.render.itemRenderer
-import com.cobblemon.mod.common.client.render.ItemRendererStub
+import com.cobblemon.mod.common.client.render.CobblemonItemRenderer
 import net.minecraft.client.renderer.MultiBufferSource
-// PT128: ItemRenderer class removed in MC 26.1 — use ItemRendererStub.
+// port/26.2: ItemRenderer was replaced by the ItemModelResolver + ItemStackRenderState pipeline.
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.item.ItemDisplayContext
@@ -30,7 +30,7 @@ import net.minecraft.world.item.ItemStack
 import org.joml.Vector3f
 
 class HeldItemRenderer {
-    private val itemRenderer: ItemRendererStub = Minecraft.getInstance().itemRenderer
+    private val itemRenderer: CobblemonItemRenderer = Minecraft.getInstance().itemRenderer
     private var displayContext: ItemDisplayContext = ItemDisplayContext.FIXED
 
     companion object {
