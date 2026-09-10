@@ -61,6 +61,8 @@ import net.minecraft.world.level.gameevent.GameEvent
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector4f
 import com.cobblemon.mod.common.item.CampfirePotItem
+import com.cobblemon.mod.common.util.center
+import com.cobblemon.mod.common.util.bottomCenter
 import java.util.*
 
 class CampfireBlockEntity(pos: BlockPos, state: BlockState) : BaseContainerBlockEntity(

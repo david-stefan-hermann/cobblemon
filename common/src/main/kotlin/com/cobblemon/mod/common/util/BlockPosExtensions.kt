@@ -9,6 +9,7 @@
 package com.cobblemon.mod.common.util
 
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Vec3i
 import net.minecraft.world.phys.Vec3
 
 /**
@@ -16,3 +17,11 @@ import net.minecraft.world.phys.Vec3
 fun BlockPos.toVec3d(): Vec3 {
     return Vec3(this.x.toDouble(), this.y.toDouble(), this.z.toDouble())
 }
+
+// port/26.2: Vec3i.getCenter()/getBottomCenter() were removed; the equivalents are now the static
+// factories Vec3.atCenterOf / Vec3.atBottomCenterOf. Re-exposed as extensions so call sites read the same.
+val Vec3i.center: Vec3
+    get() = Vec3.atCenterOf(this)
+
+val Vec3i.bottomCenter: Vec3
+    get() = Vec3.atBottomCenterOf(this)

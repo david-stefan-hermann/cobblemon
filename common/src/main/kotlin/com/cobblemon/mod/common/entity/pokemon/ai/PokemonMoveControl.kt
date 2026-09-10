@@ -35,7 +35,7 @@ import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import kotlin.math.sqrt
 
-class PokemonMoveControl(val pokemonEntity: PokemonEntity) : MoveControl(pokemonEntity) {
+class PokemonMoveControl(val pokemonEntity: PokemonEntity) : MoveControl<PokemonEntity>(pokemonEntity) {
     companion object {
         const val VERY_CLOSE = 2.500000277905201E-3
     }

@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMap
 import com.mojang.serialization.Dynamic
 import com.mojang.serialization.JavaOps
 import java.util.ArrayDeque
+import java.util.UUID
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.min
@@ -27,7 +28,9 @@ import net.minecraft.resources.Identifier
 import net.minecraft.tags.TagKey
 import net.minecraft.util.ExtraCodecs
 import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.EntityReference
 import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.TamableAnimal
 import net.minecraft.world.entity.ai.memory.MemoryModuleType
 import net.minecraft.world.entity.ai.memory.MemoryStatus
 import net.minecraft.world.entity.item.ItemEntity
@@ -287,3 +290,12 @@ fun <T : Any> SynchedEntityData.update(data: EntityDataAccessor<T>, mutator: (T)
         set(data, newValue)
     }
 }
+
+// port/26.2: TamableAnimal.getOwnerUUID()/setOwnerUUID() were replaced by an EntityReference-based
+// owner slot (getOwnerReference()/setOwnerReference()). This restores the old UUID-shaped accessor so
+// the large amount of ownership logic across the mod keeps reading naturally.
+var TamableAnimal.ownerUUID: UUID?
+    get() = this.ownerReference?.uuid
+    set(value) {
+        this.ownerReference = value?.let { EntityReference.of<LivingEntity>(it) }
+    }

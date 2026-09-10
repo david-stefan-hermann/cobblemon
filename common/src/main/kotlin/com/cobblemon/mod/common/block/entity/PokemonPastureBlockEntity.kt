@@ -37,6 +37,7 @@ import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
 import com.cobblemon.mod.common.util.server
 import com.cobblemon.mod.common.util.toVec3d
+import com.cobblemon.mod.common.util.center
 import java.util.*
 import kotlin.math.ceil
 import net.minecraft.core.BlockPos

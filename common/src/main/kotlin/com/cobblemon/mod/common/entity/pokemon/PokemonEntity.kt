@@ -119,6 +119,7 @@ import com.cobblemon.mod.common.pokemon.properties.UncatchableProperty
 import com.cobblemon.mod.common.util.*
 import com.cobblemon.mod.common.util.math.geometry.toRadians
 import com.cobblemon.mod.common.world.gamerules.CobblemonGameRules
+import com.cobblemon.mod.common.util.center
 import com.google.common.collect.UnmodifiableIterator
 import com.mojang.serialization.Codec
 import com.mojang.serialization.Dynamic

@@ -10,6 +10,7 @@ package com.cobblemon.mod.common.util
 
 import com.google.gson.JsonElement
 import com.mojang.serialization.JsonOps
+import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.tags.TagKey
 import net.minecraft.world.item.Item
@@ -21,3 +22,8 @@ fun ItemStack.saveToJson(): JsonElement = JsonOps.INSTANCE.withEncoder(
 }
 fun ItemStack.isHeld(player: ServerPlayer) = (this === player.mainHandItem || this === player.offhandItem) && !isEmpty
 fun ItemStack.isOf(tag: TagKey<Item>) = `is`(tag)
+
+// port/26.2: Item.getDescription() was removed. It was simply the translatable component built from the
+// item's description id, so that is reproduced here rather than touching every call site.
+val Item.description: Component
+    get() = Component.translatable(this.descriptionId)
