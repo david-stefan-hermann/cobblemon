@@ -17,7 +17,7 @@ import com.cobblemon.mod.common.util.toVec3d
 import net.minecraft.client.renderer.rendertype.RenderType
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.Minecraft
-import net.minecraft.client.renderer.MultiBufferSource
+import net.minecraft.client.renderer.SubmitNodeCollector
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3f
 import java.lang.Math.clamp
@@ -82,7 +82,7 @@ fun renderAlphaEyeBloom(
     partialTicks: Float,
     camPos: Vec3,
     poseStack: PoseStack,
-    bufferSource: MultiBufferSource
+    bufferSource: SubmitNodeCollector
 ) {
     val clientDelegate = entity.delegate as PokemonClientDelegate
     if ("alpha_eyes" !in clientDelegate.currentAspects) return
@@ -98,7 +98,6 @@ fun renderAlphaEyeBloom(
         val eyeForward = wrapper.matrix.transformDirection(Vector3f(0f, 0f, -1f)).toVec3d()
 
         // Gather eye position and camera position vectors for the bloom calculation
-        val matrix = poseStack.last().pose()
         val eyeLocalPos = wrapper.matrix.getTranslation(Vector3f()).toVec3d()
         val eyeWorldPos = entityPos.add(eyeLocalPos)
         val toCam = camPos.subtract(eyeWorldPos).normalize()
@@ -126,58 +125,61 @@ fun renderAlphaEyeBloom(
 
         // Render bloom using concentric "rings" (its all just triangle pizza in the end)
         val rings = 5 //TODO: is this too many?
-        val consumer = bufferSource.getBuffer(RenderTypes.dragonRays()) // rgba flat color triangle rendering
+        // port/26.2: SubmitNodeCollector is gone; the bloom is submitted instead of drawn immediately.
+        bufferSource.submitCustomGeometry(poseStack, RenderTypes.dragonRays()) { pose, consumer ->
+            val matrix = pose.pose()
 
-        for (ring in 0 until rings) {
-            val t0 = ring.toFloat() / rings
-            val t1 = (ring + 1).toFloat() / rings
+            for (ring in 0 until rings) {
+                val t0 = ring.toFloat() / rings
+                val t1 = (ring + 1).toFloat() / rings
 
-            var r0 = radius * t0
-            var r1 = radius * t1
+                var r0 = radius * t0
+                var r1 = radius * t1
 
-            // Quadratic falloff as the rings get farther from the center
-            val a0 = centerAlpha * sqrt(1.0f - t0)
-            val a1 = centerAlpha * sqrt(1.0f - t1)
+                // Quadratic falloff as the rings get farther from the center
+                val a0 = centerAlpha * sqrt(1.0f - t0)
+                val a1 = centerAlpha * sqrt(1.0f - t1)
 
-            for (i in 0 until segments) {
-                val ang0 = angleStep * i
-                val ang1 = angleStep * (i + 1)
+                for (i in 0 until segments) {
+                    val ang0 = angleStep * i
+                    val ang1 = angleStep * (i + 1)
 
-                // Just grab some noise using this method found here: https://thebookofshaders.com/11/ (I say found here but I think this is pretty standard)
-                val noise = 0.95f + 0.05f * sin(System.currentTimeMillis() * 0.003 + (ang0 * 2.0 * 432151)).toFloat()
+                    // Just grab some noise using this method found here: https://thebookofshaders.com/11/ (I say found here but I think this is pretty standard)
+                    val noise = 0.95f + 0.05f * sin(System.currentTimeMillis() * 0.003 + (ang0 * 2.0 * 432151)).toFloat()
 
-                // TODO: Reinclude when I can figure out how to not make it shite
-                val a0 = centerAlpha * (1.0f - t0).pow(2) //* noise
-                val a1 = centerAlpha * (1.0f - t1).pow(2) //* noise
-//
-//                r0 *= noise
-//                r1 *= noise
+                    // TODO: Reinclude when I can figure out how to not make it shite
+                    val a0 = centerAlpha * (1.0f - t0).pow(2) //* noise
+                    val a1 = centerAlpha * (1.0f - t1).pow(2) //* noise
+    //
+    //                r0 *= noise
+    //                r1 *= noise
 
-                val dir0 = camPerp.scale(cos(ang0)).add(camUp.scale(sin(ang0)))
-                val dir1 = camPerp.scale(cos(ang1)).add(camUp.scale(sin(ang1)))
+                    val dir0 = camPerp.scale(cos(ang0)).add(camUp.scale(sin(ang0)))
+                    val dir1 = camPerp.scale(cos(ang1)).add(camUp.scale(sin(ang1)))
 
-                val p00 = bloomCenter.add(dir0.scale(r0))
-                val p01 = bloomCenter.add(dir1.scale(r0))
-                val p10 = bloomCenter.add(dir0.scale(r1))
-                val p11 = bloomCenter.add(dir1.scale(r1))
+                    val p00 = bloomCenter.add(dir0.scale(r0))
+                    val p01 = bloomCenter.add(dir1.scale(r0))
+                    val p10 = bloomCenter.add(dir0.scale(r1))
+                    val p11 = bloomCenter.add(dir1.scale(r1))
 
-                // Two triangles per quad: p00, p10, p11 and p00, p11, p01
-                consumer.addVertex(matrix, p00.x.toFloat(), p00.y.toFloat(), p00.z.toFloat())
-                    .setColor(r, g, b, a0)
-                consumer.addVertex(matrix, p10.x.toFloat(), p10.y.toFloat(), p10.z.toFloat())
-                    .setColor(r, g, b, a1)
-                consumer.addVertex(matrix, p11.x.toFloat(), p11.y.toFloat(), p11.z.toFloat())
-                    .setColor(r, g, b, a1)
+                    // Two triangles per quad: p00, p10, p11 and p00, p11, p01
+                    consumer.addVertex(matrix, p00.x.toFloat(), p00.y.toFloat(), p00.z.toFloat())
+                        .setColor(r, g, b, a0)
+                    consumer.addVertex(matrix, p10.x.toFloat(), p10.y.toFloat(), p10.z.toFloat())
+                        .setColor(r, g, b, a1)
+                    consumer.addVertex(matrix, p11.x.toFloat(), p11.y.toFloat(), p11.z.toFloat())
+                        .setColor(r, g, b, a1)
 
-                consumer.addVertex(matrix, p00.x.toFloat(), p00.y.toFloat(), p00.z.toFloat())
-                    .setColor(r, g, b, a0)
-                consumer.addVertex(matrix, p11.x.toFloat(), p11.y.toFloat(), p11.z.toFloat())
-                    .setColor(r, g, b, a1)
-                consumer.addVertex(matrix, p01.x.toFloat(), p01.y.toFloat(), p01.z.toFloat())
-                    .setColor(r, g, b, a0)
+                    consumer.addVertex(matrix, p00.x.toFloat(), p00.y.toFloat(), p00.z.toFloat())
+                        .setColor(r, g, b, a0)
+                    consumer.addVertex(matrix, p11.x.toFloat(), p11.y.toFloat(), p11.z.toFloat())
+                        .setColor(r, g, b, a1)
+                    consumer.addVertex(matrix, p01.x.toFloat(), p01.y.toFloat(), p01.z.toFloat())
+                        .setColor(r, g, b, a0)
+                }
             }
         }
-    }
+        }
 }
 
 fun renderEyeTrail(
@@ -186,67 +188,69 @@ fun renderEyeTrail(
     entity: PokemonEntity,
     camPos: Vec3,
     poseStack: PoseStack,
-    bufferSource: MultiBufferSource
+    bufferSource: SubmitNodeCollector
 ) {
     if (positions.size < 2) return
 
-    val consumer = bufferSource.getBuffer(RenderTypes.lightning())
-    val entityPos = entity.getPosition(partialTicks)
-    val matrix = poseStack.last().pose()
-    val n = positions.size
-    val targetSize = TRAIL_MAX_WIDTH * getHitboxScaling(entity)
+    // port/26.2: SubmitNodeCollector is gone; the trail is submitted and drawn in the render pass.
+    bufferSource.submitCustomGeometry(poseStack, RenderTypes.lightning()) { pose, consumer ->
+        val entityPos = entity.getPosition(partialTicks)
+        val matrix = pose.pose()
+        val n = positions.size
+        val targetSize = TRAIL_MAX_WIDTH * getHitboxScaling(entity)
 
 
-    for (i in 0 until n - 1) {
-        val curr = positions[i].first
-        val next = positions[i + 1].first
+        for (i in 0 until n - 1) {
+            val curr = positions[i].first
+            val next = positions[i + 1].first
 
-        val tCurr = i.toFloat() / (n - 1)
-        val tNext = (i + 1).toFloat() / (n - 1)
+            val tCurr = i.toFloat() / (n - 1)
+            val tNext = (i + 1).toFloat() / (n - 1)
 
-        val wCurr = targetSize * tCurr
-        val wNext = targetSize * tNext
-        val aCurr = TRAIL_MAX_ALPHA * tCurr
-        val aNext = TRAIL_MAX_ALPHA * tNext
+            val wCurr = targetSize * tCurr
+            val wNext = targetSize * tNext
+            val aCurr = TRAIL_MAX_ALPHA * tCurr
+            val aNext = TRAIL_MAX_ALPHA * tNext
 
-        val localCurr = curr.subtract(entityPos)
-        val localNext = next.subtract(entityPos)
+            val localCurr = curr.subtract(entityPos)
+            val localNext = next.subtract(entityPos)
 
-        val dir = next.subtract(curr).normalize()
-        val toCamera = camPos.subtract(curr).normalize()
-        val perp = dir.cross(toCamera).normalize()
+            val dir = next.subtract(curr).normalize()
+            val toCamera = camPos.subtract(curr).normalize()
+            val perp = dir.cross(toCamera).normalize()
 
-        val px = perp.x.toFloat()
-        val py = perp.y.toFloat()
-        val pz = perp.z.toFloat()
+            val px = perp.x.toFloat()
+            val py = perp.y.toFloat()
+            val pz = perp.z.toFloat()
 
-        val r = TRAIL_COLOR.x
-        val g = TRAIL_COLOR.y
-        val b = TRAIL_COLOR.z
+            val r = TRAIL_COLOR.x
+            val g = TRAIL_COLOR.y
+            val b = TRAIL_COLOR.z
 
-        consumer.addVertex(matrix,
-            (localCurr.x - px * wCurr).toFloat(),
-            (localCurr.y - py * wCurr).toFloat(),
-            (localCurr.z - pz * wCurr).toFloat()
-        ).setColor(r, g, b, aCurr)
+            consumer.addVertex(matrix,
+                (localCurr.x - px * wCurr).toFloat(),
+                (localCurr.y - py * wCurr).toFloat(),
+                (localCurr.z - pz * wCurr).toFloat()
+            ).setColor(r, g, b, aCurr)
 
-        consumer.addVertex(matrix,
-            (localCurr.x + px * wCurr).toFloat(),
-            (localCurr.y + py * wCurr).toFloat(),
-            (localCurr.z + pz * wCurr).toFloat()
-        ).setColor(r, g, b, aCurr)
+            consumer.addVertex(matrix,
+                (localCurr.x + px * wCurr).toFloat(),
+                (localCurr.y + py * wCurr).toFloat(),
+                (localCurr.z + pz * wCurr).toFloat()
+            ).setColor(r, g, b, aCurr)
 
-        consumer.addVertex(matrix,
-            (localNext.x + px * wNext).toFloat(),
-            (localNext.y + py * wNext).toFloat(),
-            (localNext.z + pz * wNext).toFloat()
-        ).setColor(r, g, b, aNext)
+            consumer.addVertex(matrix,
+                (localNext.x + px * wNext).toFloat(),
+                (localNext.y + py * wNext).toFloat(),
+                (localNext.z + pz * wNext).toFloat()
+            ).setColor(r, g, b, aNext)
 
-        consumer.addVertex(matrix,
-            (localNext.x - px * wNext).toFloat(),
-            (localNext.y - py * wNext).toFloat(),
-            (localNext.z - pz * wNext).toFloat()
-        ).setColor(r, g, b, aNext)
+            consumer.addVertex(matrix,
+                (localNext.x - px * wNext).toFloat(),
+                (localNext.y - py * wNext).toFloat(),
+                (localNext.z - pz * wNext).toFloat()
+            ).setColor(r, g, b, aNext)
+        }
     }
 }
 
@@ -255,7 +259,7 @@ fun doAlphaEyeRendering(
     entity: PokemonEntity,
     partialTicks: Float,
     poseStack: PoseStack,
-    bufferSource: MultiBufferSource
+    bufferSource: SubmitNodeCollector
 ) {
 
     val clientDelegate = entity.delegate as PokemonClientDelegate
