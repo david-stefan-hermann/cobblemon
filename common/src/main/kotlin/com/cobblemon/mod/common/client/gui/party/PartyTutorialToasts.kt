@@ -89,7 +89,7 @@ object PartyTutorialToasts {
         val minecraft = Minecraft.getInstance()
         if (!toastAttached) {
             toast.nextVisibility = Toast.Visibility.SHOW
-            minecraft.toastManager.addToast(toast)
+            minecraft.gui.toastManager().addToast(toast)
             toastAttached = true
         }
     }

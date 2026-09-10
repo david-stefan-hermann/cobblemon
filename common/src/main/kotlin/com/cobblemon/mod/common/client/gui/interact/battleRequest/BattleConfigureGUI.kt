@@ -451,7 +451,7 @@ class BattleConfigureGUI(
     override fun isPauseScreen() = false
 
     private fun closeGUI() {
-        Minecraft.getInstance().setScreen(null)
+        Minecraft.getInstance().gui.setScreen(null)
     }
 
 }

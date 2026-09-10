@@ -111,6 +111,6 @@ class CobblemonConfigScreen(
     }
 
     override fun onClose() {
-        minecraft?.setScreen(previousScreen)
+        minecraft?.gui.setScreen(previousScreen)
     }
 }

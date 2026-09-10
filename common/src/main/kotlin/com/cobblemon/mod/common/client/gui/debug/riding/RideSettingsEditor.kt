@@ -57,7 +57,7 @@ class RideSettingsEditorGUI(val parentScreen: Screen, val vehicle: PokemonEntity
 
         addRenderableWidget(
             Button.builder("Back".text()) {
-                this.minecraft?.setScreen(parentScreen)
+                this.minecraft?.gui.setScreen(parentScreen)
             }.bounds(10, 10, 40, 20).build()
         )
 

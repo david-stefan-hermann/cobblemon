@@ -89,7 +89,7 @@ class PokeNav : Screen(Component.translatable("cobblemon.ui.pokenav.title")), Co
         val pScanCode = event.scancode()
         val pModifiers = event.modifiers()
         if (isInventoryKeyPressed(minecraft, pKeyCode, pScanCode)) {
-            Minecraft.getInstance().setScreen(null)
+            Minecraft.getInstance().gui.setScreen(null)
             return true
         }
 
@@ -119,7 +119,7 @@ class PokeNav : Screen(Component.translatable("cobblemon.ui.pokenav.title")), Co
         val pScanCode = event.scancode()
         val pModifiers = event.modifiers()
         if ((pKeyCode == PokeNavigatorBinding.boundKey().value || pKeyCode == InputConstants.KEY_LSHIFT || pKeyCode == InputConstants.KEY_RSHIFT) && aboutToClose) {
-            Minecraft.getInstance().setScreen(null) // So we only close if the Key was released
+            Minecraft.getInstance().gui.setScreen(null) // So we only close if the Key was released
         }
         return super.keyReleased(event)
     }
@@ -345,13 +345,13 @@ class PokeNav : Screen(Component.translatable("cobblemon.ui.pokenav.title")), Co
         try {
             Summary.open(CobblemonClient.storage.party.slots, true, CobblemonClient.storage.selectedSlot)
         } catch (e: Exception) {
-            Minecraft.getInstance().setScreen(null)
+            Minecraft.getInstance().gui.setScreen(null)
             Cobblemon.LOGGER.debug("Failed to open the summary from the PokeNav screen", e)
         }
     }
 
     private fun onPressExit(button: Button) {
-        Minecraft.getInstance().setScreen(null)
+        Minecraft.getInstance().gui.setScreen(null)
     }
 
 }

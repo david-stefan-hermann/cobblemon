@@ -295,7 +295,7 @@ class HabitatEditGUI(
                     habitatSettingsDTO.naturalSettings?.habitatPool
                 }
                 val selectedPoolId = if (currentPool?.isReference == true) currentPool.id else null
-                Minecraft.getInstance().setScreen(
+                Minecraft.getInstance().gui.setScreen(
                     HabitatPoolSelectionGUI(
                         isActivated = habitatSettingsDTO.isActivatedSpawning,
                         activatedPools = activatedHabitatPools,
@@ -319,7 +319,7 @@ class HabitatEditGUI(
                 } ?: return@builder
 
                 if (!pool.isReference) {
-                    Minecraft.getInstance().setScreen(
+                    Minecraft.getInstance().gui.setScreen(
                         HabitatPoolEditorGUI(pool, habitatSettingsDTO.isActivatedSpawning, buckets, spawnablePositionTypes, maxPokemonLevel, this, editable = true)
                     )
                     return@builder
@@ -339,7 +339,7 @@ class HabitatEditGUI(
                     spawns = sourcePool.spawns.toMutableList()
                 }
 
-                Minecraft.getInstance().setScreen(
+                Minecraft.getInstance().gui.setScreen(
                     HabitatPoolEditorGUI(viewPool, habitatSettingsDTO.isActivatedSpawning, buckets, spawnablePositionTypes, maxPokemonLevel, this, editable = false)
                 )
             }.bounds(10, y, buttonWidth, 20).build()
@@ -542,7 +542,7 @@ class HabitatEditGUI(
             blockPos = blockPos,
             settings = habitatSettingsDTO
         ).sendToServer()
-        Minecraft.getInstance().setScreen(null)
+        Minecraft.getInstance().gui.setScreen(null)
     }
 
     private fun updateScrollBounds(contentBottomAtZeroOffset: Int) {

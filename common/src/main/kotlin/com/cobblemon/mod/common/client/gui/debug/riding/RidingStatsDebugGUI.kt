@@ -101,7 +101,7 @@ class RidingStatsDebugGUI(val vehicle: PokemonEntity) : Screen(lang("ui.debug.ri
                 // Grab the ride settings for the currently being configured style
                 val rideSettings = vehicle.ridingController?.behaviours?.get(ridingStyle) ?: return@builder
                 // Open up GUI for editing the given settings
-                this.minecraft?.setScreen(RideSettingsEditorGUI(this, vehicle, ridingStyle, rideSettings))
+                this.minecraft?.gui.setScreen(RideSettingsEditorGUI(this, vehicle, ridingStyle, rideSettings))
             }.bounds(10, 240, 200, 20).build()
         )
 

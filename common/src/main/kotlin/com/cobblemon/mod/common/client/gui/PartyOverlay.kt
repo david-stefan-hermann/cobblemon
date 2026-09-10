@@ -74,8 +74,8 @@ class PartyOverlay : Gui(Minecraft.getInstance()) {
         fun canRender(): Boolean {
             val minecraft = Minecraft.getInstance()
             // Hiding if a Screen is open and not exempt
-            if (minecraft.screen != null) {
-                if (!screenExemptions.contains(minecraft.screen?.javaClass as Class<out Screen>))
+            if (minecraft.gui.screen() != null) {
+                if (!screenExemptions.contains(minecraft.gui.screen()?.javaClass as Class<out Screen>))
                     return false
             }
             if (minecraft.options.hideGui || minecraft.debugOverlay.showDebugScreen()) {
@@ -106,7 +106,7 @@ class PartyOverlay : Gui(Minecraft.getInstance()) {
 
     fun resetAttachedToast() {
         val minecraft = Minecraft.getInstance()
-        minecraft.toastManager.clear()
+        minecraft.gui.toastManager().clear()
         starterToast.nextVisibility = Toast.Visibility.SHOW
         attachedToast = false
     }
@@ -138,7 +138,7 @@ class PartyOverlay : Gui(Minecraft.getInstance()) {
             ) {
                 if (!this.attachedToast) {
                     // Adding starter toast on start and connect of client to server.
-                    minecraft.toastManager.addToast(this.starterToast)
+                    minecraft.gui.toastManager().addToast(this.starterToast)
                     this.attachedToast = true
                 }
             }

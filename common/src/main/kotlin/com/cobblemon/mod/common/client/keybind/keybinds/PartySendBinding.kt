@@ -81,7 +81,7 @@ object PartySendBinding : CobblemonBlockingKeyBinding(
             return
         }
 
-        if (Minecraft.getInstance().screen != null) return
+        if (Minecraft.getInstance().gui.screen() != null) return
 
         val selectedPartyPokemon = if (CobblemonClient.storage.selectedSlot >= 0) {
             CobblemonClient.storage.party.get(CobblemonClient.storage.selectedSlot)
@@ -99,7 +99,7 @@ object PartySendBinding : CobblemonBlockingKeyBinding(
     private fun toggleBattleScreen(battle: ClientBattle) {
         battle.minimised = !battle.minimised
         if (!battle.minimised && !Minecraft.getInstance().options.hideGui) {
-            Minecraft.getInstance().setScreen(BattleGUI())
+            Minecraft.getInstance().gui.setScreen(BattleGUI())
         }
     }
 

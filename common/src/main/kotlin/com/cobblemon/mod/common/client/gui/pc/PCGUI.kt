@@ -706,7 +706,7 @@ class PCGUI(
 
     fun closeNormally(unlink: Boolean = true) {
         playSound(CobblemonSounds.PC_OFF)
-        Minecraft.getInstance().setScreen(null)
+        Minecraft.getInstance().gui.setScreen(null)
         if (unlink) {
             UnlinkPlayerFromPCPacket().sendToServer()
         }
@@ -761,7 +761,7 @@ class PCGUI(
             saveMarkings(isPreviewInParty ?: false)
             playSound(CobblemonSounds.PC_OFF)
             UnlinkPlayerFromPCPacket().sendToServer()
-            Minecraft.getInstance().setScreen(null)
+            Minecraft.getInstance().gui.setScreen(null)
             return true
         }
 

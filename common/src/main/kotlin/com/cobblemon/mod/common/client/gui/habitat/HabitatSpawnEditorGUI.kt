@@ -263,7 +263,7 @@ class HabitatSpawnEditorGUI(
 
         addFooterWidget(
             Button.builder("Back".text()) {
-                Minecraft.getInstance().setScreen(parentScreen)
+                Minecraft.getInstance().gui.setScreen(parentScreen)
             }.bounds(10, getScaledHeight() - (actionButtonHeight + actionButtonBottomMargin), buttonWidth, actionButtonHeight).build()
         )
         validationMessageY = getFooterTop() + 6

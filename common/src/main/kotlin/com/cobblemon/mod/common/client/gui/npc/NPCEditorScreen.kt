@@ -81,7 +81,7 @@ class NPCEditorScreen(
                 alignRight = true
             ) {
                 SaveNPCPacket(npcId, dto).sendToServer()
-                this.minecraft!!.setScreen(null)
+                this.minecraft!!.gui.setScreen(null)
             }
         )
 
@@ -92,7 +92,7 @@ class NPCEditorScreen(
                 label = lang("ui.entity.behaviour_editor"),
             ) {
                 val entity = this.minecraft!!.level!!.getEntity(npcId) as? LivingEntity ?: return@NPCEditorButton // Unlikely
-                minecraft!!.setScreen(BehaviourEditorScreen(entity = entity, appliedBehaviours = dto.behaviours))
+                minecraft!!.gui.setScreen(BehaviourEditorScreen(entity = entity, appliedBehaviours = dto.behaviours))
             }
         )
 

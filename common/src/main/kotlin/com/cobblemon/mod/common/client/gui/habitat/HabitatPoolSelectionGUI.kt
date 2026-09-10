@@ -55,14 +55,14 @@ class HabitatPoolSelectionGUI(
                 selectedPoolId = selectedPoolId,
                 onSelect = { poolId ->
                     onSelect(poolId)
-                    Minecraft.getInstance().setScreen(parentScreen)
+                    Minecraft.getInstance().gui.setScreen(parentScreen)
                 }
             )
         )
 
         addRenderableWidget(
             Button.builder("Back".text()) {
-                Minecraft.getInstance().setScreen(parentScreen)
+                Minecraft.getInstance().gui.setScreen(parentScreen)
             }.bounds(10, height - (backButtonHeight + backButtonBottomMargin), listWidth, backButtonHeight).build()
         )
     }

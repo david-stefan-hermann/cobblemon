@@ -339,7 +339,7 @@ class StarterSelectionScreen(private val categories: List<RenderableStarterCateg
         val modifiers = event.modifiers()
         // PT144: KeyMapping.matches now takes KeyEvent in MC 26.1.x.
         if (minecraft?.options?.keyInventory?.matches(event) == true) {
-            Minecraft.getInstance().setScreen(null)
+            Minecraft.getInstance().gui.setScreen(null)
             return true
         }
 

@@ -82,7 +82,7 @@ class RideControlsOverlay : Gui(Minecraft.getInstance()) {
         val minecraft = Minecraft.getInstance()
 
         // Hiding if a Screen is open and not exempt
-        minecraft.screen?.let { screen ->
+        minecraft.gui.screen()?.let { screen ->
             if ((!screenExemptions.contains(screen.javaClass as Class<out Screen>))) return
         }
 

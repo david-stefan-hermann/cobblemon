@@ -127,7 +127,7 @@ class BattleOverlay : Gui(Minecraft.getInstance()), Schedulable {
         } else {
             min(opacity + tickDelta * OPACITY_CHANGE_PER_SECOND, MAX_OPACITY)
         }
-        val currentScreen = Minecraft.getInstance().screen
+        val currentScreen = Minecraft.getInstance().gui.screen()
         if (!hidePortraits) {
             val playerUUID = Minecraft.getInstance().player?.uuid ?: return
             val side1 = if (battle.side1.actors.any { it.uuid == playerUUID }) battle.side1 else battle.side2
@@ -141,7 +141,7 @@ class BattleOverlay : Gui(Minecraft.getInstance()), Schedulable {
             side2.activeClientBattlePokemon.forEachIndexed { index, activeClientBattlePokemon -> drawTile(context, tickDelta, activeClientBattlePokemon, false, side2.activeClientBattlePokemon.count() - index - 1, battle.knowledge, false, false, battle.battleFormat.battleType.pokemonPerSide > 1) }
         }
 
-        if (Minecraft.getInstance().screen !is BattleGUI && battle.mustChoose) {
+        if (Minecraft.getInstance().gui.screen() !is BattleGUI && battle.mustChoose) {
             val textOpacity = PROMPT_TEXT_OPACITY_CURVE(passedSeconds)
             drawScaledText(
                 context = context,

@@ -112,7 +112,7 @@ class PokedexGUI private constructor(
             }
             val mc = Minecraft.getInstance()
             val screen = PokedexGUI(type, species, blockPos)
-            mc.setScreen(screen)
+            mc.gui.setScreen(screen)
         }
     }
 
