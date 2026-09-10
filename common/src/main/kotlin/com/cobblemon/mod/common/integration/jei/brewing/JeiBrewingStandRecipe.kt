@@ -14,7 +14,7 @@ import net.minecraft.world.item.ItemStack
 
 class JeiBrewingStandRecipe(
     private val recipe: BrewingStandRecipe,
-    private val id: Any
+    private val id: net.minecraft.resources.Identifier
 ) : IJeiBrewingRecipe {
 
     override fun getPotionInputs(): List<ItemStack> {
@@ -34,6 +34,7 @@ class JeiBrewingStandRecipe(
         return 1
     }
 
-    // PT145: getUid() abstract member added in MC 26.1.x.
-    override fun getUid(): net.minecraft.resources.Identifier? = id as? net.minecraft.resources.Identifier
+    // port/26.2: getUid is non-null on IJeiBrewingRecipe, so the id is typed as an Identifier rather
+    // than being loosely typed and cast.
+    override fun getUid(): net.minecraft.resources.Identifier = id
 }

@@ -15,7 +15,7 @@ import mezz.jei.api.gui.builder.IRecipeLayoutBuilder
 import mezz.jei.api.gui.drawable.IDrawable
 import mezz.jei.api.recipe.IFocusGroup
 import mezz.jei.api.recipe.RecipeIngredientRole
-import mezz.jei.api.recipe.RecipeType
+import mezz.jei.api.recipe.types.IRecipeType
 import mezz.jei.api.recipe.category.IRecipeCategory
 import mezz.jei.api.registration.IRecipeCategoryRegistration
 import net.minecraft.network.chat.Component
@@ -26,12 +26,11 @@ class BerryRecipeCategory(private val registration: IRecipeCategoryRegistration)
     private var icon: IDrawable
     init {
         val guiHelper = registration.jeiHelpers.guiHelper
-        // PT143: JEI 1.21.1 references net.minecraft.resources.ResourceLocation which is absent in MC 26.1.x.
-        // Background drawable is replaced with the empty drawable until JEI updates.
-        background = guiHelper.createBlankDrawable(WIDTH, HEIGHT)
+        // port/26.2: the real texture is back - JEI's 26.2 build uses Identifier, so createDrawable works.
+        background = guiHelper.createDrawable(GUI_TEXTURE_ID, 0, 0, WIDTH, HEIGHT)
         icon = guiHelper.createDrawableItemStack(CobblemonItems.SURPRISE_MULCH.defaultInstance)
     }
-    override fun getRecipeType(): RecipeType<BerryMutationRecipe> {
+    override fun getRecipeType(): IRecipeType<BerryMutationRecipe> {
         return RECIPE_TYPE
     }
 
@@ -39,9 +38,11 @@ class BerryRecipeCategory(private val registration: IRecipeCategoryRegistration)
         return Component.literal("Berry Mutation")
     }
 
-    override fun getBackground(): IDrawable {
-        return background
-    }
+    // port/26.2: IRecipeCategory asks for the category's size instead of a background drawable; the
+    // texture is painted in draw() below.
+    override fun getWidth(): Int = WIDTH
+
+    override fun getHeight(): Int = HEIGHT
 
     override fun getIcon(): IDrawable {
         return icon
@@ -55,7 +56,8 @@ class BerryRecipeCategory(private val registration: IRecipeCategoryRegistration)
     }
 
     companion object {
-        val RECIPE_TYPE = RecipeType.create("cobblemon", "berry_recipe", BerryMutationRecipe::class.java)!!
+        val RECIPE_TYPE: IRecipeType<BerryMutationRecipe> =
+            IRecipeType.create("cobblemon", "berry_recipe", BerryMutationRecipe::class.java)
         val GUI_TEXTURE_ID = cobblemonResource("textures/gui/jei/berry_mutation.png")
         const val WIDTH = 124
         const val HEIGHT = 17

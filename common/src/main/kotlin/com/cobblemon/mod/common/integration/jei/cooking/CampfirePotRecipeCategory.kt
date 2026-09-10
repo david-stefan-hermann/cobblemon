@@ -22,13 +22,16 @@ import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.lang
 import mezz.jei.api.constants.VanillaTypes
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder
+import mezz.jei.api.gui.ingredient.IRecipeSlotsView
 import mezz.jei.api.gui.drawable.IDrawable
+import mezz.jei.api.gui.drawable.IDrawableAnimated
 import mezz.jei.api.helpers.IGuiHelper
 import mezz.jei.api.recipe.IFocusGroup
 import mezz.jei.api.recipe.RecipeIngredientRole
-import mezz.jei.api.recipe.RecipeType
+import mezz.jei.api.recipe.types.IRecipeType
 import mezz.jei.api.recipe.category.IRecipeCategory
 import mezz.jei.api.registration.IRecipeCategoryRegistration
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
@@ -37,7 +40,9 @@ import net.minecraft.world.item.crafting.Ingredient
 class CampfirePotRecipeCategory(registration: IRecipeCategoryRegistration) : IRecipeCategory<CookingPotRecipeBase> {
 
     companion object {
-        val RECIPE_TYPE = RecipeType.create("cobblemon", "campfire_pot_recipe", CookingPotRecipeBase::class.java)!!
+        // port/26.2: JEI 30.32 replaced RecipeType with IRecipeType; the factory signature is unchanged.
+        val RECIPE_TYPE: IRecipeType<CookingPotRecipeBase> =
+            IRecipeType.create("cobblemon", "campfire_pot_recipe", CookingPotRecipeBase::class.java)
         val CAMPFIRE_POT_TEXTURE: Identifier = cobblemonResource("textures/gui/jei/campfire_pot.png")
 
         const val TEXTURE_WIDTH = 146
@@ -49,16 +54,26 @@ class CampfirePotRecipeCategory(registration: IRecipeCategoryRegistration) : IRe
     }
 
     val guiHelper: IGuiHelper = registration.jeiHelpers.guiHelper
-    // PT143: JEI 1.21.1 references net.minecraft.resources.ResourceLocation which is absent in MC 26.1.x.
-    // Background drawable replaced with blank until JEI ports.
-    val campfirePotBackground: IDrawable = guiHelper.createBlankDrawable(WIDTH, HEIGHT)
-    val cookProgressSprite: IDrawable = guiHelper.createBlankDrawable(COOK_PROGRESS_WIDTH, COOK_PROGRESS_HEIGHT)
+    // port/26.2: the real textures are back. They had been swapped for blank drawables on the grounds
+    // that JEI referenced ResourceLocation, which 26.2 renamed to Identifier - the JEI build for 26.2
+    // uses Identifier, so createDrawable/drawableBuilder work again.
+    val campfirePotBackground: IDrawable = guiHelper.drawableBuilder(CAMPFIRE_POT_TEXTURE, 0, 0, WIDTH, HEIGHT)
+        .setTextureSize(TEXTURE_WIDTH, TEXTURE_HEIGHT)
+        .build()
+    val cookProgressSprite: IDrawableAnimated =
+        guiHelper.drawableBuilder(COOK_PROGRESS_SPRITE, 0, 0, COOK_PROGRESS_WIDTH, COOK_PROGRESS_HEIGHT)
+            .setTextureSize(22, COOK_PROGRESS_HEIGHT)
+            .buildAnimated(CampfireBlockEntity.COOKING_TOTAL_TIME, IDrawableAnimated.StartDirection.LEFT, false)
     val campfirePotIcon: IDrawable = guiHelper.createDrawableItemStack(CobblemonItems.CAMPFIRE_POT_BLACK.defaultInstance)
 
-    override fun getRecipeType(): RecipeType<CookingPotRecipeBase?>? = RECIPE_TYPE
-    override fun getTitle(): Component? = lang("container.campfire_pot")
-    override fun getBackground(): IDrawable? = campfirePotBackground
-    override fun getIcon(): IDrawable? = campfirePotIcon
+    override fun getRecipeType(): IRecipeType<CookingPotRecipeBase> = RECIPE_TYPE
+    override fun getTitle(): Component = lang("container.campfire_pot")
+    override fun getIcon(): IDrawable = campfirePotIcon
+
+    // port/26.2: IRecipeCategory no longer takes a background drawable - it asks for the category's size
+    // and the background is drawn in draw() instead.
+    override fun getWidth(): Int = WIDTH
+    override fun getHeight(): Int = HEIGHT
 
     override fun setRecipe(
         builder: IRecipeLayoutBuilder,
@@ -108,6 +123,17 @@ class CampfirePotRecipeCategory(registration: IRecipeCategoryRegistration) : IRe
         builder.addSlot(RecipeIngredientRole.OUTPUT, 111, 38).addIngredients(Ingredient.of(recipe.resultItem().item))
     }
 
-    // PT143: IRecipeCategory.draw signature references net.minecraft.client.gui.GuiGraphics which is absent in MC 26.1.x.
-    // The override is removed; the JEI default no-op will be used until JEI ports.
+    // port/26.2: draw takes a GuiGraphicsExtractor now, and since the category no longer supplies a
+    // background drawable this is where the pot texture is painted, ahead of the cook progress sprite.
+    override fun draw(
+        recipe: CookingPotRecipeBase,
+        recipeSlotsView: IRecipeSlotsView,
+        guiGraphics: GuiGraphicsExtractor,
+        mouseX: Double,
+        mouseY: Double
+    ) {
+        campfirePotBackground.draw(guiGraphics, 0, 0)
+        super.draw(recipe, recipeSlotsView, guiGraphics, mouseX, mouseY)
+        cookProgressSprite.draw(guiGraphics, 79, 22)
+    }
 }
