@@ -45,7 +45,10 @@ import net.minecraft.util.Mth
 import kotlin.math.ceil
 import kotlin.math.floor
 
-class PartyOverlay : Gui(Minecraft.getInstance()) {
+// port/26.2: vanilla's Gui is the HUD class itself now and needs a Hud plus a GuiRenderState, so mod
+// overlays no longer subclass it. This stays platform-agnostic - the Fabric module registers it as a
+// fabric-api HudElement, whose extractRenderState signature this already matches.
+class PartyOverlay {
 
     companion object {
         private const val SLOT_HEIGHT = 30
@@ -78,7 +81,10 @@ class PartyOverlay : Gui(Minecraft.getInstance()) {
                 if (!screenExemptions.contains(minecraft.gui.screen()?.javaClass as Class<out Screen>))
                     return false
             }
-            if (minecraft.options.hideGui || minecraft.debugOverlay.showDebugScreen()) {
+            // port/26.2: Options.hideGui is gone - whether the HUD is hidden is passed down into the
+            // HUD extract instead. Fabric HudElements hang off that same pipeline, so a hidden HUD
+            // already skips this overlay and only the debug-screen check needs making here.
+            if (minecraft.debugOverlay.showDebugScreen()) {
                 return false
             }
             // Hiding if toggled via Keybind
@@ -121,7 +127,7 @@ class PartyOverlay : Gui(Minecraft.getInstance()) {
         return state.second
     }
 
-    override fun extractRenderState(context: GuiGraphicsExtractor, tickCounter: DeltaTracker) {
+    fun extractRenderState(context: GuiGraphicsExtractor, tickCounter: DeltaTracker) {
         if (!canRender()) return
 
         val partialDeltaTicks = tickCounter.realtimeDeltaTicks

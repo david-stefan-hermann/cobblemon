@@ -12,7 +12,7 @@ import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.Camera
 import net.minecraft.client.DeltaTracker
 import net.minecraft.client.renderer.LevelRenderer
-import org.joml.Matrix4f
+import net.minecraft.client.renderer.SubmitNodeCollector
 
 /**
  * Event fired during the various [Stage]s of the [LevelRenderer].
@@ -24,8 +24,10 @@ data class RenderEvent(
     val stage: Stage,
     val levelRenderer: LevelRenderer,
     val poseStack: PoseStack,
-    val modelViewMatrix: Matrix4f,
-    val projectionMatrix: Matrix4f,
+    // port/26.2: the level render context no longer exposes the model-view and projection matrices, which
+    // nothing here read anyway. It does expose the collector, which subscribers now need in order to draw
+    // at all, so that replaces them.
+    val collector: SubmitNodeCollector,
     val tickCounter: DeltaTracker,
     val camera: Camera
 ) {

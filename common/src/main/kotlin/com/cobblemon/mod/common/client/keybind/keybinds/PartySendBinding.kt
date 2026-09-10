@@ -98,7 +98,9 @@ object PartySendBinding : CobblemonBlockingKeyBinding(
 
     private fun toggleBattleScreen(battle: ClientBattle) {
         battle.minimised = !battle.minimised
-        if (!battle.minimised && !Minecraft.getInstance().options.hideGui) {
+        // port/26.2: Options.hideGui no longer exists; the hidden-HUD state is passed into the HUD
+        // extract rather than stored, and is not reachable from a key binding.
+        if (!battle.minimised) {
             Minecraft.getInstance().gui.setScreen(BattleGUI())
         }
     }

@@ -35,7 +35,10 @@ import net.minecraft.resources.Identifier
 import net.minecraft.util.Mth
 import kotlin.math.max
 
-class RideControlsOverlay : Gui(Minecraft.getInstance()) {
+// port/26.2: vanilla's Gui is the HUD class itself now and needs a Hud plus a GuiRenderState, so mod
+// overlays no longer subclass it. This stays platform-agnostic - the Fabric module registers it as a
+// fabric-api HudElement, whose extractRenderState signature this already matches.
+class RideControlsOverlay {
 
     companion object {
         private const val CONTROLS_FADE_FRAMES = 20F
@@ -78,7 +81,7 @@ class RideControlsOverlay : Gui(Minecraft.getInstance()) {
 
     var currentBehaviourKey: Identifier? = null
 
-    override fun extractRenderState(context: GuiGraphicsExtractor, tickCounter: DeltaTracker) {
+    fun extractRenderState(context: GuiGraphicsExtractor, tickCounter: DeltaTracker) {
         val minecraft = Minecraft.getInstance()
 
         // Hiding if a Screen is open and not exempt
@@ -86,7 +89,8 @@ class RideControlsOverlay : Gui(Minecraft.getInstance()) {
             if ((!screenExemptions.contains(screen.javaClass as Class<out Screen>))) return
         }
 
-        if (minecraft.options.hideGui || minecraft.debugOverlay.showDebugScreen()) return
+        // port/26.2: Options.hideGui is gone; a hidden HUD already skips Fabric HudElements.
+        if (minecraft.debugOverlay.showDebugScreen()) return
 
         minecraft.player?.let { player ->
             val riddenEntity = player.vehicle

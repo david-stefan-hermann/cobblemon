@@ -59,7 +59,10 @@ import net.minecraft.network.chat.MutableComponent
 import net.minecraft.util.Mth.ceil
 import org.joml.Vector3f
 
-class BattleOverlay : Gui(Minecraft.getInstance()), Schedulable {
+// port/26.2: vanilla's Gui is the HUD class itself now and needs a Hud plus a GuiRenderState, so mod
+// overlays no longer subclass it. This stays platform-agnostic - the Fabric module registers it as a
+// fabric-api HudElement, whose extractRenderState signature this already matches.
+class BattleOverlay : Schedulable {
     companion object {
         const val MAX_OPACITY = 1.0
         const val MIN_OPACITY = 0.5
@@ -114,7 +117,7 @@ class BattleOverlay : Gui(Minecraft.getInstance()), Schedulable {
     var hidePortraits = false
     override val schedulingTracker = SchedulingTracker()
 
-    override fun extractRenderState(context: GuiGraphicsExtractor, tickCounter: DeltaTracker) {
+    fun extractRenderState(context: GuiGraphicsExtractor, tickCounter: DeltaTracker) {
         val tickDelta = tickCounter.realtimeDeltaTicks.takeIf { !Minecraft.getInstance()!!.isPaused } ?: 0F
         schedulingTracker.update(tickDelta / 20F)
         passedSeconds += tickDelta / 20
