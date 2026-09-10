@@ -53,6 +53,7 @@ import net.minecraft.world.level.block.state.properties.NoteBlockInstrument
 import net.minecraft.world.level.block.state.properties.WoodType
 import net.minecraft.world.level.material.MapColor
 import net.minecraft.world.level.material.PushReaction
+import net.minecraft.world.entity.EntityTypes
 
 @Suppress("SameParameterValue", "HasPlatformType", "MemberVisibilityCanBePrivate", "unused")
 object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<Block>>, Block>() {
@@ -200,7 +201,7 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
             MapColor.PLANT
         ).strength(0.2F).randomTicks().sound(SoundType.GRASS).noOcclusion()
             .isValidSpawn { _: BlockState?, _: BlockGetter?, _: BlockPos?, entity: EntityType<*>? ->
-                entity === EntityType.OCELOT || entity === EntityType.PARROT
+                entity === EntityTypes.OCELOT || entity === EntityTypes.PARROT
             }.isSuffocating { _: BlockState?, _: BlockGetter?, _: BlockPos? ->
                 false
             }.isViewBlocking { _: BlockState?, _: BlockGetter?, _: BlockPos? ->

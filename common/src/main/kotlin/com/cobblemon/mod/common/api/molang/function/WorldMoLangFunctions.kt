@@ -46,6 +46,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
+import net.minecraft.world.entity.EntityTypes
 
 object WorldMoLangFunctions : AbstractMoLangFunctionHolder<Holder<Level>>() {
     override fun Holder<Level>.moLangFunctions(): MutableMap<String, (MoParams) -> Any> {
@@ -146,7 +147,7 @@ object WorldMoLangFunctions : AbstractMoLangFunctionHolder<Holder<Level>>() {
             val x = params.getDouble(0)
             val y = params.getDouble(1)
             val z = params.getDouble(2)
-            val lightning = LightningBolt(EntityType.LIGHTNING_BOLT, world)
+            val lightning = LightningBolt(EntityTypes.LIGHTNING_BOLT, world)
             lightning.setPos(x, y, z)
             world.addFreshEntity(lightning)
             return@put DoubleValue.ONE

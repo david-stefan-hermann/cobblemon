@@ -69,22 +69,22 @@ class PokeSnackBlock(settings: Properties, val isLure: Boolean): BaseEntityBlock
         val CANDLE: IntegerProperty = IntegerProperty.create("candle", 0, MapColor.MATERIAL_COLORS.size - 1)
 
         val idToCandleBlock: Map<Int, Block> = mapOf(
-            MapColor.WOOL.id to Blocks.WHITE_CANDLE,
-            MapColor.COLOR_ORANGE.id to Blocks.ORANGE_CANDLE,
-            MapColor.COLOR_MAGENTA.id to Blocks.MAGENTA_CANDLE,
-            MapColor.COLOR_LIGHT_BLUE.id to Blocks.LIGHT_BLUE_CANDLE,
-            MapColor.COLOR_YELLOW.id to Blocks.YELLOW_CANDLE,
-            MapColor.COLOR_LIGHT_GREEN.id to Blocks.LIME_CANDLE,
-            MapColor.COLOR_PINK.id to Blocks.PINK_CANDLE,
-            MapColor.COLOR_GRAY.id to Blocks.GRAY_CANDLE,
-            MapColor.COLOR_LIGHT_GRAY.id to Blocks.LIGHT_GRAY_CANDLE,
-            MapColor.COLOR_CYAN.id to Blocks.CYAN_CANDLE,
-            MapColor.COLOR_PURPLE.id to Blocks.PURPLE_CANDLE,
-            MapColor.COLOR_BLUE.id to Blocks.BLUE_CANDLE,
-            MapColor.COLOR_BROWN.id to Blocks.BROWN_CANDLE,
-            MapColor.COLOR_GREEN.id to Blocks.GREEN_CANDLE,
-            MapColor.COLOR_RED.id to Blocks.RED_CANDLE,
-            MapColor.COLOR_BLACK.id to Blocks.BLACK_CANDLE
+            MapColor.WOOL.id to Blocks.DYED_CANDLE.white(),
+            MapColor.COLOR_ORANGE.id to Blocks.DYED_CANDLE.orange(),
+            MapColor.COLOR_MAGENTA.id to Blocks.DYED_CANDLE.magenta(),
+            MapColor.COLOR_LIGHT_BLUE.id to Blocks.DYED_CANDLE.lightBlue(),
+            MapColor.COLOR_YELLOW.id to Blocks.DYED_CANDLE.yellow(),
+            MapColor.COLOR_LIGHT_GREEN.id to Blocks.DYED_CANDLE.lime(),
+            MapColor.COLOR_PINK.id to Blocks.DYED_CANDLE.pink(),
+            MapColor.COLOR_GRAY.id to Blocks.DYED_CANDLE.gray(),
+            MapColor.COLOR_LIGHT_GRAY.id to Blocks.DYED_CANDLE.lightGray(),
+            MapColor.COLOR_CYAN.id to Blocks.DYED_CANDLE.cyan(),
+            MapColor.COLOR_PURPLE.id to Blocks.DYED_CANDLE.purple(),
+            MapColor.COLOR_BLUE.id to Blocks.DYED_CANDLE.blue(),
+            MapColor.COLOR_BROWN.id to Blocks.DYED_CANDLE.brown(),
+            MapColor.COLOR_GREEN.id to Blocks.DYED_CANDLE.green(),
+            MapColor.COLOR_RED.id to Blocks.DYED_CANDLE.red(),
+            MapColor.COLOR_BLACK.id to Blocks.DYED_CANDLE.black()
         )
 
         fun getCandleById(id: Int): Block = idToCandleBlock[id] ?: Blocks.CANDLE

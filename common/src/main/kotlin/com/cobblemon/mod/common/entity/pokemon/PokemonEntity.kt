@@ -787,7 +787,7 @@ open class PokemonEntity(
         //return this.position().subtract(prevPosition)
     }
 
-    fun setMoveControl(moveControl: MoveControl) {
+    fun setMoveControl(moveControl: MoveControl<*>) {
         this.moveControl = moveControl
     }
 
@@ -2189,22 +2189,22 @@ open class PokemonEntity(
         for (j in 0..i) {
             val color = this.pokemon.getFeature<StringSpeciesFeature>(DataKeys.CAN_BE_COLORED)?.value ?: "white"
             val woolItem = when (color) {
-                "black" -> Items.BLACK_WOOL
-                "blue" -> Items.BLUE_WOOL
-                "brown" -> Items.BROWN_WOOL
-                "cyan" -> Items.CYAN_WOOL
-                "gray" -> Items.GRAY_WOOL
-                "green" -> Items.GREEN_WOOL
-                "light_blue" -> Items.LIGHT_BLUE_WOOL
-                "light_gray" -> Items.LIGHT_GRAY_WOOL
-                "lime" -> Items.LIME_WOOL
-                "magenta" -> Items.MAGENTA_WOOL
-                "orange" -> Items.ORANGE_WOOL
-                "purple" -> Items.PURPLE_WOOL
-                "red" -> Items.RED_WOOL
-                "yellow" -> Items.YELLOW_WOOL
-                "pink" -> Items.PINK_WOOL
-                else -> Items.WHITE_WOOL
+                "black" -> Items.WOOL.black()
+                "blue" -> Items.WOOL.blue()
+                "brown" -> Items.WOOL.brown()
+                "cyan" -> Items.WOOL.cyan()
+                "gray" -> Items.WOOL.gray()
+                "green" -> Items.WOOL.green()
+                "light_blue" -> Items.WOOL.lightBlue()
+                "light_gray" -> Items.WOOL.lightGray()
+                "lime" -> Items.WOOL.lime()
+                "magenta" -> Items.WOOL.magenta()
+                "orange" -> Items.WOOL.orange()
+                "purple" -> Items.WOOL.purple()
+                "red" -> Items.WOOL.red()
+                "yellow" -> Items.WOOL.yellow()
+                "pink" -> Items.WOOL.pink()
+                else -> Items.WOOL.white()
             }
             // PT141: spawnAtLocation(ItemLike,Int) → spawnAtLocation(ServerLevel,ItemLike) in MC 26.1.x
             val itemEntity = this.spawnAtLocation(level, woolItem) ?: return

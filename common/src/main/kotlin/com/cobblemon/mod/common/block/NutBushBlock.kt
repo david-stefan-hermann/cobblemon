@@ -39,6 +39,7 @@ import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.phys.shapes.CollisionContext
 import net.minecraft.world.phys.shapes.VoxelShape
+import net.minecraft.world.entity.EntityTypes
 
 class NutBushBlock(properties: Properties) : BushBlock(properties), BonemealableBlock {
 
@@ -73,7 +74,7 @@ class NutBushBlock(properties: Properties) : BushBlock(properties), Bonemealable
     // PT144: BlockBehaviour.entityInside signature adds InsideBlockEffectApplier + isPrecise:Boolean in MC 26.1.x.
     // InsideBlockEffectApplier lives in net.minecraft.world.entity (not .level.block).
     override fun entityInside(state: BlockState, level: Level, pos: BlockPos, entity: Entity, effectApplier: net.minecraft.world.entity.InsideBlockEffectApplier, isPrecise: Boolean) {
-        if (entity is LivingEntity && entity.type !== EntityType.FOX && entity.type !== EntityType.BEE) {
+        if (entity is LivingEntity && entity.type !== EntityTypes.FOX && entity.type !== EntityTypes.BEE) {
             entity.makeStuckInBlock(state, Vec3(0.8, 0.75, 0.8))
         }
     }
