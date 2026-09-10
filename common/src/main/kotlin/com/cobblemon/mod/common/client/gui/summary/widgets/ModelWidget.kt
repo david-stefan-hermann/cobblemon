@@ -18,6 +18,7 @@ import com.cobblemon.mod.common.client.render.models.blockbench.FloatingState
 import com.cobblemon.mod.common.client.render.item.HeldItemRenderer
 import com.cobblemon.mod.common.pokemon.RenderablePokemon
 import com.cobblemon.mod.common.util.math.fromEulerXYZDegrees
+import com.cobblemon.mod.common.client.render.gui.submitModelAtCurrentPose
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Component
 import org.joml.Quaternionf
@@ -122,14 +123,18 @@ class ModelWidget(
         )
 
         // PT144: GuiGraphicsExtractor.bufferSource() removed — use renderBuffers().bufferSource().
-        heldItemRenderer.renderOnModel(
-            pokemon.heldItem,
-            state,
-            matrices,
-            net.minecraft.client.Minecraft.getInstance().renderBuffers().bufferSource(),
-            light = 0xF000F0,
-            true
-        )
+        // port/26.2: the held item is submitted through picture-in-picture with the model rather than
+        // drawn into an immediate buffer, which no longer exists.
+        context.submitModelAtCurrentPose(baseScale) { poseStack, collector ->
+            heldItemRenderer.renderOnModel(
+                pokemon.heldItem,
+                state,
+                poseStack,
+                collector,
+                light = 0xF000F0,
+                true
+            )
+        }
 
         matrices.popMatrix()
         context.disableScissor()

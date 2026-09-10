@@ -19,6 +19,8 @@ import com.mojang.math.Axis
 import net.minecraft.client.Camera
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.GameRenderer
+import net.minecraft.client.renderer.SubmitNodeCollector
+import net.minecraft.client.renderer.rendertype.RenderTypes
 import net.minecraft.resources.Identifier
 import net.minecraft.util.Mth
 import net.minecraft.world.entity.EntityAttachment
@@ -83,7 +85,7 @@ abstract class ClientPlayerIcon(expiryTime: Int? = null) {
 
             poseStack.pushPose()
             positionTag(player, poseStack, camera, partialTicks)
-            drawTag(poseStack)
+            drawTag(poseStack, event.collector)
             poseStack.popPose()
         }
     }
@@ -112,31 +114,17 @@ abstract class ClientPlayerIcon(expiryTime: Int? = null) {
         vertices.addVertex(model, 0.5f, 0f, 0f).setUv(1f, 0f).setColor(1f, 1f, 1f, 1f)
     }
 
-    /** Sets the shading and gl states of the quad then queues for drawing. */
-    private fun drawTag(poseStack: PoseStack) {
-        // texture
-        Unit
-        Unit
-        Unit
-
-        // gl states
-        Unit
-        Unit
-        // PT137: RenderSystem.enableDepthTest/disableDepthTest removed in MC 26.1.x (RenderPipeline state model)
-        Unit
-
-        // TODO worth making a custom rendertype and getting buffer from multiBufferSource?
-        val model = poseStack.last().pose()
-        val buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR)
-        buildTag(model, buffer)
-        // BufferUploader.drawWithShader removed in MC 26.1.x
-        buffer.buildOrThrow().close()
-
-        // undo
-        Unit
-        // PT137: RenderSystem.disableDepthTest removed in MC 26.1.x
-        Unit
-        Unit
+    /**
+     * Queues the tag quad for drawing.
+     *
+     * port/26.2: this had been gutted to a run of no-ops - Tesselator batching and the GL state calls
+     * around it are gone with the pipeline rework. The quad is submitted to the collector instead, and
+     * the render type carries the state the explicit GL calls used to set.
+     */
+    private fun drawTag(poseStack: PoseStack, collector: SubmitNodeCollector) {
+        collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(texture)) { pose, buffer ->
+            buildTag(pose.pose(), buffer)
+        }
     }
 
     companion object {

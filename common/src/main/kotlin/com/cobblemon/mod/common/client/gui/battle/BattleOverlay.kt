@@ -49,6 +49,8 @@ import java.lang.Double.min
 import java.util.UUID
 import kotlin.math.floor
 import net.minecraft.client.DeltaTracker
+import com.cobblemon.mod.common.client.render.gui.submitModelAtCurrentPose
+import com.cobblemon.mod.common.client.render.submitPosableModel
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.gui.GuiGraphicsExtractor
@@ -310,7 +312,7 @@ class BattleOverlay : Schedulable {
         if (ballState != null && ballState.stateEmitter.get() == EmptyPokeBallEntity.CaptureState.SHAKE) {
             drawPokeBall(
                 state = ballState,
-                matrixStack = matrixStack,
+                guiContext = context,
                 reversed = reversed,
                 partialTicks = partialTicks
             )
@@ -481,10 +483,10 @@ class BattleOverlay : Schedulable {
         }
     }
 
-    // PT128: drawPokeBall accepts Matrix3x2fStack (new GuiGraphicsExtractor.pose() type) and creates a fresh PoseStack for 3D model rendering.
+    // port/26.2: the ball model goes through picture-in-picture like the rest of the GUI models.
     private fun drawPokeBall(
         state: ClientBallDisplay,
-        matrixStack: org.joml.Matrix3x2fStack,
+        guiContext: GuiGraphicsExtractor,
         scale: Float = 5F,
         partialTicks: Float,
         reversed: Boolean = false
@@ -502,8 +504,10 @@ class BattleOverlay : Schedulable {
         state.updatePartialTicks(partialTicks)
         model.applyAnimations(null, state, 0F, 0F, 0F, 0F, 0F)
 
-        val poseStack = PoseStack()
-        poseStack.scale(scale, scale, -scale)
+        // port/26.2: the transform work happens inside the picture-in-picture callback, which supplies
+        // the pose stack and the collector to submit to.
+        guiContext.submitModelAtCurrentPose(scale) { poseStack, collector ->
+            poseStack.scale(scale, scale, -scale)
         poseStack.translate(0.0, 5.5, -4.0)
         poseStack.pushPose()
         poseStack.scale(scale * state.scale, scale * state.scale, 1F)
@@ -513,12 +517,12 @@ class BattleOverlay : Schedulable {
         // PT144: RenderSystem.setShaderLights now takes a single GpuBufferSlice in MC 26.1.x — skip per-call lighting tweak.
         quaternion1.conjugate()
 
-        val immediate = Minecraft.getInstance().renderBuffers().bufferSource()
-        val buffer = immediate.getBuffer(renderType)
         val packedLight = ((11) or ((7) shl 16))
-        model.render(context, poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
-        immediate.endBatch()
-        poseStack.popPose()
+        collector.submitPosableModel(poseStack, renderType) { stack, consumer ->
+            model.render(context, stack, consumer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
+        }
+            poseStack.popPose()
+        }
     }
 
     fun onLogout() {

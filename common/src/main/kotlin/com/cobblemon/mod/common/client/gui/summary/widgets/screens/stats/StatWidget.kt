@@ -35,10 +35,10 @@ import com.mojang.blaze3d.systems.RenderSystem
 // PT144: BufferUploader removed in MC 26.1.x (replaced by RenderPipeline state model).
 import com.mojang.blaze3d.vertex.DefaultVertexFormat
 import com.mojang.blaze3d.vertex.PoseStack
-import com.mojang.blaze3d.vertex.Tesselator
-import com.mojang.blaze3d.vertex.VertexFormat
 import net.minecraft.client.Minecraft
+import com.cobblemon.mod.common.client.render.gui.submitPosableModelToGui
 import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.renderer.rendertype.RenderTypes
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
@@ -178,16 +178,25 @@ class StatWidget(
         }
     }
 
-    private fun drawTriangle(colour: Vector3f, v1: Vec2, v2: Vec2, v3: Vec2, opacity: Float = 0.6F) {
-        CobblemonResources.WHITE.let { Unit }
-        Unit
-        val bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION)
-        bufferBuilder.addVertex(v1.x, v1.y, 10F)
-        bufferBuilder.addVertex(v2.x, v2.y, 10F)
-        bufferBuilder.addVertex(v3.x, v3.y, 10F)
-        // BufferUploader.drawWithShader removed in MC 26.1.x
-        bufferBuilder.buildOrThrow().close()
-        Unit
+    /**
+     * port/26.2: Tesselator batching is gone, so the triangle is written into the consumer the collector
+     * hands back. The stat chart is flat, so the vertices are used as-is with the colour applied per
+     * vertex where the old path relied on shader colour state.
+     */
+    private fun drawTriangle(
+        buffer: com.mojang.blaze3d.vertex.VertexConsumer,
+        pose: PoseStack.Pose,
+        colour: Vector3f,
+        v1: Vec2,
+        v2: Vec2,
+        v3: Vec2,
+        opacity: Float = 0.6F
+    ) {
+        listOf(v1, v2, v3).forEach { v ->
+            buffer.addVertex(pose, v.x, v.y, 10F)
+                .setUv(0F, 0F)
+                .setColor(colour.x, colour.y, colour.z, opacity)
+        }
     }
 
     /**
@@ -196,7 +205,7 @@ class StatWidget(
      * @param ratios list of ratios for how far each vertex is from the center, starting from top vertex going clockwise
      * @param colour the colour to render
      */
-    private fun drawStatPolygon(ratios: List<Float>, colour: Vector3f) {
+    private fun drawStatPolygon(context: GuiGraphicsExtractor, ratios: List<Float>, colour: Vector3f) {
         val sides = ratios.size
         if (sides !in 5 .. 6) return
 
@@ -234,11 +243,23 @@ class StatWidget(
 
         val centerPoint = Vec2(centerX, centerY)
 
-        // Draw triangles between each vertex and the next clockwise starting from top vertex
-        // PT144: RenderSystem.disableDepthTest/enableDepthTest removed in MC 26.1.x (RenderPipeline state model).
-        for (i in vertices.indices) {
-            val nextIndex = (i + 1) % vertices.size
-            drawTriangle(colour, vertices[i], centerPoint, vertices[nextIndex])
+        // Draw triangles between each vertex and the next clockwise starting from top vertex.
+        // port/26.2: screens draw in 2D, so the chart is submitted through picture-in-picture over the
+        // area it actually occupies - which is known here, unlike the model anchors elsewhere.
+        val half = radius.toInt() + 2
+        context.submitPosableModelToGui(
+            x0 = (centerX - radius).toInt() - 2,
+            y0 = (centerY - radius).toInt() - 2,
+            x1 = (centerX + radius).toInt() + 2,
+            y1 = (centerY + radius).toInt() + 2,
+            scale = 1F
+        ) { poseStack, collector ->
+            collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(CobblemonResources.WHITE)) { pose, buffer ->
+                for (i in vertices.indices) {
+                    val nextIndex = (i + 1) % vertices.size
+                    drawTriangle(buffer, pose, colour, vertices[i], centerPoint, vertices[nextIndex])
+                }
+            }
         }
     }
 
@@ -334,6 +355,7 @@ class StatWidget(
                     }
 
                     drawStatPolygon(
+                        context = context,
                         ratios = RidingStat.entries.map { pokemon.getRideStat(selectedBehaviour.key, it) / 100F },
                         colour = pentagonColour
                     )
@@ -397,6 +419,7 @@ class StatWidget(
 
                 when (statOptions.get(statTabIndex)) {
                     STATS -> drawStatPolygon(
+                        context = context,
                         listOf(
                             pokemon.maxHealth,
                             pokemon.attack,
@@ -408,10 +431,12 @@ class StatWidget(
                         colour = Vector3f(50F/255F, 215F/255F, 1F)
                     )
                     IV -> drawStatPolygon(
+                        context = context,
                         statLabels.values.map { pokemon.ivs.getEffectiveBattleIV(it) / 31F },
                         colour = Vector3f(216F/255, 100F/255, 1F)
                     )
                     EV -> drawStatPolygon(
+                        context = context,
                         statLabels.values.map { (pokemon.evs[it]?.toFloat() ?: 0F) / EVs.MAX_STAT_VALUE.toFloat() },
                         colour = Vector3f(1F, 1F, 100F/255F)
                     )
