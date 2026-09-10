@@ -15,6 +15,7 @@ import com.cobblemon.mod.common.mixin.accessor.BeehiveBlockEntityAccessor;
 import com.cobblemon.mod.common.mixin.accessor.BlockEntityAccessor;
 import com.google.common.collect.Lists;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.player.Player;
@@ -43,7 +44,7 @@ public abstract class BeehiveBlockEntityMixin {
         if (player != null) {
             final BeehiveBlockEntity blockEntity = (BeehiveBlockEntity) (Object) this;
             // if the block is sedated or the player is too far away, no aggro should be applied
-            if (blockEntity.isSedated() || player.position().distanceToSqr(blockEntity.getBlockPos().getCenter()) > 16.0)
+            if (blockEntity.isSedated() || player.position().distanceToSqr(Vec3.atCenterOf(blockEntity.getBlockPos())) > 16.0)
                 return;
             // from this point need to access private members of the block entity
             final BeehiveBlockEntityAccessor blockEntityAccessor = (BeehiveBlockEntityAccessor) this;
