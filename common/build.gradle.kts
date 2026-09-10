@@ -53,12 +53,9 @@ dependencies {
     compileOnly(libs.bundles.common.integrations.compileOnly) {
         isTransitive = false
     }
-    // LambDynamicLights is handled differently because we need the Mojang-mappings version of it.
-    compileOnly(libs.lambDynamicLights) {
-        capabilities {
-            requireCapability("dev.lambdaurora.lambdynamiclights:api-mojmap")
-        }
-    }
+    // port/26.2: the "api-mojmap" capability split no longer exists on 26.2 builds since MC ships
+    // unobfuscated (no more intermediary/named distinction to disambiguate).
+    compileOnly(libs.lambDynamicLights)
 
     // Showdown
     compileOnly(libs.graal.core)

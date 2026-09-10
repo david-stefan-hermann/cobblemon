@@ -20,7 +20,7 @@ import com.cobblemon.mod.common.util.readString
 import com.cobblemon.mod.common.util.writeString
 import com.google.common.collect.HashBiMap
 import com.google.gson.*
-import net.minecraft.advancements.criterion.ItemPredicate
+import net.minecraft.advancements.predicates.ItemPredicate
 import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.resources.Identifier
 import com.cobblemon.mod.common.util.LowerCaseEnumTypeAdapterFactory

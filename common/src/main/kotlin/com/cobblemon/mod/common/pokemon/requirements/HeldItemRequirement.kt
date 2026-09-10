@@ -10,7 +10,7 @@ package com.cobblemon.mod.common.pokemon.requirements
 
 import com.cobblemon.mod.common.api.pokemon.requirement.Requirement
 import com.cobblemon.mod.common.pokemon.Pokemon
-import net.minecraft.advancements.criterion.ItemPredicate
+import net.minecraft.advancements.predicates.ItemPredicate
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.item.Items
 

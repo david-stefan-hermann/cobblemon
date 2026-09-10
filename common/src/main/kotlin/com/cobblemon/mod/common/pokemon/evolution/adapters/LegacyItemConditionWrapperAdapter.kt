@@ -14,7 +14,7 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
-import net.minecraft.advancements.criterion.ItemPredicate
+import net.minecraft.advancements.predicates.ItemPredicate
 import java.lang.reflect.Type
 
 // PT137: This adapter is legacy compat for pre-data-component ItemPredicate JSON.
