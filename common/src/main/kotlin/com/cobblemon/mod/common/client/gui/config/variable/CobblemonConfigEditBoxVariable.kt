@@ -26,6 +26,7 @@ import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.components.EditBox.DEFAULT_TEXT_COLOR
 import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.TextColor
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.jvm.javaField
 
@@ -110,7 +111,9 @@ class CobblemonConfigIntVariable(
                 } else {
                     val errorLang = lang("config.ui.error.int_constraint", intConstraintAnnotation.min, intConstraintAnnotation.max).red()
                     tooltip = Tooltip.create(tooltipLang.plainCopy().add(Component.literal("\n")).add(errorLang))
-                    ChatFormatting.RED.color?.let { editBox.setTextColor(it) }
+                    // port/26.2: ChatFormatting no longer carries its colour; TextColor holds the
+                    // legacy palette instead.
+                    editBox.setTextColor(TextColor.RED.value)
                 }
             }
         }
