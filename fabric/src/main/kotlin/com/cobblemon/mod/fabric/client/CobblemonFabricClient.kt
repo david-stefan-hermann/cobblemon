@@ -9,15 +9,12 @@
 package com.cobblemon.mod.fabric.client
 
 import com.cobblemon.mod.common.CobblemonClientImplementation
-import com.cobblemon.mod.common.CobblemonItems
-import com.cobblemon.mod.common.api.pokeball.PokeBalls
 import com.cobblemon.mod.common.api.snowstorm.ParticleMaterials
 import com.cobblemon.mod.common.client.CobblemonBakingOverrides
 import com.cobblemon.mod.common.client.CobblemonClient
 import com.cobblemon.mod.common.client.CobblemonClient.pokedexUsageContext
 import com.cobblemon.mod.common.client.CobblemonClient.reloadCodedAssets
 import com.cobblemon.mod.common.client.keybind.CobblemonKeyBinds
-import com.cobblemon.mod.common.client.pokedex.PokedexType
 import com.cobblemon.mod.common.client.render.atlas.CobblemonAtlases
 import com.cobblemon.mod.common.client.render.item.CobblemonModelPredicateRegistry
 import com.cobblemon.mod.common.item.PokedexItem
@@ -31,7 +28,7 @@ import com.cobblemon.mod.common.platform.events.PlatformEvents
 import com.cobblemon.mod.common.platform.events.RenderEvent
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.util.isUsingPokedex
-import com.cobblemon.mod.fabric.CobblemonFabric
+import com.cobblemon.mod.fabric.net.CobblemonFabricNetworkManager
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.function.Supplier
@@ -76,8 +73,6 @@ import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.core.particles.ParticleType
 import net.minecraft.server.packs.PackType
 import net.minecraft.server.packs.resources.PreparableReloadListener
-import net.minecraft.server.packs.resources.ResourceManager
-import net.minecraft.util.profiling.ProfilerFiller
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
@@ -107,22 +102,15 @@ class CobblemonFabricClient : ClientModInitializer, CobblemonClientImplementatio
         registerParticleGroups()
         CobblemonClient.initialize(this)
 
+        // port/26.2: ModelLoadingPlugin.Context no longer has addModels - extra models are keyed by an
+        // ExtraModelKey instead. The poke ball, Pokedex and wearable item models this used to force-bake
+        // are item models, which 26.2 loads from each item's client info; only the block-state-less
+        // baking overrides still need registering by hand.
         ModelLoadingPlugin.register { context ->
             registerBakingOverrides(context)
-            context.addModels(*PokeBalls.all().map { pokeBall -> pokeBall.model3d }.toTypedArray())
-            PokedexType.entries.toList().forEach { pokedex ->
-                context.addModels(
-                    pokedex.getItemModelPath(),
-                    pokedex.getItemModelPath("scanning"),
-                    pokedex.getItemModelPath("flat"),
-                    pokedex.getItemModelPath("flat_off"),
-                    pokedex.getItemModelPath("off")
-                )
-            }
-            CobblemonItems.wearables.forEach { wearable -> context.addModels(wearable.getModel3d()) }
         }
 
-        CobblemonFabric.networkManager.registerClientHandlers()
+        CobblemonFabricNetworkManager.registerClientHandlers()
 
         // port/26.2: atlases are stitched and reloaded by the central AtlasManager once registered, so
         // this no longer drives their reload itself - it only reloads Cobblemon's coded assets, which
@@ -134,15 +122,18 @@ class CobblemonFabricClient : ClientModInitializer, CobblemonClientImplementatio
         }
 
         ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(object : IdentifiableResourceReloadListener {
+            // port/26.2: PreparableReloadListener.reload takes a SharedState and no longer receives the
+            // resource manager or profilers directly.
             override fun reload(
-                synchronizer: PreparableReloadListener.PreparationBarrier,
-                manager: ResourceManager,
-                prepareProfiler: ProfilerFiller,
-                applyProfiler: ProfilerFiller,
+                sharedState: PreparableReloadListener.SharedState,
                 prepareExecutor: Executor,
+                barrier: PreparableReloadListener.PreparationBarrier,
                 applyExecutor: Executor
             ): CompletableFuture<Void> {
-                return synchronizer.wait(null).thenRunAsync({ reloadCodedAssets(manager) }, applyExecutor)
+                return barrier.wait(Unit).thenRunAsync(
+                    { reloadCodedAssets(Minecraft.getInstance().resourceManager) },
+                    applyExecutor
+                )
             }
 
             override fun getFabricId() = cobblemonResource("atlases")
