@@ -1,17 +1,11 @@
 {
-    "type": "minecraft:crafting_shapeless",
-    "ingredients": [
-        {
-            "item": "minecraft:ink_sac"
-        },
-        {
-            "item": "minecraft:paper"
-        },
-        {
-            "item": "cobblemon:ghost_gem"
-        }
-    ],
-    "result": {
-        "id": "cobblemon:spell_tag"
-    }
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:ink_sac",
+    "minecraft:paper",
+    "cobblemon:ghost_gem"
+  ],
+  "result": {
+    "id": "cobblemon:spell_tag"
+  }
 }

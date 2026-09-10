@@ -19,6 +19,7 @@ import net.minecraft.core.HolderLookup
 import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.ItemStackTemplate
 import net.minecraft.world.item.crafting.Ingredient
 import net.minecraft.world.item.crafting.Recipe
 import net.minecraft.world.item.crafting.RecipeManager
@@ -29,7 +30,10 @@ class BrewingStandRecipe(
     val groupName: String,
     val input: Ingredient,
     val bottle: Ingredient,
-    val result: ItemStack
+    // port/26.2: a recipe result is an ItemStackTemplate now, not an ItemStack. Recipes are parsed
+    // before item components are bound, and building a stack that early throws "Item x does not
+    // have components yet" - the template carries the component patch and makes the stack on demand.
+    val result: ItemStackTemplate
 ) : Recipe<BrewingStandInput> {
 
     override fun getType() = CobblemonRecipeTypes.BREWING_STAND
@@ -37,9 +41,9 @@ class BrewingStandRecipe(
     @Suppress("UNCHECKED_CAST")
     override fun getSerializer(): RecipeSerializer<out Recipe<BrewingStandInput>> =
         Serializer.INSTANCE as RecipeSerializer<out Recipe<BrewingStandInput>>
-    override fun assemble(input: BrewingStandInput): ItemStack = result.copy()
+    override fun assemble(input: BrewingStandInput): ItemStack = result.create()
     // Non-override convenience accessor (Recipe no longer requires getResultItem)
-    fun resultItem(): ItemStack = result.copy()
+    fun resultItem(): ItemStack = result.create()
     override fun showNotification(): Boolean = true
     override fun placementInfo(): net.minecraft.world.item.crafting.PlacementInfo =
         net.minecraft.world.item.crafting.PlacementInfo.NOT_PLACEABLE
@@ -72,7 +76,7 @@ class BrewingStandRecipe(
                     Codec.STRING.optionalFieldOf("group", "").forGetter { recipe -> recipe.groupName },
                     Ingredient.CODEC.fieldOf("input").forGetter { recipe -> recipe.input },
                     Ingredient.CODEC.fieldOf("bottle").forGetter { recipe -> recipe.bottle },
-                    ItemStack.CODEC.fieldOf("result").forGetter { recipe -> recipe.result }
+                    ItemStackTemplate.CODEC.fieldOf("result").forGetter { recipe -> recipe.result }
                 ).apply(instance, ::BrewingStandRecipe)
             }
 
@@ -83,7 +87,7 @@ class BrewingStandRecipe(
                 val group = buffer.readUtf(32767)
                 val input = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer)
                 val bottle = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer)
-                val result = ItemStack.STREAM_CODEC.decode(buffer)
+                val result = ItemStackTemplate.STREAM_CODEC.decode(buffer)
                 return BrewingStandRecipe(group, input, bottle, result)
             }
 
@@ -91,7 +95,7 @@ class BrewingStandRecipe(
                 buffer.writeUtf(recipe.groupName)
                 Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.input)
                 Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.bottle)
-                ItemStack.STREAM_CODEC.encode(buffer, recipe.result)
+                ItemStackTemplate.STREAM_CODEC.encode(buffer, recipe.result)
             }
 
         // PT138: direct record-constructor — RecipeSerializer(MapCodec, StreamCodec)

@@ -13,12 +13,16 @@ import net.minecraft.core.HolderLookup
 import net.minecraft.tags.TagKey
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.ItemStackTemplate
 import net.minecraft.world.item.crafting.CraftingInput
 import net.minecraft.world.item.crafting.Recipe
 import net.minecraft.world.level.Level
 
 interface CookingPotRecipeBase : Recipe<CraftingInput> {
-    val result: ItemStack
+    // port/26.2: a recipe result is an ItemStackTemplate now, not an ItemStack. Recipes are parsed
+    // before item components are bound, and building a stack that early throws "Item x does not
+    // have components yet" - the template carries the component patch and makes the stack on demand.
+    val result: ItemStackTemplate
     val groupName: String
     val category: CookingPotBookCategory
     val seasoningTag: TagKey<Item>
@@ -32,10 +36,10 @@ interface CookingPotRecipeBase : Recipe<CraftingInput> {
     fun category() = category
 
     // Non-override convenience accessor (Recipe no longer requires getResultItem)
-    fun resultItem(): ItemStack = this.result
+    fun resultItem(): ItemStack = this.result.create()
 
     override fun assemble(input: CraftingInput): ItemStack {
-        return result.copy()
+        return result.create()
     }
 
     override fun showNotification(): Boolean = true

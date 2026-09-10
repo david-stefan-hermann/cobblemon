@@ -1,30 +1,20 @@
 {
-    "type": "minecraft:crafting_shaped",
-    "group": "weather_rock",
-    "pattern": [
-        "DS",
-        "HD"
+  "type": "minecraft:crafting_shaped",
+  "group": "weather_rock",
+  "pattern": [
+    "DS",
+    "HD"
+  ],
+  "key": {
+    "D": "minecraft:dripstone_block",
+    "S": [
+      "cobblemon:soft_sand",
+      "cobblemon:rock_gem",
+      "cobblemon:ground_gem"
     ],
-    "key": {
-        "D": {
-            "item": "minecraft:dripstone_block"
-        },
-        "S": [
-            {
-                "item": "cobblemon:soft_sand"
-            },
-            {
-                "item": "cobblemon:rock_gem"
-            },
-            {
-                "item": "cobblemon:ground_gem"
-            }
-        ],
-        "H": {
-            "item": "cobblemon:hard_stone"
-        }
-    },
-    "result": {
-        "id": "cobblemon:smooth_rock"
-    }
+    "H": "cobblemon:hard_stone"
+  },
+  "result": {
+    "id": "cobblemon:smooth_rock"
+  }
 }

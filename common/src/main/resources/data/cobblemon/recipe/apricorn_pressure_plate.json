@@ -1,15 +1,13 @@
 {
-    "type": "minecraft:crafting_shaped",
-    "group": "wooden_pressure_plate",
-    "pattern": [
-        "##"
-    ],
-    "key": {
-        "#": {
-            "item": "cobblemon:apricorn_planks"
-        }
-    },
-    "result": {
-        "id": "cobblemon:apricorn_pressure_plate"
-    }
+  "type": "minecraft:crafting_shaped",
+  "group": "wooden_pressure_plate",
+  "pattern": [
+    "##"
+  ],
+  "key": {
+    "#": "cobblemon:apricorn_planks"
+  },
+  "result": {
+    "id": "cobblemon:apricorn_pressure_plate"
+  }
 }

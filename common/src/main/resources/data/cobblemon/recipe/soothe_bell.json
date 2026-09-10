@@ -1,22 +1,16 @@
 {
-    "type": "minecraft:crafting_shaped",
-    "pattern": [
-        " W ",
-        "INW",
-        "II "
-    ],
-    "key": {
-        "I": {
-            "tag": "c:ingots/iron"
-        },
-        "W": {
-            "tag": "minecraft:wool"
-        },
-        "N": {
-            "tag": "c:nuggets/iron"
-        }
-    },
-    "result": {
-        "id": "cobblemon:soothe_bell"
-    }
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " W ",
+    "INW",
+    "II "
+  ],
+  "key": {
+    "I": "#c:ingots/iron",
+    "W": "#minecraft:wool",
+    "N": "#c:nuggets/iron"
+  },
+  "result": {
+    "id": "cobblemon:soothe_bell"
+  }
 }

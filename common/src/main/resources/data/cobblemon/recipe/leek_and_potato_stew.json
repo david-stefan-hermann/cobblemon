@@ -1,17 +1,11 @@
 {
-    "type": "minecraft:crafting_shapeless",
-    "ingredients": [
-        {
-            "item": "cobblemon:roasted_leek"
-        },
-        {
-            "item": "minecraft:baked_potato"
-        },
-        {
-            "item": "minecraft:bowl"
-        }
-    ],
-    "result": {
-        "id": "cobblemon:leek_and_potato_stew"
-    }
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "cobblemon:roasted_leek",
+    "minecraft:baked_potato",
+    "minecraft:bowl"
+  ],
+  "result": {
+    "id": "cobblemon:leek_and_potato_stew"
+  }
 }

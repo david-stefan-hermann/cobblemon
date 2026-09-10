@@ -1,22 +1,16 @@
 {
-    "type": "minecraft:crafting_shaped",
-    "pattern": [
-        " W ",
-        "PGP",
-        "WPW"
-    ],
-    "key": {
-        "P": {
-            "item": "minecraft:phantom_membrane"
-        },
-        "W": {
-            "tag": "minecraft:wool"
-        },
-        "G": {
-            "item": "minecraft:ghast_tear"
-        }
-    },
-    "result": {
-        "id": "cobblemon:reaper_cloth"
-    }
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " W ",
+    "PGP",
+    "WPW"
+  ],
+  "key": {
+    "P": "minecraft:phantom_membrane",
+    "W": "#minecraft:wool",
+    "G": "minecraft:ghast_tear"
+  },
+  "result": {
+    "id": "cobblemon:reaper_cloth"
+  }
 }

@@ -8,6 +8,7 @@
 
 package com.cobblemon.mod.common.api.tms
 
+import com.cobblemon.mod.common.util.DeferredItemTagHolderSet
 import com.google.gson.annotations.SerializedName
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
@@ -30,15 +31,14 @@ data class TechnicalMachineRecipeDTO(
         val ingredient = when {
             item != null ->
                 Ingredient.of(
-                    BuiltInRegistries.ITEM.get(item).orElse(null)?.value()!!
+                    BuiltInRegistries.ITEM.get(item).orElse(null)?.value()
+                        ?: error("Unknown item $item in a technical machine recipe")
                 )
 
-            tag != null -> {
-                // PT143: Ingredient.of(TagKey) removed in MC 26.1.x — resolve to HolderSet first.
-                val tagKey = TagKey.create(Registries.ITEM, tag)
-                val holderSet = BuiltInRegistries.ITEM.get(tagKey).orElseThrow { IllegalStateException("Unknown item tag: $tag") }
-                Ingredient.of(holderSet)
-            }
+            // port/26.2: Ingredient.of(TagKey) is gone and the HolderSet overload replaces it. Resolving
+            // the tag here would throw, because technical machines are read before the tag manager has
+            // run - so the set looks the tag up when the ingredient is matched instead.
+            tag != null -> Ingredient.of(DeferredItemTagHolderSet(TagKey.create(Registries.ITEM, tag)))
 
             else ->
                 error("Recipe entry must define either 'item' or 'tag'")

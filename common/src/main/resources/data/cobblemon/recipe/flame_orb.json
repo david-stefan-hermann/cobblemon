@@ -1,30 +1,20 @@
 {
-    "type": "minecraft:crafting_shaped",
-    "pattern": [
-        "PTS",
-        "TET",
-        "STP"
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PTS",
+    "TET",
+    "STP"
+  ],
+  "key": {
+    "S": [
+      "cobblemon:fire_stone",
+      "cobblemon:fire_gem"
     ],
-    "key": {
-        "S": [
-            {
-                "item": "cobblemon:fire_stone"
-            },
-            {
-                "item": "cobblemon:fire_gem"
-            }
-        ],
-        "T": {
-            "item": "minecraft:tinted_glass"
-        },
-        "E": {
-            "item": "minecraft:ender_pearl"
-        },
-        "P": {
-            "item": "minecraft:blaze_powder"
-        }
-    },
-    "result": {
-        "id": "cobblemon:flame_orb"
-    }
+    "T": "minecraft:tinted_glass",
+    "E": "minecraft:ender_pearl",
+    "P": "minecraft:blaze_powder"
+  },
+  "result": {
+    "id": "cobblemon:flame_orb"
+  }
 }

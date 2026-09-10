@@ -1,27 +1,19 @@
 {
-    "type": "minecraft:crafting_shaped",
-    "group": "weather_rock",
-    "pattern": [
-        "DS",
-        "HD"
+  "type": "minecraft:crafting_shaped",
+  "group": "weather_rock",
+  "pattern": [
+    "DS",
+    "HD"
+  ],
+  "key": {
+    "D": "minecraft:dripstone_block",
+    "S": [
+      "cobblemon:water_stone",
+      "cobblemon:water_gem"
     ],
-    "key": {
-        "D": {
-            "item": "minecraft:dripstone_block"
-        },
-        "S": [
-            {
-                "item": "cobblemon:water_stone"
-            },
-            {
-                "item": "cobblemon:water_gem"
-            }
-        ],
-        "H": {
-            "item": "cobblemon:hard_stone"
-        }
-    },
-    "result": {
-        "id": "cobblemon:damp_rock"
-    }
+    "H": "cobblemon:hard_stone"
+  },
+  "result": {
+    "id": "cobblemon:damp_rock"
+  }
 }

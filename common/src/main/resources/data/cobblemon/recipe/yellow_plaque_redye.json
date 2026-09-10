@@ -1,15 +1,11 @@
 {
-    "type": "minecraft:crafting_shapeless",
-    "group": "plaque_redye",
-    "ingredients": [
-        {
-            "tag": "cobblemon:plaques"
-        },
-        {
-            "tag": "c:dyes/yellow"
-        }
-    ],
-    "result": {
-        "id": "cobblemon:yellow_plaque"
-    }
+  "type": "minecraft:crafting_shapeless",
+  "group": "plaque_redye",
+  "ingredients": [
+    "#cobblemon:plaques",
+    "#c:dyes/yellow"
+  ],
+  "result": {
+    "id": "cobblemon:yellow_plaque"
+  }
 }

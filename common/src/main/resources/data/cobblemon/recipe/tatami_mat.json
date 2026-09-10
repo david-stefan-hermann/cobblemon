@@ -1,15 +1,13 @@
 {
-    "type": "minecraft:crafting_shaped",
-    "pattern": [
-        "##"
-    ],
-    "key": {
-        "#": {
-            "item": "cobblemon:tatami_block"
-        }
-    },
-    "result": {
-        "id": "cobblemon:tatami_mat",
-        "count": 3
-    }
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "##"
+  ],
+  "key": {
+    "#": "cobblemon:tatami_block"
+  },
+  "result": {
+    "id": "cobblemon:tatami_mat",
+    "count": 3
+  }
 }

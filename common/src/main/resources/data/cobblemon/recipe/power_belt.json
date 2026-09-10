@@ -1,22 +1,16 @@
 {
-    "type": "minecraft:crafting_shaped",
-    "pattern": [
-        "MCD",
-        "C C",
-        "DCM"
-    ],
-    "key": {
-        "M": {
-            "item": "cobblemon:blue_mint_leaf"
-        },
-        "C": {
-            "tag": "c:concretes"
-        },
-        "D": {
-            "tag": "c:gems/diamond"
-        }
-    },
-    "result": {
-        "id": "cobblemon:power_belt"
-    }
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "MCD",
+    "C C",
+    "DCM"
+  ],
+  "key": {
+    "M": "cobblemon:blue_mint_leaf",
+    "C": "#c:concretes",
+    "D": "#c:gems/diamond"
+  },
+  "result": {
+    "id": "cobblemon:power_belt"
+  }
 }

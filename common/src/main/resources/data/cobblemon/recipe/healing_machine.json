@@ -1,25 +1,17 @@
 {
-    "type": "minecraft:crafting_shaped",
-    "pattern": [
-        "CCC",
-        "IRI",
-        "IDI"
-    ],
-    "key": {
-        "C": {
-            "tag": "c:ingots/copper"
-        },
-        "I": {
-            "tag": "c:ingots/iron"
-        },
-        "D": {
-            "tag": "c:dusts/redstone"
-        },
-        "R": {
-            "item": "cobblemon:max_revive"
-        }
-    },
-    "result": {
-        "id": "cobblemon:healing_machine"
-    }
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CCC",
+    "IRI",
+    "IDI"
+  ],
+  "key": {
+    "C": "#c:ingots/copper",
+    "I": "#c:ingots/iron",
+    "D": "#c:dusts/redstone",
+    "R": "cobblemon:max_revive"
+  },
+  "result": {
+    "id": "cobblemon:healing_machine"
+  }
 }

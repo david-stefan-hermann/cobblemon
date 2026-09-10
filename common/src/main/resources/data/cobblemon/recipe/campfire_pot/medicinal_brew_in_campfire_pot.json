@@ -1,22 +1,16 @@
 {
-    "type": "cobblemon:cooking_pot_shapeless",
-    "category": "medicines",
-    "ingredients": [
-        [
-            {
-            "item": "minecraft:glass_bottle"
-          },
-          {
-            "item": "minecraft:potion"
-          }
-        ],
-        {
-            "item": "cobblemon:medicinal_leek"
-        }
+  "type": "cobblemon:cooking_pot_shapeless",
+  "category": "medicines",
+  "ingredients": [
+    [
+      "minecraft:glass_bottle",
+      "minecraft:potion"
     ],
-    "result": {
-        "id": "cobblemon:medicinal_brew"
-    },
-    "seasoningTag": "cobblemon:empty",
-    "seasoningProcessors": []
+    "cobblemon:medicinal_leek"
+  ],
+  "result": {
+    "id": "cobblemon:medicinal_brew"
+  },
+  "seasoningTag": "cobblemon:empty",
+  "seasoningProcessors": []
 }

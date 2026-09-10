@@ -27,13 +27,14 @@ import net.minecraft.network.codec.StreamCodec
 import net.minecraft.tags.TagKey
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.ItemStackTemplate
 import net.minecraft.world.item.crafting.*
 import net.minecraft.world.level.Level
 
 class CookingPotShapelessRecipe(
     override val groupName: String,
     override val category: CookingPotBookCategory,
-    override val result: ItemStack,
+    override val result: ItemStackTemplate,
     private val ingredients: NonNullList<Ingredient>,
     override val seasoningTag: TagKey<Item>,
     override val seasoningProcessors: List<SeasoningProcessor>
@@ -69,7 +70,7 @@ class CookingPotShapelessRecipe(
                 instance.group(
                     Codec.STRING.optionalFieldOf("group", "").forGetter { it.groupName },
                     CookingPotBookCategory.CODEC.fieldOf("category").orElse(CookingPotBookCategory.MISC).forGetter { it.category },
-                    ItemStack.CODEC.fieldOf("result").forGetter { it.result },
+                    ItemStackTemplate.CODEC.fieldOf("result").forGetter { it.result },
                     // PT138: Ingredient.CODEC_NONEMPTY removed → use Ingredient.CODEC (Ingredient is now non-empty by construction)
                     Ingredient.CODEC.listOf().fieldOf("ingredients").flatXmap({ list ->
                         val ingredients = list.toTypedArray()
@@ -104,7 +105,7 @@ class CookingPotShapelessRecipe(
                 for (i in 1 until size) {
                     ingredients[i] = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer)
                 }
-                val result = ItemStack.STREAM_CODEC.decode(buffer)
+                val result = ItemStackTemplate.STREAM_CODEC.decode(buffer)
                 val seasoningProcessors = buffer.readList {
                     val type = buffer.readString()
                     SeasoningProcessor.processors[type] ?: error("Unknown seasoning processor: $type")
@@ -120,7 +121,7 @@ class CookingPotShapelessRecipe(
                 recipe.ingredients.forEach { ingredient ->
                     Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, ingredient)
                 }
-                ItemStack.STREAM_CODEC.encode(buffer, recipe.result)
+                ItemStackTemplate.STREAM_CODEC.encode(buffer, recipe.result)
                 buffer.writeCollection(recipe.seasoningProcessors) { _, it ->
                     buffer.writeString(it.type)
                 }
