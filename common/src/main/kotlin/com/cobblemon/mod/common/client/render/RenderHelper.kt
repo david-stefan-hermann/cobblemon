@@ -497,13 +497,15 @@ fun SubmitNodeCollector.submitBlockStateModel(
     poseStack: PoseStack,
     renderType: RenderType,
     light: Int,
-    overlay: Int
+    overlay: Int,
+    /** Per-layer tint colours; 26.2 takes packed ARGB ints where the old renderer took loose floats. */
+    tints: IntArray = BlockModelRenderState.EMPTY_TINTS
 ) {
     if (model == null) return
     val parts = mutableListOf<BlockStateModelPart>()
     model.collectParts(RandomSource.create(), parts)
     if (parts.isEmpty()) return
-    submitBlockModel(poseStack, renderType, parts, BlockModelRenderState.EMPTY_TINTS, light, overlay, 0)
+    submitBlockModel(poseStack, renderType, parts, tints, light, overlay, 0)
 }
 
 /** The baked model for a block state, or null before models have been baked. */

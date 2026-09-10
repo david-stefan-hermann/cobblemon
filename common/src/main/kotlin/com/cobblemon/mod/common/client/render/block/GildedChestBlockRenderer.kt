@@ -16,26 +16,53 @@ import com.cobblemon.mod.common.client.render.models.blockbench.repository.Rende
 import com.cobblemon.mod.common.client.render.models.blockbench.repository.VaryingModelRepository
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
-import net.minecraft.client.renderer.MultiBufferSource
+import com.cobblemon.mod.common.client.render.submitPosableModel
+import net.minecraft.client.renderer.SubmitNodeCollector
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer
+import net.minecraft.client.renderer.state.level.CameraRenderState
+import net.minecraft.world.phys.Vec3
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.world.level.block.state.properties.BlockStateProperties
 
-class GildedChestBlockRenderer(context: BlockEntityRendererProvider.Context) : BlockEntityRenderer<GildedChestBlockEntity, net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> {
+/** port/26.2: the live block entity is carried on the state; its posable state drives the animation. */
+class GildedChestRenderState : BlockEntityRenderState() {
+    var entity: GildedChestBlockEntity? = null
+    var partialTicks: Float = 0F
+}
+
+class GildedChestBlockRenderer(context: BlockEntityRendererProvider.Context) : BlockEntityRenderer<GildedChestBlockEntity, GildedChestRenderState> {
     val context = RenderContext().also {
         it.put(RenderContext.RENDER_STATE, RenderContext.RenderState.BLOCK)
         it.put(RenderContext.DO_QUIRKS, true)
     }
-    fun render_DEFER_NO_OVERRIDE(
+    override fun createRenderState(): GildedChestRenderState = GildedChestRenderState()
+
+    override fun extractRenderState(
         entity: GildedChestBlockEntity,
-        tickDelta: Float,
-        matrices: PoseStack,
-        vertexConsumers: MultiBufferSource,
-        light: Int,
-        overlay: Int
+        state: GildedChestRenderState,
+        partialTick: Float,
+        cameraPos: Vec3,
+        crumbling: ModelFeatureRenderer.CrumblingOverlay?
     ) {
+        BlockEntityRenderState.extractBase(entity, state, crumbling)
+        state.entity = entity
+        state.partialTicks = partialTick
+    }
+
+    override fun submit(
+        renderState: GildedChestRenderState,
+        matrices: PoseStack,
+        vertexConsumers: SubmitNodeCollector,
+        camera: CameraRenderState
+    ) {
+        val entity = renderState.entity ?: return
+        val tickDelta = renderState.partialTicks
+        val light = renderState.lightCoords
+        val overlay = OverlayTexture.NO_OVERLAY
         val aspects = emptySet<String>()
         val state = entity.posableState
         state.currentAspects = aspects
@@ -46,7 +73,6 @@ class GildedChestBlockRenderer(context: BlockEntityRendererProvider.Context) : B
         val model = VaryingModelRepository.getPoser(poserId, state) as BlockEntityModel
         model.context = context
         val texture = VaryingModelRepository.getTexture(poserId, state)
-        val vertexConsumer = vertexConsumers.getBuffer(RenderTypes.entityCutout(texture))
         model.bufferProvider = vertexConsumers
         state.currentModel = model
         context.put(RenderContext.ASPECTS, aspects)
@@ -69,22 +95,14 @@ class GildedChestBlockRenderer(context: BlockEntityRendererProvider.Context) : B
             limbSwingAmount = 0F,
             ageInTicks = state.animationSeconds * 20
         )
-        model.render(context, matrices, vertexConsumer, light, overlay, -0x1)
-        model.withLayerContext(vertexConsumers, state, VaryingModelRepository.getLayers(poserId, state)) {
-            model.render(context, matrices, vertexConsumer, light, OverlayTexture.NO_OVERLAY, -0x1)
+        vertexConsumers.submitPosableModel(matrices, RenderTypes.entityCutout(texture)) { stack, consumer ->
+            model.render(context, stack, consumer, light, overlay, -0x1)
+            model.withLayerContext(vertexConsumers, state, VaryingModelRepository.getLayers(poserId, state)) {
+                model.render(context, stack, consumer, light, OverlayTexture.NO_OVERLAY, -0x1)
+            }
         }
         model.setDefault()
         matrices.popPose()
 
     }
-
-    override fun createRenderState(): net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState =
-        net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState()
-
-    override fun submit(
-        state: net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState,
-        poseStack: com.mojang.blaze3d.vertex.PoseStack,
-        collector: net.minecraft.client.renderer.SubmitNodeCollector,
-        camera: net.minecraft.client.renderer.state.level.CameraRenderState
-    ) { /* PT129-DEFER */ }
 }

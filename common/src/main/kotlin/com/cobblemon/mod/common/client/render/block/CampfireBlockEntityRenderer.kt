@@ -18,11 +18,17 @@ import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
 import com.cobblemon.mod.common.client.render.itemRenderer
 // import net.minecraft.client.renderer.ItemBlockRenderTypes — removed in MC 26.1.x
-import net.minecraft.client.renderer.MultiBufferSource
+import com.cobblemon.mod.common.client.render.blockStateModelOf
+import com.cobblemon.mod.common.client.render.cutoutBlockSheet
+import com.cobblemon.mod.common.client.render.submitBlockStateModel
+import net.minecraft.client.renderer.SubmitNodeCollector
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer
+import net.minecraft.client.renderer.state.level.CameraRenderState
+import net.minecraft.world.phys.Vec3
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
-import com.cobblemon.mod.common.client.render.model.BakedModel
 import net.minecraft.core.Direction
 import net.minecraft.util.ARGB
 import net.minecraft.world.item.ItemDisplayContext
@@ -32,7 +38,13 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 
-class CampfireBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<CampfireBlockEntity, net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> {
+/** port/26.2: the live block entity is carried on the state; the pot, seasonings and broth need it. */
+class CampfireRenderState : BlockEntityRenderState() {
+    var entity: CampfireBlockEntity? = null
+    var partialTicks: Float = 0F
+}
+
+class CampfireBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<CampfireBlockEntity, CampfireRenderState> {
 
     companion object {
         const val CIRCLE_RADIUS = 0.4F
@@ -41,14 +53,30 @@ class CampfireBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : Bl
         const val JUMP_SPEED = 0.1F
     }
 
-    fun render_DEFER_NO_OVERRIDE(
-        blockEntity: CampfireBlockEntity,
-        tickDelta: Float,
-        poseStack: PoseStack,
-        multiBufferSource: MultiBufferSource,
-        light: Int,
-        overlay: Int
+    override fun createRenderState(): CampfireRenderState = CampfireRenderState()
+
+    override fun extractRenderState(
+        entity: CampfireBlockEntity,
+        state: CampfireRenderState,
+        partialTick: Float,
+        cameraPos: Vec3,
+        crumbling: ModelFeatureRenderer.CrumblingOverlay?
     ) {
+        BlockEntityRenderState.extractBase(entity, state, crumbling)
+        state.entity = entity
+        state.partialTicks = partialTick
+    }
+
+    override fun submit(
+        state: CampfireRenderState,
+        poseStack: PoseStack,
+        multiBufferSource: SubmitNodeCollector,
+        camera: CameraRenderState
+    ) {
+        val blockEntity = state.entity ?: return
+        val tickDelta = state.partialTicks
+        val light = state.lightCoords
+        val overlay = OverlayTexture.NO_OVERLAY
         val campfirePotItem = blockEntity.getPotItem()?.item as CampfirePotItem?
         if (campfirePotItem == null) return
 
@@ -79,7 +107,7 @@ class CampfireBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : Bl
         blockEntity: CampfireBlockEntity,
         tickDelta: Float,
         poseStack: PoseStack,
-        multiBufferSource: MultiBufferSource,
+        multiBufferSource: SubmitNodeCollector,
         light: Int,
         overlay: Int
     ) {
@@ -90,7 +118,21 @@ class CampfireBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : Bl
         poseStack.pushPose()
         poseStack.translate(0.0, 0.4375, 0.0)
 
-        // Pot rendering deferred: BakedModel/ItemBlockRenderTypes API removed in MC 26.1.x
+        // port/26.2: Minecraft.blockRenderer and its modelRenderer are gone. The pot's block state model
+        // is looked up from the model manager and submitted, with the broth colour passed as a packed
+        // ARGB tint where the old renderer took separate red/green/blue floats.
+        val potState = campfirePotItem.block.defaultBlockState()
+            .setValue(CampfirePotBlock.OPEN, isLidOpen)
+            .setValue(FACING, Direction.fromYRot(yRot.toDouble()))
+            .setValue(CampfirePotBlock.OCCUPIED, (!blockEntity.getSeasonings().isEmpty() || !blockEntity.getIngredients().isEmpty()))
+        multiBufferSource.submitBlockStateModel(
+            blockStateModelOf(potState),
+            poseStack,
+            cutoutBlockSheet(),
+            light,
+            overlay,
+            intArrayOf(blockEntity.brothColor or (0xFF shl 24))
+        )
 
         poseStack.popPose()
     }
@@ -99,7 +141,7 @@ class CampfireBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : Bl
         blockEntity: CampfireBlockEntity,
         tickDelta: Float,
         poseStack: PoseStack,
-        multiBufferSource: MultiBufferSource,
+        multiBufferSource: SubmitNodeCollector,
         light: Int,
         overlay: Int
     ) {
@@ -173,14 +215,4 @@ class CampfireBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : Bl
             .setLight(packedLight)
             .setNormal(0f, 1f, 0f)
     }
-
-    override fun createRenderState(): net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState =
-        net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState()
-
-    override fun submit(
-        state: net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState,
-        poseStack: com.mojang.blaze3d.vertex.PoseStack,
-        collector: net.minecraft.client.renderer.SubmitNodeCollector,
-        camera: net.minecraft.client.renderer.state.level.CameraRenderState
-    ) { /* PT129-DEFER */ }
 }
