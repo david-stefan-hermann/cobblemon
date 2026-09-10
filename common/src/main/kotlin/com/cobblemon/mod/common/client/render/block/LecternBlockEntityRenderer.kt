@@ -18,49 +18,75 @@ import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
 import com.cobblemon.mod.common.client.render.itemRenderer
-import net.minecraft.client.renderer.MultiBufferSource
+import net.minecraft.client.renderer.SubmitNodeCollector
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer
+import net.minecraft.client.renderer.state.level.CameraRenderState
+import net.minecraft.client.renderer.texture.OverlayTexture
+import net.minecraft.world.phys.Vec3
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
-import com.cobblemon.mod.common.client.render.ModelResourceLocation
 import net.minecraft.core.Direction
 import net.minecraft.world.item.*
 import net.minecraft.world.level.block.HorizontalDirectionalBlock
 import net.minecraft.world.level.block.state.BlockState
 import org.spongepowered.asm.mixin.Unique
 
-class LecternBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<LecternBlockEntity, net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> {
+/** port/26.2: the displayed stack and the lectern's facing are captured during extract. */
+class LecternRenderState : BlockEntityRenderState() {
+    var stack: ItemStack = ItemStack.EMPTY
+    var yRot: Float = 0F
+}
 
-    @Unique
-    private val MODEL_PATH = if (Cobblemon.implementation.modAPI == ModAPI.FABRIC) "fabric_resource" else "standalone"
+class LecternBlockEntityRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<LecternBlockEntity, LecternRenderState> {
 
-    fun render_DEFER_NO_OVERRIDE(blockEntity: LecternBlockEntity, tickDelta: Float, poseStack: PoseStack, multiBufferSource: MultiBufferSource, light: Int, overlay: Int ) {
-        if (blockEntity !is LecternBlockEntity) return
-        if (!blockEntity.isEmpty()) {
-            val blockState = if (blockEntity.level != null) blockEntity.blockState
+    // TODO port/26.2: upstream draws a Pokedex on the lectern with a flat model variant ("flat" while a
+    // viewer is present, "flat_off" otherwise) instead of the normal item model. That went through
+    // ItemRenderer.itemModelShaper, which 26.2 removed; the replacement is the extra-model route that
+    // BakingOverride also needs and which is not ported yet. Until then a Pokedex renders with its normal
+    // model here - visually wrong, but present rather than missing.
+
+    override fun createRenderState(): LecternRenderState = LecternRenderState()
+
+    override fun extractRenderState(
+        blockEntity: LecternBlockEntity,
+        state: LecternRenderState,
+        partialTick: Float,
+        cameraPos: Vec3,
+        crumbling: ModelFeatureRenderer.CrumblingOverlay?
+    ) {
+        BlockEntityRenderState.extractBase(blockEntity, state, crumbling)
+        state.stack = if (blockEntity.isEmpty()) ItemStack.EMPTY else blockEntity.getItemStack()
+        val blockState = if (blockEntity.level != null) blockEntity.blockState
             else (CobblemonBlocks.CAMPFIRE.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.SOUTH) as BlockState)
-            val yRot = blockState.getValue(HorizontalDirectionalBlock.FACING).toYRot()
-
-            poseStack.pushPose()
-            poseStack.translate(0.5, 1.17, 0.5)
-            poseStack.mulPose(Axis.YP.rotationDegrees(-yRot))
-            poseStack.mulPose(Axis.XP.rotationDegrees(22.5F))
-            poseStack.translate(0.0, 0.0, 0.13)
-
-            // PT144: ItemRenderer.itemModelShaper + 9-arg render() removed in MC 26.1.x submit pipeline.
-            // Defer Pokedex-specific model lookup; render via renderStatic for all paths until submit migration.
-            Minecraft.getInstance().itemRenderer.renderStatic(blockEntity.getItemStack(), ItemDisplayContext.GROUND, light, overlay, poseStack, multiBufferSource, blockEntity.level, 0)
-
-            poseStack.popPose()
-        }
+        state.yRot = blockState.getValue(HorizontalDirectionalBlock.FACING).toYRot()
     }
 
-    override fun createRenderState(): net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState =
-        net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState()
-
     override fun submit(
-        state: net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState,
-        poseStack: com.mojang.blaze3d.vertex.PoseStack,
-        collector: net.minecraft.client.renderer.SubmitNodeCollector,
-        camera: net.minecraft.client.renderer.state.level.CameraRenderState
-    ) { /* PT129-DEFER */ }
+        state: LecternRenderState,
+        poseStack: PoseStack,
+        collector: SubmitNodeCollector,
+        camera: CameraRenderState
+    ) {
+        if (state.stack.isEmpty) return
+
+        poseStack.pushPose()
+        poseStack.translate(0.5, 1.17, 0.5)
+        poseStack.mulPose(Axis.YP.rotationDegrees(-state.yRot))
+        poseStack.mulPose(Axis.XP.rotationDegrees(22.5F))
+        poseStack.translate(0.0, 0.0, 0.13)
+
+        Minecraft.getInstance().itemRenderer.renderStatic(
+            state.stack,
+            ItemDisplayContext.GROUND,
+            state.lightCoords,
+            OverlayTexture.NO_OVERLAY,
+            poseStack,
+            collector,
+            Minecraft.getInstance().level,
+            0
+        )
+
+        poseStack.popPose()
+    }
 }
