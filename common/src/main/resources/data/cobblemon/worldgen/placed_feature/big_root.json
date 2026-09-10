@@ -26,7 +26,11 @@
           {
             "type": "minecraft:matching_blocks",
             "blocks": "#cobblemon:roots_spreadable",
-            "offset": [0, 1, 0]
+            "offset": [
+              0,
+              1,
+              0
+            ]
           },
           {
             "type": "minecraft:matching_blocks",
@@ -35,14 +39,49 @@
           {
             "type": "minecraft:matching_blocks",
             "blocks": "minecraft:air",
-            "offset": [0, -1, 0]
+            "offset": [
+              0,
+              -1,
+              0
+            ]
           },
           {
             "type": "minecraft:matching_blocks",
             "blocks": "minecraft:air",
-            "offset": [0, -2, 0]
+            "offset": [
+              0,
+              -2,
+              0
+            ]
           }
         ]
+      }
+    },
+    {
+      "type": "minecraft:count",
+      "count": 3
+    },
+    {
+      "type": "minecraft:random_offset",
+      "xz_spread": {
+        "type": "minecraft:uniform",
+        "min_inclusive": -1,
+        "max_inclusive": 1
+      },
+      "y_spread": {
+        "type": "minecraft:uniform",
+        "min_inclusive": -1,
+        "max_inclusive": 1
+      }
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:would_survive",
+        "state": {
+          "Name": "cobblemon:big_root",
+          "Properties": {}
+        }
       }
     }
   ]

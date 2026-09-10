@@ -23,7 +23,11 @@
         "predicates": [
           {
             "type": "minecraft:matching_blocks",
-            "offset": [0, 1, 0],
+            "offset": [
+              0,
+              1,
+              0
+            ],
             "blocks": "minecraft:air"
           },
           {
@@ -34,6 +38,58 @@
                 "is_wild": "true"
               }
             }
+          }
+        ]
+      }
+    },
+    {
+      "type": "minecraft:count",
+      "count": 5
+    },
+    {
+      "type": "minecraft:random_offset",
+      "xz_spread": {
+        "type": "minecraft:uniform",
+        "min_inclusive": -4,
+        "max_inclusive": 4
+      },
+      "y_spread": {
+        "type": "minecraft:uniform",
+        "min_inclusive": -1,
+        "max_inclusive": 1
+      }
+    },
+    {
+      "type": "minecraft:block_predicate_filter",
+      "predicate": {
+        "type": "minecraft:any_of",
+        "predicates": [
+          {
+            "type": "minecraft:would_survive",
+            "state": {
+              "Name": "cobblemon:revival_herb",
+              "Properties": {
+                "is_wild": "true"
+              }
+            }
+          },
+          {
+            "type": "minecraft:all_of",
+            "predicates": [
+              {
+                "type": "minecraft:matching_blocks",
+                "blocks": "minecraft:moss_carpet"
+              },
+              {
+                "type": "minecraft:would_survive",
+                "state": {
+                  "Name": "cobblemon:revival_herb",
+                  "Properties": {
+                    "is_wild": "true"
+                  }
+                }
+              }
+            ]
           }
         ]
       }

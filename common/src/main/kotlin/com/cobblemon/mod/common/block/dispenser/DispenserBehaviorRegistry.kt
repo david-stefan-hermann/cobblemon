@@ -62,15 +62,16 @@ object DispenserBehaviorRegistry {
         }
     }
 
+    /**
+     * port/26.2: these used to name the water bottle by building one and reading its item back, which
+     * an ItemStack can no longer do this early - item components are not bound yet and the constructor
+     * throws. Dispenser behaviours are keyed by item and every potion shares Items.POTION, so naming it
+     * directly registers exactly the same behaviour.
+     */
     fun registerDispenserBehaviors() {
         register(
             { SaccharineLogSlatheredBlock.createBehavior() },
-            items = listOf(
-                PotionContents.createItemStack(
-                    Items.POTION,
-                    Potions.WATER
-                ).item
-            )
+            items = listOf(Items.POTION)
         )
         register(
             { SaccharineLogBlock.createBehavior() },
@@ -80,10 +81,7 @@ object DispenserBehaviorRegistry {
             { item -> SaccharineLeafBlock.createBehavior(item) },
             items = listOf(
                 Items.HONEY_BOTTLE,
-                PotionContents.createItemStack(
-                    Items.POTION,
-                    Potions.WATER
-                ).item
+                Items.POTION
             )
         )
     }

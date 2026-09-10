@@ -418,7 +418,7 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     @JvmField
     val BIG_MALASADA = regionalFoodItem("big_malasada", 64, 7, 0.3f, false)
     @JvmField
-    val SMOKED_TAIL_CURRY = regionalFoodItem("smoked_tail_curry", 64, 10, 0.6f, false, ItemStack(Items.BOWL, 1))
+    val SMOKED_TAIL_CURRY = regionalFoodItem("smoked_tail_curry", 64, 10, 0.6f, false, Items.BOWL)
     @JvmField
     val JUBILIFE_MUFFIN = regionalFoodItem("jubilife_muffin", 64, 7, 0.3f, false)
     @JvmField
@@ -443,15 +443,17 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
         .food(FoodProperties.Builder()
             .nutrition(6)
             .saturationModifier(0.2F)
-            // PT132: FoodProperties.Builder.usingConvertsTo removed in MC 26.1 (Consumable component handles conversion)
-            .build())))
+            .build())
+        // port/26.2: usingConvertsTo moved from FoodProperties.Builder onto Item.Properties.
+        .usingConvertsTo(Items.STICK)))
     @JvmField
     val CANDIED_BERRY = create("candied_berry",  CobblemonItem(itemProperties("candied_berry").stacksTo(64)
         .food(FoodProperties.Builder()
             .nutrition(5)
             .saturationModifier(0.22F)
-            // PT132: FoodProperties.Builder.usingConvertsTo removed in MC 26.1 (Consumable component handles conversion)
-            .build())))
+            .build())
+        // port/26.2: usingConvertsTo moved from FoodProperties.Builder onto Item.Properties.
+        .usingConvertsTo(Items.STICK)))
 
     //@JvmField
     //val SCATTER_BANG = this.create("scatter_bang", ScatterBangItem(Item.Settings()))
@@ -713,8 +715,9 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
             .saturationModifier(0.6F)
             // PT137: FoodProperties.Builder.effect() removed — moved to Consumable component
             .alwaysEdible()
-            // PT132: FoodProperties.Builder.usingConvertsTo removed in MC 26.1 (Consumable component handles conversion)
-            .build())) {
+            .build())
+        // port/26.2: usingConvertsTo moved from FoodProperties.Builder onto Item.Properties.
+        .usingConvertsTo(Items.BOWL)) {
         override fun finishUsingItem(stack: ItemStack, world: Level, user: LivingEntity): ItemStack {
             user.removeAllEffects()
             return super.finishUsingItem(stack, world, user)
@@ -752,7 +755,7 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     val HEAL_POWDER = create("heal_powder", HealPowderItem(properties = itemProperties("heal_powder")))
     @JvmField
     // PT132: usingConvertsTo removed in MC 26.1 — Consumable component handles bowl return
-    val LEEK_AND_POTATO_STEW = create("leek_and_potato_stew", CobblemonItem(itemProperties("leek_and_potato_stew").food(FoodProperties.Builder().nutrition(6).saturationModifier(0.6f).build()).stacksTo(1)))
+    val LEEK_AND_POTATO_STEW = create("leek_and_potato_stew", CobblemonItem(itemProperties("leek_and_potato_stew").food(FoodProperties.Builder().nutrition(6).saturationModifier(0.6f).build()).usingConvertsTo(Items.BOWL).stacksTo(1)))
     @JvmField
     val REVIVE = create("revive", ReviveItem(max = false, properties = itemProperties("revive")))
     @JvmField
@@ -1647,7 +1650,7 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
         nutrition: Int,
         saturationModifier: Float,
         alwaysEdible: Boolean = false,
-        convertsToOnUse: ItemStack? = null
+        convertsToOnUse: Item? = null
     ): RegionalFoodItem {
         val foodPropertiesBuilder = FoodProperties.Builder()
             .nutrition(nutrition)
@@ -1657,12 +1660,16 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
             foodPropertiesBuilder.alwaysEdible()
         }
 
-        // PT132: usingConvertsTo removed in MC 26.1 — Consumable component handles conversion
-        // if (convertsToOnUse != null && !convertsToOnUse.isEmpty) { foodPropertiesBuilder.usingConvertsTo(convertsToOnUse.item) }
-
         val properties = itemProperties(name)
             .stacksTo(stacksTo)
             .food(foodPropertiesBuilder.build())
+
+        // port/26.2: usingConvertsTo moved onto Item.Properties and takes the item rather than a stack.
+        // That matters beyond the rename: an ItemStack cannot be built while the class is initialising,
+        // because item components are bound later - doing so threw "Components not bound yet".
+        if (convertsToOnUse != null) {
+            properties.usingConvertsTo(convertsToOnUse)
+        }
 
         return create(name, RegionalFoodItem(properties))
     }
