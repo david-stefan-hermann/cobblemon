@@ -60,14 +60,14 @@ object BerryModelRepository : JsonDataRegistry<TexturedModel> {
             processedModels[it.fruitModelIdentifier] = fruitModel?.createWithUvOverride(
                 fruitTex.x,
                 fruitTex.y,
-                CobblemonAtlases.BERRY_SPRITE_ATLAS.textureAtlas.width,
-                CobblemonAtlases.BERRY_SPRITE_ATLAS.textureAtlas.height
+                CobblemonAtlases.BERRY_SPRITE_ATLAS.width,
+                CobblemonAtlases.BERRY_SPRITE_ATLAS.height
             )?.bakeRoot()!!
             processedModels[it.flowerModelIdentifier] = flowerModel?.createWithUvOverride(
                 flowerTex.x,
                 flowerTex.y,
-                CobblemonAtlases.BERRY_SPRITE_ATLAS.textureAtlas.width,
-                CobblemonAtlases.BERRY_SPRITE_ATLAS.textureAtlas.height
+                CobblemonAtlases.BERRY_SPRITE_ATLAS.width,
+                CobblemonAtlases.BERRY_SPRITE_ATLAS.height
             )?.bakeRoot()!!
         }
     }

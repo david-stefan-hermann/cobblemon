@@ -45,6 +45,7 @@ import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin
 import net.fabricmc.fabric.api.client.model.loading.v1.SimpleUnbakedExtraModel
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry
+import net.fabricmc.fabric.api.client.rendering.v1.AtlasRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.BlockColorRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry
@@ -66,6 +67,7 @@ import net.minecraft.client.renderer.block.dispatch.BlockStateModel
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState
 import net.minecraft.client.renderer.entity.EntityRendererProvider
+import net.minecraft.client.resources.model.sprite.AtlasManager
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.core.particles.ParticleType
@@ -118,6 +120,15 @@ class CobblemonFabricClient : ClientModInitializer, CobblemonClientImplementatio
 
         CobblemonFabric.networkManager.registerClientHandlers()
 
+        // port/26.2: atlases are stitched and reloaded by the central AtlasManager once registered, so
+        // this no longer drives their reload itself - it only reloads Cobblemon's coded assets, which
+        // read from the finished atlases.
+        CobblemonAtlases.atlases.forEach { atlas ->
+            AtlasRegistry.register(
+                AtlasManager.AtlasConfig(atlas.textureId, atlas.definitionLocation, true)
+            )
+        }
+
         ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(object : IdentifiableResourceReloadListener {
             override fun reload(
                 synchronizer: PreparableReloadListener.PreparationBarrier,
@@ -127,13 +138,7 @@ class CobblemonFabricClient : ClientModInitializer, CobblemonClientImplementatio
                 prepareExecutor: Executor,
                 applyExecutor: Executor
             ): CompletableFuture<Void> {
-                val atlasFutures = mutableListOf<CompletableFuture<Void>>()
-                CobblemonAtlases.atlases.forEach {
-                    atlasFutures.add(it.reload(synchronizer, manager, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor))
-                }
-                return CompletableFuture.allOf(*atlasFutures.toTypedArray()).thenRun {
-                    reloadCodedAssets(manager)
-                }
+                return synchronizer.wait(null).thenRunAsync({ reloadCodedAssets(manager) }, applyExecutor)
             }
 
             override fun getFabricId() = cobblemonResource("atlases")
