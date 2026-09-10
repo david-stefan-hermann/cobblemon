@@ -147,7 +147,7 @@ class EvolutionSelectScreen(
             matrices.scale(2.5F, 2.5F)
             drawProfilePokemon(
                 species = this.evolution.species.resourceIdentifier,
-                matrixStack = matrices,
+                context = context,
                 rotation = Quaternionf().fromEulerXYZDegrees(Vector3f(13F, 35F, 0F)),
                 state = state,
                 scale = 6F,

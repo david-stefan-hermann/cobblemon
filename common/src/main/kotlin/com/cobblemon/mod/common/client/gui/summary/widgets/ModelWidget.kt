@@ -112,7 +112,7 @@ class ModelWidget(
 
         drawProfilePokemon(
             renderablePokemon = pokemon,
-            matrixStack = matrices,
+            context = context,
             rotation = rotation,
             state = state,
             partialTicks = partialTicks,

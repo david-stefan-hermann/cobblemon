@@ -17,6 +17,7 @@
     "SoundManagerMixin",
     "VillagerProfessionLayerMixin",
     "accessor.EntryListWidgetAccessor",
+    "accessor.GuiGraphicsExtractorAccessor",
     "accessor.KeyBindingAccessor",
     "accessor.RecipeBookComponentAccessor",
     "client.AbstractClientPlayerMixin",

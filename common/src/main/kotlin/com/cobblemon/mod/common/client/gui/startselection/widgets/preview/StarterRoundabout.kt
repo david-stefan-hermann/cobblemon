@@ -68,7 +68,7 @@ class StarterRoundabout(
         )
         drawProfilePokemon(
             renderablePokemon = pokemon,
-            matrixStack = matrices,
+            context = context,
             rotation = Quaternionf().fromEulerXYZDegrees(rotationVector),
             state = state,
             scale = 18F,

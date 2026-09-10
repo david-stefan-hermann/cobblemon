@@ -108,7 +108,7 @@ class PartySlotButton(
 
         drawProfilePokemon(
             renderablePokemon = renderablePokemon,
-            matrixStack = context.pose(),
+            context = context,
             rotation = Quaternionf().fromEulerXYZDegrees(Vector3f(13F, 35F, 0F)),
             state = state,
             scale = 10F,

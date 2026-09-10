@@ -255,7 +255,7 @@ class BattleSwitchPokemonSelection(
                 matrixStack.scale(2.5F, 2.5F)
                 drawProfilePokemon(
                     species = pokemon.species.resourceIdentifier,
-                    matrixStack = matrixStack,
+                    context = context,
                     rotation = Quaternionf().fromEulerXYZDegrees(Vector3f(13F, 35F, 0F)),
                     state = state,
                     doQuirks = false,

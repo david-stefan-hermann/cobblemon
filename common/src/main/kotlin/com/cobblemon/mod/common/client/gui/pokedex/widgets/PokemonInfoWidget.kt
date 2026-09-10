@@ -388,7 +388,7 @@ class PokemonInfoWidget(val pX: Int, val pY: Int, val updateForm: (PokedexForm) 
                 drawProfilePokemon(
                     renderablePokemon = renderablePokemon!!,
                     poseType = poseList[selectedPoseIndex],
-                    matrixStack = matrices,
+                    context = context,
                     partialTicks = delta,
                     rotation = Quaternionf().fromEulerXYZDegrees(rotationVector),
                     state = state,

@@ -167,7 +167,7 @@ class PartySlotWidget(
 
             drawProfilePokemon(
                 species = slotPokemon.species.resourceIdentifier,
-                matrixStack = matrices,
+                context = context,
                 rotation = Quaternionf().fromEulerXYZDegrees(Vector3f(13F, 35F, 0F)),
                 state = state,
                 scale = 4.5F,

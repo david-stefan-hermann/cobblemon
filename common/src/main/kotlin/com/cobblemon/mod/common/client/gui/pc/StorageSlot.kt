@@ -87,7 +87,7 @@ open class StorageSlot(
 
         drawProfilePokemon(
             renderablePokemon = pokemon.asRenderablePokemon(),
-            matrixStack = matrices,
+            context = context,
             rotation = Quaternionf().fromEulerXYZDegrees(Vector3f(13F, 35F, 0F)),
             state = state,
             partialTicks = if (shouldAnimate) partialTicks else 0F,

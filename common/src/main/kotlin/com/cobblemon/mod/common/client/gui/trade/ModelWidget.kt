@@ -38,7 +38,7 @@ class ModelWidget(
 
         drawProfilePokemon(
             renderablePokemon = pokemon,
-            matrixStack = matrices,
+            context = context,
             rotation = Quaternionf().fromEulerXYZDegrees(rotVec),
             state = state,
             partialTicks = delta

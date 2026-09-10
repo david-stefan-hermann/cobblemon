@@ -239,7 +239,7 @@ class PasturePokemonScrollList(
             state.currentAspects = pokemon.aspects
             drawProfilePokemon(
                 species = pokemon.species,
-                matrixStack = matrixStack,
+                context = context,
                 rotation = Quaternionf().fromEulerXYZDegrees(Vector3f(13F, 35F, 0F)),
                 state = state,
                 partialTicks = partialTicks,

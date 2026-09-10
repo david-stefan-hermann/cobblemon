@@ -182,7 +182,7 @@ class CategoryList(
                 state.currentAspects = category.pokemon[index].aspects
                 drawProfilePokemon(
                     species = category.pokemon[index].species.resourceIdentifier,
-                    matrixStack = matrices,
+                    context = guiGraphics,
                     rotation = Quaternionf().fromEulerXYZDegrees(Vector3f(13F, 35F, 0F)),
                     state = state,
                     scale = 4.5F,

@@ -22,7 +22,11 @@ import com.cobblemon.mod.common.util.math.toEulerXYZDegrees
 import com.cobblemon.mod.common.util.toHex
 import com.mojang.blaze3d.platform.Lighting
 import com.mojang.blaze3d.systems.RenderSystem
+import com.cobblemon.mod.common.client.render.gui.submitPosableModelToGui
+import com.cobblemon.mod.common.client.render.submitPosableModel
 import com.mojang.blaze3d.vertex.PoseStack
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.renderer.SubmitNodeCollector
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.texture.OverlayTexture
@@ -35,6 +39,7 @@ import kotlin.math.atan
 fun drawProfilePokemon(
     renderablePokemon: RenderablePokemon,
     matrixStack: PoseStack,
+    collector: SubmitNodeCollector,
     rotation: Quaternionf,
     poseType: PoseType = PoseType.PROFILE,
     state: PosableState,
@@ -52,6 +57,7 @@ fun drawProfilePokemon(
 ) = drawProfilePokemon(
     species = renderablePokemon.species.resourceIdentifier,
     matrixStack = matrixStack,
+    collector = collector,
     rotation = rotation,
     poseType = poseType,
     state = state.also { it.currentAspects = renderablePokemon.aspects },
@@ -71,6 +77,7 @@ fun drawProfilePokemon(
 fun drawProfilePokemon(
     species: Identifier,
     matrixStack: PoseStack,
+    collector: SubmitNodeCollector,
     rotation: Quaternionf,
     poseType: PoseType = PoseType.PROFILE,
     state: PosableState,
@@ -138,33 +145,53 @@ fun drawProfilePokemon(
         // entityRenderDispatcher.overrideCameraOrientation(rotation)
         Unit
 
-        val bufferSource = Minecraft.getInstance().renderBuffers().bufferSource()
-        val buffer = bufferSource.getBuffer(renderType)
-        val light1 = Vector3f(-1F, 1F, 1.0F)
-        val light2 = Vector3f(1.3F, -1F, 1.0F)
-        // PT137: setShaderLights now takes GpuBufferSlice — deferred
-        // RenderSystem.setShaderLights(light1, light2)
+        // port/26.2: Minecraft.renderBuffers() is gone - the model is submitted to the collector the
+        // picture-in-picture renderer supplies, and drawn during the render pass.
         val packedLight = ((blockLight) or ((0) shl 16))
-
         val colour = toHex(r, g, b, a)
-        model.withLayerContext(bufferSource, state, VaryingModelRepository.getLayers(species, state)) {
-            model.render(context, matrixStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, colour)
-            bufferSource.endBatch()
+        collector.submitPosableModel(matrixStack, renderType) { stack, consumer ->
+            model.withLayerContext(collector, state, VaryingModelRepository.getLayers(species, state)) {
+                model.render(context, stack, consumer, packedLight, OverlayTexture.NO_OVERLAY, colour)
+            }
         }
         model.setDefault()
-        Unit
-        Unit
     } else {
         renderSprite(matrixStack, sprite)
     }
 }
 
-// PT128: Matrix3x2fStack overloads bridge MC 26.1 GuiGraphicsExtractor.pose() return type
-// to legacy PoseStack-based drawProfilePokemon callers. Creates an internal PoseStack so
-// model.render's 3D ops (mulPose, scale(x,y,z)) still work. 2D translate is copied across.
+/*
+ * port/26.2: screens draw in 2D and cannot render a model inline any more, so these overloads take the
+ * GuiGraphicsExtractor and hand the draw to the picture-in-picture pipeline instead of a pose stack.
+ *
+ * The screen rectangle is derived from where the caller has translated the GUI stack to - callers
+ * translate to the model's anchor and then call in - sized from the requested scale. That sizing is the
+ * one part of this that is calibrated by eye rather than derived, so it is the first thing to adjust if
+ * models sit slightly wrong in a screen.
+ */
+private fun GuiGraphicsExtractor.submitModelAt(
+    stack: org.joml.Matrix3x2fStack,
+    scale: Float,
+    draw: (PoseStack, SubmitNodeCollector) -> Unit
+) {
+    val anchorX = stack.m20().toInt()
+    val anchorY = stack.m21().toInt()
+    val half = (scale * MODEL_VIEWPORT_SCALE).toInt().coerceAtLeast(1)
+    submitPosableModelToGui(
+        x0 = anchorX - half,
+        y0 = anchorY - half,
+        x1 = anchorX + half,
+        y1 = anchorY + half,
+        scale = scale,
+        draw = draw
+    )
+}
+
+/** How far the picture-in-picture viewport extends from the anchor, per unit of model scale. */
+private const val MODEL_VIEWPORT_SCALE = 1.5F
 fun drawProfilePokemon(
     renderablePokemon: RenderablePokemon,
-    matrixStack: org.joml.Matrix3x2fStack,
+    context: GuiGraphicsExtractor,
     rotation: Quaternionf,
     poseType: PoseType = PoseType.PROFILE,
     state: PosableState,
@@ -180,18 +207,20 @@ fun drawProfilePokemon(
     headPitch: Float = 0f,
     blockLight: Int = 13
 ) {
-    val poseStack = PoseStack()
-    drawProfilePokemon(
-        renderablePokemon = renderablePokemon, matrixStack = poseStack, rotation = rotation,
-        poseType = poseType, state = state, partialTicks = partialTicks, scale = scale,
-        applyProfileTransform = applyProfileTransform, applyBaseScale = applyBaseScale,
-        r = r, g = g, b = b, a = a, headYaw = headYaw, headPitch = headPitch, blockLight = blockLight
-    )
+    context.submitModelAt(context.pose(), scale) { poseStack, collector ->
+        drawProfilePokemon(
+            renderablePokemon = renderablePokemon, matrixStack = poseStack, collector = collector,
+            rotation = rotation,
+            poseType = poseType, state = state, partialTicks = partialTicks, scale = scale,
+            applyProfileTransform = applyProfileTransform, applyBaseScale = applyBaseScale,
+            r = r, g = g, b = b, a = a, headYaw = headYaw, headPitch = headPitch, blockLight = blockLight
+        )
+    }
 }
 
 fun drawProfilePokemon(
     species: Identifier,
-    matrixStack: org.joml.Matrix3x2fStack,
+    context: GuiGraphicsExtractor,
     rotation: Quaternionf,
     poseType: PoseType = PoseType.PROFILE,
     state: PosableState,
@@ -208,14 +237,15 @@ fun drawProfilePokemon(
     headPitch: Float = 0f,
     blockLight: Int = 13
 ) {
-    val poseStack = PoseStack()
-    drawProfilePokemon(
-        species = species, matrixStack = poseStack, rotation = rotation,
-        poseType = poseType, state = state, partialTicks = partialTicks, scale = scale,
-        applyProfileTransform = applyProfileTransform, applyBaseScale = applyBaseScale,
-        doQuirks = doQuirks, r = r, g = g, b = b, a = a,
-        headYaw = headYaw, headPitch = headPitch, blockLight = blockLight
-    )
+    context.submitModelAt(context.pose(), scale) { poseStack, collector ->
+        drawProfilePokemon(
+            species = species, matrixStack = poseStack, collector = collector, rotation = rotation,
+            poseType = poseType, state = state, partialTicks = partialTicks, scale = scale,
+            applyProfileTransform = applyProfileTransform, applyBaseScale = applyBaseScale,
+            doQuirks = doQuirks, r = r, g = g, b = b, a = a,
+            headYaw = headYaw, headPitch = headPitch, blockLight = blockLight
+        )
+    }
 }
 
 const val HEAD_YAW_FACTOR = 40f

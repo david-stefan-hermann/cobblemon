@@ -71,7 +71,7 @@ open class PartySlot(
             matrices.scale(2.5F, 2.5F)
             drawProfilePokemon(
                 renderablePokemon = pokemon.asRenderablePokemon(),
-                matrixStack = matrices,
+                context = context,
                 rotation = Quaternionf().fromEulerXYZDegrees(Vector3f(13F, 35F, 0F)),
                 state = state,
                 scale = 4.5F,

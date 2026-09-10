@@ -84,7 +84,7 @@ class SizeWidget(val pX: Int, val pY: Int) : SoundlessWidget(
         matrices.translate((pX.toDouble() + 50).toFloat(), (pY.toDouble() + (POKEMON_DESCRIPTION_HEIGHT / 2) + 18.5).toFloat())
         drawProfilePokemon(
             renderablePokemon = renderablePokemon!!,
-            matrixStack =  matrices,
+            context = context,
             partialTicks = delta,
             rotation = Quaternionf().fromEulerXYZDegrees(Vector3f(0F, 0F, 0F)),
             state = FloatingState(),
