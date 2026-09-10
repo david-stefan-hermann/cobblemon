@@ -12,6 +12,8 @@ import com.cobblemon.mod.common.Cobblemon
 import com.cobblemon.mod.common.CobblemonClientImplementation
 import java.util.function.Supplier
 import net.fabricmc.api.ClientModInitializer
+import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry
+import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry
 import net.minecraft.client.color.block.BlockTintSource
 import net.minecraft.client.color.item.ItemTintSource
 import net.minecraft.client.model.geom.ModelLayerLocation
@@ -61,15 +63,23 @@ class CobblemonFabricClient : ClientModInitializer, CobblemonClientImplementatio
 
     override fun registerBlockColors(provider: BlockTintSource, vararg blocks: Block) {}
 
-    override fun <T : BlockEntity> registerBlockEntityRenderer(
+    // port/26.2: fabric-api ships these registries again (fabric-rendering-v1), so these are wired up
+    // rather than left as no-ops - without them the mod registers no renderers at all.
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : BlockEntity, S : BlockEntityRenderState> registerBlockEntityRenderer(
         type: BlockEntityType<out T>,
-        factory: BlockEntityRendererProvider<T, BlockEntityRenderState>
+        factory: BlockEntityRendererProvider<T, S>
     ) {
+        BlockEntityRendererRegistry.register(
+            type as BlockEntityType<T>,
+            factory
+        )
     }
 
     override fun <T : Entity> registerEntityRenderer(
         type: EntityType<out T>,
         factory: EntityRendererProvider<T>
     ) {
+        EntityRendererRegistry.register(type, factory)
     }
 }

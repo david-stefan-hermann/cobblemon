@@ -40,8 +40,12 @@ interface CobblemonClientImplementation {
 
     fun registerBlockColors(provider: BlockTintSource, vararg blocks: Block)
 
-    // PT143/144: BlockEntityRendererProvider added S : BlockEntityRenderState type arg in MC 26.1.x — use BlockEntityRenderState.
-    fun <T : BlockEntity> registerBlockEntityRenderer(type: BlockEntityType<out T>, factory: BlockEntityRendererProvider<T, net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState>)
+    // port/26.2: BlockEntityRendererProvider gained an S : BlockEntityRenderState type argument. This is
+    // generic over that state rather than pinned to the base class, so renderers can carry their own.
+    fun <T : BlockEntity, S : net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> registerBlockEntityRenderer(
+        type: BlockEntityType<out T>,
+        factory: BlockEntityRendererProvider<T, S>
+    )
 
     fun <T : Entity> registerEntityRenderer(type: EntityType<out T>, factory: EntityRendererProvider<T>)
 }

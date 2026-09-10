@@ -19,7 +19,12 @@ import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
 import com.cobblemon.mod.common.client.render.itemRenderer
-import net.minecraft.client.renderer.MultiBufferSource
+import net.minecraft.client.renderer.SubmitNodeCollector
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer
+import net.minecraft.client.renderer.state.level.CameraRenderState
+import net.minecraft.client.renderer.texture.OverlayTexture
+import net.minecraft.world.phys.Vec3
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
 import net.minecraft.core.Direction
@@ -28,7 +33,17 @@ import net.minecraft.world.item.*
 import net.minecraft.world.item.component.CustomModelData
 import net.minecraft.world.level.Level
 
-class DisplayCaseRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<DisplayCaseBlockEntity, net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState> {
+/**
+ * port/26.2: block entity rendering is now two-phase. What the renderer needs is copied out of the block
+ * entity during extract, and submit works purely from that state - it never sees the block entity, and
+ * the base state's blockState is private, so the item direction is carried here explicitly.
+ */
+class DisplayCaseRenderState : BlockEntityRenderState() {
+    var stack: ItemStack = ItemStack.EMPTY
+    var itemDirection: Direction = Direction.NORTH
+}
+
+class DisplayCaseRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntityRenderer<DisplayCaseBlockEntity, DisplayCaseRenderState> {
     val context = RenderContext().also {
         it.put(RenderContext.RENDER_STATE, RenderContext.RenderState.WORLD)
     }
@@ -36,39 +51,35 @@ class DisplayCaseRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntit
         CobblemonItems.RELIC_COIN_POUCH
         // PT137: CustomModelData(Int) → CustomModelData(floats, flags, strings, colors) 4-list record
     ).also { it.set(DataComponents.CUSTOM_MODEL_DATA, CustomModelData(listOf(1f), emptyList(), emptyList(), emptyList())) } }
-    fun render_DEFER_NO_OVERRIDE(
+    override fun createRenderState(): DisplayCaseRenderState = DisplayCaseRenderState()
+
+    override fun extractRenderState(
         entity: DisplayCaseBlockEntity,
-        tickDelta: Float,
-        matrices: PoseStack,
-        vertexConsumers: MultiBufferSource,
-        light: Int,
-        overlay: Int
+        state: DisplayCaseRenderState,
+        partialTick: Float,
+        cameraPos: Vec3,
+        crumbling: ModelFeatureRenderer.CrumblingOverlay?
     ) {
-        val stack: ItemStack = if (entity.getStack().`is`(CobblemonItems.RELIC_COIN_POUCH)) {
-            coinPouchStack
-        } else {
-            entity.getStack()
-        }
-        val world = entity.level ?: return
-        val posType = getPositioningType(stack, world)
+        BlockEntityRenderState.extractBase(entity, state, crumbling)
+        val held = entity.getStack()
+        state.stack = if (held.`is`(CobblemonItems.RELIC_COIN_POUCH)) coinPouchStack else held
         val blockState = if (entity.level != null) entity.blockState
-            else (CobblemonBlocks.DISPLAY_CASE.defaultBlockState().setValue(DisplayCaseBlock.ITEM_DIRECTION, Direction.NORTH))
-        val yRot = if (posType == PositioningType.ITEM_MODEL) blockState.getValue(DisplayCaseBlock.ITEM_DIRECTION).opposite.toYRot()
-            else blockState.getValue(DisplayCaseBlock.ITEM_DIRECTION).toYRot()
+            else CobblemonBlocks.DISPLAY_CASE.defaultBlockState().setValue(DisplayCaseBlock.ITEM_DIRECTION, Direction.NORTH)
+        state.itemDirection = blockState.getValue(DisplayCaseBlock.ITEM_DIRECTION)
+    }
 
-        /*
-        if (stack.item is PokemonItem) {
-            renderPokemon(
-                matrices,
-                vertexConsumers,
-                light,
-                stack,
-                yRot
-            )
-            return
-        }
+    override fun submit(
+        state: DisplayCaseRenderState,
+        matrices: PoseStack,
+        collector: SubmitNodeCollector,
+        camera: CameraRenderState
+    ) {
+        val stack = state.stack
+        if (stack.isEmpty) return
 
-         */
+        val posType = getPositioningType(stack)
+        val yRot = if (posType == PositioningType.ITEM_MODEL) state.itemDirection.opposite.toYRot()
+            else state.itemDirection.toYRot()
 
         matrices.pushPose()
         matrices.translate(0.5f, 0.4f, 0.5f)
@@ -82,17 +93,17 @@ class DisplayCaseRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntit
         Minecraft.getInstance().itemRenderer.renderStatic(
             stack,
             ItemDisplayContext.GROUND,
-            light,
-            overlay,
+            state.lightCoords,
+            OverlayTexture.NO_OVERLAY,
             matrices,
-            vertexConsumers,
-            entity.level,
+            collector,
+            Minecraft.getInstance().level,
             0
         )
 
         matrices.popPose()
-
     }
+
     /*
     private fun renderPokemon(
         matrices: PoseStack,
@@ -157,7 +168,7 @@ class DisplayCaseRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntit
             Items.CREEPER_HEAD
         )
 
-        private fun getPositioningType(stack: ItemStack, world: Level) = when {
+        private fun getPositioningType(stack: ItemStack) = when {
             mobHeads.contains(stack.item) -> PositioningType.MOB_HEAD
             stack.item is BedItem -> PositioningType.BED
             stack.item is BannerItem -> PositioningType.BANNER
@@ -192,13 +203,4 @@ class DisplayCaseRenderer(ctx: BlockEntityRendererProvider.Context) : BlockEntit
         COIN_POUCH(1f, 1f, 1f, 0f, 0.415f, 0f)
     }
 
-    override fun createRenderState(): net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState =
-        net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState()
-
-    override fun submit(
-        state: net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState,
-        poseStack: com.mojang.blaze3d.vertex.PoseStack,
-        collector: net.minecraft.client.renderer.SubmitNodeCollector,
-        camera: net.minecraft.client.renderer.state.level.CameraRenderState
-    ) { /* PT129-DEFER */ }
 }
