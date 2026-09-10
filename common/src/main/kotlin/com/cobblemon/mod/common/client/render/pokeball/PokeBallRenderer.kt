@@ -17,7 +17,11 @@ import com.cobblemon.mod.common.client.render.models.blockbench.repository.Varyi
 import com.cobblemon.mod.common.entity.pokeball.EmptyPokeBallEntity
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
-import net.minecraft.client.renderer.MultiBufferSource
+import com.cobblemon.mod.common.client.render.submitPosableModel
+import net.minecraft.client.renderer.SubmitNodeCollector
+import net.minecraft.util.Mth
+import net.minecraft.client.renderer.entity.state.EntityRenderState
+import net.minecraft.client.renderer.state.level.CameraRenderState
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.entity.EntityRenderer
 import net.minecraft.client.renderer.entity.EntityRendererProvider
@@ -26,8 +30,15 @@ import com.cobblemon.mod.common.client.render.CobblemonItemRenderer
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.resources.Identifier
 
-// PT144: EntityRenderer<T,S> 2-type-args in MC 26.1.x; render→createRenderState/extractRenderState/submit flow.
-class PokeBallRenderer(context: EntityRendererProvider.Context) : EntityRenderer<EmptyPokeBallEntity, net.minecraft.client.renderer.entity.state.EntityRenderState>(context) {
+/** port/26.2: the live entity is carried on the state so submit can reach its client delegate. */
+class PokeBallRenderState : EntityRenderState() {
+    var entity: EmptyPokeBallEntity? = null
+    var partialTicks: Float = 0F
+    /** EntityRenderState carries no yaw - only the living variant does - so it is captured here. */
+    var yaw: Float = 0F
+}
+
+class PokeBallRenderer(context: EntityRendererProvider.Context) : EntityRenderer<EmptyPokeBallEntity, PokeBallRenderState>(context) {
     val model = PosablePokeBallModel()
 
     // PT144: getTextureLocation removed from EntityRenderer abstract — kept as non-override helper for legacy callers.
@@ -35,36 +46,53 @@ class PokeBallRenderer(context: EntityRendererProvider.Context) : EntityRenderer
         return VaryingModelRepository.getTexture(pEntity.pokeBall.name, pEntity.delegate as EmptyPokeBallClientDelegate)
     }
 
-    fun render_DEFER_NO_OVERRIDE(entity: EmptyPokeBallEntity, yaw: Float, partialTicks: Float, poseStack: PoseStack, buffer: MultiBufferSource, packedLight: Int) {
-        val state = entity.delegate as EmptyPokeBallClientDelegate
-        this.model.context.put(RenderContext.POSABLE_STATE, state)
+    override fun createRenderState(): PokeBallRenderState = PokeBallRenderState()
+
+    override fun extractRenderState(entity: EmptyPokeBallEntity, state: PokeBallRenderState, partialTick: Float) {
+        super.extractRenderState(entity, state, partialTick)
+        state.entity = entity
+        state.partialTicks = partialTick
+        state.yaw = Mth.rotLerp(partialTick, entity.yRotO, entity.yRot)
+    }
+
+    override fun submit(
+        state: PokeBallRenderState,
+        poseStack: PoseStack,
+        collector: SubmitNodeCollector,
+        camera: CameraRenderState
+    ) {
+        val entity = state.entity ?: return
+        val partialTicks = state.partialTicks
+        val packedLight = state.lightCoords
+
+        val ballState = entity.delegate as EmptyPokeBallClientDelegate
+        this.model.context.put(RenderContext.POSABLE_STATE, ballState)
         this.model.context.put(RenderContext.ASPECTS, entity.aspects)
-        state.currentAspects = entity.aspects
-        val model = VaryingModelRepository.getPoser(entity.pokeBall.name, state)
+        ballState.currentAspects = entity.aspects
+        val model = VaryingModelRepository.getPoser(entity.pokeBall.name, ballState)
         this.model.posableModel = model
         this.model.posableModel.context = this.model.context
         this.model.setupEntityTypeContext(entity)
         this.model.context.put(RenderContext.RENDER_STATE, RenderContext.RenderState.WORLD)
+
         poseStack.pushPose()
-        poseStack.mulPose(Axis.YP.rotationDegrees(yaw))
+        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw))
         poseStack.scale(0.7F, -0.7F, -0.7F)
-        val textureLoc = VaryingModelRepository.getTexture(entity.pokeBall.name, state)
-        // PT144: ItemRenderer.getFoilBufferDirect removed in MC 26.1.x — use direct buffer fallback.
-        val vertexConsumer = buffer.getBuffer(RenderTypes.entityCutout(textureLoc))
-        state.updatePartialTicks(partialTicks)
-        model.setLayerContext(buffer, state, VaryingModelRepository.getLayers(entity.pokeBall.name, state))
+        val textureLoc = VaryingModelRepository.getTexture(entity.pokeBall.name, ballState)
+        ballState.updatePartialTicks(partialTicks)
+        model.setLayerContext(collector, ballState, VaryingModelRepository.getLayers(entity.pokeBall.name, ballState))
         this.model.setupAnim(entity, 0f, 0f, entity.tickCount + partialTicks, 0F, 0F)
-        this.model.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
+        // port/26.2: Model.renderToBuffer is final and draws the wrapper's empty root part; Cobblemon's
+        // geometry hangs off posableModel, which renderToBufferLegacy draws.
+        collector.submitPosableModel(poseStack, RenderTypes.entityCutout(textureLoc)) { stack, consumer ->
+            this.model.renderToBufferLegacy(stack, consumer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
+        }
 
         model.green = 1F
         model.blue = 1F
         model.red = 1F
-
         model.resetLayerContext()
 
         poseStack.popPose()
     }
-
-    override fun createRenderState(): net.minecraft.client.renderer.entity.state.EntityRenderState =
-        net.minecraft.client.renderer.entity.state.EntityRenderState()
 }

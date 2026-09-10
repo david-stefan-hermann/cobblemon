@@ -16,49 +16,75 @@ import com.cobblemon.mod.common.client.render.models.blockbench.repository.Varyi
 import com.cobblemon.mod.common.entity.generic.GenericBedrockEntity
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
-import net.minecraft.client.renderer.MultiBufferSource
+import com.cobblemon.mod.common.client.render.submitPosableModel
+import net.minecraft.client.renderer.SubmitNodeCollector
+import net.minecraft.client.renderer.entity.state.EntityRenderState
+import net.minecraft.client.renderer.state.level.CameraRenderState
+import net.minecraft.util.Mth
 import net.minecraft.client.renderer.rendertype.RenderType
 import net.minecraft.client.renderer.entity.EntityRenderer
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.texture.OverlayTexture
 
-// PT144: EntityRenderer<T,S> 2-type-args in MC 26.1.x; render→createRenderState/extractRenderState/submit flow.
+/** port/26.2: the live entity and its yaw are carried on the state; EntityRenderState has neither. */
+class GenericBedrockRenderState : EntityRenderState() {
+    var entity: GenericBedrockEntity? = null
+    var partialTicks: Float = 0F
+    var yaw: Float = 0F
+}
+
 // getTextureLocation removed from EntityRenderer abstract — texture retrieval now state-driven via submitNode.
-class GenericBedrockRenderer(context: EntityRendererProvider.Context) : EntityRenderer<GenericBedrockEntity, net.minecraft.client.renderer.entity.state.EntityRenderState>(context) {
+class GenericBedrockRenderer(context: EntityRendererProvider.Context) : EntityRenderer<GenericBedrockEntity, GenericBedrockRenderState>(context) {
     val model = PosableGenericEntityModel()
     fun getTextureLocation(entity: GenericBedrockEntity) = VaryingModelRepository.getTexture(entity.category, (entity.delegate as GenericBedrockClientDelegate))
-    fun render_DEFER_NO_OVERRIDE(entity: GenericBedrockEntity, yaw: Float, partialTicks: Float, poseStack: PoseStack, buffer: MultiBufferSource, packedLight: Int) {
+    override fun createRenderState(): GenericBedrockRenderState = GenericBedrockRenderState()
+
+    override fun extractRenderState(entity: GenericBedrockEntity, state: GenericBedrockRenderState, partialTick: Float) {
+        super.extractRenderState(entity, state, partialTick)
+        state.entity = entity
+        state.partialTicks = partialTick
+        state.yaw = Mth.rotLerp(partialTick, entity.yRotO, entity.yRot)
+    }
+
+    override fun submit(
+        state: GenericBedrockRenderState,
+        poseStack: PoseStack,
+        collector: SubmitNodeCollector,
+        camera: CameraRenderState
+    ) {
+        val entity = state.entity ?: return
         if (entity.isInvisible) {
             return
         }
+        val partialTicks = state.partialTicks
+        val packedLight = state.lightCoords
 
-        val state = entity.delegate as GenericBedrockClientDelegate
-        state.currentAspects = entity.aspects
-        val model = VaryingModelRepository.getPoser(entity.category, state)
+        val bedrockState = entity.delegate as GenericBedrockClientDelegate
+        bedrockState.currentAspects = entity.aspects
+        val model = VaryingModelRepository.getPoser(entity.category, bedrockState)
         this.model.posableModel = model
         model.context = this.model.context
         this.model.setupEntityTypeContext(entity)
+
         poseStack.pushPose()
-        // PT144: PoseStack.scale now requires (x,y,z) 3-arg in MC 26.1.x.
         poseStack.scale(1.0F, -1.0F, 1.0F)
         poseStack.scale(entity.scale, entity.scale, entity.scale)
-        poseStack.mulPose(Axis.YP.rotationDegrees(yaw))
-        val vertexConsumer = buffer.getBuffer(RenderTypes.entityCutout(VaryingModelRepository.getTexture(entity.category, state)))
+        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw))
 
-        state.updatePartialTicks(partialTicks)
-        model.setLayerContext(buffer, state, VaryingModelRepository.getLayers(entity.category, state))
+        bedrockState.updatePartialTicks(partialTicks)
+        model.setLayerContext(collector, bedrockState, VaryingModelRepository.getLayers(entity.category, bedrockState))
         this.model.setupAnim(entity, 0f, 0f, entity.tickCount + partialTicks, 0F, 0F)
-        this.model.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
+        // port/26.2: Model.renderToBuffer is final and draws the wrapper's empty root part.
+        val texture = VaryingModelRepository.getTexture(entity.category, bedrockState)
+        collector.submitPosableModel(poseStack, RenderTypes.entityCutout(texture)) { stack, consumer ->
+            this.model.renderToBufferLegacy(stack, consumer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
+        }
 
         model.green = 1F
         model.blue = 1F
         model.red = 1F
-
         model.resetLayerContext()
 
         poseStack.popPose()
     }
-
-    override fun createRenderState(): net.minecraft.client.renderer.entity.state.EntityRenderState =
-        net.minecraft.client.renderer.entity.state.EntityRenderState()
 }

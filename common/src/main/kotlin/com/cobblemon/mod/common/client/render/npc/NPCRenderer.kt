@@ -17,16 +17,28 @@ import com.cobblemon.mod.common.client.render.models.blockbench.repository.Varyi
 import com.cobblemon.mod.common.util.cobblemonResource
 import com.cobblemon.mod.common.entity.npc.NPCEntity
 import com.mojang.blaze3d.vertex.PoseStack
-import net.minecraft.client.renderer.MultiBufferSource
+import com.cobblemon.mod.common.client.render.submitPosableModel
+import net.minecraft.client.renderer.SubmitNodeCollector
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState
+import net.minecraft.client.renderer.state.level.CameraRenderState
+import net.minecraft.client.renderer.texture.OverlayTexture
+import net.minecraft.client.renderer.rendertype.RenderTypes
+import com.mojang.math.Axis
 import net.minecraft.client.renderer.entity.EntityRendererProvider.Context
 import net.minecraft.client.renderer.entity.LivingEntityRenderer
 import net.minecraft.resources.Identifier
 import kotlin.math.min
 
-// PT145: LivingEntityRenderer<T,S,M> requires LivingEntityRenderState 2nd type-arg in MC 26.1.x; getTextureLocation now takes state, not entity.
-class NPCRenderer(context: Context) : LivingEntityRenderer<NPCEntity, net.minecraft.client.renderer.entity.state.LivingEntityRenderState, PosableEntityModel<NPCEntity>>(context, PosableNPCModel(), 0.5f) {
-    override fun getTextureLocation(state: net.minecraft.client.renderer.entity.state.LivingEntityRenderState): Identifier {
-        return cobblemonResource("textures/entity/npc/missing.png")
+/** port/26.2: the live entity is carried on the state so submit can reach its client delegate. */
+class NPCRenderState : LivingEntityRenderState() {
+    var entity: NPCEntity? = null
+    var partialTicks: Float = 0F
+}
+
+class NPCRenderer(context: Context) : LivingEntityRenderer<NPCEntity, NPCRenderState, PosableEntityModel<NPCEntity>>(context, PosableNPCModel(), 0.5f) {
+    override fun getTextureLocation(state: NPCRenderState): Identifier {
+        return state.entity?.let { getTextureLocationForEntity(it) }
+            ?: cobblemonResource("textures/entity/npc/missing.png")
     }
 
     fun getTextureLocationForEntity(entity: NPCEntity): Identifier {
@@ -35,20 +47,38 @@ class NPCRenderer(context: Context) : LivingEntityRenderer<NPCEntity, net.minecr
 
     private val heldItemRenderer = HeldItemRenderer()
 
-    override fun createRenderState(): net.minecraft.client.renderer.entity.state.LivingEntityRenderState = net.minecraft.client.renderer.entity.state.LivingEntityRenderState()
+    override fun createRenderState(): NPCRenderState = NPCRenderState()
 
-    // PT144: LivingEntityRenderer.scale(LivingEntity, PoseStack, Float) removed — moved to per-state pipeline.
-    fun scale_DEFER_NO_OVERRIDE(livingEntity: NPCEntity, poseStack: PoseStack, partialTickTime: Float) {
+    override fun extractRenderState(entity: NPCEntity, state: NPCRenderState, partialTick: Float) {
+        super.extractRenderState(entity, state, partialTick)
+        state.entity = entity
+        state.partialTicks = partialTick
+    }
+
+    override fun submit(
+        state: NPCRenderState,
+        poseStack: PoseStack,
+        collector: SubmitNodeCollector,
+        camera: CameraRenderState
+    ) {
+        val entity = state.entity ?: return
+        currentRenderState = state
+        render(entity, state.bodyRot, state.partialTicks, poseStack, collector, state.lightCoords)
+    }
+
+    private var currentRenderState: NPCRenderState? = null
+
+    /** port/26.2: applied by hand now that LivingEntityRenderer.scale is state-based. */
+    fun applyEntityScale(livingEntity: NPCEntity, poseStack: PoseStack, partialTickTime: Float) {
         poseStack.scale(livingEntity.renderScale, livingEntity.renderScale, livingEntity.renderScale)
     }
 
-    // PT144: LivingEntityRenderer.render(...) removed in MC 26.1.x — deferred until submit pipeline migration.
-    fun render_DEFER_NO_OVERRIDE(
+    private fun render(
         entity: NPCEntity,
         entityYaw: Float,
         partialTicks: Float,
         poseMatrix: PoseStack,
-        buffer: MultiBufferSource,
+        collector: SubmitNodeCollector,
         packedLight: Int
     ) {
         val aspects = entity.aspects
@@ -63,12 +93,30 @@ class NPCRenderer(context: Context) : LivingEntityRenderer<NPCEntity, net.minecr
         this.model.context.put(RenderContext.TEXTURE, getTextureLocationForEntity(entity))
         clientDelegate.updatePartialTicks(partialTicks)
 
-        model.setLayerContext(buffer, clientDelegate, VaryingModelRepository.getLayers(entity.resourceIdentifier, clientDelegate))
+        model.setLayerContext(collector, clientDelegate, VaryingModelRepository.getLayers(entity.resourceIdentifier, clientDelegate))
 
         poseMatrix.pushPose()
         poseMatrix.scale(entity.npc.modelScale, entity.npc.modelScale, entity.npc.modelScale)
-        // PT144: super.render removed.
-        // super.render(entity, entityYaw, partialTicks, poseMatrix, buffer, packedLight)
+        // port/26.2: vanilla's own submission would draw the wrapper model's empty root, so the
+        // transforms LivingEntityRenderer applied are reproduced and the real model is submitted.
+        val st = currentRenderState
+        this.model.setupAnim(
+            entity,
+            st?.walkAnimationPos ?: 0F,
+            st?.walkAnimationSpeed ?: 0F,
+            st?.ageInTicks ?: 0F,
+            entityYaw,
+            st?.xRot ?: 0F
+        )
+        poseMatrix.pushPose()
+        poseMatrix.mulPose(Axis.YP.rotationDegrees(180F - entityYaw))
+        poseMatrix.scale(-1F, -1F, 1F)
+        applyEntityScale(entity, poseMatrix, partialTicks)
+        poseMatrix.translate(0.0, -1.501, 0.0)
+        collector.submitPosableModel(poseMatrix, RenderTypes.entityCutout(getTextureLocationForEntity(entity))) { stack, consumer ->
+            this.model.renderToBufferLegacy(stack, consumer, packedLight, OverlayTexture.NO_OVERLAY, -0x1)
+        }
+        poseMatrix.popPose()
         poseMatrix.popPose()
         model.red = 1F
         model.green = 1F
@@ -81,7 +129,7 @@ class NPCRenderer(context: Context) : LivingEntityRenderer<NPCEntity, net.minecr
                 entity.mainHandItem,
                 clientDelegate,
                 poseMatrix,
-                buffer,
+                collector,
                 packedLight,
                 false,
                 entity
