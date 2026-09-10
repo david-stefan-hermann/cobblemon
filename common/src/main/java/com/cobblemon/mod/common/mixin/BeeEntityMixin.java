@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 
-@Mixin(targets = "net.minecraft.world.entity.animal.Bee$BeeGrowCropGoal")
+@Mixin(targets = "net.minecraft.world.entity.animal.bee.Bee$BeeGrowCropGoal")
 public abstract class BeeEntityMixin {
 
     @Unique

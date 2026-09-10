@@ -10,7 +10,6 @@ package com.cobblemon.mod.common.client.gui
 
 import net.minecraft.client.renderer.rendertype.RenderTypes
 
-import com.cobblemon.mod.common.mixin.accessor.EntryListWidgetAccessor
 import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor

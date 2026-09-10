@@ -27,6 +27,7 @@ import com.cobblemon.mod.common.block.sign.CobblemonWallHangingSignBlock
 import com.cobblemon.mod.common.block.sign.CobblemonWallSignBlock
 import com.cobblemon.mod.common.block.tmmachine.TMMachineBlock
 import com.cobblemon.mod.common.mixin.invoker.BlocksInvoker
+import com.cobblemon.mod.common.mixin.invoker.ButtonBlockInvoker
 import com.cobblemon.mod.common.mixin.invoker.DoorBlockInvoker
 import com.cobblemon.mod.common.mixin.invoker.FireBlockInvoker
 import com.cobblemon.mod.common.mixin.invoker.PressurePlateBlockInvoker
@@ -57,6 +58,9 @@ import net.minecraft.world.entity.EntityTypes
 
 @Suppress("SameParameterValue", "HasPlatformType", "MemberVisibilityCanBePrivate", "unused")
 object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<Block>>, Block>() {
+
+    /** port/26.2: no falling-leaf particles, matching the plain LeavesBlock these used to be. */
+    private const val LEAF_PARTICLE_CHANCE = 0.0F
 
     override val registry: Registry<Block> = BuiltInRegistries.BLOCK
     override val resourceKey: ResourceKey<Registry<Block>> = Registries.BLOCK
@@ -138,7 +142,7 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     @JvmField
     val APRICORN_FENCE_GATE = this.create("apricorn_fence_gate", FenceGateBlock(APRICORN_WOOD_TYPE, BlockBehaviour.Properties.of().mapColor(APRICORN_PLANKS.defaultMapColor()).strength(2.0F, 3.0F).sound(SoundType.WOOD).ignitedByLava().forceSolidOn()))
     @JvmField
-    val APRICORN_BUTTON = this.create("apricorn_button", BlocksInvoker.createWoodenButtonBlock(APRICORN_BLOCK_SET_TYPE))
+    val APRICORN_BUTTON = this.create("apricorn_button", woodenButton(APRICORN_BLOCK_SET_TYPE))
     @JvmField
     val APRICORN_PRESSURE_PLATE = this.create("apricorn_pressure_plate", PressurePlateBlockInvoker.`cobblemon$create`(APRICORN_BLOCK_SET_TYPE, BlockBehaviour.Properties.of().mapColor(APRICORN_PLANKS.defaultMapColor()).noCollision().strength(0.5F).sound(SoundType.WOOD)))
     @JvmField
@@ -215,7 +219,7 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     @JvmField
     val SACCHARINE_FENCE_GATE = this.create("saccharine_fence_gate", FenceGateBlock(SACCHARINE_WOOD_TYPE, BlockBehaviour.Properties.of().mapColor(SACCHARINE_PLANKS.defaultMapColor()).instrument(NoteBlockInstrument.BASS).strength(2.0F, 3.0F).sound(SoundType.WOOD).ignitedByLava().forceSolidOn()))
     @JvmField
-    val SACCHARINE_BUTTON = this.create("saccharine_button", BlocksInvoker.createWoodenButtonBlock(BlockSetType.OAK))
+    val SACCHARINE_BUTTON = this.create("saccharine_button", woodenButton(BlockSetType.OAK))
     @JvmField
     val SACCHARINE_PRESSURE_PLATE = this.create("saccharine_pressure_plate", PressurePlateBlockInvoker.`cobblemon$create`(SACCHARINE_BLOCK_SET_TYPE, BlockBehaviour.Properties.of().mapColor(SACCHARINE_PLANKS.defaultMapColor()).instrument(NoteBlockInstrument.BASS).noCollision().strength(0.5F).sound(SoundType.WOOD)))
     @JvmField
@@ -732,7 +736,7 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     @JvmField
     val PEP_UP_FLOWER = this.create("pep_up_flower", FlowerBlock(MobEffects.LEVITATION, 10F, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY)))
     @JvmField
-    val POTTED_PEP_UP_FLOWER = this.create("potted_pep_up_flower", BlocksInvoker.createFlowerPotBlock(PEP_UP_FLOWER))
+    val POTTED_PEP_UP_FLOWER = this.create("potted_pep_up_flower", flowerPot(PEP_UP_FLOWER))
     @JvmField
     val HEARTY_GRAINS = this.create("hearty_grains", HeartyGrainsBlock(BlockBehaviour.Properties.of().pushReaction(PushReaction.DESTROY).ignitedByLava().mapColor(MapColor.PLANT).noCollision().randomTicks().instabreak()))
 
@@ -740,21 +744,21 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
     val GALARICA_NUT_BUSH = this.create("galarica_nut_bush", NutBushBlock(BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).randomTicks().noCollision().sound(SoundType.SWEET_BERRY_BUSH).pushReaction(PushReaction.DESTROY)))
 
     @JvmField
-    val POTTED_RED_APRICORN_SAPLING = this.create("potted_red_apricorn_sapling", BlocksInvoker.createFlowerPotBlock(RED_APRICORN_SAPLING))
+    val POTTED_RED_APRICORN_SAPLING = this.create("potted_red_apricorn_sapling", flowerPot(RED_APRICORN_SAPLING))
     @JvmField
-    val POTTED_YELLOW_APRICORN_SAPLING = this.create("potted_yellow_apricorn_sapling", BlocksInvoker.createFlowerPotBlock(YELLOW_APRICORN_SAPLING))
+    val POTTED_YELLOW_APRICORN_SAPLING = this.create("potted_yellow_apricorn_sapling", flowerPot(YELLOW_APRICORN_SAPLING))
     @JvmField
-    val POTTED_GREEN_APRICORN_SAPLING = this.create("potted_green_apricorn_sapling", BlocksInvoker.createFlowerPotBlock(GREEN_APRICORN_SAPLING))
+    val POTTED_GREEN_APRICORN_SAPLING = this.create("potted_green_apricorn_sapling", flowerPot(GREEN_APRICORN_SAPLING))
     @JvmField
-    val POTTED_BLUE_APRICORN_SAPLING = this.create("potted_blue_apricorn_sapling", BlocksInvoker.createFlowerPotBlock(BLUE_APRICORN_SAPLING))
+    val POTTED_BLUE_APRICORN_SAPLING = this.create("potted_blue_apricorn_sapling", flowerPot(BLUE_APRICORN_SAPLING))
     @JvmField
-    val POTTED_PINK_APRICORN_SAPLING = this.create("potted_pink_apricorn_sapling", BlocksInvoker.createFlowerPotBlock(PINK_APRICORN_SAPLING))
+    val POTTED_PINK_APRICORN_SAPLING = this.create("potted_pink_apricorn_sapling", flowerPot(PINK_APRICORN_SAPLING))
     @JvmField
-    val POTTED_BLACK_APRICORN_SAPLING = this.create("potted_black_apricorn_sapling", BlocksInvoker.createFlowerPotBlock(BLACK_APRICORN_SAPLING))
+    val POTTED_BLACK_APRICORN_SAPLING = this.create("potted_black_apricorn_sapling", flowerPot(BLACK_APRICORN_SAPLING))
     @JvmField
-    val POTTED_WHITE_APRICORN_SAPLING = this.create("potted_white_apricorn_sapling", BlocksInvoker.createFlowerPotBlock(WHITE_APRICORN_SAPLING))
+    val POTTED_WHITE_APRICORN_SAPLING = this.create("potted_white_apricorn_sapling", flowerPot(WHITE_APRICORN_SAPLING))
     @JvmField
-    val POTTED_SACCHARINE_SAPLING = this.create("potted_saccharine_sapling", BlocksInvoker.createFlowerPotBlock(SACCHARINE_SAPLING))
+    val POTTED_SACCHARINE_SAPLING = this.create("potted_saccharine_sapling", flowerPot(SACCHARINE_SAPLING))
 
     @JvmField
     val HEARTY_GRAIN_BALE = this.create("hearty_grain_bale", BaleBlock(BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).instrument(NoteBlockInstrument.BANJO).strength(0.5F).sound(CobblemonSounds.HEARTY_GRAIN_BALE_SOUNDS)))
@@ -976,9 +980,22 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
      * Calls helper method from Vanilla
      */
     private fun log(name: String, arg: MapColor = MapColor.DIRT, arg2: MapColor = MapColor.DIRT): Block {
-        val block = BlocksInvoker.createLogBlock(arg, arg2)
+        // port/26.2: Blocks.log() built the block; now it only assembles properties, and the sound type
+        // it used to bake in is passed explicitly.
+        val block = RotatedPillarBlock(BlocksInvoker.createLogProperties(arg, arg2, SoundType.WOOD))
         return this.create(name, block)
     }
+
+    /** port/26.2: Blocks.woodenButton() is gone; ButtonBlock is built from the shared button properties. */
+    private fun woodenButton(blockSetType: BlockSetType): Block = ButtonBlockInvoker.create(
+        blockSetType,
+        ButtonBlockInvoker.WOODEN_TICKS_TO_STAY_PRESSED,
+        BlocksInvoker.createButtonProperties()
+    )
+
+    /** port/26.2: Blocks.flowerPot() is gone; FlowerPotBlock is built from the shared pot properties. */
+    private fun flowerPot(flower: Block): Block =
+        FlowerPotBlock(flower, BlocksInvoker.createFlowerPotProperties())
 
     /**
      * Method uses generic E in order to keep the block as the same return type.
@@ -1006,7 +1023,14 @@ object CobblemonBlocks : PlatformRegistry<Registry<Block>, ResourceKey<Registry<
      * copied over from Vanilla
      */
     private fun leaves(name: String): Block {
-        val block = BlocksInvoker.createLeavesBlock(SoundType.GRASS)
+        // port/26.2: LeavesBlock became abstract and falling-leaf particles moved into the constructor.
+        // The old Blocks.leaves() built a plain LeavesBlock with no particles at all, so the tinted
+        // variant is used with a chance of zero - that reproduces the previous behaviour rather than
+        // inventing a particle these blocks never had.
+        val block = TintedParticleLeavesBlock(
+            LEAF_PARTICLE_CHANCE,
+            BlocksInvoker.createLeavesProperties(SoundType.GRASS)
+        )
         return this.create(name, block)
     }
 

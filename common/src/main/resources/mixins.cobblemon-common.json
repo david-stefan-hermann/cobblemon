@@ -9,7 +9,6 @@
   "client": [
     "MusicManagerMixin",
     "ParticleManagerMixin",
-    "accessor.EntryListWidgetAccessor",
     "accessor.GuiGraphicsExtractorAccessor",
     "accessor.KeyBindingAccessor",
     "client.AbstractClientPlayerMixin",
@@ -65,6 +64,7 @@
     "entity.TameableEntityMixin",
     "invoker.AdornRegisterInvoker",
     "invoker.BlocksInvoker",
+    "invoker.ButtonBlockInvoker",
     "invoker.DoorBlockInvoker",
     "invoker.FireBlockInvoker",
     "invoker.PressurePlateBlockInvoker",
