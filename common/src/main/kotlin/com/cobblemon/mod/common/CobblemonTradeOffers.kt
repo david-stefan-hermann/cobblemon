@@ -98,7 +98,7 @@ object CobblemonTradeOffers {
         )
         // PT142: VillagerProfession.FISHERMAN is now ResourceKey<VillagerProfession> in MC 26.1.x — dereference via registry
         else -> {
-            val fisherman = net.minecraft.core.registries.BuiltInRegistries.VILLAGER_PROFESSION.getValue(net.minecraft.resources.ResourceLocation.withDefaultNamespace("fisherman"))
+            val fisherman = net.minecraft.core.registries.BuiltInRegistries.VILLAGER_PROFESSION.getValue(net.minecraft.resources.Identifier.withDefaultNamespace("fisherman"))
             if (fisherman != null && profession == fisherman) listOf(
                 VillagerTradeOffer(fisherman, 5, listOf(
                     VillagerTrades.ItemsForEmeralds(CobblemonItems.POKEROD_SMITHING_TEMPLATE, 12, 1, 3, 30)

@@ -40,9 +40,9 @@ class SinisterTeaItem : Item(
                     val holder = inst.effect
                     val effect = holder.value()
 
-                    if (effect.isInstantenous) {
-                        // PT137: MobEffect.applyInstantenousEffect(ServerLevel, Entity?, Entity?, LivingEntity, Int, Double) — 6-arg
-                        effect.applyInstantenousEffect(world as net.minecraft.server.level.ServerLevel, null, null, user, inst.amplifier, 1.0)
+                    if (effect.isInstantaneous) {
+                        // PT137: MobEffect.applyInstantaneousEffect(ServerLevel, Entity?, Entity?, LivingEntity, Int, Double) — 6-arg
+                        effect.applyInstantaneousEffect(world as net.minecraft.server.level.ServerLevel, null, null, user, inst.amplifier, 1.0)
                     } else {
                         user.addEffect(inst)
                     }

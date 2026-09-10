@@ -14,6 +14,7 @@ import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.item.ItemStack
+import net.minecraft.network.chat.TextColor
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -44,7 +45,7 @@ class Text internal constructor() {
                 is HoverEvent -> style = style.withHoverEvent(it)
                 is ChatFormatting -> {
                     when {
-                        it.isColor -> style = style.withColor(it)
+                        TextColor.fromLegacyFormat(it) != null -> style = style.withColor(it)
                         it == ChatFormatting.UNDERLINE || it == UNDERLINED -> style = style.withUnderlined(true)
                         it == ChatFormatting.BOLD || it == BOLD -> style = style.withBold(true)
                         it == ChatFormatting.ITALIC || it == ITALIC -> style = style.withItalic(true)

@@ -206,7 +206,9 @@ class EmptyPokeBallEntity : ThrowableItemProjectile, PosableEntity, WaterDragMod
                 val pokemonEntity = hitResult.entity as PokemonEntity
 
                 val battle = (pokemonEntity.delegate as PokemonServerDelegate).getBattle()
-                val owner = owner
+                // port/26.2: Projectile's protected field is now EntityReference<Entity> and shadows
+                // the getOwner() accessor, so a bare `owner` here would silently never be a player.
+                val owner = getOwner()
 
                 if (!pokemonEntity.pokemon.isWild()) {
                     (owner as? ServerPlayer)?.sendSystemMessage(lang("capture.not_wild", pokemonEntity.exposedSpecies.translatedName).red())
@@ -351,7 +353,7 @@ class EmptyPokeBallEntity : ThrowableItemProjectile, PosableEntity, WaterDragMod
                 captureState = CaptureState.CAPTURED
                 // Do a capture
                 val pokemon = capturingPokemon ?: return
-                val player = this.owner as? ServerPlayer ?: return
+                val player = getOwner() as? ServerPlayer ?: return
                 val captureTime = if (pokeBall.ancient == true) 1.8F else 1F
                 after(seconds = captureTime) {
                     // Dupes occurred by double-adding Pokémon, this hopefully prevents it triple-condom style
@@ -503,7 +505,7 @@ class EmptyPokeBallEntity : ThrowableItemProjectile, PosableEntity, WaterDragMod
 
     fun beginCapture() {
         // We have hit the ground, time to stop falling and start shaking! Calculate capture.
-        val thrower = owner as LivingEntity
+        val thrower = getOwner() as LivingEntity
         val captureResult = Cobblemon.config.captureCalculator.processCapture(thrower, this, capturingPokemon!!).let {
             val event = PokeBallCaptureCalculatedEvent(thrower = thrower, pokemonEntity = capturingPokemon!!, pokeBallEntity = this, captureResult = it)
             CobblemonEvents.POKE_BALL_CAPTURE_CALCULATED.post(event)

@@ -31,7 +31,7 @@ object CobblemonInfoCommand {
 
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>) {
         dispatcher.register(Commands.literal("cobblemon")
-            .then(LiteralArgumentBuilder.literal<CommandSourceStack?>("info")
+            .then(LiteralArgumentBuilder.literal<CommandSourceStack>("info")
                 .executes { ctx ->
                     val message = Component.empty().append(
                         Component.literal("Cobblemon Build Details").withStyle { it.withColor(this.YELLOW) })

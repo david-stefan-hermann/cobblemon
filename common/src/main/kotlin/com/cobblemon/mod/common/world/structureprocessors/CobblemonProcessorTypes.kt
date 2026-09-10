@@ -13,7 +13,6 @@ import com.mojang.serialization.MapCodec
 import net.minecraft.core.Registry
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType
 
 object CobblemonProcessorTypes {
     val registry = BuiltInRegistries.STRUCTURE_PROCESSOR
@@ -25,8 +24,10 @@ object CobblemonProcessorTypes {
     @JvmField
     val HEIGHT_RANGE = register("height_range", HeightRangeStructureProcessor.CODEC)
 
-    fun <T : StructureProcessor> register(id: String, codec: MapCodec<T>): StructureProcessorType<T> {
-        return Registry.register(registry, cobblemonResource(id), StructureProcessorType { codec })
+    // port/26.2: the STRUCTURE_PROCESSOR registry now holds the MapCodec directly - the
+    // StructureProcessorType wrapper it used to be keyed by no longer exists as a generic type.
+    fun <T : StructureProcessor> register(id: String, codec: MapCodec<T>): MapCodec<out StructureProcessor> {
+        return Registry.register(registry, cobblemonResource(id), codec)
     }
 
     fun touch() = Unit

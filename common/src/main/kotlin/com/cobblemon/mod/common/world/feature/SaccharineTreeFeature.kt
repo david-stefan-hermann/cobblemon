@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.LeavesBlock
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityType
+import net.minecraft.world.level.block.entity.BlockEntityTypes
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.properties.BlockStateProperties
 import net.minecraft.world.level.chunk.status.ChunkStatus
@@ -220,7 +221,7 @@ class SaccharineTreeFeature : Feature<BlockStateConfiguration>(BlockStateConfigu
     }
 
     private fun populateBeeNest(worldGenLevel: WorldGenLevel, pos: BlockPos) {
-        worldGenLevel.getBlockEntity(pos, BlockEntityType.BEEHIVE)
+        worldGenLevel.getBlockEntity(pos, BlockEntityTypes.BEEHIVE)
             .ifPresent(
                 Consumer { beehiveBlockEntity: BeehiveBlockEntity? ->
                     val randomSource: RandomSource = worldGenLevel.random
