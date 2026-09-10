@@ -8,7 +8,6 @@
   },
   "client": [
     "MusicManagerMixin",
-    "ParticleManagerMixin",
     "accessor.GuiGraphicsExtractorAccessor",
     "accessor.KeyBindingAccessor",
     "client.AbstractClientPlayerMixin",
