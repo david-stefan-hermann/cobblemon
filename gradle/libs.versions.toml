@@ -86,7 +86,9 @@ graal-core = { group = "org.graalvm.polyglot", name = "polyglot", version.ref = 
 # looking for a fabric.mod.json - handing it a .pom fails with 'Provider "jar" not found'. So the real
 # jars are named directly.
 graal-js = { group = "org.graalvm.js", name = "js-language", version.ref = "graal" }
-graal-truffle = { group = "org.graalvm.truffle", name = "truffle-runtime", version.ref = "graal" }
+# truffle-api only, so JS runs on the interpreter - which is what Cobblemon shipped on 1.21.1 too.
+# Verified against the shipped fabric jar: a JS context evaluates, and showdown boots in the dev server.
+graal-truffle = { group = "org.graalvm.truffle", name = "truffle-api", version.ref = "graal" }
 icu4j = { group = "com.ibm.icu", name = "icu4j", version.ref = "icu4j" }
 
 # Fabric

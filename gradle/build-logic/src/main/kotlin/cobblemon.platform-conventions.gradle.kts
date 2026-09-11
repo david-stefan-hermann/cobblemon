@@ -53,7 +53,12 @@ tasks {
         configurations = listOf(bundle)
         mergeServiceFiles()
 
-        relocate ("com.oracle", "com.cobblemon.mod.relocations.oracle")
+        // port/26.2: GraalVM is no longer relocated here. Truffle's polyglot support binds a native
+        // library whose JNI symbols follow the class name, so a renamed JDKSupport dies with
+        // UnsatisfiedLinkError the moment a JS context is created - which is every battle. Upstream has
+        // no fix (https://github.com/oracle/graal/issues/10907); the documented workaround of excluding
+        // com.oracle.truffle.polyglot from the relocation is the fallback if another mod's Graal clashes.
+        // NeoForge carries this relocation itself.
     }
 
     val copyJar by registering(CopyFile::class) {

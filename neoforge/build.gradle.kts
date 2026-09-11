@@ -75,6 +75,7 @@ tasks {
         exclude("architectury-common.accessWidener")
         exclude("architectury.common.json")
 
+        relocate ("com.oracle", "com.cobblemon.mod.relocations.oracle")
         relocate ("org.graalvm", "com.cobblemon.mod.relocations.graalvm")
         relocate ("com.ibm.icu", "com.cobblemon.mod.relocations.ibm.icu")
     }

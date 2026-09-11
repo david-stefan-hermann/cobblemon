@@ -79,6 +79,12 @@ dependencies {
         include(it)
     }
 
+    // port/26.2: the production jar is built by shadowJar from the `bundle` configuration, and this
+    // loom setup registers no remapJar, so `include` (jar-in-jar) produces nothing - GraalVM was
+    // simply missing from the shipped jar and showdown died on NoClassDefFoundError: HostAccess.
+    // Bundling it puts the classes in the jar the way molang is already handled.
+    bundle(libs.bundles.graal)
+
     // Added to make graal available in dev
     runtimeOnly(libs.bundles.graal)
 
