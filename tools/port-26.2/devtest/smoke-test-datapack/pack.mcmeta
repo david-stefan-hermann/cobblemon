@@ -1,0 +1,7 @@
+{
+  "pack": {
+    "description": "cobblemon port smoke test",
+    "min_format": [107, 1],
+    "max_format": 107
+  }
+}
