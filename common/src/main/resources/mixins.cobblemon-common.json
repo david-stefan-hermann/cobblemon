@@ -16,6 +16,7 @@
     "client.CameraMixin",
     "client.EntryListWidgetMixin",
     "client.GameRendererMixin",
+    "client.GuiGraphicsExtractorTrackerMixin",
     "client.ItemInHandRendererMixin",
     "client.LocalPlayerMixin",
     "client.LocalPlayerPickMixin",

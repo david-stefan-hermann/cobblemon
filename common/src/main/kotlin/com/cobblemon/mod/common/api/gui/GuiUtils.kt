@@ -10,6 +10,12 @@ package com.cobblemon.mod.common.api.gui
 
 import net.minecraft.client.renderer.rendertype.RenderTypes
 
+import com.cobblemon.mod.common.client.render.gui.GuiExtractorTracker
+import net.minecraft.client.renderer.RenderPipelines
+import net.minecraft.util.ARGB
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.roundToInt
 import com.cobblemon.mod.common.api.text.font
 import com.cobblemon.mod.common.client.gui.battle.BattleOverlay.Companion.PORTRAIT_DIAMETER
 import com.cobblemon.mod.common.client.render.SpriteType
@@ -58,8 +64,32 @@ fun blitk(
     blend: Boolean = true,
     scale: Float = 1F
 ) {
-    // PT104: stub for MC 26.1 — original PoseStack/BufferUploader/Tesselator approach removed.
-    // TODO: rewrite using GuiGraphicsExtractor.blit RenderPipeline path.
+    // port/26.2: this was a no-op, so no Cobblemon GUI drew a single texture. The quad now goes to the GUI
+    // render state of the extractor that owns this pose stack. Position, scale and fractional sizes are
+    // applied through the pose, so the texel region stays exact and vanilla scissoring still applies.
+    val extractor = GuiExtractorTracker.forPose(matrixStack) ?: return
+    if (texture == null) return
+    val drawWidth = width.toFloat()
+    val drawHeight = height.toFloat()
+    if (drawWidth == 0F || drawHeight == 0F) return
+    val regionWidth = max(1, abs(drawWidth.roundToInt()))
+    val regionHeight = max(1, abs(drawHeight.roundToInt()))
+
+    matrixStack.pushMatrix()
+    matrixStack.scale(scale, scale)
+    matrixStack.translate(x.toFloat(), y.toFloat())
+    matrixStack.scale(drawWidth / regionWidth, drawHeight / regionHeight)
+    extractor.blit(
+        RenderPipelines.GUI_TEXTURED,
+        texture,
+        0, 0,
+        uOffset.toFloat(), vOffset.toFloat(),
+        regionWidth, regionHeight,
+        regionWidth, regionHeight,
+        textureWidth.toInt(), textureHeight.toInt(),
+        ARGB.colorFromFloat(alpha.toFloat(), red.toFloat(), green.toFloat(), blue.toFloat())
+    )
+    matrixStack.popMatrix()
 }
 
 @JvmOverloads
