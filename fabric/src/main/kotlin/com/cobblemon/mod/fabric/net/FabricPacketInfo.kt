@@ -8,16 +8,49 @@
 
 package com.cobblemon.mod.fabric.net
 
+import com.cobblemon.mod.common.api.net.ClientNetworkPacketHandler
 import com.cobblemon.mod.common.api.net.NetworkPacket
+import com.cobblemon.mod.common.api.net.ServerNetworkPacketHandler
 import com.cobblemon.mod.common.net.PacketRegisterInfo
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 
 /**
- * PT150: fabric-api networking v1 (PayloadTypeRegistry, ClientPlayNetworking, ServerPlayNetworking)
- * not yet remapped for MC 26.1.x. Stubbed pending upstream port. Calls become no-ops so build can complete.
- * Reintroduce real packet registration in PT15X+.
+ * Good news, everyone! I've figured out how to remove a bunch of blank boilerplate from the network manager!
+ * Now some of you may die from cringe, but that is a sacrifice I am willing to make.
+ *
+ * It basically needs this wrapping to execute T-specific and Fabric-specific stuff. Neo and Fabric do
+ * very different things, we can do separable parts here which we can't in NeoForge.
+ *
+ * port/26.2: restored from the no-op stub the reference port left here (no payload was registered, so the
+ * first Cobblemon packet on join failed to encode as a DiscardedPayload). fabric-api renamed playS2C/playC2S
+ * to clientboundPlay/serverboundPlay, and the server context now hands out the server directly.
+ *
+ * @author Hiroku
+ * @since June 8th, 2024
  */
 class FabricPacketInfo<T : NetworkPacket<T>>(val info: PacketRegisterInfo<T>) {
-    fun registerPacket(client: Boolean) {}
-    fun registerClientHandler() {}
-    fun registerServerHandler() {}
+    fun registerPacket(client: Boolean) {
+        (if (client) {
+            PayloadTypeRegistry.clientboundPlay()
+        } else {
+            PayloadTypeRegistry.serverboundPlay()
+        })
+        .register(info.payloadId, info.codec)
+    }
+
+    fun registerClientHandler() {
+        ClientPlayNetworking.registerGlobalReceiver(info.payloadId) { obj, context ->
+            val handler = info.handler as ClientNetworkPacketHandler<T>
+            handler.handle(obj, context.client())
+        }
+    }
+
+    fun registerServerHandler() {
+        ServerPlayNetworking.registerGlobalReceiver(info.payloadId) { obj, context ->
+            val handler = info.handler as ServerNetworkPacketHandler<T>
+            handler.handle(obj, context.server(), context.player())
+        }
+    }
 }
