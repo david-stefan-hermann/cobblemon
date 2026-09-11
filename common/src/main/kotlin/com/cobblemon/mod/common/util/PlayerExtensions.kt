@@ -488,8 +488,7 @@ fun Player.isUsingPokedex() = isUsingItem &&
     (offhandItem.item is PokedexItem && usedItemHand == InteractionHand.OFF_HAND))
 
 fun ServerPlayer.updateShoulderNbt(pokemon: Pokemon) {
-    // PT137: ServerPlayer.shoulderEntityLeft/Right fields privatized; setShoulderEntityLeft/Right protected.
-    // Read via public getShoulderEntityLeft()/Right(); write via setEntityOnShoulder(nbt) which auto-picks slot.
+    // PT137: ServerPlayer.shoulderEntityLeft/Right fields privatized; read via the public getters.
     val isLeft = (pokemon.state as ShoulderedState).isLeftShoulder
     val nbt = if (isLeft) this.getShoulderEntityLeft().copy() else this.getShoulderEntityRight().copy()
     nbt.putUUID(DataKeys.SHOULDER_UUID, uuid)
@@ -497,6 +496,7 @@ fun ServerPlayer.updateShoulderNbt(pokemon: Pokemon) {
     nbt.putString(DataKeys.SHOULDER_FORM, pokemon.form.name)
     nbt.put(DataKeys.SHOULDER_ASPECTS, pokemon.aspects.map(StringTag::valueOf).toNbtList())
     nbt.putFloat(DataKeys.SHOULDER_SCALE_MODIFIER, pokemon.effectiveScale)
-    // PT137-DEFER: protected setter — public setEntityOnShoulder auto-picks left first; cannot force left/right
-    this.setEntityOnShoulder(nbt)
+    // port/26.2: the setters are widened (cobblemon-common.accesswidener), so the slot the Pokémon actually
+    // sits on is written again - setEntityOnShoulder would pick the first free slot instead.
+    if (isLeft) this.setShoulderEntityLeft(nbt) else this.setShoulderEntityRight(nbt)
 }

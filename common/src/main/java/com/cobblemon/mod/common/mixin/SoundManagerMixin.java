@@ -8,7 +8,93 @@
 
 package com.cobblemon.mod.common.mixin;
 
-// PT149: SoundInstance.getLocation() removed in MC 26.1.x sound API; PT149 mass-stub.
-// Stubbed and disabled in mixins.cobblemon-common.json. Reintroduce in PT15X+.
-public abstract class SoundManagerMixin {
+import com.cobblemon.mod.common.client.sound.BattleMusicController;
+import com.cobblemon.mod.common.client.sound.SoundTracker;
+import com.cobblemon.mod.common.duck.SoundEngineDuck;
+import com.cobblemon.mod.common.duck.SoundManagerDuck;
+import net.minecraft.client.resources.sounds.BiomeAmbientSoundsHandler;
+import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundInstances;
+import net.minecraft.client.sounds.SoundEngine;
+import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundSource;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+/**
+ * port/26.2: play(SoundInstance) now returns a PlayResult, so a filtered sound is reported as NOT_STARTED
+ * instead of simply returning; SoundInstance.getLocation is getIdentifier.
+ */
+@Mixin(SoundManager.class)
+public abstract class SoundManagerMixin implements SoundManagerDuck {
+
+    @Shadow
+    public abstract boolean isActive(SoundInstance sound);
+
+    @Shadow @Final
+    private SoundEngine soundEngine;
+
+    // Never-ending ambient loops are a special exception (they are only initiated once) and should always be paused if filtered.
+    private boolean isAmbientLoop(SoundInstance sound) {
+        return sound instanceof BiomeAmbientSoundsHandler.LoopSoundInstance || sound instanceof UnderwaterAmbientSoundInstances.UnderwaterAmbientSoundInstance;
+    }
+
+    private boolean filterCondition(SoundInstance sound) {
+        return !isAmbientLoop(sound) &&
+            this.isActive(BattleMusicController.INSTANCE.getMusic()) &&
+                BattleMusicController.INSTANCE.getFilteredCategories().contains(sound.getSource());
+    }
+
+    private boolean ambientLoopCondition(SoundInstance sound) {
+        return isAmbientLoop(sound) &&
+            this.isActive(BattleMusicController.INSTANCE.getMusic()) &&
+                BattleMusicController.INSTANCE.getFilteredCategories().contains(sound.getSource());
+    }
+
+    /** Pauses the queried SoundInstance(s). If id is null, will pause all sounds belonging to the SoundCategory. */
+    @Override
+    public void pauseSounds(@Nullable Identifier id, @Nullable SoundSource category) {
+        ((SoundEngineDuck)soundEngine).pauseSounds(id, category);
+    }
+
+    /** Resumes the queried SoundInstance(s). If id is null, will resume all sounds belonging to the SoundCategory. */
+    @Override
+    public void resumeSounds(@Nullable Identifier id, @Nullable SoundSource category) {
+        ((SoundEngineDuck)soundEngine).resumeSounds(id, category);
+    }
+
+    /** Blocks filtered sounds from being played while a BattleMusicInstance is in progress. */
+    @Inject(method = "play(Lnet/minecraft/client/resources/sounds/SoundInstance;)Lnet/minecraft/client/sounds/SoundEngine$PlayResult;", at = @At("HEAD"), cancellable = true)
+    public void playStart(SoundInstance sound, CallbackInfoReturnable<SoundEngine.PlayResult> cb) {
+        if (filterCondition(sound)) cb.setReturnValue(SoundEngine.PlayResult.NOT_STARTED);
+    }
+
+    @Inject(method = "playDelayed(Lnet/minecraft/client/resources/sounds/SoundInstance;I)V", at = @At("HEAD"), cancellable = true)
+    public void playStart(SoundInstance sound, int delay, CallbackInfo cb) {
+        if (filterCondition(sound)) cb.cancel();
+    }
+
+    /** Pauses ambient loops while a BattleMusicInstance is in progress. */
+    @Inject(method = "play(Lnet/minecraft/client/resources/sounds/SoundInstance;)Lnet/minecraft/client/sounds/SoundEngine$PlayResult;", at = @At("TAIL"))
+    public void playEnd(SoundInstance sound, CallbackInfoReturnable<SoundEngine.PlayResult> cb) {
+        if (ambientLoopCondition(sound)) this.pauseSounds(sound.getIdentifier(), SoundSource.AMBIENT);
+    }
+
+    @Inject(method = "playDelayed(Lnet/minecraft/client/resources/sounds/SoundInstance;I)V", at = @At("TAIL"))
+    public void playEnd(SoundInstance sound, int delay, CallbackInfo cb) {
+        if (ambientLoopCondition(sound)) this.pauseSounds(sound.getIdentifier(), SoundSource.AMBIENT);
+    }
+
+    /** Clears tracked sounds on the client when disconnected. */
+    @Inject(method = "stop()V", at = @At("TAIL"))
+    public void stop(CallbackInfo cb) {
+        SoundTracker.Companion.clear();
+    }
 }

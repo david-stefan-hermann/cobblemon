@@ -13,8 +13,9 @@ transitive-accessible field net/minecraft/world/entity/Entity DATA_AIR_SUPPLY_ID
 transitive-accessible class net/minecraft/world/item/CreativeModeTab$Output
 # PT052 (iter#92): AbstractScrollArea.scrollAmount field private in 26.1.x (V## /tmp/.../AbstractScrollArea.class), widen for ScrollingWidget+TMMachineScreen+PokedexGUI (41 errors)
 transitive-accessible field net/minecraft/client/gui/components/AbstractScrollArea scrollAmount D
-# PT018-DEFER(MC 26.1.x API drift): transitive-accessible method net/minecraft/world/entity/player/Player setShoulderEntityLeft (Lnet/minecraft/nbt/CompoundTag;)V
-# PT018-DEFER(MC 26.1.x API drift): transitive-accessible method net/minecraft/world/entity/player/Player setShoulderEntityRight (Lnet/minecraft/nbt/CompoundTag;)V
+# port/26.2: the shoulder slots live on ServerPlayer now; the setters are protected there.
+transitive-accessible method net/minecraft/server/level/ServerPlayer setShoulderEntityLeft (Lnet/minecraft/nbt/CompoundTag;)V
+transitive-accessible method net/minecraft/server/level/ServerPlayer setShoulderEntityRight (Lnet/minecraft/nbt/CompoundTag;)V
 # PT143: respawnEntityOnShoulder moved from Player → ServerPlayer in MC 26.1.x.
 transitive-accessible method net/minecraft/server/level/ServerPlayer respawnEntityOnShoulder (Lnet/minecraft/nbt/CompoundTag;)V
 # PT018-DEFER(MC 26.1.x API drift): transitive-accessible method net/minecraft/world/entity/player/Player getShoulderEntityLeft ()Lnet/minecraft/nbt/CompoundTag;
