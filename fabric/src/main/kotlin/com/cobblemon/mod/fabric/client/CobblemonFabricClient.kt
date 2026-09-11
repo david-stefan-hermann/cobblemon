@@ -61,7 +61,7 @@ import net.minecraft.client.color.item.ItemTintSource
 import net.minecraft.client.model.geom.ModelLayerLocation
 import net.minecraft.client.model.geom.builders.LayerDefinition
 import net.minecraft.client.particle.ParticleProvider
-import net.minecraft.client.particle.QuadParticleGroup
+import com.cobblemon.mod.common.client.render.SnowstormParticleGroup
 import net.minecraft.client.particle.SpriteSet
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
@@ -189,7 +189,8 @@ class CobblemonFabricClient : ClientModInitializer, CobblemonClientImplementatio
     /**
      * port/26.2: Snowstorm particles report one of Cobblemon's own ParticleRenderTypes from getGroup().
      * The engine keeps a particle group per render type and has no way to create one for a type it does
-     * not know, so each is registered here against QuadParticleGroup - Snowstorm particles are quads.
+     * not know, so each is registered here. They are not SingleQuadParticles (QuadParticleGroup casts to
+     * that and crashed the first frame an effect drew), so they get their own SnowstormParticleGroup.
      *
      * This replaces the old CobblemonShaders/GameRendererMixin route, which registered a ShaderInstance
      * per material. That concept no longer exists: blending is chosen by the SingleQuadParticle.Layer a
@@ -202,7 +203,7 @@ class CobblemonFabricClient : ClientModInitializer, CobblemonClientImplementatio
             ParticleMaterials.BLEND,
             ParticleMaterials.OPAQUE
         ).forEach { renderType ->
-            ParticleGroupRegistry.register(renderType) { engine -> QuadParticleGroup(engine, renderType) }
+            ParticleGroupRegistry.register(renderType) { engine -> SnowstormParticleGroup(engine, renderType) }
         }
     }
 
