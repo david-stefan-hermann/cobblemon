@@ -18,7 +18,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
-import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -39,7 +39,7 @@ public class ItemInHandRendererMixin {
 
     // port/26.2: renamed to submitHandsWithItems, and PoseStack.mulPose takes the Quaternionfc interface.
     @Redirect(method = "submitHandsWithItems", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;mulPose(Lorg/joml/Quaternionfc;)V"))
-    private void cobblemon$renderHandswithItems(PoseStack instance, Quaternionf quaternion) {
+    private void cobblemon$renderHandswithItems(PoseStack instance, Quaternionfc quaternion) {
         if (!(Minecraft.getInstance().player != null && Minecraft.getInstance().player.getVehicle() instanceof OrientationControllable controllable && controllable.getOrientationController().isActive())) {
             instance.mulPose(quaternion);
         }
