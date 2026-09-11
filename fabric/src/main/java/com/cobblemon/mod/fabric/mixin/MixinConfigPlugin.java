@@ -8,7 +8,6 @@
 
 package com.cobblemon.mod.fabric.mixin;
 
-import net.fabricmc.loader.api.FabricLoader;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -27,8 +26,8 @@ public class MixinConfigPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        if (!mixinClassName.equalsIgnoreCase("com.cobblemon.mod.common.mixin.OptionalEntityMixin")) return true;
-        return !FabricLoader.getInstance().isModLoaded("moonrise");
+        // port/26.2: the only gated mixin (OptionalEntityMixin, skipped under moonrise) no longer exists.
+        return true;
     }
 
     @Override

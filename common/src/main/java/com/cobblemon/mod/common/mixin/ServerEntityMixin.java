@@ -41,14 +41,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 
 @Mixin(ServerEntity.class)
 public abstract class ServerEntityMixin {
 
-    @Shadow
-    @Final
-    private Consumer<Packet<?>> broadcast;
+    // port/26.2: the unused broadcast shadow is gone - ServerEntity now holds a Synchronizer instead,
+    // and a shadow that no longer resolves fails the whole mixin as soon as the first entity is tracked.
     @Shadow
     @Final
     private Entity entity;

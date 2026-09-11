@@ -9,6 +9,7 @@
 package com.cobblemon.mod.common.mixin;
 
 import com.cobblemon.mod.common.sherds.CobblemonSherds;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.entity.DecoratedPotPattern;
@@ -16,18 +17,24 @@ import net.minecraft.world.level.block.entity.DecoratedPotPatterns;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.function.BiConsumer;
+
+/**
+ * port/26.2: getPatternFromItem is gone. Vanilla now feeds every item -> pattern pair through
+ * itemToPatternMappings, and DecoratedPotRenderer builds its sprite map from that once, so the Cobblemon
+ * sherds are appended to the same stream.
+ */
 @Mixin(DecoratedPotPatterns.class)
 public abstract class DecoratedPotPatternsMixin {
-    @Inject(method = "getPatternFromItem", at=@At("HEAD"), cancellable = true)
-    private static void cobblemon$getCobblemonSherdTexture(
-        Item sherd,
-        CallbackInfoReturnable<ResourceKey<DecoratedPotPattern>> cir
+    @Inject(method = "itemToPatternMappings", at = @At("TAIL"))
+    private static void cobblemon$addCobblemonSherdPatterns(
+        BiConsumer<ResourceKey<Item>, ResourceKey<DecoratedPotPattern>> output,
+        CallbackInfo ci
     ) {
-        if (CobblemonSherds.INSTANCE.getSherdToPattern().containsKey(sherd)) {
-            cir.setReturnValue(CobblemonSherds.INSTANCE.getSherdToPattern().get(sherd));
-            cir.cancel();
-        }
+        CobblemonSherds.INSTANCE.getSherdToPattern().forEach((sherd, pattern) ->
+            output.accept(BuiltInRegistries.ITEM.getResourceKey(sherd).orElseThrow(), pattern)
+        );
     }
 }

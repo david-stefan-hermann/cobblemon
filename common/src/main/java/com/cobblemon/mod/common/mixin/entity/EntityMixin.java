@@ -21,10 +21,13 @@ import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityFluidInteraction;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -40,11 +43,23 @@ public abstract class EntityMixin {
 
     @Shadow @Nullable public abstract Entity getVehicle();
 
-    @Inject(method = "updateInWaterStateAndDoWaterCurrentPushing", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/Entity;wasTouchingWater:Z", ordinal = 1), cancellable = true)
-    public void cobblemon$verifyActuallyTouchingWater(CallbackInfo ci) {
-        if(this.getVehicle() instanceof PokemonEntity) {
-            ci.cancel();
+    // port/26.2: updateInWaterStateAndDoWaterCurrentPushing became updateFluidInteraction, which reads the
+    // water check into a local and then resets fall distance, splashes and stores wasTouchingWater from it.
+    // The old injector cancelled right after that check; reporting "not in water" for riders skips the
+    // same splash/fall-reset/wasTouchingWater update. The return value is discarded by baseTick.
+    @WrapOperation(
+            method = "updateFluidInteraction",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/entity/EntityFluidInteraction;isInFluid(Lnet/minecraft/tags/TagKey;)Z",
+                    ordinal = 0
+            )
+    )
+    public boolean cobblemon$verifyActuallyTouchingWater(EntityFluidInteraction fluidInteraction, TagKey<Fluid> fluid, Operation<Boolean> original) {
+        if (this.getVehicle() instanceof PokemonEntity) {
+            return false;
         }
+        return original.call(fluidInteraction, fluid);
     }
 
     @WrapOperation(
@@ -102,7 +117,8 @@ public abstract class EntityMixin {
     public void cobblemon$customPusherLogic(Entity pusher, double x, double y, double z,
                                             Operation<Void> original,
                                             @Local(argsOnly = true) Entity pushee,
-                                            @Local(name = "e") double e, @Local(name = "d") double d,
+                                            // port/26.2: the unobfuscated jar names these xa/za (were d/e)
+                                            @Local(name = "za") double e, @Local(name = "xa") double d,
                                             @Share("pusherIsPlayerOrPokemon") LocalBooleanRef pusherIsPlayerOrPokemon,
                                             @Share("pusheeIsPlayerOrPokemon") LocalBooleanRef pusheeIsPlayerOrPokemon,
                                             @Share("pusheeReceivedForce")LocalFloatRef pusheeReceivedForce) {
@@ -140,7 +156,7 @@ public abstract class EntityMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;push(DDD)V", ordinal = 1)
     )
     public void cobblemon$customPusheeLogic(Entity pusher, double x, double y, double z, Operation<Void> original,
-                                            @Local(name = "e") double e, @Local(name = "d") double d,
+                                            @Local(name = "za") double e, @Local(name = "xa") double d,
                                             @Share("pusherIsPlayerOrPokemon") LocalBooleanRef pusherIsPlayerOrPokemon,
                                             @Share("pusheeIsPlayerOrPokemon") LocalBooleanRef pusheeIsPlayerOrPokemon,
                                             @Share("pusheeReceivedForce")LocalFloatRef pusheeReceivedForce) {

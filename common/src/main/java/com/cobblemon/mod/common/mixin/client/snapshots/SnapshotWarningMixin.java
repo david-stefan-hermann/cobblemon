@@ -14,26 +14,29 @@ import com.cobblemon.mod.common.client.persisted.ClientPersistedData;
 import kotlin.Unit;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Mixin(Minecraft.class)
+// port/26.2: the initial screen queue moved from Minecraft to Gui, and addInitialScreens now returns
+// whether an onboarding screen was added (Gui.buildInitialScreens reads it).
+@Mixin(Gui.class)
 public final class SnapshotWarningMixin {
 
     @Unique
     private final Pattern VERSION = Pattern.compile("^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$");
 
     @Inject(method = "addInitialScreens", at = @At("TAIL"))
-    public void cobblemon$addSnapshotWarningScreen(List<Function<Runnable, Screen>> output, CallbackInfo callback) {
+    public void cobblemon$addSnapshotWarningScreen(List<Function<Runnable, Screen>> output, CallbackInfoReturnable<Boolean> callback) {
         if (CobblemonBuildDetails.SNAPSHOT && !this.cobblemon$isAcknowledged() && !SharedConstants.IS_RUNNING_IN_IDE) {
             output.add((runnable) -> new SnapshotWarningScreen((acknowledgement, dsa) -> {
                 if (acknowledgement == SnapshotWarningScreen.Acknowledgement.NO) {

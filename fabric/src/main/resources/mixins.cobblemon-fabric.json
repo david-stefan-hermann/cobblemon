@@ -5,12 +5,12 @@
   "minVersion": "0.8",
   "plugin": "com.cobblemon.mod.fabric.mixin.MixinConfigPlugin",
   "client": [
-    "FabricCameraMixin"
+    "FabricCameraMixin",
+    "FabricSoundEngineMixin"
   ],
   "mixins": [
     "EntityMixin",
     "PlayerMixin",
-    "RecipeBookSettingsMixin",
     "RecipeBookTypeMixin",
     "ServerEntityMixin"
   ]

@@ -22,6 +22,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Arrays;
 import java.util.Map;
 
+/**
+ * port/26.2: NOT registered. RecipeBookSettings is now four fixed TypeSettings fields with a field-based
+ * codec - there is no states map and no values()-driven read/write, so this cannot apply (it broke world
+ * join with "@Shadow field states was not located"). The port currently maps COOKING_POT to CRAFTING
+ * (CobblemonRecipeCategories.kt, PT144), which needs no extra settings slot and keeps vanilla sync intact.
+ * Revisit together with RecipeBookTypeMixin when the cooking pot recipe book is ported properly.
+ */
 @Mixin(RecipeBookSettings.class)
 public class RecipeBookSettingsMixin {
 
