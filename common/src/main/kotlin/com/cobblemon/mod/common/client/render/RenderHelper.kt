@@ -460,22 +460,24 @@ fun addVertex(
  * port/26.2: bridges Cobblemon's model rendering onto the submit pipeline.
  *
  * PosableModel.render walks the bone hierarchy against a live PoseStack, pushing and popping as it
- * descends. SubmitNodeCollector.submitCustomGeometry instead hands its callback the single
- * PoseStack.Pose captured at submit time, because the actual draw happens later in the render pass.
+ * descends, and reads bone transforms that Cobblemon sets on shared model instances just before drawing.
+ * SubmitNodeCollector.submitCustomGeometry runs its callback later in the render pass - drawing the model
+ * there picked up whatever pose (and poser) the model held by then, which scrambled every Pokémon.
  *
- * This rebuilds a PoseStack seeded from that captured pose, so the model code carries on unchanged
- * while still drawing in the right place.
+ * So the model is drawn right away, against a PoseStack seeded from the current pose, into a
+ * [RecordedGeometry]; the deferred callback only replays the finished vertices.
  */
 inline fun SubmitNodeCollector.submitPosableModel(
     poseStack: PoseStack,
     renderType: RenderType,
     crossinline draw: (PoseStack, VertexConsumer) -> Unit
 ) {
-    submitCustomGeometry(poseStack, renderType) { pose, consumer ->
-        val stack = PoseStack()
-        stack.last().set(pose)
-        draw(stack, consumer)
-    }
+    val recorded = RecordedGeometry()
+    val stack = PoseStack()
+    stack.last().set(poseStack.last())
+    draw(stack, recorded)
+    if (recorded.isEmpty) return
+    submitCustomGeometry(poseStack, renderType) { _, consumer -> recorded.replay(consumer) }
 }
 
 /**

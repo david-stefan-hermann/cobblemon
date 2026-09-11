@@ -23,6 +23,7 @@ import com.cobblemon.mod.common.client.entity.PokemonClientDelegate
 import com.cobblemon.mod.common.client.render.AnimatedModelTextureSupplier
 import com.cobblemon.mod.common.client.render.ModelLayer
 import com.cobblemon.mod.common.client.render.ScrollingTextureSettings
+import com.cobblemon.mod.common.client.render.submitPosableModel
 import com.cobblemon.mod.common.client.render.models.blockbench.animation.*
 import com.cobblemon.mod.common.client.render.models.blockbench.bedrock.animation.BedrockActiveAnimation
 import com.cobblemon.mod.common.client.render.models.blockbench.bedrock.animation.BedrockAnimationRepository
@@ -467,20 +468,12 @@ open class PosableModel(root: ModelPart) : ModelFrame {
 
                 stack.pushPose()
                 // port/26.2: MultiBufferSource is gone, so extra model layers can no longer grab a
-                // VertexConsumer and draw immediately. They are submitted to the collector instead, which
-                // draws them in the later render pass. Arguments are
-                // (part, pose, renderType, light, overlay, sprite, colour, crumbling, order).
-                provider.submitModelPart(
-                    rootPart,
-                    stack,
-                    renderLayer,
-                    packedLight,
-                    packedOverlay,
-                    null,
-                    tintColor,
-                    null,
-                    0
-                )
+                // VertexConsumer for their render type. They are recorded now, while the bones still hold
+                // this model's pose, and replayed by the collector - submitModelPart would read the bones
+                // in the later render pass, after the pose has moved on (see submitPosableModel).
+                provider.submitPosableModel(stack, renderLayer) { layerStack, layerConsumer ->
+                    rootPart.render(layerStack, layerConsumer, packedLight, packedOverlay, tintColor)
+                }
                 stack.popPose()
             }
         }
