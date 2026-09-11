@@ -298,25 +298,25 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     val APRICORN_STAIRS = blockItem("apricorn_stairs", CobblemonBlocks.APRICORN_STAIRS)
     @JvmField
     // PT137: SignItem constructor reordered to (Block, Block, Properties) in MC 26.1.x
-    val APRICORN_SIGN = this.create("apricorn_sign", SignItem(CobblemonBlocks.APRICORN_SIGN, CobblemonBlocks.APRICORN_WALL_SIGN, itemProperties("apricorn_sign").stacksTo(16)))
+    val APRICORN_SIGN = this.create("apricorn_sign", SignItem(CobblemonBlocks.APRICORN_SIGN, CobblemonBlocks.APRICORN_WALL_SIGN, itemProperties("apricorn_sign").useBlockDescriptionPrefix().stacksTo(16)))
     @JvmField
-    val APRICORN_HANGING_SIGN = this.create("apricorn_hanging_sign", HangingSignItem(CobblemonBlocks.APRICORN_HANGING_SIGN, CobblemonBlocks.APRICORN_WALL_HANGING_SIGN, itemProperties("apricorn_hanging_sign").stacksTo(16)))
+    val APRICORN_HANGING_SIGN = this.create("apricorn_hanging_sign", HangingSignItem(CobblemonBlocks.APRICORN_HANGING_SIGN, CobblemonBlocks.APRICORN_WALL_HANGING_SIGN, itemProperties("apricorn_hanging_sign").useBlockDescriptionPrefix().stacksTo(16)))
     @JvmField
-    val GILDED_CHEST = this.create("gilded_chest", BlockItem(CobblemonBlocks.GILDED_CHEST, itemProperties("gilded_chest")))
+    val GILDED_CHEST = this.create("gilded_chest", BlockItem(CobblemonBlocks.GILDED_CHEST, itemProperties("gilded_chest").useBlockDescriptionPrefix()))
     @JvmField
-    val BLUE_GILDED_CHEST = this.create("blue_gilded_chest", BlockItem(CobblemonBlocks.BLUE_GILDED_CHEST, itemProperties("blue_gilded_chest")))
+    val BLUE_GILDED_CHEST = this.create("blue_gilded_chest", BlockItem(CobblemonBlocks.BLUE_GILDED_CHEST, itemProperties("blue_gilded_chest").useBlockDescriptionPrefix()))
     @JvmField
-    val YELLOW_GILDED_CHEST = this.create("yellow_gilded_chest", BlockItem(CobblemonBlocks.YELLOW_GILDED_CHEST, itemProperties("yellow_gilded_chest")))
+    val YELLOW_GILDED_CHEST = this.create("yellow_gilded_chest", BlockItem(CobblemonBlocks.YELLOW_GILDED_CHEST, itemProperties("yellow_gilded_chest").useBlockDescriptionPrefix()))
     @JvmField
-    val PINK_GILDED_CHEST = this.create("pink_gilded_chest", BlockItem(CobblemonBlocks.PINK_GILDED_CHEST, itemProperties("pink_gilded_chest")))
+    val PINK_GILDED_CHEST = this.create("pink_gilded_chest", BlockItem(CobblemonBlocks.PINK_GILDED_CHEST, itemProperties("pink_gilded_chest").useBlockDescriptionPrefix()))
     @JvmField
-    val BLACK_GILDED_CHEST = this.create("black_gilded_chest", BlockItem(CobblemonBlocks.BLACK_GILDED_CHEST, itemProperties("black_gilded_chest")))
+    val BLACK_GILDED_CHEST = this.create("black_gilded_chest", BlockItem(CobblemonBlocks.BLACK_GILDED_CHEST, itemProperties("black_gilded_chest").useBlockDescriptionPrefix()))
     @JvmField
-    val WHITE_GILDED_CHEST = this.create("white_gilded_chest", BlockItem(CobblemonBlocks.WHITE_GILDED_CHEST, itemProperties("white_gilded_chest")))
+    val WHITE_GILDED_CHEST = this.create("white_gilded_chest", BlockItem(CobblemonBlocks.WHITE_GILDED_CHEST, itemProperties("white_gilded_chest").useBlockDescriptionPrefix()))
     @JvmField
-    val GREEN_GILDED_CHEST = this.create("green_gilded_chest", BlockItem(CobblemonBlocks.GREEN_GILDED_CHEST, itemProperties("green_gilded_chest")))
+    val GREEN_GILDED_CHEST = this.create("green_gilded_chest", BlockItem(CobblemonBlocks.GREEN_GILDED_CHEST, itemProperties("green_gilded_chest").useBlockDescriptionPrefix()))
     @JvmField
-    val GIMMIGHOUL_CHEST = this.create("gimmighoul_chest", BlockItem(CobblemonBlocks.GIMMIGHOUL_CHEST, itemProperties("gimmighoul_chest")))
+    val GIMMIGHOUL_CHEST = this.create("gimmighoul_chest", BlockItem(CobblemonBlocks.GIMMIGHOUL_CHEST, itemProperties("gimmighoul_chest").useBlockDescriptionPrefix()))
 
     // Saccharines
     @JvmField
@@ -355,9 +355,9 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     @JvmField
     val SACCHARINE_STAIRS = blockItem("saccharine_stairs", CobblemonBlocks.SACCHARINE_STAIRS)
     @JvmField
-    val SACCHARINE_SIGN = this.create("saccharine_sign", SignItem(CobblemonBlocks.SACCHARINE_SIGN, CobblemonBlocks.SACCHARINE_WALL_SIGN, itemProperties("saccharine_sign").stacksTo(16)))
+    val SACCHARINE_SIGN = this.create("saccharine_sign", SignItem(CobblemonBlocks.SACCHARINE_SIGN, CobblemonBlocks.SACCHARINE_WALL_SIGN, itemProperties("saccharine_sign").useBlockDescriptionPrefix().stacksTo(16)))
     @JvmField
-    val SACCHARINE_HANGING_SIGN = this.create("saccharine_hanging_sign", HangingSignItem(CobblemonBlocks.SACCHARINE_HANGING_SIGN, CobblemonBlocks.SACCHARINE_WALL_HANGING_SIGN, itemProperties("saccharine_hanging_sign").stacksTo(16)))
+    val SACCHARINE_HANGING_SIGN = this.create("saccharine_hanging_sign", HangingSignItem(CobblemonBlocks.SACCHARINE_HANGING_SIGN, CobblemonBlocks.SACCHARINE_WALL_HANGING_SIGN, itemProperties("saccharine_hanging_sign").useBlockDescriptionPrefix().stacksTo(16)))
     @JvmField
     val SACCHARINE_SAPLING = compostableBlockItem("saccharine_sapling", CobblemonBlocks.SACCHARINE_SAPLING, 0.30f)
 
@@ -367,9 +367,9 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     val POKE_BAIT = noSettingsItem("poke_bait")
 
     @JvmField
-    val POKE_CAKE = this.create("poke_cake", BlockItem(CobblemonBlocks.POKE_CAKE, itemProperties("poke_cake").stacksTo(1)))
+    val POKE_CAKE = this.create("poke_cake", BlockItem(CobblemonBlocks.POKE_CAKE, itemProperties("poke_cake").useBlockDescriptionPrefix().stacksTo(1)))
     @JvmField
-    val POKE_SNACK = this.create("poke_snack", BlockItem(CobblemonBlocks.POKE_SNACK, itemProperties("poke_snack").stacksTo(16)))
+    val POKE_SNACK = this.create("poke_snack", BlockItem(CobblemonBlocks.POKE_SNACK, itemProperties("poke_snack").useBlockDescriptionPrefix().stacksTo(16)))
 
     val aprijuices = mutableListOf<AprijuiceItem>()
     @JvmField
@@ -1583,7 +1583,7 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     //@JvmField
     //val BINDING_SOIL = blockItem("binding_soil", CobblemonBlocks.BINDING_SOIL)
 
-    private fun blockItem(name: String, block: Block, rarity: Rarity = Rarity.COMMON): BlockItem = this.create(name, BlockItem(block, itemProperties(name).rarity(rarity)))
+    private fun blockItem(name: String, block: Block, rarity: Rarity = Rarity.COMMON): BlockItem = this.create(name, BlockItem(block, itemProperties(name).useBlockDescriptionPrefix().rarity(rarity)))
 
     private fun itemNameBlockItem(name: String, block: Block, rarity: Rarity = Rarity.COMMON): BlockItem = this.create(name, BlockItem(block, itemProperties(name).rarity(rarity)))
 
@@ -1628,7 +1628,7 @@ object CobblemonItems : PlatformRegistry<Registry<Item>, ResourceKey<Registry<It
     )
 
     private fun campfirePotItem(block: Block, color: CampfirePotColor): CampfirePotItem {
-        val item = create("campfire_pot_${color.suffix}", CampfirePotItem(block, color, properties = itemProperties("campfire_pot_${color.suffix}")))
+        val item = create("campfire_pot_${color.suffix}", CampfirePotItem(block, color, properties = itemProperties("campfire_pot_${color.suffix}").useBlockDescriptionPrefix()))
         campfire_pots.add(item)
         return item
     }
