@@ -235,10 +235,9 @@ object CobblemonFabric : CobblemonImplementation {
         }
     }
 
+    // port/26.2: fabric-permission-api-v1 ships with fabric-api and falls back to vanilla levels by itself.
     override fun registerPermissionValidator() {
-        if (this.isModInstalled("fabric-permissions-api-v0")) {
-            Cobblemon.permissionValidator = FabricPermissionValidator()
-        }
+        Cobblemon.permissionValidator = FabricPermissionValidator()
     }
 
     override fun registerSoundEvents() {

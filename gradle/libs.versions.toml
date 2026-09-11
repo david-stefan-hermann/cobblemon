@@ -38,7 +38,6 @@ truffle = "22.3.0"
 fabric-loader = "0.19.3"
 fabric-api = "0.158.0+26.2"
 fabric-kotlin = "1.13.13+kotlin.2.4.10"
-fabric-permissions-api = "0.3.1"
 lambDynamicLights = "4.12.3+26.2"
 debugutils-fabric = "1.21.1-1.0.9-fabric"
 mod-menu = "20.0.1"
@@ -95,7 +94,6 @@ icu4j = { group = "com.ibm.icu", name = "icu4j", version.ref = "icu4j" }
 fabric-loader = { group = "net.fabricmc", name = "fabric-loader", version.ref = "fabric-loader" }
 fabric-api = { group = "net.fabricmc.fabric-api", name = "fabric-api", version.ref = "fabric-api" }
 fabric-kotlin = { group = "net.fabricmc", name = "fabric-language-kotlin", version.ref = "fabric-kotlin" }
-fabric-permissions = { group = "me.lucko", name = "fabric-permissions-api", version.ref = "fabric-permissions-api" }
 adorn-fabric = { group = "maven.modrinth", name = "adorn", version = "6.0.0-neoforge"}
 lambDynamicLights = { group = "dev.lambdaurora.lambdynamiclights", name = "lambdynamiclights-api", version.ref = "lambDynamicLights"}
 jei-fabric = { group = "mezz.jei", name = "jei-26.2-fabric", version.ref = "jei-api"}
@@ -123,7 +121,7 @@ classgraph = { group = "io.github.classgraph", name = "classgraph", version.ref 
 
 [bundles]
 kotlin = [ "kotlin-stdlib", "kotlin-reflect" ]
-fabric = [ "fabric-kotlin", "fabric-permissions" ]
+fabric = [ "fabric-kotlin" ]
 common-integrations-compileOnly = [ "adorn-fabric", "jei-api" ]
 fabric-integrations-implementation = [ "mod-menu" ]
 fabric-integrations-runtimeOnly = [ "jei-fabric", "c2me-fabric" ]

@@ -13,23 +13,24 @@ import com.cobblemon.mod.common.api.permission.Permission
 import com.cobblemon.mod.common.api.permission.PermissionValidator
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.permissions.PermissionLevel as MinecraftPermissionLevel
 
 /**
- * PT150: fabric-permissions-api 0.3.1 not yet remapped for MC 26.1.x AND
- * ServerPlayer.hasPermissions / CommandSourceStack.hasPermission are not resolvable in this Loom
- * fabric module classpath (B173 confirmed). Fallback to deny-all to allow Fabric jar to compile.
- * Reintroduce real permission checks in PT15X+ once fabric-permissions-api ships a 26.1.x build.
+ * port/26.2: checks permissions through fabric-api's own permission API (fabric-permission-api-v1), which
+ * replaced lucko's fabric-permissions-api v0. Without a permission mod it answers with the vanilla
+ * permission level, so this is used unconditionally.
+ *
+ * Nodes are identifiers now ([Permission.identifier], cobblemon:<node>). LuckPerms joins namespace and path
+ * with a dot, so a node still reads cobblemon.<node> there - the same string [Permission.literal] was on v0.
  */
 class FabricPermissionValidator : PermissionValidator {
     override fun initialize() {
-        Cobblemon.LOGGER.info("Booting FabricPermissionValidator (PT150 deny-all stub — fabric-permissions-api not yet ported)")
+        Cobblemon.LOGGER.info("Booting FabricPermissionValidator, permissions will be checked using fabric-permission-api-v1 (vanilla permission levels unless a permission mod is installed)")
     }
 
-    override fun hasPermission(player: ServerPlayer, permission: Permission): Boolean = false
+    override fun hasPermission(player: ServerPlayer, permission: Permission) =
+        player.checkPermission(permission.identifier, MinecraftPermissionLevel.byId(permission.level.numericalValue))
 
-    override fun hasPermission(source: CommandSourceStack, permission: Permission): Boolean = false
-
-    override fun hasPermission(player: ServerPlayer, permission: String, level: Int): Boolean = false
-
-    override fun hasPermission(source: CommandSourceStack, permission: String, level: Int): Boolean = false
+    override fun hasPermission(source: CommandSourceStack, permission: Permission) =
+        source.checkPermission(permission.identifier, MinecraftPermissionLevel.byId(permission.level.numericalValue))
 }
