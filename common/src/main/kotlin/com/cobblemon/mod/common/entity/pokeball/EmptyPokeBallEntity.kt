@@ -152,7 +152,12 @@ class EmptyPokeBallEntity : ThrowableItemProjectile, PosableEntity, WaterDragMod
                 }
             }
         }
-        dataTrackerEmitter.emit(data)
+        // port/26.2: ThrowableItemProjectile's owner constructor now sets the item during super
+        // construction, which lands here before this class's fields are initialised.
+        @Suppress("SENSELESS_COMPARISON")
+        if (dataTrackerEmitter != null) {
+            dataTrackerEmitter.emit(data)
+        }
     }
 
     init {
