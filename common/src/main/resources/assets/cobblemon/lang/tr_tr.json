@@ -449,6 +449,7 @@
     "block.cobblemon.deepslate_water_stone_ore": "Derin Kayrak Su Taşı Cevheri",
     "block.cobblemon.dripstone_moon_stone_ore": "Damlataş Ay Taşı Cevheri",
     "gamerule.doPokemonSpawning": "Pokémon spawnla",
+    "gamerule.cobblemon.do_pokemon_spawning": "Pokémon spawnla",
     "cobblemon.command.checkspawns.spawns": "Spawnlar",
     "cobblemon.command.checkspawns.nothing": "Şu anda burada hiçbir şey spawnlanamaz.",
     "cobblemon.ability.adaptability.desc": "Pokémon ile aynı türdeki hareketleri güçlendirir.",

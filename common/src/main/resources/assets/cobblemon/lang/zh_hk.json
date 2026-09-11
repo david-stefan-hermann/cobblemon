@@ -589,6 +589,7 @@
     "block.cobblemon.deepslate_water_stone_ore": "水之石深板岩礦",
     "block.cobblemon.dripstone_moon_stone_ore": "月之石鐘乳石礦",
     "gamerule.doPokemonSpawning": "生成寶可夢",
+    "gamerule.cobblemon.do_pokemon_spawning": "生成寶可夢",
     "cobblemon.command.checkspawns.invalid-bucket": "無效的生成桶",
     "cobblemon.command.checkspawns.spawns": "生成",
     "cobblemon.command.checkspawns.nothing": "現在這裡不再生成寶可夢",
