@@ -97,8 +97,9 @@ class SnowstormParticle(
     fun getVelocityZ() = zd
 
     fun getSpriteFromAtlas(): TextureAtlasSprite {
-        // PT132: particleEngine.textureAtlas removed in MC 26.1 — use AtlasManager.getAtlasOrThrow(LOCATION_PARTICLES)
-        val atlas = Minecraft.getInstance().atlasManager.getAtlasOrThrow(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_PARTICLES)
+        // PT132: particleEngine.textureAtlas removed in MC 26.1 — use AtlasManager.getAtlasOrThrow.
+        // port/26.2: the manager is keyed by atlas definition id, not by texture path (LOCATION_PARTICLES).
+        val atlas = Minecraft.getInstance().atlasManager.getAtlasOrThrow(net.minecraft.data.AtlasIds.PARTICLES)
         val sprite = atlas.getSprite(storm.effect.particle.texture)
         return sprite
     }

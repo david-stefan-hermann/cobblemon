@@ -27,9 +27,12 @@ class CobblemonAtlas(
     val textureId: Identifier,
     val definitionLocation: Identifier
 ) {
-    /** The stitched atlas. Only valid once resources have loaded. */
+    /**
+     * The stitched atlas. Only valid once resources have loaded. AtlasManager.getAtlasOrThrow only
+     * knows atlases by their definition id (atlases/<id>.json); the texture path is a different key.
+     */
     val textureAtlas: TextureAtlas
-        get() = Minecraft.getInstance().atlasManager.getAtlasOrThrow(textureId)
+        get() = Minecraft.getInstance().atlasManager.getAtlasOrThrow(definitionLocation)
 
     fun getSprite(id: Identifier): TextureAtlasSprite = textureAtlas.getSprite(id)
 
