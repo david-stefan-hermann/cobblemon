@@ -258,9 +258,8 @@ open class PokemonEntity(
         get() = form.behaviour
 
     /** Essentially a cached form of what was serialized to make memory reloads still work despite dynamic brain activities. */
-    // PT138: brainDynamic legacy field — Brain Dynamic API removed in MC 26.1.x; kept as placeholder
-    @Suppress("unused")
-    private var brainDynamic: Dynamic<*>? = null
+    // port/26.2: the serialized brain is a Brain.Packed now instead of a Dynamic.
+    private var brainPacked: Brain.Packed? = null
 
     var pokemon: Pokemon = pokemon
         set(value) {
@@ -1091,6 +1090,7 @@ open class PokemonEntity(
 
     // PT138: makeBrain(Dynamic) removed → makeBrain(Brain.Packed); Brain.provider needs 3-arg + ActivitySupplier.
     override fun makeBrain(packed: Brain.Packed): Brain<PokemonEntity> {
+        this.brainPacked = packed
         val target = pokemon
         return if (target != null) {
             PokemonBrain.applyBrain(this, target, packed)
@@ -1107,8 +1107,11 @@ open class PokemonEntity(
     }
 
     // PT138: LivingEntity.remakeBrain removed; keep as override from MoLangScriptingEntity
+    // port/26.2: the reference port made this a no-op, so every Pokémon kept the placeholder brain built in the
+    // constructor (before its Pokémon was set) - no behaviours, and sensors reading memories that placeholder
+    // never registered crashed the server tick. Rebuild from the cached packed brain as 1.21.1 did.
     override fun remakeBrain() {
-        // No-op: brain rebuild now happens via makeBrain(Brain.Packed) at entity construction
+        brain = makeBrain(brainPacked ?: Brain.Packed.EMPTY)
     }
 
     // PT138: LivingEntity.assignNewBrainWithMemoriesAndSensors removed

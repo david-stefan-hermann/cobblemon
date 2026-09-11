@@ -254,7 +254,8 @@ class NPCEntity(world: Level) : AgeableMob(CobblemonEntities.NPC, world), Posabl
     var actionEffect: ActionEffectContext? = null
 
     /** Essentially a cached form of what was serialized to make memory reloads still work despite dynamic brain activities on class change. */
-    private var brainDynamic: Dynamic<*>? = null
+    // port/26.2: the serialized brain is a Brain.Packed now instead of a Dynamic.
+    private var brainPacked: Brain.Packed? = null
 
 
     /* TODO NPC Valuables to add:
@@ -342,8 +343,9 @@ class NPCEntity(world: Level) : AgeableMob(CobblemonEntities.NPC, world), Posabl
     ) as Packet<ClientGamePacketListener>
 
     // PT138: LivingEntity.remakeBrain removed → non-override helper
+    // port/26.2: was a no-op, which left NPCs with the brain built before their class was known.
     override fun remakeBrain() {
-        // No-op: brain rebuild happens via makeBrain(Brain.Packed) at entity construction
+        makeBrain(this.brainPacked ?: Brain.Packed.EMPTY)
     }
 
     // PT138: LivingEntity.assignNewBrainWithMemoriesAndSensors removed → MoLangScriptingEntity override
@@ -365,6 +367,7 @@ class NPCEntity(world: Level) : AgeableMob(CobblemonEntities.NPC, world), Posabl
 
     // PT138: LivingEntity.makeBrain(Dynamic) → makeBrain(Brain.Packed) only abstract member.
     override fun makeBrain(packed: Brain.Packed): Brain<out NPCEntity> {
+        this.brainPacked = packed
         val brain = npcBrainProvider().makeBrain(this, packed)
         this.brain = brain
         if (npc != null) {

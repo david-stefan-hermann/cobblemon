@@ -44,7 +44,7 @@ import kotlin.math.acos
  * @author Hiroku
  * @since April 18th, 2025
  */
-class OmniPathNavigation(val world: Level, val entity: Mob) : GroundPathNavigation(entity, world) {
+class OmniPathNavigation(val world: Level, val entity: Mob) : NullableGroundPathNavigation(entity, world) {
     val pather = entity as OmniPathingEntity
 
     var cachedCurrentNode: Node? = null
@@ -169,8 +169,8 @@ class OmniPathNavigation(val world: Level, val entity: Mob) : GroundPathNavigati
 
     fun findPath(target: BlockPos, distance: Int): Path? = createPath(ImmutableSet.of(target), 8, false, distance)
 
-    // PT144: GroundPathNavigation.createPath return type is non-null Path in MC 26.1.x; downstream pather may emit empty path on failure.
-    override fun createPath(target: BlockPos, distance: Int): Path {
+    // port/26.2: implemented through NullableGroundPathNavigation - see there why this can't override createPath.
+    override fun createPathOrNull(target: BlockPos, distance: Int): Path? {
         var target = target
 
         var blockPos: BlockPos
@@ -220,7 +220,7 @@ class OmniPathNavigation(val world: Level, val entity: Mob) : GroundPathNavigati
 //            entity.remove(Entity.RemovalReason.DISCARDED)
 //        }
 
-        return path ?: super.createPath(target, distance)
+        return path ?: groundCreatePath(target, distance)
     }
 
     fun moveTo(x: Double, y: Double, z: Double, speed: Double = 1.0, navigationContext: NavigationContext) {
@@ -274,8 +274,7 @@ class OmniPathNavigation(val world: Level, val entity: Mob) : GroundPathNavigati
         return if ((canFloat()) && blockGetter.getFluidState(blockPos).`is`(FluidTags.WATER)) vec.y + 0.5 else super.getGroundY(vec)
     }
 
-    // PT144: GroundPathNavigation.createPath(Entity, Int) return type tightened to non-null Path.
-    override fun createPath(entity: Entity, distance: Int): Path {
+    override fun createPathOrNull(entity: Entity, distance: Int): Path? {
         return this.createPath(entity.blockPosition(), distance)
     }
 
